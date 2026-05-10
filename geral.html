@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Draft Infos - All Regions</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="app.js"></script>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html" class="nav-link">MENU</a>
+        <div class="nav-links">
+            <a href="sa.html" class="nav-link">SA</a>
+            <a href="na.html" class="nav-link">NA</a>
+            <a href="emea.html" class="nav-link">EMEA</a>
+            <a href="ea.html" class="nav-link">EA</a>
+            <a href="geral.html" class="nav-link active">GERAL</a>
+        </div>
+    </nav>
+
+    <main class="grid">
+        <header class="page-header">
+            <h1>ALL REGIONS <span class="accent">ANALYSIS</span></h1>
+            <p class="subtitle">Consolidado Mundial: Scrims, Tournaments e Ladder Competitiva</p>
+        </header>
+
+        <!-- O app.js injetará a tabela unificada aqui -->
+        <div id="grid-modos"></div> 
+    </main>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Chama a função global definida no app.js
+            carregarRegiao('geral');
+        });
+    </script>
+
+</body>
+</html>

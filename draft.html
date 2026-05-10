@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Draft Maker</title>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="draft.css">
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="nav-link">MENU</a>
+        
+        <div class="nav-links">
+            <a href="regioes.html" class="nav-link">META</a>
+            <a href="draft.html" class="nav-link">DRAFT</a>
+
+        </div>
+        <div class="nav-right"></div>
+    </nav>
+        <div class="nav-right"></div>
+    </nav>
+
+    <div class="draft-wrapper">
+        <div class="draft-header-controls">
+            <div class="first-pick-selector">
+                <span class="fp-label">First Pick:</span>
+                <div id="fp-blue" class="fp-btn fp-blue active" onclick="setFirstPick('blue')"></div>
+                <div id="fp-red" class="fp-btn fp-red" onclick="setFirstPick('red')"></div>
+            </div>
+            <select id="map-select" class="map-dropdown" onchange="atualizarMeta()">
+                <option value="" disabled selected>Select Map</option>
+            </select>
+        </div>
+
+        <div class="draft-content-wrapper">
+            <div class="main-draft-box">
+                <div class="team-side">
+                    <div class="team-name blue-text">BLUE TEAM</div>
+                    <div class="bans-row">
+                        <div class="slot slot-small" id="slot-b0"></div>
+                        <div class="slot slot-small" id="slot-b2"></div>
+                        <div class="slot slot-small" id="slot-b4"></div>
+                    </div>
+                    <div class="picks-column">
+                        <div class="slot slot-large" id="slot-pA1"></div>
+                        <div class="slot slot-large" id="slot-pA2"></div>
+                        <div class="slot slot-large" id="slot-pA3"></div>
+                    </div>
+                </div>
+
+                <div class="divider-x">X</div>
+
+                <div class="team-side" style="align-items: flex-end;">
+                    <div class="team-name red-text">RED TEAM</div>
+                    <div class="bans-row">
+                        <div class="slot slot-small" id="slot-b1"></div>
+                        <div class="slot slot-small" id="slot-b3"></div>
+                        <div class="slot slot-small" id="slot-b5"></div>
+                    </div>
+                    <div class="picks-column">
+                        <div class="slot slot-large" id="slot-pV1"></div>
+                        <div class="slot slot-large" id="slot-pV2"></div>
+                        <div class="slot slot-large" id="slot-pV3"></div>
+                    </div>
+                </div>
+            </div>
+
+            <section class="side-panels">
+                <div class="side-panel">
+                    <div class="panel-title">META TOP 10</div>
+                    <div id="meta-list" class="mini-brawler-grid"></div>
+                </div>
+                <div class="side-panel">
+                    <div class="panel-title">COUNTERS</div>
+                    <div id="counters-list" class="mini-brawler-grid"></div>
+                </div>
+            </section>
+
+            <aside class="roster-container-vertical">
+                <div class="search-wrapper">
+                    <input type="text" id="search" placeholder="BUSCAR..." oninput="filtrar()">
+                </div>
+                <div class="brawler-grid-vertical" id="roster"></div>
+                <button class="btn-reset-draft" onclick="resetDraft()">RESET DRAFT</button>
+            </aside>
+        </div>
+    </div>
+
+    <script src="draft.js"></script>
+</body>
+</html>

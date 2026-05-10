@@ -1,0 +1,179 @@
+import brawlstats
+import pandas as pd
+import os
+from datetime import datetime
+
+# --- CONFIGURAÇÃO ---
+API_KEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjY1OGRkNTQwLWM5MmItNDg1Yy04N2IzLTQxYWNhNzI3OGVjYSIsImlhdCI6MTc3NzQyMDM2Niwic3ViIjoiZGV2ZWxvcGVyLzc0NjFhNGJkLThhZDctNjg2Mi0wOGVkLTJiYmEzMzAxMWE3NiIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiNDUuMTcxLjI0Mi4xNTUiXSwidHlwZSI6ImNsaWVudCJ9XX0.cZOWf-FR0hphAo41spcJaaY5O1qbtXCRnM0w2xHjXP0BTvY398ZHQ4BhVJ--KZ7LlLtbcWDPHQ1ir9j8hI2QGg"
+client = brawlstats.Client(API_KEY)
+ARQUIVO_BRUTO = "historico_bruto.csv"
+ARQUIVO_FINAL = "estatisticas_finais.csv"
+
+REGIOES = {
+    "SA": {"#PLLRJC2V": "BH|Wesley",
+           "#2GV09VJJP": "LOUD|FireCrow",
+           "#CQLR0Y80": "ELV|Tufa",
+           "#L9PQUV0YC": "OS|BrabaoBs",
+           "#JQ8LLLY": "AL|FireMirillo",
+           "#202GJJR28": "Doritos",
+           "#PR0P8QVQ": "SKC| Kr ;)",
+           "#R2LR2QLG": "ETN|Mohtep",
+           "#80VLPJCCC": "Tilo",
+           "#GJPVYUQG": "ENO|Deykonn",
+           "#2P8RVJVUY": "OCX|Sterixx",
+           "#2QCCC29QV": "ODS|Magic"},
+    
+    "NA": {"#LVRRYPV": "RLM|Bobby",
+           "#82RCQCVG": "TRB|Lxffy",
+           "#YUJ8PJ0LR": "TE|Snoiy",
+           "#VPVLG2": "ZOOS|Tyrant",
+           "#P8GVQ28": "Math",
+           "#QURVLPG": "VTC|Ezlivi",
+           "#R9CCLP8Q": "LGCY|Rafiki",
+           "#28LUY98": "OG",
+           "#82J2VLRQ": "Zhar",
+           "#9PP0G2CG": "VIC|SecondBest",
+           "#GCJCRVQ8": "STMN|Tacos",
+           "#2G82CGU": "NAME|Zee"},
+    
+    "EMEA": {"#9PCV9L982": "FUT|AngelBoy",
+             "#2208QGGGL": "BGT|Dompe",
+             "#80PVPCC29": "NAVI|Enraged",
+             "#9JRGJ0RY9": "MAD|Rup",
+             "#YQUCCJ2": "HMB|Symantec",
+             "#9LVUC2PY": "SK| Ope",
+             "#PCPRPJV": "TH|IKaoss",
+             "#CJ9YRGGC": "HK|Natrix",
+             "#2Q892QVU": "TTM|Maru",
+             "#9PQQ8GQQ": "NOVO|Filippo",
+             "#2Y822YJYJC": "Decaii",  
+             "#PLV89CGP": "BIG|Salty"},
+    
+    "EA": {"#9ULYPV8": "CR|Tensai",
+           "#P0Y8JGL0U": "ZETA|Battoman",
+           "#J99YU9QY": "SKCEA|Kuru",
+           "#2RQQ9PGC": "FG|Shigemyon",
+           "#GJ9V99VJG": "DF|Clarx",
+           "#82CJYJPG2": "RVL|Yutapin",
+           "#8J9GUJJVY": "RC|Melty",
+           "#28PU0P9L0": "FL|Achapi",
+           "#28VP0G808": "INS|Koga",
+           "#89UUQLJCC": "FZ|Toridesu",
+           "#2LJVR0RQ8G": "TL|Engine"} 
+}
+
+TAG_PARA_REGIAO = {tag: reg for reg, lista in REGIOES.items() for tag in lista}
+
+def minerar_dados():
+    momento_revisao = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+    print(f"🚀 Iniciando varredura...")
+    
+    colunas = ['id_partida', 'regiao', 'id_players', 'name_players', 'pick', 'win', 'win_rate', 'modo', 'mapa', 'data_adicao']
+    
+    if os.path.exists(ARQUIVO_BRUTO):
+        try:
+            df_existente = pd.read_csv(ARQUIVO_BRUTO, sep=',', dtype=str, keep_default_na=False)
+            if 'data_adicao' not in df_existente.columns:
+                df_existente['data_adicao'] = 'Antiga'
+                df_existente.to_csv(ARQUIVO_BRUTO, index=False, sep=',', encoding='utf-8')
+            ids_registrados = set(df_existente['id_partida'].unique())
+        except:
+            ids_registrados = set()
+    else:
+        pd.DataFrame(columns=colunas).to_csv(ARQUIVO_BRUTO, index=False)
+        ids_registrados = set()
+
+    novas_linhas = []
+    stats_relatorio = {reg: {nome: 0 for nome in REGIOES[reg].values()} for reg in REGIOES}
+    total_novas = 0
+
+    for sigla_busca, jogadores in REGIOES.items():
+        for tag_busca, nome_player in jogadores.items():
+            try:
+                logs = client.get_battle_logs(tag_busca)
+                for entry in logs:
+                    battle = entry.get('battle', {})
+                    if 'ranked' in battle.get('type', '').lower(): continue
+                    
+                    teams = battle.get('teams')
+                    if not teams or len(teams) < 2: continue
+                    
+                    all_players = teams[0] + teams[1]
+                    tags_list = [p['tag'] for p in all_players]
+                    brawlers_list = [p['brawler']['name'].upper() for p in all_players]
+                    
+                    time_str = str(entry.get('battleTime'))
+                    mapa = entry.get('event', {}).get('map', 'Unknown')
+                    
+                    m_id = f"{time_str}_{mapa}_{'_'.join(tags_list)}_{'_'.join(brawlers_list)}"
+
+                    if m_id in ids_registrados:
+                        continue
+
+                    nicks_list = [p.get('name', 'Unknown') for p in all_players]
+                    reg_final = "/".join(sorted({TAG_PARA_REGIAO[t] for t in tags_list if t in TAG_PARA_REGIAO} or {sigla_busca}))
+                    res = battle.get('result')
+
+                    for i in range(6):
+                        venceu = 1 if (i < 3 and res == 'victory') or (i >= 3 and res == 'defeat') else 0
+                        novas_linhas.append([
+                            m_id, reg_final, ";".join(tags_list), ";".join(nicks_list),
+                            brawlers_list[i], venceu, f"{venceu*100}.0%", 
+                            battle.get('mode', 'Unknown'), mapa, momento_revisao
+                        ])
+                    
+                    ids_registrados.add(m_id)
+                    stats_relatorio[sigla_busca][nome_player] += 1
+                    total_novas += 1
+            except: continue
+
+    if novas_linhas:
+        df_novos = pd.DataFrame(novas_linhas, columns=colunas)
+        df_novos.to_csv(ARQUIVO_BRUTO, mode='a', header=False, index=False, sep=',', encoding='utf-8')
+        
+        df_total = pd.read_csv(ARQUIVO_BRUTO, keep_default_na=False)
+        df_total['win'] = pd.to_numeric(df_total['win'], errors='coerce').fillna(0)
+        df_total['regiao'] = df_total['regiao'].str.split('/')
+        df_stats = df_total.explode('regiao')
+        
+        # Salva o CSV final
+        resumo = df_stats.groupby(['regiao', 'modo', 'mapa', 'pick']).agg(picks=('win', 'count'), vitorias=('win', 'sum')).reset_index()
+        resumo['win_rate'] = (resumo['vitorias'] / resumo['picks'] * 100).round(1).astype(str) + '%'
+        resumo.to_csv(ARQUIVO_FINAL, index=False, sep=',', encoding='utf-8')
+
+        # --- GERAÇÃO DOS ARQUIVOS JSON PARA O SITE ---
+        os.makedirs('api/stats', exist_ok=True)
+        
+        # Cria o JSON Geral
+        geral = df_stats.groupby(['modo', 'mapa', 'pick']).agg(picks=('win', 'count'), vitorias=('win', 'sum')).reset_index()
+        geral['win_rate'] = (geral['vitorias'] / geral['picks'] * 100).round(1).astype(str) + '%'
+        geral.to_json('api/stats/geral.json', orient='records')
+
+        # Cria os JSONs por Região (sa.json, na.json, etc)
+        for regiao in df_stats['regiao'].unique():
+            if regiao and str(regiao).strip() != '':
+                df_reg = df_stats[df_stats['regiao'] == regiao]
+                # Salva cada região no formato correto para a pasta api/stats/
+                df_reg.to_json(f"api/stats/{str(regiao).lower()}.json", orient='records')
+
+    print("\n" + "="*50)
+    print("📊 RELATÓRIO DE MINERAÇÃO (NOVAS PARTIDAS)")
+    print("="*50)
+    for regiao, players in stats_relatorio.items():
+        soma_regiao = sum(players.values())
+        print(f"\n🌍 REGIÃO: {regiao} | Total: {soma_regiao}")
+        print("-" * 35)
+        for nome, qtd in players.items():
+            if qtd > 0:
+                print(f"  └─ 👤 {nome:.<25} {qtd}")
+            else:
+                print(f"  └─ 👤 {nome:.<25} 0")
+    
+    print("\n" + "="*50)
+    print(f"🏆 TOTAL GERAL DE NOVAS PARTIDAS ADICIONADAS: {total_novas}")
+    print("="*50 + "\n")
+
+if __name__ == "__main__":
+    print("🤖 GitHub Bot Iniciado: Atualizando base de dados...")
+    minerar_dados()
+    print("✅ Concluído! O GitHub Actions fará o commit das alterações se houver novas partidas.")
