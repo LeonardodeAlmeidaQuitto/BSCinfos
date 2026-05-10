@@ -5,7 +5,10 @@ from datetime import datetime
 
 # --- CONFIGURAÇÃO ---
 API_KEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjM0ZjliMGM0LTJiZGEtNGVmNS1hNjlkLTg1ZGQ1ZDhlN2MzZSIsImlhdCI6MTc3ODQ1MDc3OCwic3ViIjoiZGV2ZWxvcGVyLzc0NjFhNGJkLThhZDctNjg2Mi0wOGVkLTJiYmEzMzAxMWE3NiIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiNDUuNzkuMjE4Ljc5Il0sInR5cGUiOiJjbGllbnQifV19.ePDYj2Rzf-J2I0-K82OdBaLfZ0eZ7iek6jcQOtKzfNwhONgdJXPY-5WjVop0mrSOlFTsEx-7JEkgmNB_DyZmyg"
-client = brawlstats.Client(API_KEY)
+
+# ALTERAÇÃO AQUI: Adicionado o base_url para passar pelo Proxy (Túnel de IP Fixo)
+client = brawlstats.Client(API_KEY, base_url="https://bsproxy.royaleapi.dev/v1")
+
 ARQUIVO_BRUTO = "historico_bruto.csv"
 ARQUIVO_FINAL = "estatisticas_finais.csv"
 
@@ -66,7 +69,7 @@ TAG_PARA_REGIAO = {tag: reg for reg, lista in REGIOES.items() for tag in lista}
 
 def minerar_dados():
     momento_revisao = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
-    print(f"🚀 Iniciando varredura...")
+    print(f"🚀 Iniciando varredura via Proxy (RoyaleAPI)...")
     
     colunas = ['id_partida', 'regiao', 'id_players', 'name_players', 'pick', 'win', 'win_rate', 'modo', 'mapa', 'data_adicao']
     
@@ -90,6 +93,7 @@ def minerar_dados():
     for sigla_busca, jogadores in REGIOES.items():
         for tag_busca, nome_player in jogadores.items():
             try:
+                # O client agora usa o túnel automaticamente
                 logs = client.get_battle_logs(tag_busca)
                 for entry in logs:
                     battle = entry.get('battle', {})
@@ -125,7 +129,9 @@ def minerar_dados():
                     ids_registrados.add(m_id)
                     stats_relatorio[sigla_busca][nome_player] += 1
                     total_novas += 1
-            except: continue
+            except Exception as e:
+                print(f"⚠️ Erro ao processar {nome_player}: {e}")
+                continue
 
     if novas_linhas:
         df_novos = pd.DataFrame(novas_linhas, columns=colunas)
@@ -136,44 +142,23 @@ def minerar_dados():
         df_total['regiao'] = df_total['regiao'].str.split('/')
         df_stats = df_total.explode('regiao')
         
-        # Salva o CSV final
         resumo = df_stats.groupby(['regiao', 'modo', 'mapa', 'pick']).agg(picks=('win', 'count'), vitorias=('win', 'sum')).reset_index()
         resumo['win_rate'] = (resumo['vitorias'] / resumo['picks'] * 100).round(1).astype(str) + '%'
         resumo.to_csv(ARQUIVO_FINAL, index=False, sep=',', encoding='utf-8')
 
-        # --- GERAÇÃO DOS ARQUIVOS JSON PARA O SITE ---
         os.makedirs('api/stats', exist_ok=True)
         
-        # Cria o JSON Geral
         geral = df_stats.groupby(['modo', 'mapa', 'pick']).agg(picks=('win', 'count'), vitorias=('win', 'sum')).reset_index()
         geral['win_rate'] = (geral['vitorias'] / geral['picks'] * 100).round(1).astype(str) + '%'
         geral.to_json('api/stats/geral.json', orient='records')
 
-        # Cria os JSONs por Região (sa.json, na.json, etc)
         for regiao in df_stats['regiao'].unique():
             if regiao and str(regiao).strip() != '':
                 df_reg = df_stats[df_stats['regiao'] == regiao]
-                # Salva cada região no formato correto para a pasta api/stats/
                 df_reg.to_json(f"api/stats/{str(regiao).lower()}.json", orient='records')
 
-    print("\n" + "="*50)
-    print("📊 RELATÓRIO DE MINERAÇÃO (NOVAS PARTIDAS)")
-    print("="*50)
-    for regiao, players in stats_relatorio.items():
-        soma_regiao = sum(players.values())
-        print(f"\n🌍 REGIÃO: {regiao} | Total: {soma_regiao}")
-        print("-" * 35)
-        for nome, qtd in players.items():
-            if qtd > 0:
-                print(f"  └─ 👤 {nome:.<25} {qtd}")
-            else:
-                print(f"  └─ 👤 {nome:.<25} 0")
-    
-    print("\n" + "="*50)
-    print(f"🏆 TOTAL GERAL DE NOVAS PARTIDAS ADICIONADAS: {total_novas}")
-    print("="*50 + "\n")
+    print(f"\n✅ Concluído! Total de novas partidas: {total_novas}")
 
 if __name__ == "__main__":
-    print("🤖 GitHub Bot Iniciado: Atualizando base de dados...")
+    print("🤖 GitHub Bot Iniciado...")
     minerar_dados()
-    print("✅ Concluído! O GitHub Actions fará o commit das alterações se houver novas partidas.")
