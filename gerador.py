@@ -1,12 +1,17 @@
 import brawlstats
 import pandas as pd
 import os
-from datetime import datetime, timedelta, timezone # Adicionado timedelta e timezone
+from datetime import datetime, timedelta, timezone
 
 # --- CONFIGURAÇÃO ---
+# Substitua pela sua NOVA CHAVE gerada com o IP 45.79.218.79
 API_KEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjU0ODZlOGQxLTRkNWQtNDJmYy1iOWE3LWU5ODYyMWJhOWI0NSIsImlhdCI6MTc3ODUwODgwOCwic3ViIjoiZGV2ZWxvcGVyLzc0NjFhNGJkLThhZDctNjg2Mi0wOGVkLTJiYmEzMzAxMWE3NiIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiNDUuNzkuMjE4Ljc5Il0sInR5cGUiOiJjbGllbnQifV19.yvcSQalBqNz6Q6DjZWU5IL1XvBjn5DGckYvy2bgl5tjVeRJ2GMhY_I2JP1zdEeLAfEG2hGVJT7OMZro4kkegFA"
 
 client = brawlstats.Client(API_KEY, base_url="https://bsproxy.royaleapi.dev/v1")
+
+# --- DEFINIÇÃO DOS ARQUIVOS (O que estava faltando) ---
+ARQUIVO_BRUTO = "historico_bruto.csv"
+ARQUIVO_FINAL = "estatisticas_finais.csv"
 
 REGIOES = {
 
@@ -66,14 +71,15 @@ REGIOES = {
 TAG_PARA_REGIAO = {tag: reg for reg, lista in REGIOES.items() for tag in lista}
 
 def minerar_dados():
-    # --- AJUSTE DE HORÁRIO (BRASÍLIA UTC-3) ---
+    # Ajuste de Horário Brasília
     fuso_brasilia = timezone(timedelta(hours=-3))
     momento_revisao = datetime.now(fuso_brasilia).strftime('%d/%m/%Y %H:%M:%S')
     
-    print(f"🚀 Iniciando varredura via Proxy (RoyaleAPI)... Horário: {momento_revisao}")
+    print(f"🚀 Iniciando varredura via Proxy... Horário: {momento_revisao}")
     
     colunas = ['id_partida', 'regiao', 'id_players', 'name_players', 'pick', 'win', 'win_rate', 'modo', 'mapa', 'data_adicao']
     
+    # Verifica ou cria o arquivo bruto
     if os.path.exists(ARQUIVO_BRUTO):
         try:
             df_existente = pd.read_csv(ARQUIVO_BRUTO, sep=',', dtype=str, keep_default_na=False)
