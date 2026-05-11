@@ -14,10 +14,10 @@ jobs:
 
     steps:
       - name: Baixando os arquivos do repositório
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4 # Atualizado para v4
 
       - name: Instalando o Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5 # Atualizado para v5
         with:
           python-version: '3.10'
 
@@ -32,6 +32,15 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          # Adiciona arquivos e verifica se houve mudanças
           git add historico_bruto.csv estatisticas_finais.csv api/
-          git commit -m "🤖 Atualização Automática de Partidas" || echo "Sem mudanças para atualizar"
-          git push
+          
+          # Se houver mudanças, faz o commit, sincroniza (pull) e envia (push)
+          if ! git diff --cached --quiet; then
+            git commit -m "🤖 Atualização Automática de Partidas"
+            git pull --rebase origin main
+            git push
+          else
+            echo "Sem mudanças para atualizar"
+          fi
