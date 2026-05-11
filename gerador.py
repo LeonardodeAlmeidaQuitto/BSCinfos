@@ -1,15 +1,12 @@
 import brawlstats
 import pandas as pd
 import os
-from datetime import datetime
+from datetime import datetime, timedelta, timezone # Adicionado timedelta e timezone
 
 # --- CONFIGURAÇÃO ---
-API_KEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjM0ZjliMGM0LTJiZGEtNGVmNS1hNjlkLTg1ZGQ1ZDhlN2MzZSIsImlhdCI6MTc3ODQ1MDc3OCwic3ViIjoiZGV2ZWxvcGVyLzc0NjFhNGJkLThhZDctNjg2Mi0wOGVkLTJiYmEzMzAxMWE3NiIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiNDUuNzkuMjE4Ljc5Il0sInR5cGUiOiJjbGllbnQifV19.ePDYj2Rzf-J2I0-K82OdBaLfZ0eZ7iek6jcQOtKzfNwhONgdJXPY-5WjVop0mrSOlFTsEx-7JEkgmNB_DyZmyg"
+API_KEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjM0ZjliMGM0LTJiZGEtNGVmNS1hNjlkLTg1ZGQ1ZGhlN2MzZSIsImlhdCI6MTc3ODQ1MDc3OCwic3ViIjoiZGV2ZWxvcGVyLzc0NjFhNGJkLThhZDctNjg2Mi0wOGVkLTJiYmEzMzAxMWE3NiIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiNDUuNzkuMjE4Ljc5Il0sInR5cGUiOiJjbGllbnQifV19.ePDYj2Rzf-J2I0-K82OdBaLfZ0eZ7iek6jcQOtKzfNwhONgdJXPY-5WjVop0mrSOlFTsEx-7JEkgmNB_DyZmyg"
 
 client = brawlstats.Client(API_KEY, base_url="https://bsproxy.royaleapi.dev/v1")
-
-ARQUIVO_BRUTO = "historico_bruto.csv"
-ARQUIVO_FINAL = "estatisticas_finais.csv"
 
 REGIOES = {
 
@@ -69,8 +66,11 @@ REGIOES = {
 TAG_PARA_REGIAO = {tag: reg for reg, lista in REGIOES.items() for tag in lista}
 
 def minerar_dados():
-    momento_revisao = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
-    print(f"🚀 Iniciando varredura via Proxy (RoyaleAPI)...")
+    # --- AJUSTE DE HORÁRIO (BRASÍLIA UTC-3) ---
+    fuso_brasilia = timezone(timedelta(hours=-3))
+    momento_revisao = datetime.now(fuso_brasilia).strftime('%d/%m/%Y %H:%M:%S')
+    
+    print(f"🚀 Iniciando varredura via Proxy (RoyaleAPI)... Horário: {momento_revisao}")
     
     colunas = ['id_partida', 'regiao', 'id_players', 'name_players', 'pick', 'win', 'win_rate', 'modo', 'mapa', 'data_adicao']
     
@@ -126,7 +126,6 @@ def minerar_dados():
         df_novos = pd.DataFrame(novas_linhas, columns=colunas)
         df_novos.to_csv(ARQUIVO_BRUTO, mode='a', header=False, index=False, sep=',', encoding='utf-8')
         
-    # --- REPROCESSAMENTO E AGRUPAMENTO (Correção do "1") ---
     if os.path.exists(ARQUIVO_BRUTO):
         df_total = pd.read_csv(ARQUIVO_BRUTO, keep_default_na=False)
         df_total['win'] = pd.to_numeric(df_total['win'], errors='coerce').fillna(0)
@@ -135,7 +134,6 @@ def minerar_dados():
         
         os.makedirs('api/stats', exist_ok=True)
 
-        # Função para agrupar e calcular estatísticas reais
         def gerar_json_consolidado(df_input, path):
             consolidado = df_input.groupby(['modo', 'mapa', 'pick']).agg(
                 picks=('win', 'count'),
@@ -144,10 +142,8 @@ def minerar_dados():
             consolidado['win_rate'] = (consolidado['vitorias'] / consolidado['picks'] * 100).round(1).astype(str) + '%'
             consolidado.to_json(path, orient='records')
 
-        # Salva o Geral
         gerar_json_consolidado(df_stats, 'api/stats/geral.json')
 
-        # Salva cada região
         for reg in df_stats['regiao_list'].unique():
             if reg:
                 df_reg = df_stats[df_stats['regiao_list'] == reg]
