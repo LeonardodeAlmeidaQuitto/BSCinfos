@@ -2,10 +2,8 @@
 <html lang="pt-pt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Draft Infos - South América</title> 
+    <title>Draft Infos - South América</title>
     <link rel="stylesheet" href="style.css">
-    <meta http-equiv="refresh" content="2400">
     <script src="app.js"></script>
 </head>
 <body>
@@ -18,13 +16,12 @@
             <a href="ea.html" class="nav-link">EA</a>
             <a href="geral.html" class="nav-link">GERAL</a>
         </div>
-        <div class="nav-right"></div>
     </nav>
 
-    <main class="grid">
+    <main>
         <header class="page-header">
             <h1>SOUTH AMÉRICA <span class="accent">ANALYSIS</span></h1>
-            <p class="subtitle">Dados extraídos de Scrims, Tournaments e Ladder Competitiva</p>
+            <p class="subtitle">Dados extraídos de Scrims e Torneios Oficiais</p>
         </header>
         
         <div id="grid-modos"></div> 
@@ -32,18 +29,18 @@
         <div class="modo-section">
             <button class="modo-header" onclick="toggleModo('all-maps-collapse')">
                 ALL MAPS ANALYSIS
-                <span>▶</span>
+                <span id="seta-all">▶</span>
             </button>
 
             <div id="all-maps-collapse" class="mapa-content">
-                <table class="all-maps-table excel-table">
+                <table class="excel-table">
                     <thead>
                         <tr>
-                            <th class="col-img">IMG</th> 
-                            <th class="sortable text-left">BRAWLER</th>
-                            <th class="sortable">PICKS</th>
-                            <th class="sortable">WINS</th>
-                            <th class="sortable">WIN RATE</th>
+                            <th class="col-img">IMG</th>
+                            <th class="col-brawler">BRAWLER</th>
+                            <th class="col-stats">PICKS</th>
+                            <th class="col-stats">WINS</th>
+                            <th class="col-stats">WIN RATE</th>
                         </tr>
                     </thead>
                     <tbody id="tbody-all-maps">
@@ -52,18 +49,14 @@
             </div>
         </div>
     </main>
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            carregarRegiao('sa');
-        });
 
-        // Função padronizada para abrir/fechar e girar a seta
+    <script>
+        document.addEventListener('DOMContentLoaded', () => carregarRegiao('sa'));
+
         function toggleModo(id) {
             const content = document.getElementById(id);
-            const btn = content.previousElementSibling;
-            const seta = btn.querySelector('span');
-
+            const seta = content.previousElementSibling.querySelector('span');
+            
             if (content.style.display === "block") {
                 content.style.display = "none";
                 seta.style.transform = "rotate(0deg)";
