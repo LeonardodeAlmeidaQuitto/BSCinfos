@@ -16,7 +16,7 @@ body {
     background: var(--bg-total); 
     color: var(--texto); 
     overflow-x: hidden;
-    padding-top: 65px; /* Evita que o conteúdo suma atrás da navbar fixa */
+    padding-top: 65px; 
 }
 
 /* --- 3. NAVBAR --- */
@@ -34,17 +34,6 @@ nav {
     border-bottom: 2px solid transparent;
     border-image: linear-gradient(90deg, var(--azul), var(--vermelho)) 1;
 }
-
-.btn-voltar {
-    color: var(--texto);
-    text-decoration: none;
-    font-weight: 900;
-    font-size: 14px;
-    border: 1px solid var(--border-dark);
-    padding: 5px 15px;
-    transition: 0.3s;
-}
-.btn-voltar:hover { background: white; color: black; }
 
 .nav-links {
     display: flex;
@@ -69,7 +58,7 @@ nav {
     color: var(--accent-purple);
 }
 
-/* --- 4. CABEÇALHOS DOS MODOS --- */
+/* --- 4. CABEÇALHOS DOS MODOS (ACCORDION) --- */
 .modo-section { margin-bottom: 15px; background: var(--bg-cards); border-radius: 4px; overflow: hidden; }
 
 .modo-header { 
@@ -85,17 +74,16 @@ nav {
     font-weight: 900; 
     text-transform: uppercase; 
     letter-spacing: 3px;
-    border: 2px solid transparent; 
+    border: none;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .modo-header:hover {
     background: #000000; 
-    border-image: linear-gradient(90deg, var(--azul), var(--vermelho)) 1; 
     padding-left: 45px;
 }
 
-/* --- 5. CABEÇALHOS DOS MAPAS E SETAS --- */
+/* --- 5. CABEÇALHOS DOS MAPAS --- */
 .mapa-header { 
     width: 100%; 
     padding: 12px 25px; 
@@ -113,46 +101,22 @@ nav {
     border-top: 1px solid var(--border-dark);
 }
 
-/* Estilo para as setas ▶ girarem quando aberto */
 .modo-header span, .mapa-header span {
-    color: #ffffff !important;
-    display: inline-block;
     transition: transform 0.3s ease;
-    font-size: 1.2rem;
-    margin-left: 15px;
     font-family: monospace;
 }
 
-/* --- 6. TABELA E IMAGENS --- */
+/* --- 6. TABELA ESTILO EXCEL (PADRÃO) --- */
 .mapa-content {
-    display: none; /* Controlado pelo JS */
+    display: none; 
     background: #050505;
     padding: 20px;
     border: 1px solid var(--border-dark);
-    max-height: 600px;
-    overflow-y: auto;
 }
 
 .excel-table { 
     width: 100%; 
-    border-collapse: collapse; 
-}
-
-.col-img { width: 45px; padding: 0 !important; }
-
-.excel-table td { 
-    height: 45px;
-    border: 1px solid var(--border-dark); 
-    text-align: center; 
-    color: #fff; 
-    vertical-align: middle;
-    font-size: 13px;
-}
-
-.excel-table td:nth-child(2) { 
-    text-align: left;    /* Alinha o texto à esquerda */
-    padding-left: 20px;  /* Cria o recuo para não ficar em cima da foto */
-    font-weight: 700;
+    border-collapse: collapse !important; 
 }
 
 .excel-table th { 
@@ -164,151 +128,77 @@ nav {
     text-transform: uppercase;
 }
 
-/* Win Rate Colors */
-.win-rate.victory { color: #22c55e !important; font-weight: 900; }
-.win-rate.defeat { color: #ef4444 !important; font-weight: 900; }
-
-/* Brawler Avatar */
-.brawler-avatar-frame {
-    width: 45px; height: 45px;
-    background: #1a1a1a;
-}
-.brawler-img { width: 100%; height: 100%; object-fit: cover; }
-
-/* Grid de Modos */
-#grid-modos { 
-    width: 95%; 
-    max-width: 1200px; 
-    margin: 40px auto; 
+.excel-table td { 
+    height: 45px;
+    border: 1px solid var(--border-dark); 
+    text-align: center; 
+    color: #fff; 
+    vertical-align: middle;
+    font-size: 13px;
 }
 
-/* Header de Página (Título SA ANALYSIS) */
-.page-header {
-    text-align: center;
-    margin-top: 40px;
-    margin-bottom: 20px;
-}
-.page-header h1 { font-size: 3rem; font-weight: 900; }
-.accent { color: purple; }
-.subtitle { color: purple; font-size: 14px; margin-top: 5px; }
-
-/* Scrollbar Customizada */
-.mapa-content::-webkit-scrollbar { width: 6px; }
-.mapa-content::-webkit-scrollbar-track { background: #050505; }
-.mapa-content::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 3px; }
-
-/* Responsividade Básica */
-@media (max-width: 768px) {
-    .nav-links { gap: 15px; }
-    .nav-link { font-size: 12px; }
-    .modo-header { padding: 15px; font-size: 1.1rem; }
-    .excel-table th:nth-child(3), .excel-table th:nth-child(4) { display: none; } /* Esconde Picks/Wins no mobile */
-    .excel-table td:nth-child(3), .excel-table td:nth-child(4) { display: none; }
+.excel-table td:nth-child(2) { 
+    text-align: left;    
+    padding-left: 20px;  
+    font-weight: 700;
 }
 
-.nav-logo {
-    color: white !important;
-    text-decoration: none !important; /* REMOVE A LINHA DE BAIXO */
-    text-transform: uppercase !important;
-    letter-spacing: 4px;
-    font-size: 14px; 
-    display: flex;
-    align-items: center;
-    height: 100%;
-    transition: opacity 0.3s;
-    font-weight: 900;
-    cursor: pointer; /* Garante que o ícone de 'mãozinha' apareça */
-}
+/* Imagem padrão das tabelas pequenas */
+.brawler-img { width: 45px; height: 45px; object-fit: cover; }
 
-/* --- ESTILOS DE ORDENAÇÃO DE TABELA --- */
-th.sortable {
-    cursor: pointer;
-    user-select: none; /* Evita que o texto seja selecionado ao clicar rápido */
-    transition: background-color 0.2s ease, color 0.2s ease;
-}
+/* --- 7. ESTILIZAÇÃO ALL MAPS (DADOS CONSOLIDADOS) --- */
 
-th.sortable:hover {
-    background-color: #1a1a1a;
-    color: #ffffff;
-}
-
-/* --- 7. ESTILIZAÇÃO AMPLIADA ALL MAPS (AJUSTADO) --- */
-/* --- 7. ESTILIZAÇÃO ALL MAPS (BASEADA NA EXCEL-TABLE) --- */
-
-/* Centraliza a seção e define o container igual ao dos modos */
-.all-maps-section {
-    width: 95%;
-    max-width: 1200px;
-    margin: 60px auto;
-}
-
-/* Base da tabela: Igual à .excel-table da imagem 2 */
+/* Ajusta o container para seguir o padrão dos modos */
 .all-maps-table {
     width: 100%;
     border-collapse: collapse !important;
     background: #050505;
 }
 
-/* Cabeçalho: Mesma cor e estilo da .excel-table th */
+/* Grade "retinha" para a tabela inferior */
+.all-maps-table th, 
+.all-maps-table td {
+    border: 1px solid var(--border-dark) !important;
+    padding: 12px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* Cabeçalho da tabela inferior */
 .all-maps-table th {
     background: #0a0a0a;
     color: #888;
-    padding: 10px;
-    border: 1px solid var(--border-dark) !important;
     font-size: 11px;
     text-transform: uppercase;
-    text-align: center;
 }
 
-/* Células: Mesma altura e bordas da .excel-table td */
-.all-maps-table td {
-    height: 60px; /* Aumentado levemente para caber a foto maior */
-    border: 1px solid var(--border-dark) !important;
-    text-align: center;
-    color: #fff;
-    vertical-align: middle;
-    font-size: 13px;
-    padding: 0 15px;
-}
-
-/* Alinhamento da Coluna Brawler (Segunda coluna) */
-/* Segue o padrão td:nth-child(2) da imagem 2 */
+/* Alinhamento do Brawler (Imagem + Nome) na tabela inferior */
 .all-maps-table td:nth-child(2) {
-    text-align: left;
-    padding-left: 20px;
-    font-weight: 700;
+    text-align: left !important;
+    padding-left: 20px !important;
+    font-weight: 900;
+    font-size: 14px;
 }
 
-/* Ajuste da Imagem (Apenas nesta tabela ela fica maior e visível) */
+/* IMAGEM MAIOR E VISÍVEL (Apenas na Tabela Geral) */
 .all-maps-table img {
-    width: 50px !important; 
-    height: 50px !important;
-    object-fit: contain !important; /* Totalmente visível sem cortes */
+    width: 55px !important; 
+    height: 55px !important;
+    object-fit: contain !important; /* Mostra o brawler inteiro */
     background: #1a1a1a;
+    border-radius: 4px;
+    border: 1px solid var(--border-dark);
     vertical-align: middle;
     margin-right: 15px;
-    border: 1px solid var(--border-dark);
 }
 
-/* Cores de Win Rate Específicas (Incluindo o Verde Escuro) */
+/* Verde Escuro exclusivo para Win Rate de 90-100% */
 .all-maps-table .wr-90-100 { 
-    color: #008f11 !important; /* Verde mais escuro para 90-100% */
+    color: #008f11 !important; 
     font-weight: 900; 
 }
 
-.all-maps-table .wr-80 { 
-    color: #00ff00 !important; 
-    font-weight: 900; 
-}
-
-/* Ajuste para alinhar o conteúdo da primeira célula (IMG + TEXTO) */
-.all-maps-table .brawler-cell {
-    display: flex;
-    align-items: center;
-    height: 100%;
-}
-
-/* --- CORES DE WIN RATE (COM !IMPORTANT PARA GARANTIR A MUDANÇA) --- */
+/* --- 8. CORES DE WIN RATE (GERAL) --- */
 .wr-80 { color: #00ff00 !important; font-weight: 900; }
 .wr-60-70 { color: #a3ff00 !important; font-weight: 800; }
 .wr-50 { color: #ffff00 !important; font-weight: 800; }
@@ -316,4 +206,18 @@ th.sortable:hover {
 .wr-30 { color: #ff4d4d !important; font-weight: 700; }
 .wr-10-20 { color: #ff0000 !important; font-weight: 700; }
 
+/* --- 9. UTILITÁRIOS E RESPONSIVIDADE --- */
+#grid-modos { width: 95%; max-width: 1200px; margin: 40px auto; }
 
+.page-header { text-align: center; margin: 40px 0; }
+.page-header h1 { font-size: 3rem; font-weight: 900; }
+.accent { color: purple; }
+
+@media (max-width: 768px) {
+    .nav-links { gap: 15px; }
+    .modo-header { padding: 15px; font-size: 1.1rem; }
+    .all-maps-table img { width: 40px !important; height: 40px !important; }
+}
+
+th.sortable { cursor: pointer; transition: 0.2s; }
+th.sortable:hover { background-color: #1a1a1a; color: #fff; }
