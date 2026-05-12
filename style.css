@@ -231,3 +231,96 @@ th.sortable:hover {
     background-color: #1a1a1a;
     color: #ffffff;
 }
+
+/* --- 7. ESTILIZAÇÃO AMPLIADA ALL MAPS --- */
+.all-maps-section {
+    width: 95%;
+    max-width: 1200px;
+    margin: 100px auto; 
+}
+
+.all-maps-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.all-maps-header h2 {
+    font-size: 3.5rem; 
+    font-weight: 900;
+    text-transform: uppercase;
+    color: white;
+    letter-spacing: 2px;
+}
+
+.all-maps-header p {
+    color: var(--accent-purple);
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-top: 10px;
+}
+
+.all-maps-container {
+    background-color: #050505;
+    border: 2px solid var(--border-dark);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.all-maps-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.all-maps-table thead {
+    background-color: #0a0a0a;
+    border-bottom: 3px solid var(--border-dark);
+}
+
+.all-maps-table th {
+    padding: 25px;
+    font-size: 1.2rem;
+    color: #888;
+    text-transform: uppercase;
+}
+
+.all-maps-table .text-left { text-align: left; padding-left: 35px; }
+
+.all-maps-table td {
+    padding: 25px;
+    font-size: 1.5rem; 
+    color: white;
+    border-bottom: 1px solid var(--border-dark);
+    text-align: center;
+    vertical-align: middle;
+}
+
+.all-maps-table td:first-child {
+    text-align: left;
+    font-weight: 900;
+    font-size: 1.6rem;
+    padding-left: 35px;
+}
+
+.all-maps-table img {
+    width: 50px;
+    height: 50px;
+    vertical-align: middle;
+    margin-right: 20px;
+    border: 2px solid var(--border-dark);
+    border-radius: 4px;
+}
+
+/* --- CATEGORIAS DE CORES POR PORCENTAGEM --- */
+.wr-80 { color: #00ff00 !important; font-weight: 900; }     /* Verde Forte */
+.wr-60-70 { color: #a3ff00 !important; font-weight: 800; }  /* Verde Claro */
+.wr-50 { color: #ffff00 !important; font-weight: 800; }     /* Amarelo */
+.wr-40 { color: #ff9100 !important; font-weight: 700; }     /* Laranja */
+.wr-30 { color: #ff4d4d !important; font-weight: 700; }     /* Vermelho Claro */
+.wr-10-20 { color: #ff0000 !important; font-weight: 700; }  /* Vermelho */
+
+@media (max-width: 768px) {
+    .all-maps-header h2 { font-size: 2.2rem; }
+    .all-maps-table th, .all-maps-table td { padding: 12px; font-size: 1.1rem; }
+    .all-maps-table td:first-child { font-size: 1.2rem; padding-left: 15px; }
+}
