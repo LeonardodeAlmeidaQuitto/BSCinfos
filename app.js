@@ -23,21 +23,18 @@ async function carregarRegiao(sigla) {
     container.innerHTML = `<h2 style="text-align:center; color:white; margin-top:50px;">CARREGANDO ${sigla.toUpperCase()}...</h2>`;
 
     try {
-        // MUDANÇA: Buscando o arquivo .json gerado pelo GitHub Actions (sem a barra inicial)
         const res = await fetch(`api/stats/${sigla.toLowerCase()}.json`);
         if (!res.ok) throw new Error(`Erro HTTP: ${res.status}`);
         
         const dados = await res.json();
         
-        // DEBUG: Veja no F12 se os dados estão chegando ou se o array vem vazio []
-        console.log(`Dados recebidos para ${sigla}:`, dados);
-
         if (!dados || dados.length === 0) {
-            container.innerHTML = `<h2 style='text-align:center; color:white;'>Nenhum dado encontrado para ${sigla.toUpperCase()}. <br><small style="font-size:14px; color:gray;">Verifique se o gerador.py foi executado.</small></h2>`;
+            container.innerHTML = `<h2 style='text-align:center; color:white;'>Nenhum dado encontrado para ${sigla.toUpperCase()}.</h2>`;
             return;
         }
 
         renderizarDinamico(dados, container, false);
+        renderizarTabelaAllMaps(dados); // Adicionado: Preenche a tabela resumo no final
     } catch (e) {
         console.error("Erro ao carregar região:", e);
         container.innerHTML = `<h2 style='text-align:center; color:white;'>Erro ao carregar dados de ${sigla.toUpperCase()}.</h2>`;
@@ -54,7 +51,6 @@ async function carregarGeralUnificado() {
 
     try {
         const promessas = regioes.map(r => 
-            // MUDANÇA: Buscando os arquivos .json gerados pelo GitHub Actions
             fetch(`api/stats/${r}.json`).then(async res => {
                 if (!res.ok) return [];
                 return await res.json();
@@ -100,11 +96,50 @@ async function carregarGeralUnificado() {
         });
 
         renderizarDinamico(listaConsolidada, container, true);
+        renderizarTabelaAllMaps(listaConsolidada); // Adicionado: Preenche a tabela resumo no final
 
     } catch (e) {
         console.error("Erro ao processar unificação global:", e);
         container.innerHTML = "<h2 style='text-align:center; color:white;'>Erro crítico ao somar dados das regiões.</h2>";
     }
+}
+
+function renderizarTabelaAllMaps(dados) {
+    const tbody = document.getElementById('tbody-all-maps');
+    if (!tbody) return;
+
+    const brawlerStats = {};
+
+    dados.forEach(item => {
+        const nome = item.pick || item.brawler;
+        if (!nome) return;
+
+        if (!brawlerStats[nome]) {
+            brawlerStats[nome] = { picks: 0, vitorias: 0 };
+        }
+        brawlerStats[nome].picks += Number(item.picks || 1);
+        brawlerStats[nome].vitorias += Number(item.vitorias !== undefined ? item.vitorias : (item.win !== undefined ? item.win : 0));
+    });
+
+    const lista = Object.keys(brawlerStats).map(nome => {
+        const s = brawlerStats[nome];
+        const wr = s.picks > 0 ? (s.vitorias / s.picks) * 100 : 0;
+        return { nome, picks: s.picks, vitorias: s.vitorias, wr: wr };
+    }).sort((a, b) => b.picks - a.picks);
+
+    tbody.innerHTML = lista.map(b => `
+        <tr style="border-bottom: 1px solid #222;">
+            <td style="padding: 12px; text-align: left; font-weight: bold;">
+                <img src="${formatarNomeImagem(b.nome)}" onerror="this.src='brawlers/default.png';" style="width:25px; vertical-align:middle; margin-right:10px;">
+                ${b.nome.toUpperCase()}
+            </td>
+            <td style="padding: 12px;">${b.picks}</td>
+            <td style="padding: 12px;">${b.vitorias}</td>
+            <td style="padding: 12px; color: ${b.wr >= 50 ? '#00ff00' : '#ff4444'}; font-weight: bold;">
+                ${b.wr.toFixed(1)}%
+            </td>
+        </tr>
+    `).join('');
 }
 
 function renderizarDinamico(dados, container, isGeral) {
@@ -117,13 +152,11 @@ function renderizarDinamico(dados, container, isGeral) {
         let mapasHTML = "";
 
         MAPAS_ALVO[modoKey].forEach(nomeMapaAlvo => {
-            // Filtro reforçado: trim e toLowerCase em tudo para não falhar na NA
             const brawlersNoMapa = dadosArray.filter(item => {
                 const modoAPI = (item.modo || "").toLowerCase().trim();
                 const mapaAPI = (item.mapa || "").toLowerCase().trim();
                 const modoAlvo = modoKey.toLowerCase().trim();
                 const mapaAlvo = nomeMapaAlvo.toLowerCase().trim();
-                
                 return modoAPI === modoAlvo && mapaAPI === mapaAlvo;
             });
 
