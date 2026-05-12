@@ -257,13 +257,31 @@ th.sortable:hover {
     table-layout: auto;
 }
 
+/* Foca apenas na tabela consolidada do final da página */
 .all-maps-table td {
-    padding: 18px; /* Reduzi um pouco para caber melhor */
-    font-size: 1.3rem; 
-    color: white;
+    padding: 10px 15px !important; /* Reduzido para ficar mais compacta */
+    font-size: 1rem !important;    /* Texto menor para não estourar */
     border-bottom: 1px solid var(--border-dark);
-    text-align: center;
-    vertical-align: middle;
+}
+
+/* Alinhamento da coluna do nome do Brawler na tabela de baixo */
+.all-maps-table .text-left {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 15px; /* Espaço entre imagem e nome */
+    text-align: left !important;
+}
+
+/* Ajuste da imagem para ficar TOTALMENTE visível e menor na tabela de baixo */
+.all-maps-table img {
+    width: 32px !important;
+    height: 32px !important;
+    object-fit: contain !important; /* Garante que não corte o rosto */
+    background: #1a1a1a;
+    border-radius: 4px;
+    border: 1px solid #333;
+    flex-shrink: 0; /* Impede a imagem de amassar */
 }
 
 /* --- CORES DE WIN RATE (COM !IMPORTANT PARA GARANTIR A MUDANÇA) --- */
@@ -274,12 +292,4 @@ th.sortable:hover {
 .wr-30 { color: #ff4d4d !important; font-weight: 700; }
 .wr-10-20 { color: #ff0000 !important; font-weight: 700; }
 
-/* Ajuste das imagens para não quebrarem o layout */
-.all-maps-table img {
-    width: 40px;
-    height: 40px;
-    vertical-align: middle;
-    margin-right: 15px;
-    border: 1px solid #333;
-    border-radius: 4px;
-}
+
