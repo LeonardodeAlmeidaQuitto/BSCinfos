@@ -12,6 +12,16 @@ const formatarNomeImagem = (nome) => {
     return `brawlers/${nomeLimpo}.png`;
 };
 
+// --- NOVA FUNÇÃO DE CORES ADICIONADA ---
+const obterClasseColorida = (wr) => {
+    if (wr >= 80) return 'wr-80';     // Verde
+    if (wr >= 60) return 'wr-60-70';  // Verde claro
+    if (wr >= 50) return 'wr-50';     // Amarelo
+    if (wr >= 40) return 'wr-40';     // Laranja
+    if (wr >= 30) return 'wr-30';     // Vermelho claro
+    return 'wr-10-20';                // Vermelho
+};
+
 async function carregarRegiao(sigla) {
     const container = document.getElementById('grid-modos');
     if (!container) return;
@@ -34,7 +44,7 @@ async function carregarRegiao(sigla) {
         }
 
         renderizarDinamico(dados, container, false);
-        renderizarTabelaAllMaps(dados); // Adicionado: Preenche a tabela resumo no final
+        renderizarTabelaAllMaps(dados); 
     } catch (e) {
         console.error("Erro ao carregar região:", e);
         container.innerHTML = `<h2 style='text-align:center; color:white;'>Erro ao carregar dados de ${sigla.toUpperCase()}.</h2>`;
@@ -96,7 +106,7 @@ async function carregarGeralUnificado() {
         });
 
         renderizarDinamico(listaConsolidada, container, true);
-        renderizarTabelaAllMaps(listaConsolidada); // Adicionado: Preenche a tabela resumo no final
+        renderizarTabelaAllMaps(listaConsolidada);
 
     } catch (e) {
         console.error("Erro ao processar unificação global:", e);
@@ -135,7 +145,7 @@ function renderizarTabelaAllMaps(dados) {
             </td>
             <td style="padding: 12px;">${b.picks}</td>
             <td style="padding: 12px;">${b.vitorias}</td>
-            <td style="padding: 12px; color: ${b.wr >= 50 ? '#00ff00' : '#ff4444'}; font-weight: bold;">
+            <td class="wr-cell ${obterClasseColorida(b.wr)}" style="padding: 12px; font-weight: bold;">
                 ${b.wr.toFixed(1)}%
             </td>
         </tr>
@@ -185,7 +195,7 @@ function renderizarDinamico(dados, container, isGeral) {
                         <td style="text-align:left; font-weight:800; text-transform:uppercase;">${nomeBrawler}</td>
                         <td class="col-picks">${b.picks || 1}</td>
                         <td>${vitorias}</td>
-                        <td class="win-rate ${wrFloat >= 50 ? 'victory' : 'defeat'}">${winRateStr}</td>
+                        <td class="win-rate ${obterClasseColorida(wrFloat)}">${winRateStr}</td>
                     </tr>`;
                 }).join('');
 
