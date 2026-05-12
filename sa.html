@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Draft Infos - South América</title> 
+    <title>Draft Infos - South América Analysis</title> 
     <link rel="stylesheet" href="style.css">
     <meta http-equiv="refresh" content="2400">
     <script src="app.js"></script>
@@ -21,10 +21,12 @@
         <div class="nav-right"></div>
     </nav>
 
-    <main class="grid">
+    <main>
         <header class="page-header">
             <h1>SOUTH AMÉRICA <span class="accent">ANALYSIS</span></h1>
-            <p class="subtitle">Dados extraídos de Scrims, Tournaments e Ladder Competitiva</p>
+            <p class="subtitle" style="color: var(--accent-purple); font-weight: bold; margin-top: 10px;">
+                Dados extraídos de Scrims, Tournaments e Ladder Competitiva
+            </p>
         </header>
         
         <div id="grid-modos"></div> 
@@ -32,7 +34,7 @@
         <section class="all-maps-section">
             <header class="all-maps-header">
                 <h2>ALL MAPS <span class="accent">ANALYSIS</span></h2>
-                <p>Soma total de todos os modos e mapas</p>
+                <p>Soma total de todos os modos e mapas da região</p>
             </header>
 
             <div class="all-maps-container">
@@ -40,9 +42,9 @@
                     <thead>
                         <tr>
                             <th class="text-left">BRAWLER</th>
-                            <th>PICKS</th>
-                            <th>WINS</th>
-                            <th>WIN RATE</th>
+                            <th class="sortable" onclick="ordenarTabela(this, 'number')">PICKS ↕</th>
+                            <th class="sortable" onclick="ordenarTabela(this, 'number')">WINS ↕</th>
+                            <th class="sortable" onclick="ordenarTabela(this, 'percent')">WIN RATE ↕</th>
                         </tr>
                     </thead>
                     <tbody id="tbody-all-maps">
@@ -54,6 +56,8 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Chama a função principal do app.js passando a sigla da região
+            // Se este arquivo for o na.html, mude para carregarRegiao('na');
             carregarRegiao('sa');
         });
     </script>
