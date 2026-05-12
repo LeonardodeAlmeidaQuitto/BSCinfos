@@ -223,45 +223,6 @@ th.sortable:hover {
     color: #ffffff;
 }
 
-/* --- SEÇÃO ALL MAPS (CENTRALIZAÇÃO AQUI) --- */
-.all-maps-section {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Centraliza a tabela e o header horizontalmente */
-    margin-top: 80px;
-    margin-bottom: 80px;
-}
-
-.all-maps-container {
-    width: 90%;
-    max-width: 1100px;
-    background-color: #050505;
-    border: 2px solid var(--border-dark);
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.all-maps-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.all-maps-table td {
-    padding: 15px;
-    font-size: 1.3rem;
-    color: white; /* Cor padrão, mas as classes wr-XX vão sobrescrever */
-    border-bottom: 1px solid var(--border-dark);
-    text-align: center;
-}
-
-.all-maps-table .text-left { text-align: left; padding-left: 30px; font-weight: 900; }
-
-.all-maps-table img {
-    width: 40px; height: 40px; vertical-align: middle;
-    margin-right: 15px; border: 1px solid var(--border-dark);
-}
-
 /* --- CLASSES DE CORES DO WIN RATE (COM !IMPORTANT) --- */
 .wr-80 { color: #00ff00 !important; font-weight: 900; }
 .wr-60-70 { color: #a3ff00 !important; font-weight: 800; }
