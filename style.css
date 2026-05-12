@@ -1,4 +1,4 @@
-/* --- RESET E BASE --- */
+/* --- 1. VARIÁVEIS E CONFIGURAÇÕES --- */
 :root {
     --bg-total: #000000;
     --bg-cards: #0a0a0a;
@@ -9,60 +9,264 @@
     --accent-purple: rgb(204, 0, 255);
 }
 
+/* --- 2. RESET E BASE --- */
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Inter', sans-serif; background: var(--bg-total); color: var(--texto); padding-top: 65px; }
-
-/* --- NAVBAR --- */
-nav {
-    width: 100%; height: 65px; background-color: #111111;
-    display: flex; align-items: center; justify-content: space-between; 
-    padding: 0 40px; position: fixed; top: 0; z-index: 1000;
-    border-bottom: 2px solid transparent; border-image: linear-gradient(90deg, var(--azul), var(--vermelho)) 1;
+body { 
+    font-family: 'Inter', sans-serif; 
+    background: var(--bg-total); 
+    color: var(--texto); 
+    overflow-x: hidden;
+    padding-top: 65px; /* Evita que o conteúdo suma atrás da navbar fixa */
 }
-.nav-links { display: flex; gap: 40px; position: absolute; left: 50%; transform: translateX(-50%); }
-.nav-link { color: white; text-decoration: none; font-weight: 900; text-transform: uppercase; transition: 0.3s; }
-.nav-link:hover { color: var(--accent-purple); }
 
-/* --- SEÇÃO ALL MAPS (CENTRALIZAÇÃO AQUI) --- */
-.all-maps-section {
+/* --- 3. NAVBAR --- */
+nav {
     width: 100%;
+    height: 65px;
+    background-color: #111111;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; 
+    padding: 0 40px;
+    position: fixed;
+    top: 0; left: 0;
+    z-index: 1000;
+    border-bottom: 2px solid transparent;
+    border-image: linear-gradient(90deg, var(--azul), var(--vermelho)) 1;
+}
+
+.btn-voltar {
+    color: var(--texto);
+    text-decoration: none;
+    font-weight: 900;
+    font-size: 14px;
+    border: 1px solid var(--border-dark);
+    padding: 5px 15px;
+    transition: 0.3s;
+}
+.btn-voltar:hover { background: white; color: black; }
+
+.nav-links {
+    display: flex;
+    gap: 40px;
+    align-items: center;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.nav-link {
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 1px;
+    transition: 0.3s;
+    text-transform: uppercase;
+}
+
+.nav-link:hover, .nav-link.active {
+    color: var(--accent-purple);
+}
+
+/* --- 4. CABEÇALHOS DOS MODOS --- */
+.modo-section { margin-bottom: 15px; background: var(--bg-cards); border-radius: 4px; overflow: hidden; }
+
+.modo-header { 
+    width: 100%; 
+    padding: 20px 35px; 
+    background: transparent; 
+    color: #ffffff !important; 
+    cursor: pointer;
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    font-size: 1.4rem; 
+    font-weight: 900; 
+    text-transform: uppercase; 
+    letter-spacing: 3px;
+    border: 2px solid transparent; 
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modo-header:hover {
+    background: #000000; 
+    border-image: linear-gradient(90deg, var(--azul), var(--vermelho)) 1; 
+    padding-left: 45px;
+}
+
+/* --- 5. CABEÇALHOS DOS MAPAS E SETAS --- */
+.mapa-header { 
+    width: 100%; 
+    padding: 12px 25px; 
+    background: #0d0d0d; 
+    color: white !important;
+    border-left: 5px solid var(--azul);
+    border-right: 5px solid var(--vermelho);
+    cursor: pointer; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    font-size: 1.1rem; 
+    font-weight: 700;
+    text-transform: uppercase;
+    border-top: 1px solid var(--border-dark);
+}
+
+/* Estilo para as setas ▶ girarem quando aberto */
+.modo-header span, .mapa-header span {
+    color: #ffffff !important;
+    display: inline-block;
+    transition: transform 0.3s ease;
+    font-size: 1.2rem;
+    margin-left: 15px;
+    font-family: monospace;
+}
+
+/* --- 6. TABELA E IMAGENS --- */
+.mapa-content {
+    display: none; /* Controlado pelo JS */
+    background: #050505;
+    padding: 20px;
+    border: 1px solid var(--border-dark);
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.excel-table { 
+    width: 100%; 
+    border-collapse: collapse; 
+}
+
+.col-img { width: 45px; padding: 0 !important; }
+
+.excel-table td { 
+    height: 45px;
+    border: 1px solid var(--border-dark); 
+    text-align: center; 
+    color: #fff; 
+    vertical-align: middle;
+    font-size: 13px;
+}
+
+.excel-table td:nth-child(2) { 
+    text-align: left;    /* Alinha o texto à esquerda */
+    padding-left: 20px;  /* Cria o recuo para não ficar em cima da foto */
+    font-weight: 700;
+}
+
+.excel-table th { 
+    background: #0a0a0a; 
+    color: #888; 
+    padding: 10px; 
+    border: 1px solid var(--border-dark); 
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+/* Win Rate Colors */
+.win-rate.victory { color: #22c55e !important; font-weight: 900; }
+.win-rate.defeat { color: #ef4444 !important; font-weight: 900; }
+
+/* Brawler Avatar */
+.brawler-avatar-frame {
+    width: 45px; height: 45px;
+    background: #1a1a1a;
+}
+.brawler-img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Grid de Modos */
+#grid-modos { 
+    width: 95%; 
+    max-width: 1200px; 
+    margin: 40px auto; 
+}
+
+/* Header de Página (Título SA ANALYSIS) */
+.page-header {
+    text-align: center;
+    margin-top: 40px;
+    margin-bottom: 20px;
+}
+.page-header h1 { font-size: 3rem; font-weight: 900; }
+.accent { color: purple; }
+.subtitle { color: purple; font-size: 14px; margin-top: 5px; }
+
+/* Scrollbar Customizada */
+.mapa-content::-webkit-scrollbar { width: 6px; }
+.mapa-content::-webkit-scrollbar-track { background: #050505; }
+.mapa-content::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 3px; }
+
+/* Responsividade Básica */
+@media (max-width: 768px) {
+    .nav-links { gap: 15px; }
+    .nav-link { font-size: 12px; }
+    .modo-header { padding: 15px; font-size: 1.1rem; }
+    .excel-table th:nth-child(3), .excel-table th:nth-child(4) { display: none; } /* Esconde Picks/Wins no mobile */
+    .excel-table td:nth-child(3), .excel-table td:nth-child(4) { display: none; }
+}
+
+.nav-logo {
+    color: white !important;
+    text-decoration: none !important; /* REMOVE A LINHA DE BAIXO */
+    text-transform: uppercase !important;
+    letter-spacing: 4px;
+    font-size: 14px; 
+    display: flex;
+    align-items: center;
+    height: 100%;
+    transition: opacity 0.3s;
+    font-weight: 900;
+    cursor: pointer; /* Garante que o ícone de 'mãozinha' apareça */
+}
+
+/* --- ESTILOS DE ORDENAÇÃO DE TABELA --- */
+th.sortable {
+    cursor: pointer;
+    user-select: none; /* Evita que o texto seja selecionado ao clicar rápido */
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+th.sortable:hover {
+    background-color: #1a1a1a;
+    color: #ffffff;
+}
+
+/* --- 7. ESTILIZAÇÃO AMPLIADA ALL MAPS (AJUSTADO) --- */
+.all-maps-section {
+    width: 100%; /* Ocupa a largura total para permitir o alinhamento */
     display: flex;
     flex-direction: column;
-    align-items: center; /* Centraliza a tabela e o header horizontalmente */
-    margin-top: 80px;
-    margin-bottom: 80px;
+    align-items: center; /* CENTRALIZA O CONTEÚDO HORIZONTALMENTE */
+    margin: 80px 0; 
 }
 
 .all-maps-container {
-    width: 90%;
-    max-width: 1100px;
+    width: 95%;
+    max-width: 1100px; /* Limita a largura para não ficar gigante em monitores 4k */
     background-color: #050505;
     border: 2px solid var(--border-dark);
     border-radius: 8px;
     overflow: hidden;
+    margin: 0 auto; /* Reforço de centralização */
 }
 
 .all-maps-table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: auto;
 }
 
 .all-maps-table td {
-    padding: 15px;
-    font-size: 1.3rem;
-    color: white; /* Cor padrão, mas as classes wr-XX vão sobrescrever */
+    padding: 18px; /* Reduzi um pouco para caber melhor */
+    font-size: 1.3rem; 
+    color: white;
     border-bottom: 1px solid var(--border-dark);
     text-align: center;
+    vertical-align: middle;
 }
 
-.all-maps-table .text-left { text-align: left; padding-left: 30px; font-weight: 900; }
-
-.all-maps-table img {
-    width: 40px; height: 40px; vertical-align: middle;
-    margin-right: 15px; border: 1px solid var(--border-dark);
-}
-
-/* --- CLASSES DE CORES DO WIN RATE (COM !IMPORTANT) --- */
+/* --- CORES DE WIN RATE (COM !IMPORTANT PARA GARANTIR A MUDANÇA) --- */
 .wr-80 { color: #00ff00 !important; font-weight: 900; }
 .wr-60-70 { color: #a3ff00 !important; font-weight: 800; }
 .wr-50 { color: #ffff00 !important; font-weight: 800; }
@@ -70,10 +274,12 @@ nav {
 .wr-30 { color: #ff4d4d !important; font-weight: 700; }
 .wr-10-20 { color: #ff0000 !important; font-weight: 700; }
 
-/* --- OUTROS ESTILOS --- */
-#grid-modos { width: 95%; max-width: 1200px; margin: 40px auto; }
-.modo-section { margin-bottom: 10px; background: var(--bg-cards); border-radius: 4px; overflow: hidden; }
-.modo-header { padding: 20px; cursor: pointer; display: flex; justify-content: space-between; font-weight: 900; border: 2px solid transparent; transition: 0.3s; }
-.modo-header:hover { border-image: linear-gradient(90deg, var(--azul), var(--vermelho)) 1; }
-.page-header { text-align: center; margin-top: 40px; }
-.accent { color: purple; }
+/* Ajuste das imagens para não quebrarem o layout */
+.all-maps-table img {
+    width: 40px;
+    height: 40px;
+    vertical-align: middle;
+    margin-right: 15px;
+    border: 1px solid #333;
+    border-radius: 4px;
+}
