@@ -89,37 +89,37 @@ nav {
 
 .excel-table { width: 100%; border-collapse: collapse; }
 .excel-table th { background: #0a0a0a; color: #888; padding: 10px; border: 1px solid var(--border-dark); font-size: 11px; text-transform: uppercase; }
-.excel-table td { height: 45px; border: 1px solid var(--border-dark); text-align: center; color: #fff; font-size: 13px; }
+.excel-table td { height: 40px; border: 1px solid var(--border-dark); text-align: center; color: #fff; font-size: 12px; }
 
-/* --- 6. ALL MAPS ANALYSIS (CENTRALIZAÇÃO AJUSTADA) --- */
+/* --- 6. ALL MAPS ANALYSIS (CENTRALIZAÇÃO E TAMANHO REDUZIDO) --- */
 .all-maps-section {
     width: 100%;
     display: flex;
     flex-direction: column;
-    align-items: center; /* Centraliza o conteúdo horizontalmente */
-    margin: 100px 0;
+    align-items: center;
+    margin: 80px 0;
 }
 
-.all-maps-header { text-align: center; margin-bottom: 40px; }
-.all-maps-header h2 { font-size: 3.5rem; font-weight: 900; text-transform: uppercase; }
+.all-maps-header { text-align: center; margin-bottom: 30px; }
+.all-maps-header h2 { font-size: 2.8rem; font-weight: 900; text-transform: uppercase; }
 
 .all-maps-container {
     width: 95%;
-    max-width: 1100px;
+    max-width: 1000px;
     background-color: #050505;
     border: 2px solid var(--border-dark);
     border-radius: 8px;
     overflow: hidden;
-    margin: 0 auto; /* Garante o meio */
+    margin: 0 auto;
 }
 
 .all-maps-table { width: 100%; border-collapse: collapse; }
 .all-maps-table thead { background-color: #0a0a0a; border-bottom: 3px solid var(--border-dark); }
-.all-maps-table th { padding: 20px; font-size: 1.1rem; color: #888; text-transform: uppercase; }
+.all-maps-table th { padding: 15px; font-size: 0.9rem; color: #888; text-transform: uppercase; }
 
 .all-maps-table td {
-    padding: 20px;
-    font-size: 1.4rem;
+    padding: 12px;           /* Reduzido para diminuir a altura das linhas */
+    font-size: 1.1rem;       /* Reduzido de 1.4rem para ficar mais proporcional */
     color: white;
     border-bottom: 1px solid var(--border-dark);
     text-align: center;
@@ -128,29 +128,47 @@ nav {
 
 .all-maps-table .text-left { text-align: left; padding-left: 35px; }
 
-/* --- 7. IMAGENS E AVATARES --- */
+/* --- 7. IMAGENS E AVATARES (TOTALMENTE VISÍVEIS) --- */
 .all-maps-table img {
-    width: 45px; height: 45px; vertical-align: middle;
-    margin-right: 15px; border: 1px solid var(--border-dark); border-radius: 4px;
+    width: 38px; 
+    height: 38px; 
+    vertical-align: middle;
+    margin-right: 15px; 
+    border: 1px solid var(--border-dark); 
+    border-radius: 4px;
+    background-color: #1a1a1a;
+    object-fit: contain;     /* Garante que a imagem do brawler apareça inteira sem cortes */
 }
 
-.brawler-avatar-frame { width: 45px; height: 45px; background: #1a1a1a; margin: 0 auto; }
-.brawler-img { width: 100%; height: 100%; object-fit: cover; }
+.brawler-avatar-frame { 
+    width: 40px; 
+    height: 40px; 
+    background: #1a1a1a; 
+    margin: 0 auto; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.brawler-img { 
+    width: 100%; 
+    height: 100%; 
+    object-fit: contain;     /* Evita cortes nos rostos dos brawlers */
+}
 
 /* --- 8. CORES DINÂMICAS DO WIN RATE (FIXED) --- */
-/* O !important garante que a cor mude mesmo dentro da tabela */
-.wr-80 { color: #00ff00 !important; font-weight: 900; }     /* Verde Forte */
+.wr-80 { color: #00ff00 !important; font-weight: 800; }     /* Verde Forte */
 .wr-60-70 { color: #a3ff00 !important; font-weight: 800; }  /* Verde Claro */
 .wr-50 { color: #ffff00 !important; font-weight: 800; }     /* Amarelo */
-.wr-40 { color: #ff9100 !important; font-weight: 700; }     /* Laranja */
-.wr-30 { color: #ff4d4d !important; font-weight: 700; }     /* Vermelho Claro */
-.wr-10-20 { color: #ff0000 !important; font-weight: 700; }  /* Vermelho */
+.wr-40 { color: #ff9100 !important; font-weight: 800; }     /* Laranja */
+.wr-30 { color: #ff4d4d !important; font-weight: 800; }     /* Vermelho Claro */
+.wr-10-20 { color: #ff0000 !important; font-weight: 800; }  /* Vermelho */
 
 /* --- 9. RESPONSIVIDADE --- */
 @media (max-width: 768px) {
     .nav-links { gap: 15px; }
     .all-maps-header h2 { font-size: 2rem; }
-    .all-maps-table td { padding: 10px; font-size: 1rem; }
+    .all-maps-table td { padding: 10px; font-size: 0.9rem; }
     .all-maps-table img { width: 30px; height: 30px; }
 }
 
