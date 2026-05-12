@@ -233,48 +233,80 @@ th.sortable:hover {
 }
 
 /* --- 7. ESTILIZAÇÃO AMPLIADA ALL MAPS (AJUSTADO) --- */
-/* 1. Garante que as divisões (linhas) apareçam apenas nesta tabela */
+/* --- 7. ESTILIZAÇÃO ALL MAPS (BASEADA NA EXCEL-TABLE) --- */
+
+/* Centraliza a seção e define o container igual ao dos modos */
+.all-maps-section {
+    width: 95%;
+    max-width: 1200px;
+    margin: 60px auto;
+}
+
+/* Base da tabela: Igual à .excel-table da imagem 2 */
 .all-maps-table {
-    border-collapse: collapse !important;
     width: 100%;
+    border-collapse: collapse !important;
+    background: #050505;
 }
 
-.all-maps-table th, 
-.all-maps-table td {
-    border: 1px solid var(--border-dark) !important; /* Divisões verticais e horizontais */
-    padding: 8px 12px !important; /* Dados mais compactos */
-    font-size: 0.95rem !important; /* Fonte menor para os dados */
-    vertical-align: middle !important;
-}
-
-/* 2. Aumenta a imagem do brawler apenas nesta tabela */
-.all-maps-table img {
-    width: 55px !important;  /* Imagem bem visível */
-    height: 55px !important;
-    object-fit: contain !important; /* Não corta o rosto */
-    background-color: #1a1a1a;
-    border-radius: 6px;
-    margin-right: 15px;
-    flex-shrink: 0;
-}
-
-/* 3. Alinhamento da primeira célula (Imagem + Nome) */
-.all-maps-table .text-left {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: flex-start !important;
-    text-align: left !important;
-    border: none !important; /* Evita borda dupla dentro do flex */
-}
-
-/* 4. Garante que a borda da célula pai não suma por causa do flex */
-#tbody-all-maps td:first-child {
+/* Cabeçalho: Mesma cor e estilo da .excel-table th */
+.all-maps-table th {
+    background: #0a0a0a;
+    color: #888;
+    padding: 10px;
     border: 1px solid var(--border-dark) !important;
+    font-size: 11px;
+    text-transform: uppercase;
+    text-align: center;
 }
 
-/* 5. Ajuste de cores de Win Rate específico para esta tabela */
-.all-maps-table .wr-90-100 { color: #008f11 !important; font-weight: 800; }
-.all-maps-table .wr-80 { color: #00ff00 !important; font-weight: 700; }
+/* Células: Mesma altura e bordas da .excel-table td */
+.all-maps-table td {
+    height: 60px; /* Aumentado levemente para caber a foto maior */
+    border: 1px solid var(--border-dark) !important;
+    text-align: center;
+    color: #fff;
+    vertical-align: middle;
+    font-size: 13px;
+    padding: 0 15px;
+}
+
+/* Alinhamento da Coluna Brawler (Segunda coluna) */
+/* Segue o padrão td:nth-child(2) da imagem 2 */
+.all-maps-table td:nth-child(2) {
+    text-align: left;
+    padding-left: 20px;
+    font-weight: 700;
+}
+
+/* Ajuste da Imagem (Apenas nesta tabela ela fica maior e visível) */
+.all-maps-table img {
+    width: 50px !important; 
+    height: 50px !important;
+    object-fit: contain !important; /* Totalmente visível sem cortes */
+    background: #1a1a1a;
+    vertical-align: middle;
+    margin-right: 15px;
+    border: 1px solid var(--border-dark);
+}
+
+/* Cores de Win Rate Específicas (Incluindo o Verde Escuro) */
+.all-maps-table .wr-90-100 { 
+    color: #008f11 !important; /* Verde mais escuro para 90-100% */
+    font-weight: 900; 
+}
+
+.all-maps-table .wr-80 { 
+    color: #00ff00 !important; 
+    font-weight: 900; 
+}
+
+/* Ajuste para alinhar o conteúdo da primeira célula (IMG + TEXTO) */
+.all-maps-table .brawler-cell {
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
 
 /* --- CORES DE WIN RATE (COM !IMPORTANT PARA GARANTIR A MUDANÇA) --- */
 .wr-80 { color: #00ff00 !important; font-weight: 900; }
