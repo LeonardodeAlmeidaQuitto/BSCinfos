@@ -58,8 +58,15 @@ nav {
     color: var(--accent-purple);
 }
 
-/* --- 4. CABEÇALHOS DOS MODOS (ACCORDION) --- */
-.modo-section { margin-bottom: 15px; background: var(--bg-cards); border-radius: 4px; overflow: hidden; }
+/* --- 4. CABEÇALHOS DOS MODOS (RETÂNGULOS PADRÃO) --- */
+.modo-section { 
+    width: 95%;
+    max-width: 1200px;
+    margin: 0 auto 15px auto; 
+    background: var(--bg-cards); 
+    border-radius: 4px; 
+    overflow: hidden; 
+}
 
 .modo-header { 
     width: 100%; 
@@ -106,7 +113,7 @@ nav {
     font-family: monospace;
 }
 
-/* --- 6. TABELA ESTILO EXCEL (PADRÃO) --- */
+/* --- 6. TABELAS (ESTILO EXCEL E ALL MAPS UNIFICADOS) --- */
 .mapa-content {
     display: none; 
     background: #050505;
@@ -114,110 +121,84 @@ nav {
     border: 1px solid var(--border-dark);
 }
 
-.excel-table { 
+.excel-table, .all-maps-table { 
     width: 100%; 
     border-collapse: collapse !important; 
 }
 
-.excel-table th { 
+.excel-table th, .all-maps-table th { 
     background: #0a0a0a; 
     color: #888; 
     padding: 10px; 
-    border: 1px solid var(--border-dark); 
+    border: 1px solid var(--border-dark) !important; 
     font-size: 11px;
     text-transform: uppercase;
+    text-align: center;
 }
 
-.excel-table td { 
-    height: 45px;
-    border: 1px solid var(--border-dark); 
+/* Medida exata de 45px para todas as linhas da tabela */
+.excel-table td, .all-maps-table td { 
+    height: 45px !important;
+    border: 1px solid var(--border-dark) !important; 
     text-align: center; 
     color: #fff; 
     vertical-align: middle;
     font-size: 13px;
+    padding: 0 10px;
 }
 
-.excel-table td:nth-child(2) { 
-    text-align: left;    
-    padding-left: 20px;  
+/* Coluna do Brawler (Imagem + Nome) */
+.excel-table td:nth-child(2), .all-maps-table td:nth-child(2) { 
+    text-align: left !important;    
+    padding-left: 20px !important;  
     font-weight: 700;
 }
 
-/* Imagem padrão das tabelas pequenas */
-.brawler-img { width: 45px; height: 45px; object-fit: cover; }
-
-/* --- 7. ESTILIZAÇÃO ALL MAPS (DADOS CONSOLIDADOS) --- */
-
-/* Ajusta o container para seguir o padrão dos modos */
-.all-maps-table {
-    width: 100%;
-    border-collapse: collapse !important;
-    background: #050505;
-}
-
-/* Grade "retinha" para a tabela inferior */
-.all-maps-table th, 
-.all-maps-table td {
-    border: 1px solid var(--border-dark) !important;
-    padding: 12px;
-    text-align: center;
-    vertical-align: middle;
-}
-
-/* Cabeçalho da tabela inferior */
-.all-maps-table th {
-    background: #0a0a0a;
-    color: #888;
-    font-size: 11px;
-    text-transform: uppercase;
-}
-
-/* Alinhamento do Brawler (Imagem + Nome) na tabela inferior */
-.all-maps-table td:nth-child(2) {
-    text-align: left !important;
-    padding-left: 20px !important;
-    font-weight: 900;
-    font-size: 14px;
-}
-
-/* IMAGEM MAIOR E VISÍVEL (Apenas na Tabela Geral) */
-.all-maps-table img {
-    width: 55px !important; 
-    height: 55px !important;
-    object-fit: contain !important; /* Mostra o brawler inteiro */
+/* Imagens dos Brawlers - Padronizadas em 45px */
+.excel-table img, .all-maps-table img { 
+    width: 45px !important; 
+    height: 45px !important; 
+    object-fit: cover; 
     background: #1a1a1a;
-    border-radius: 4px;
-    border: 1px solid var(--border-dark);
     vertical-align: middle;
     margin-right: 15px;
 }
 
-/* Verde Escuro exclusivo para Win Rate de 90-100% */
-.all-maps-table .wr-90-100 { 
-    color: #008f11 !important; 
-    font-weight: 900; 
+/* --- 7. CORES DE WIN RATE (ESCALA COMPLETA) --- */
+.wr-90-100 { color: #008f11 !important; font-weight: 900; } /* Verde Escuro */
+.wr-80 { color: #00ff00 !important; font-weight: 900; }      /* Verde Forte */
+.wr-60-70 { color: #a3ff00 !important; font-weight: 800; }   /* Verde Claro */
+.wr-50 { color: #ffff00 !important; font-weight: 800; }      /* Amarelo */
+.wr-40 { color: #ff9100 !important; font-weight: 700; }      /* Laranja */
+.wr-30 { color: #ff4d4d !important; font-weight: 700; }      /* Vermelho Claro */
+.wr-10-20 { color: #ff0000 !important; font-weight: 700; }   /* Vermelho */
+
+/* --- 8. UTILITÁRIOS E GRID --- */
+#grid-modos { 
+    width: 95%; 
+    max-width: 1200px; 
+    margin: 40px auto; 
 }
-
-/* --- 8. CORES DE WIN RATE (GERAL) --- */
-.wr-80 { color: #00ff00 !important; font-weight: 900; }
-.wr-60-70 { color: #a3ff00 !important; font-weight: 800; }
-.wr-50 { color: #ffff00 !important; font-weight: 800; }
-.wr-40 { color: #ff9100 !important; font-weight: 700; }
-.wr-30 { color: #ff4d4d !important; font-weight: 700; }
-.wr-10-20 { color: #ff0000 !important; font-weight: 700; }
-
-/* --- 9. UTILITÁRIOS E RESPONSIVIDADE --- */
-#grid-modos { width: 95%; max-width: 1200px; margin: 40px auto; }
 
 .page-header { text-align: center; margin: 40px 0; }
 .page-header h1 { font-size: 3rem; font-weight: 900; }
 .accent { color: purple; }
+.subtitle { color: purple; font-size: 14px; margin-top: 5px; }
 
-@media (max-width: 768px) {
-    .nav-links { gap: 15px; }
-    .modo-header { padding: 15px; font-size: 1.1rem; }
-    .all-maps-table img { width: 40px !important; height: 40px !important; }
-}
-
+/* Ordenação das Tabelas */
 th.sortable { cursor: pointer; transition: 0.2s; }
 th.sortable:hover { background-color: #1a1a1a; color: #fff; }
+
+/* Scrollbar Customizada */
+.mapa-content::-webkit-scrollbar { width: 6px; }
+.mapa-content::-webkit-scrollbar-track { background: #050505; }
+.mapa-content::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 3px; }
+
+/* --- 9. RESPONSIVIDADE --- */
+@media (max-width: 768px) {
+    .nav-links { gap: 15px; }
+    .nav-link { font-size: 12px; }
+    .modo-header { padding: 15px; font-size: 1.1rem; }
+    .excel-table img, .all-maps-table img { width: 35px !important; height: 35px !important; }
+    .excel-table td, .all-maps-table td { font-size: 11px; height: 40px !important; }
+}
