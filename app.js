@@ -1,3 +1,4 @@
+// 1. Configuração de Mapas e Modos
 const MAPAS_ALVO = {
     "brawlBall": ["Super Beach", "Pinhole Punt", "Sneaky Fields"],
     "bounty": ["Shooting Star", "Hideout", "Layer Cake"],
@@ -6,77 +7,67 @@ const MAPAS_ALVO = {
     "gemGrab": ["Hard Rock Mine", "Double Swoosh", "Deathcap Trap"]
 };
 
+// 2. Helpers (Imagens e Cores)
 const formatarNomeImagem = (nome) => {
     if (!nome) return "brawlers/default.png";
     const nomeLimpo = nome.toLowerCase().replace(/[^a-z0-9]/g, "");
     return `brawlers/${nomeLimpo}.png`;
 };
 
-// --- NOVA FUNÇÃO DE CORES ADICIONADA ---
 const obterClasseColorida = (wr) => {
-    if (wr >= 80) return 'wr-80';     // Verde
-    if (wr >= 60) return 'wr-60-70';  // Verde claro
-    if (wr >= 50) return 'wr-50';     // Amarelo
-    if (wr >= 40) return 'wr-40';     // Laranja
-    if (wr >= 30) return 'wr-30';     // Vermelho claro
-    return 'wr-10-20';                // Vermelho
+    const valor = parseFloat(wr);
+    if (valor >= 80) return 'wr-80';     // Verde Forte
+    if (valor >= 60) return 'wr-60-70';  // Verde Claro
+    if (valor >= 50) return 'wr-50';     // Amarelo
+    if (valor >= 40) return 'wr-40';     // Laranja
+    if (valor >= 30) return 'wr-30';     // Vermelho Claro
+    return 'wr-10-20';                   // Vermelho
 };
 
+// 3. Carregamento de Dados por Região
 async function carregarRegiao(sigla) {
     const container = document.getElementById('grid-modos');
     if (!container) return;
 
-    if (sigla.toLowerCase() === 'geral') {
-        return carregarGeralUnificado();
-    }
+    if (sigla.toLowerCase() === 'geral') return carregarGeralUnificado();
 
     container.innerHTML = `<h2 style="text-align:center; color:white; margin-top:50px;">CARREGANDO ${sigla.toUpperCase()}...</h2>`;
 
     try {
         const res = await fetch(`api/stats/${sigla.toLowerCase()}.json`);
         if (!res.ok) throw new Error(`Erro HTTP: ${res.status}`);
-        
         const dados = await res.json();
         
         if (!dados || dados.length === 0) {
-            container.innerHTML = `<h2 style='text-align:center; color:white;'>Nenhum dado encontrado para ${sigla.toUpperCase()}.</h2>`;
+            container.innerHTML = `<h2 style='text-align:center; color:white;'>Nenhum dado encontrado.</h2>`;
             return;
         }
 
         renderizarDinamico(dados, container, false);
         renderizarTabelaAllMaps(dados); 
     } catch (e) {
-        console.error("Erro ao carregar região:", e);
-        container.innerHTML = `<h2 style='text-align:center; color:white;'>Erro ao carregar dados de ${sigla.toUpperCase()}.</h2>`;
+        console.error("Erro:", e);
+        container.innerHTML = `<h2 style='text-align:center; color:white;'>Erro ao carregar dados.</h2>`;
     }
 }
 
+// 4. Unificação Global (Geral)
 async function carregarGeralUnificado() {
     const container = document.getElementById('grid-modos');
     if (!container) return;
-    
     container.innerHTML = `<h2 style="text-align:center; color:white; margin-top:50px;">UNIFICANDO TODAS AS REGIÕES...</h2>`;
-
+    
     const regioes = ['sa', 'na', 'emea', 'ea'];
 
     try {
         const promessas = regioes.map(r => 
-            fetch(`api/stats/${r}.json`).then(async res => {
-                if (!res.ok) return [];
-                return await res.json();
-            }).catch(() => [])
+            fetch(`api/stats/${r}.json`).then(res => res.ok ? res.json() : []).catch(() => [])
         );
         
-        const resultadosDeTodasAsRegioes = await Promise.all(promessas);
-        const dadosTudo = resultadosDeTodasAsRegioes.flat();
-        
-        if (dadosTudo.length === 0) {
-            container.innerHTML = "<h2 style='text-align:center; color:white;'>Nenhum dado encontrado nas regiões.</h2>";
-            return;
-        }
+        const resultados = await Promise.all(promessas);
+        const dadosTudo = resultados.flat();
 
         let consolidado = {}; 
-
         dadosTudo.forEach(item => {
             const brawlerNome = item.pick || item.brawler;
             if (!item.modo || !item.mapa || !brawlerNome) return;
@@ -85,41 +76,31 @@ async function carregarGeralUnificado() {
             
             if (!consolidado[chave]) {
                 consolidado[chave] = { 
-                    modo: item.modo, 
-                    mapa: item.mapa, 
-                    pick: brawlerNome, 
-                    picks: 0, 
-                    vitorias: 0 
+                    modo: item.modo, mapa: item.mapa, pick: brawlerNome, picks: 0, vitorias: 0 
                 };
             }
-            
             consolidado[chave].picks += Number(item.picks || 1);
             consolidado[chave].vitorias += Number(item.win !== undefined ? item.win : (item.vitorias || 0));
         });
 
         const listaConsolidada = Object.values(consolidado).map(item => {
             const wr = item.picks > 0 ? (item.vitorias / item.picks) * 100 : 0;
-            return {
-                ...item,
-                "win_rate": wr.toFixed(1) + "%"
-            };
+            return { ...item, "win_rate": wr.toFixed(1) + "%" };
         });
 
         renderizarDinamico(listaConsolidada, container, true);
         renderizarTabelaAllMaps(listaConsolidada);
-
     } catch (e) {
-        console.error("Erro ao processar unificação global:", e);
-        container.innerHTML = "<h2 style='text-align:center; color:white;'>Erro crítico ao somar dados das regiões.</h2>";
+        container.innerHTML = "<h2 style='text-align:center; color:white;'>Erro na unificação global.</h2>";
     }
 }
 
+// 5. Renderização da Tabela Inferior (All Maps Analysis)
 function renderizarTabelaAllMaps(dados) {
     const tbody = document.getElementById('tbody-all-maps');
     if (!tbody) return;
 
     const brawlerStats = {};
-
     dados.forEach(item => {
         const nome = item.pick || item.brawler;
         if (!nome) return;
@@ -128,7 +109,8 @@ function renderizarTabelaAllMaps(dados) {
             brawlerStats[nome] = { picks: 0, vitorias: 0 };
         }
         brawlerStats[nome].picks += Number(item.picks || 1);
-        brawlerStats[nome].vitorias += Number(item.vitorias !== undefined ? item.vitorias : (item.win !== undefined ? item.win : 0));
+        const vits = item.vitorias !== undefined ? item.vitorias : (item.win !== undefined ? item.win : 0);
+        brawlerStats[nome].vitorias += Number(vits);
     });
 
     const lista = Object.keys(brawlerStats).map(nome => {
@@ -138,20 +120,21 @@ function renderizarTabelaAllMaps(dados) {
     }).sort((a, b) => b.picks - a.picks);
 
     tbody.innerHTML = lista.map(b => `
-        <tr style="border-bottom: 1px solid #222;">
-            <td style="padding: 12px; text-align: left; font-weight: bold;">
-                <img src="${formatarNomeImagem(b.nome)}" onerror="this.src='brawlers/default.png';" style="width:25px; vertical-align:middle; margin-right:10px;">
+        <tr>
+            <td class="text-left">
+                <img src="${formatarNomeImagem(b.nome)}" onerror="this.src='brawlers/default.png';">
                 ${b.nome.toUpperCase()}
             </td>
-            <td style="padding: 12px;">${b.picks}</td>
-            <td style="padding: 12px;">${b.vitorias}</td>
-            <td class="wr-cell ${obterClasseColorida(b.wr)}" style="padding: 12px; font-weight: bold;">
+            <td>${b.picks}</td>
+            <td>${b.vitorias}</td>
+            <td class="${obterClasseColorida(b.wr)}">
                 ${b.wr.toFixed(1)}%
             </td>
         </tr>
     `).join('');
 }
 
+// 6. Renderização dos Cards de Modos/Mapas
 function renderizarDinamico(dados, container, isGeral) {
     container.innerHTML = ""; 
     const dadosArray = Array.isArray(dados) ? dados : [];
@@ -162,40 +145,31 @@ function renderizarDinamico(dados, container, isGeral) {
         let mapasHTML = "";
 
         MAPAS_ALVO[modoKey].forEach(nomeMapaAlvo => {
-            const brawlersNoMapa = dadosArray.filter(item => {
-                const modoAPI = (item.modo || "").toLowerCase().trim();
-                const mapaAPI = (item.mapa || "").toLowerCase().trim();
-                const modoAlvo = modoKey.toLowerCase().trim();
-                const mapaAlvo = nomeMapaAlvo.toLowerCase().trim();
-                return modoAPI === modoAlvo && mapaAPI === mapaAlvo;
-            });
+            const brawlersNoMapa = dadosArray.filter(item => 
+                (item.modo || "").toLowerCase().trim() === modoKey.toLowerCase() && 
+                (item.mapa || "").toLowerCase().trim() === nomeMapaAlvo.toLowerCase()
+            );
 
             brawlersNoMapa.sort((a, b) => {
-                const wrA = parseFloat(a.win_rate || a['win_rate_%'] || 0);
-                const wrB = parseFloat(b.win_rate || b['win_rate_%'] || 0);
-                if (wrA !== wrB) return wrB - wrA;
-                return (b.picks || 0) - (a.picks || 0);
+                const wrA = parseFloat(a.win_rate || 0);
+                const wrB = parseFloat(b.win_rate || 0);
+                return wrB - wrA;
             });
 
             if (brawlersNoMapa.length > 0) {
                 const rows = brawlersNoMapa.map(b => {
-                    const nomeBrawler = b.pick || b.brawler || "Brawler";
-                    const winRateStr = b.win_rate || b['win_rate_%'] || "0.0%";
-                    const wrFloat = parseFloat(winRateStr);
-                    const brawlerImg = formatarNomeImagem(nomeBrawler);
-                    const vitorias = b.vitorias !== undefined ? b.vitorias : (b.win !== undefined ? b.win : 0);
-
+                    const wrVal = parseFloat(b.win_rate || 0);
                     return `
                     <tr>
                         <td class="col-img">
                             <div class="brawler-avatar-frame">
-                                <img src="${brawlerImg}" onerror="this.src='brawlers/default.png';" class="brawler-img">
+                                <img src="${formatarNomeImagem(b.pick || b.brawler)}" class="brawler-img">
                             </div>
                         </td>
-                        <td style="text-align:left; font-weight:800; text-transform:uppercase;">${nomeBrawler}</td>
+                        <td style="text-align:left; font-weight:800; text-transform:uppercase;">${b.pick || b.brawler}</td>
                         <td class="col-picks">${b.picks || 1}</td>
-                        <td>${vitorias}</td>
-                        <td class="win-rate ${obterClasseColorida(wrFloat)}">${winRateStr}</td>
+                        <td>${b.vitorias !== undefined ? b.vitorias : (b.win || 0)}</td>
+                        <td class="${obterClasseColorida(wrVal)}">${b.win_rate || "0.0%"}</td>
                     </tr>`;
                 }).join('');
 
@@ -235,15 +209,14 @@ function renderizarDinamico(dados, container, isGeral) {
     });
 }
 
+// 7. Funções de Interação (Toggle e Ordenação)
 function toggleElemento(header) {
     const content = header.nextElementSibling;
     if (!content) return;
     const isHidden = content.style.display === "none" || content.style.display === "";
     content.style.display = isHidden ? "block" : "none";
     const seta = header.querySelector('span');
-    if (seta) {
-        seta.style.transform = isHidden ? "rotate(90deg)" : "rotate(0deg)";
-    }
+    if (seta) seta.style.transform = isHidden ? "rotate(90deg)" : "rotate(0deg)";
 }
 
 function ordenarTabela(thElement, tipo) {
@@ -255,31 +228,17 @@ function ordenarTabela(thElement, tipo) {
     let isAsc = thElement.getAttribute('data-sort') === 'asc';
     thElement.setAttribute('data-sort', isAsc ? 'desc' : 'asc');
 
-    const allThs = table.querySelectorAll('th.sortable');
-    allThs.forEach(th => {
-        if (th !== thElement) {
-            th.removeAttribute('data-sort');
-            th.innerHTML = th.innerHTML.replace(' ↓', '').replace(' ↑', '').replace(' ↕', '') + ' ↕';
-        }
-    });
-
-    const baseText = thElement.innerHTML.replace(' ↓', '').replace(' ↑', '').replace(' ↕', '');
-    thElement.innerHTML = baseText + (isAsc ? ' ↑' : ' ↓');
-
     rows.sort((a, b) => {
         let valA = a.cells[colIndex].innerText.trim();
         let valB = b.cells[colIndex].innerText.trim();
 
         if (tipo === 'percent') {
-            const numA = parseFloat(valA.replace('%', ''));
-            const numB = parseFloat(valB.replace('%', ''));
-            return isAsc ? numA - numB : numB - numA;
+            return isAsc ? parseFloat(valA) - parseFloat(valB) : parseFloat(valB) - parseFloat(valA);
         } 
         if (tipo === 'number') {
             return isAsc ? parseFloat(valA) - parseFloat(valB) : parseFloat(valB) - parseFloat(valA);
-        } else {
-            return isAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
-        }
+        } 
+        return isAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
     });
 
     tbody.innerHTML = '';
