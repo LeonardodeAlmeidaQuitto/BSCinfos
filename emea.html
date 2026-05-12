@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="pt-pt">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>EMEA Infos - Eurooean</title>
+    <title>EMEA Infos</title>
     <link rel="stylesheet" href="style.css">
     <script src="app.js"></script>
 </head>
@@ -21,18 +21,16 @@
     <main>
         <header class="page-header">
             <h1>EUROPEAN <span class="accent">ANALYSIS</span></h1>
-            <p class="subtitle">Dados extraídos de Scrims e Torneios Oficiais</p>
+            <p class="subtitle">Dados extraídos de Scrims, Torneios e Ladder Competitiva</p>
         </header>
         
         <div id="grid-modos"></div> 
 
         <div class="modo-section">
-            <button class="modo-header" onclick="toggleModo('all-maps-collapse')">
-                ALL MAPS ANALYSIS
-                <span id="seta-all">▶</span>
+            <button class="modo-header" onclick="toggleElemento(this)">
+                ALL MAPS ANALYSIS <span>▶</span>
             </button>
-
-            <div id="all-maps-collapse" class="mapa-content">
+            <div class="mapa-content" style="display:none">
                 <table class="excel-table">
                     <thead>
                         <tr>
@@ -43,18 +41,11 @@
                             <th class="col-stats">WIN RATE</th>
                         </tr>
                     </thead>
-                    <tbody id="tbody-all-maps">
-                        </tbody>
+                    <tbody id="tbody-all-maps"></tbody>
                 </table>
             </div>
         </div>
     </main>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => carregarRegiao('emea'));
-
-        function toggleModo(id) {
-            const content = document.getElementById(id);
-            const seta = content.previousElementSibling.querySelector('span');
-
-        
+    <script>document.addEventListener('DOMContentLoaded', () => carregarRegiao('emea'));</script>
+</body>
+</html>
