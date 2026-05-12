@@ -39,7 +39,8 @@
                 <table class="all-maps-table excel-table">
                     <thead>
                         <tr>
-                            <th class="col-img">IMG</th> <th class="sortable text-left">BRAWLER</th>
+                            <th class="col-img">IMG</th> 
+                            <th class="sortable text-left">BRAWLER</th>
                             <th class="sortable">PICKS</th>
                             <th class="sortable">WINS</th>
                             <th class="sortable">WIN RATE</th>
@@ -57,7 +58,7 @@
             carregarRegiao('sa');
         });
 
-        // Função para garantir que o colapso funcione nesta página
+        // Função padronizada para abrir/fechar e girar a seta
         function toggleModo(id) {
             const content = document.getElementById(id);
             const btn = content.previousElementSibling;
