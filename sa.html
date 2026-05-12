@@ -29,33 +29,48 @@
         
         <div id="grid-modos"></div> 
 
-        <section class="all-maps-section">
-            <header class="all-maps-header">
-                <h2>ALL MAPS <span class="accent">ANALYSIS</span></h2>
-                <p>Soma total de todos os modos e mapas</p>
-            </header>
+        <div class="modo-section">
+            <button class="modo-header" onclick="toggleModo('all-maps-collapse')">
+                ALL MAPS ANALYSIS
+                <span>▶</span>
+            </button>
 
-            <div class="all-maps-container">
-                <table class="all-maps-table">
+            <div id="all-maps-collapse" class="mapa-content">
+                <table class="all-maps-table excel-table">
                     <thead>
                         <tr>
-                            <th class="text-left">BRAWLER</th>
-                            <th>PICKS</th>
-                            <th>WINS</th>
-                            <th>WIN RATE</th>
+                            <th class="col-img">IMG</th> <th class="sortable text-left">BRAWLER</th>
+                            <th class="sortable">PICKS</th>
+                            <th class="sortable">WINS</th>
+                            <th class="sortable">WIN RATE</th>
                         </tr>
                     </thead>
                     <tbody id="tbody-all-maps">
                         </tbody>
                 </table>
             </div>
-        </section>
+        </div>
     </main>
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             carregarRegiao('sa');
         });
+
+        // Função para garantir que o colapso funcione nesta página
+        function toggleModo(id) {
+            const content = document.getElementById(id);
+            const btn = content.previousElementSibling;
+            const seta = btn.querySelector('span');
+
+            if (content.style.display === "block") {
+                content.style.display = "none";
+                seta.style.transform = "rotate(0deg)";
+            } else {
+                content.style.display = "block";
+                seta.style.transform = "rotate(90deg)";
+            }
+        }
     </script>
 </body>
 </html>
