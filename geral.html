@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-pt">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <title>ALL Infos</title>
@@ -20,19 +20,17 @@
 
     <main>
         <header class="page-header">
-            <h1>ALL REGIONS<span class="accent">ANALYSIS</span></h1>
-            <p class="subtitle">Dados extraídos de Scrims e Torneios Oficiais</p>
+            <h1>ALL REGIONS <span class="accent">ANALYSIS</span></h1>
+            <p class="subtitle">Dados extraídos de Scrims, Torneios e Ladder Competitiva</p>
         </header>
         
         <div id="grid-modos"></div> 
 
         <div class="modo-section">
-            <button class="modo-header" onclick="toggleModo('all-maps-collapse')">
-                ALL ANALYSIS
-                <span id="seta-all">▶</span>
+            <button class="modo-header" onclick="toggleElemento(this)">
+                ALL ANALYSIS <span>▶</span>
             </button>
-
-            <div id="all-maps-collapse" class="mapa-content">
+            <div class="mapa-content" style="display:none">
                 <table class="excel-table">
                     <thead>
                         <tr>
@@ -43,18 +41,11 @@
                             <th class="col-stats">WIN RATE</th>
                         </tr>
                     </thead>
-                    <tbody id="tbody-all-maps">
-                        </tbody>
+                    <tbody id="tbody-all-maps"></tbody>
                 </table>
             </div>
         </div>
     </main>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => carregarRegiao('geral'));
-
-        function toggleModo(id) {
-            const content = document.getElementById(id);
-            const seta = content.previousElementSibling.querySelector('span');
-
-        
+    <script>document.addEventListener('DOMContentLoaded', () => carregarRegiao('geral'));</script>
+</body>
+</html>
