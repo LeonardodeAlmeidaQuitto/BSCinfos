@@ -110,24 +110,3 @@ function renderizarDinamico(dados, container) {
         }
     });
 }
-   const colIndex = thElement.cellIndex;
-
-    let isAsc = thElement.getAttribute('data-sort') === 'asc';
-    thElement.setAttribute('data-sort', isAsc ? 'desc' : 'asc');
-
-    rows.sort((a, b) => {
-        let valA = a.cells[colIndex].innerText.trim();
-        let valB = b.cells[colIndex].innerText.trim();
-
-        if (tipo === 'percent') {
-            return isAsc ? parseFloat(valA) - parseFloat(valB) : parseFloat(valB) - parseFloat(valA);
-        } 
-        if (tipo === 'number') {
-            return isAsc ? parseFloat(valA) - parseFloat(valB) : parseFloat(valB) - parseFloat(valA);
-        } 
-        return isAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
-    });
-
-    tbody.innerHTML = '';
-    rows.forEach(row => tbody.appendChild(row));
-}
