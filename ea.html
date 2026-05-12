@@ -2,13 +2,8 @@
 <html lang="pt-pt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Draft Infos - East Ásia</title> 
-    
+    <title>BS Infos - East Ásia</title>
     <link rel="stylesheet" href="style.css">
-    
-    <meta http-equiv="refresh" content="2400">
-    
     <script src="app.js"></script>
 </head>
 <body>
@@ -21,20 +16,45 @@
             <a href="ea.html" class="nav-link">EA</a>
             <a href="geral.html" class="nav-link">GERAL</a>
         </div>
-        <div class="nav-right"></div>
     </nav>
-    <main class="grid">
+
+    <main>
         <header class="page-header">
-            <h1>EAST ÁSIA <span class="accent">ANALYSIS</span></h1>
-            <p class="subtitle">Dados extraídos de Scrims, Tournaments e Ladder Competitiva</p>
+            <h1>SOUTH AMÉRICA <span class="accent">ANALYSIS</span></h1>
+            <p class="subtitle">Dados extraídos de Scrims e Torneios Oficiais</p>
         </header>
+        
         <div id="grid-modos"></div> 
+
+        <div class="modo-section">
+            <button class="modo-header" onclick="toggleModo('all-maps-collapse')">
+                ALL MAPS ANALYSIS
+                <span id="seta-all">▶</span>
+            </button>
+
+            <div id="all-maps-collapse" class="mapa-content">
+                <table class="excel-table">
+                    <thead>
+                        <tr>
+                            <th class="col-img">IMG</th>
+                            <th class="col-brawler">BRAWLER</th>
+                            <th class="col-stats">PICKS</th>
+                            <th class="col-stats">WINS</th>
+                            <th class="col-stats">WIN RATE</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-all-maps">
+                        </tbody>
+                </table>
+            </div>
+        </div>
     </main>
-    
+
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            carregarRegiao('ea');
-        });
-    </script>
-</body>
-</html>
+        document.addEventListener('DOMContentLoaded', () => carregarRegiao('ea'));
+
+        function toggleModo(id) {
+            const content = document.getElementById(id);
+            const seta = content.previousElementSibling.querySelector('span');
+
+        
