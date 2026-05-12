@@ -197,15 +197,6 @@ nav {
 .mapa-content::-webkit-scrollbar-track { background: #050505; }
 .mapa-content::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 3px; }
 
-/* Responsividade Básica */
-@media (max-width: 768px) {
-    .nav-links { gap: 15px; }
-    .nav-link { font-size: 12px; }
-    .modo-header { padding: 15px; font-size: 1.1rem; }
-    .excel-table th:nth-child(3), .excel-table th:nth-child(4) { display: none; } /* Esconde Picks/Wins no mobile */
-    .excel-table td:nth-child(3), .excel-table td:nth-child(4) { display: none; }
-}
-
 .nav-logo {
     color: white !important;
     text-decoration: none !important; /* REMOVE A LINHA DE BAIXO */
