@@ -30,6 +30,28 @@
         </header>
         
         <div id="grid-modos"></div> 
+
+        <section class="all-maps-section">
+            <header class="all-maps-header">
+                <h2>ALL MAPS <span class="accent">ANALYSIS</span></h2>
+                <p>Soma total de todos os modos e mapas da região</p>
+            </header>
+
+            <div class="all-maps-container">
+                <table class="all-maps-table">
+                    <thead>
+                        <tr>
+                            <th class="text-left">BRAWLER</th>
+                            <th class="sortable" onclick="ordenarTabela(this, 'number')">PICKS ↕</th>
+                            <th class="sortable" onclick="ordenarTabela(this, 'number')">WINS ↕</th>
+                            <th class="sortable" onclick="ordenarTabela(this, 'percent')">WIN RATE ↕</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-all-maps">
+                        </tbody>
+                </table>
+            </div>
+        </section>
     </main>
     
     <script>
