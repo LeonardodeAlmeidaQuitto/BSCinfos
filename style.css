@@ -58,7 +58,7 @@ nav {
     color: var(--accent-purple);
 }
 
-/* --- 4. CABEÇALHOS DOS MODOS (RETÂNGULOS PADRÃO) --- */
+/* --- 4. CABEÇALHOS DOS MODOS (RETÂNGULOS PADRONIZADOS) --- */
 .modo-section { 
     width: 95%;
     max-width: 1200px;
@@ -126,6 +126,7 @@ nav {
     border-collapse: collapse !important; 
 }
 
+/* Grade de bordas finas para todas as tabelas */
 .excel-table th, .all-maps-table th { 
     background: #0a0a0a; 
     color: #888; 
@@ -136,7 +137,7 @@ nav {
     text-align: center;
 }
 
-/* Medida exata de 45px para todas as linhas da tabela */
+/* Medida exata de 45px para todas as linhas */
 .excel-table td, .all-maps-table td { 
     height: 45px !important;
     border: 1px solid var(--border-dark) !important; 
@@ -147,7 +148,7 @@ nav {
     padding: 0 10px;
 }
 
-/* Coluna do Brawler (Imagem + Nome) */
+/* Coluna do Brawler (Alinhamento e Peso) */
 .excel-table td:nth-child(2), .all-maps-table td:nth-child(2) { 
     text-align: left !important;    
     padding-left: 20px !important;  
@@ -183,21 +184,14 @@ nav {
 .page-header { text-align: center; margin: 40px 0; }
 .page-header h1 { font-size: 3rem; font-weight: 900; }
 .accent { color: purple; }
-.subtitle { color: purple; font-size: 14px; margin-top: 5px; }
 
-/* Ordenação das Tabelas */
+/* Interatividade */
 th.sortable { cursor: pointer; transition: 0.2s; }
 th.sortable:hover { background-color: #1a1a1a; color: #fff; }
-
-/* Scrollbar Customizada */
-.mapa-content::-webkit-scrollbar { width: 6px; }
-.mapa-content::-webkit-scrollbar-track { background: #050505; }
-.mapa-content::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 3px; }
 
 /* --- 9. RESPONSIVIDADE --- */
 @media (max-width: 768px) {
     .nav-links { gap: 15px; }
-    .nav-link { font-size: 12px; }
     .modo-header { padding: 15px; font-size: 1.1rem; }
     .excel-table img, .all-maps-table img { width: 35px !important; height: 35px !important; }
     .excel-table td, .all-maps-table td { font-size: 11px; height: 40px !important; }
