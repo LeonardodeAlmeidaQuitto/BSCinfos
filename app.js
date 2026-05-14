@@ -3,7 +3,8 @@ const MAPAS_ALVO = {
     "bounty": ["Shooting Star", "Hideout", "Layer Cake"],
     "heist": ["Hot Potato", "Safe Zone", "Bridge Too Far"],
     "knockout": ["Goldarm Gulch", "Belle's Rock", "Out in the Open"],
-    "gemGrab": ["Hard Rock Mine", "Double Swoosh", "Deathcap Trap"]
+    "gemGrab": ["Hard Rock Mine", "Double Swoosh", "Deathcap Trap"],
+    "hotZone": ["Ring of Fire", "Open Business", "Dueling Beetles"]
 };
 
 const formatarNomeImagem = (n) => `brawlers/${n.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
