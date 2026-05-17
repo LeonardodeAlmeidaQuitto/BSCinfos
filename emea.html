@@ -21,7 +21,7 @@
     <main>
         <header class="page-header">
             <h1>EUROPEAN <span class="accent">ANALYSIS</span></h1>
-            <p class="subtitle">Dados extraídos de Scrims, Torneios e Ladder Competitiva</p>
+            <p class="subtitle">Dados extraídos de Scrims e Torneios Oficiais</p>
         </header>
         
         <div id="grid-modos"></div> 
@@ -35,10 +35,10 @@
                     <thead>
                         <tr>
                             <th class="col-img">IMG</th>
-                            <th class="col-brawler">BRAWLER</th>
-                            <th class="col-stats">PICKS</th>
-                            <th class="col-stats">WINS</th>
-                            <th class="col-stats">WIN RATE</th>
+                            <th class="col-brawler sortable" onclick="ordenarTabela(this, 'string')" style="text-align: left;">BRAWLER ↕</th>
+                            <th class="col-stats sortable" onclick="ordenarTabela(this, 'number')">PICKS ↕</th>
+                            <th class="col-stats sortable" onclick="ordenarTabela(this, 'number')">WINS ↕</th>
+                            <th class="col-stats sortable" onclick="ordenarTabela(this, 'percent')">WIN RATE ↕</th>
                         </tr>
                     </thead>
                     <tbody id="tbody-all-maps"></tbody>
