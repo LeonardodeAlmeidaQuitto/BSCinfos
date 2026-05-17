@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>ALL Infos</title>
+    <title>All Infos</title>
     <link rel="stylesheet" href="style.css">
     <script src="app.js"></script>
 </head>
@@ -20,25 +20,25 @@
 
     <main>
         <header class="page-header">
-            <h1>ALL REGIONS <span class="accent">ANALYSIS</span></h1>
-            <p class="subtitle">Dados extraídos de Scrims, Torneios e Ladder Competitiva</p>
+            <h1>ALL INFOS <span class="accent">ANALYSIS</span></h1>
+            <p class="subtitle">Dados extraídos de Scrims e Torneios Oficiais</p>
         </header>
         
         <div id="grid-modos"></div> 
 
         <div class="modo-section">
             <button class="modo-header" onclick="toggleElemento(this)">
-                ALL ANALYSIS <span>▶</span>
+                ALL MAPS ANALYSIS <span>▶</span>
             </button>
             <div class="mapa-content" style="display:none">
                 <table class="excel-table">
                     <thead>
                         <tr>
                             <th class="col-img">IMG</th>
-                            <th class="col-brawler">BRAWLER</th>
-                            <th class="col-stats">PICKS</th>
-                            <th class="col-stats">WINS</th>
-                            <th class="col-stats">WIN RATE</th>
+                            <th class="col-brawler sortable" onclick="ordenarTabela(this, 'string')" style="text-align: left;">BRAWLER ↕</th>
+                            <th class="col-stats sortable" onclick="ordenarTabela(this, 'number')">PICKS ↕</th>
+                            <th class="col-stats sortable" onclick="ordenarTabela(this, 'number')">WINS ↕</th>
+                            <th class="col-stats sortable" onclick="ordenarTabela(this, 'percent')">WIN RATE ↕</th>
                         </tr>
                     </thead>
                     <tbody id="tbody-all-maps"></tbody>
