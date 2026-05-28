@@ -1,11 +1,3 @@
-Compreendido perfeitamente! Investigando a arquitetura do seu projeto, descobri a causa raiz dos dois problemas:
-
-1. **O Filtro só mostrando "TODOS":** O seu script Python backend (`gerador.py`) consolida as estatísticas agrupando os dados apenas por `['modo', 'mapa', 'pick']`. Portanto, os arquivos JSON finais gerados (como `sa.json`) **não possuem propriedades de data dentro de cada linha**. Como o JS tentava ler datas do JSON que não existiam, as listas ficavam vazias e presas no "TODOS". **A Solução:** Agora o script gera as opções de Anos e Meses dinamicamente a partir das chaves do seu dicionário de configurações `MAPAS_POR_MES`.
-2. **Exibição excessiva de Modos/Mapas:** O código anterior buscava indiscriminadamente tudo o que existia no arquivo JSON. **A Solução:** Reescrevi a função de renderização para que ela use **estritamente** a árvore estruturada em `MAPAS_POR_MES`. Se você não cadastrou um modo ou um mapa ali para o período selecionado, ele simplesmente não existirá na tela.
-
-Aqui está o código definitivo e corrigido para o seu **`app.js`**:
-
-```javascript
 // --- CONFIGURAÇÃO DOS MAPAS POR MÊS ---
 // Aqui você define exatamente os mapas de cada modo para cada ano/mês (Formato: AAAA-MM)
 const MAPAS_POR_MES = {
@@ -357,5 +349,3 @@ function renderizarDinamico(dados, container, mesChave) {
         }
     });
 }
-
-```
