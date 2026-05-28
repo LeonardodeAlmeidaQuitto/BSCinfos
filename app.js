@@ -10,7 +10,7 @@ const MAPAS_POR_MES = {
         "hotZone": ["Ring of Fire", "Open Business", "Dueling Beetles"]
     },
     "2026-05": {
-        "brawlBall": ["Triple Dribble", "Pinhole Punt", "Pinball Dreams"], // Exemplos para o próximo mês
+        "brawlBall": ["Triple Dribble", "Pinhole Punt", "Pinball Dreams"],
         "bounty": ["Dry Season", "Hideout", "Layer Cake"],
         "heist": ["Pit Stop", "Safe Zone", "Kaboom Canyon"],
         "knockout": ["Goldarm Gulch", "New Horizons", "Out in the Open"],
@@ -40,15 +40,22 @@ const obterClasseColorida = (wr) => {
 function obterAnoEMes(item) {
     if (!item.data) return { ano: "SEM DATA", mesCodigo: "SEM DATA", mesNome: "SEM DATA" };
     
+    const dataStr = String(item.data).trim().toUpperCase();
+    if (dataStr === "ANTIGO" || dataStr === "ANTIGA") {
+        return { ano: "ANTIGO", mesCodigo: "ANTIGO", mesNome: "ANTIGO" };
+    }
+    
     let ano = "", mesCodigo = "";
-    if (item.data.includes('-')) {
-        const partes = item.data.split('-');
+    if (dataStr.includes('-')) {
+        const partes = dataStr.split('-');
         ano = partes[0];
         mesCodigo = partes[1];
-    } else if (item.data.includes('/')) {
-        const partes = item.data.split('/');
-        ano = partes[2];
-        mesCodigo = partes[1];
+    } else if (dataStr.includes('/')) {
+        const partes = dataStr.split(' ')[0].split('/');
+        if (partes.length === 3) {
+            ano = partes[2];
+            mesCodigo = partes[1];
+        }
     }
 
     const mesesNomes = {
@@ -58,8 +65,8 @@ function obterAnoEMes(item) {
     };
 
     return {
-        ano: ano,
-        mesCodigo: mesCodigo,
+        ano: ano || "SEM DATA",
+        mesCodigo: mesCodigo || "SEM DATA",
         mesNome: mesesNomes[mesCodigo] || "Desconhecido"
     };
 }
@@ -141,14 +148,21 @@ function gerarOpcoesDosFiltros() {
 
     dadosOriginaisRegiao.forEach(item => {
         const infoTempo = obterAnoEMes(item);
-        if (infoTempo.ano && infoTempo.ano !== "SEM DATA") anosExistentes.add(infoTempo.ano);
-        if (infoTempo.mesCodigo && infoTempo.mesCodigo !== "SEM DATA") {
+        if (infoTempo.ano && infoTempo.ano !== "SEM DATA") {
+            anosExistentes.add(infoTempo.ano);
+        }
+        if (infoTempo.mesCodigo && infoTempo.mesCodigo !== "SEM DATA" && infoTempo.mesCodigo !== "ANTIGO") {
             mesesExistentes.add(JSON.stringify({ cod: infoTempo.mesCodigo, nome: infoTempo.mesNome }));
         }
     });
 
-    Array.from(anosExistentes).sort((a, b) => b - a).forEach(ano => {
-        selectAno.innerHTML += `<option value="${ano}">${ano}</option>`;
+    // Ordena os anos colocando "ANTIGO" no final da lista se existir
+    Array.from(anosExistentes).sort((a, b) => {
+        if (a === "ANTIGO") return 1;
+        if (b === "ANTIGO") return -1;
+        return b - a;
+    }).forEach(ano => {
+        selectAno.innerHTML += `<option value="${ano}">${ano === "ANTIGO" ? "DADOS LEGADOS (ANTIGOS)" : ano}</option>`;
     });
 
     Array.from(mesesExistentes).map(m => JSON.parse(m))
@@ -156,6 +170,25 @@ function gerarOpcoesDosFiltros() {
         .forEach(m => {
             selectMes.innerHTML += `<option value="${m.cod}">${m.nome.toUpperCase()}</option>`;
         });
+
+    // Vincula os eventos para filtrar as tabelas automaticamente ao mudar as caixas de seleção
+    if (!selectAno.dataset.hasListener) {
+        selectAno.addEventListener('change', () => {
+            if (selectAno.value === "ANTIGO") {
+                selectMes.value = "TODOS";
+                selectMes.disabled = true; // Desativa meses para dados legados antigos
+            } else {
+                selectMes.disabled = false;
+            }
+            filtrarEAplicarDados();
+        });
+        selectAno.dataset.hasListener = "true";
+    }
+
+    if (!selectMes.dataset.hasListener) {
+        selectMes.addEventListener('change', filtrarEAplicarDados);
+        selectMes.dataset.hasListener = "true";
+    }
 }
 
 // Executa a filtragem por tempo e reconstrói as tabelas na tela
@@ -167,7 +200,7 @@ function filtrarEAplicarDados() {
     let anoAlvo = selectAno ? selectAno.value : "TODOS";
     let mesAlvo = selectMes ? selectMes.value : "TODOS";
 
-    // Filtra os dados conforme a escolha dos filtros
+    // Filtra os dados conforme a escolha dos seletores
     let dadosFiltrados = dadosOriginaisRegiao.filter(item => {
         const infoTempo = obterAnoEMes(item);
         const matchAno = (anoAlvo === "TODOS" || infoTempo.ano === anoAlvo);
@@ -175,8 +208,8 @@ function filtrarEAplicarDados() {
         return matchAno && matchMes;
     });
 
-    // Cria a chave única do mês ativo (Ex: "2026-05") para buscar o pool de mapas correspondente
-    let mesChave = (anoAlvo !== "TODOS" && mesAlvo !== "TODOS") ? `${anoAlvo}-${mesAlvo}` : "TODOS";
+    // Cria a chave única do mês ativo (Ex: "2026-05") apenas se for um ano válido com mês definido
+    let mesChave = (anoAlvo !== "TODOS" && anoAlvo !== "ANTIGO" && mesAlvo !== "TODOS") ? `${anoAlvo}-${mesAlvo}` : "TODOS";
 
     renderizarDinamico(dadosFiltrados, container, mesChave);
     renderizarTabelaAllMaps(dadosFiltrados);
@@ -227,7 +260,7 @@ function renderizarDinamico(dados, container, mesChave) {
         if (mesChave !== "TODOS" && MAPAS_POR_MES[mesChave] && MAPAS_POR_MES[mesChave][modo]) {
             mapasAlvo = MAPAS_POR_MES[mesChave][modo];
         } else {
-            // Caso contrário (Modo de Segurança / TODOS), extrai automaticamente os mapas do JSON
+            // Caso contrário (Modo de Segurança / TODOS / ANTIGO), extrai automaticamente os mapas do JSON
             const encontrados = dados
                 .filter(i => i.modo?.toLowerCase() === modo.toLowerCase() && i.mapa)
                 .map(i => i.mapa);
