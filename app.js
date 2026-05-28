@@ -146,7 +146,7 @@ function filtrarEAplicarDados() {
     let mesAlvo = selectMes ? selectMes.value : "TODOS";
     let mesChave = (anoAlvo !== "TODOS" && mesAlvo !== "TODOS") ? `${anoAlvo}-${mesAlvo}` : "TODOS";
 
-    // 1. Identificar quais mapas são permitidos com base nos filtros
+    // 1. Identificar quais mapas são permitidos com base nos filtros selecionados
     let mapasPermitidos = [];
     Object.keys(MAPAS_POR_MES).forEach(chave => {
         const [ano, mesCod] = chave.split('-');
@@ -160,7 +160,8 @@ function filtrarEAplicarDados() {
         }
     });
 
-    // 2. Filtrar dados gerais baseados nos mapas permitidos
+    // 2. Filtrar os dados originais da região
+    // Se "TODOS" em ambos, retorna tudo. Se filtrado, filtra pelo nome do mapa.
     let dadosFiltrados = [];
     if (anoAlvo === "TODOS" && mesAlvo === "TODOS") {
         dadosFiltrados = dadosOriginaisRegiao;
@@ -170,7 +171,7 @@ function filtrarEAplicarDados() {
         );
     }
 
-    // 3. Atualizar UI
+    // 3. Atualizar as duas seções da UI com os mesmos dados filtrados
     renderizarDinamico(dadosFiltrados, container, mesChave);
     renderizarTabelaAllMaps(dadosFiltrados);
 }
