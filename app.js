@@ -174,19 +174,44 @@ function filtrarEAplicarDados() {
     let anoAlvo = selectAno ? selectAno.value : "TODOS";
     let mesAlvo = selectMes ? selectMes.value : "TODOS";
 
-    // 1. Filtra estritamente as linhas do JSON que pertencem ao Ano e Mês selecionados nos dropdowns
+    // 1. Filtra as linhas tolerando JSONs sem campos nativos de data
     let dadosFiltradosPelaData = dadosOriginaisRegiao.filter(item => {
-        const matchAno = (anoAlvo === "TODOS" || String(item.ano) === String(anoAlvo));
-        const matchMes = (mesAlvo === "TODOS" || String(item.mes) === String(mesAlvo));
+        if (anoAlvo === "TODOS" && mesAlvo === "TODOS") return true;
+
+        let anoItem = "DESCONHECIDO";
+        let mesItem = "DESCONHECIDO";
+
+        // Se o JSON já tiver as propriedades tratadas pelo Python:
+        if (item.ano && item.mes) {
+            anoItem = String(item.ano);
+            mesItem = String(item.mes);
+        } else if (item.mapa) {
+            // CAMADA DE COMPATIBILIDADE: Se não tiver data no JSON, descobre o mês pelo nome do mapa
+            const nomeMapaLower = item.mapa.toLowerCase();
+            Object.keys(MAPAS_POR_MES).forEach(chave => {
+                const [anoConfig, mesConfig] = chave.split('-');
+                Object.keys(MAPAS_POR_MES[chave]).forEach(modo => {
+                    MAPAS_POR_MES[chave][modo].forEach(m => {
+                        if (m.toLowerCase() === nomeMapaLower) {
+                            anoItem = anoConfig;
+                            mesItem = mesConfig;
+                        }
+                    });
+                });
+            });
+        }
+
+        const matchAno = (anoAlvo === "TODOS" || anoItem === String(anoAlvo));
+        const matchMes = (mesAlvo === "TODOS" || mesItem === String(mesAlvo));
         return matchAno && matchMes;
     });
 
     let mesChave = (anoAlvo !== "TODOS" && mesAlvo !== "TODOS") ? `${anoAlvo}-${mesAlvo}` : "TODOS";
 
-    // 2. Renderiza as caixas de modos superiores (esses continuam respeitando a árvore do MAPAS_POR_MES)
+    // 2. Renderiza as caixas de modos superiores
     renderizarDinamico(dadosFiltradosPelaData, container, mesChave);
     
-    // 3. CORRIGIDO: O "All Maps" agora computa absolutamente TODOS os dados daquele período filtrado nativamente
+    // 3. Renderiza o "All Maps Analysis" isolando estritamente os brawlers do período ativo
     renderizarTabelaAllMaps(dadosFiltradosPelaData);
 }
 
@@ -199,7 +224,7 @@ function renderizarTabelaAllMaps(dados) {
 
     const stats = {};
     
-    // Processa os dados que foram previamente isolados por ano/mês
+    // Processa os dados isolados pelo filtro temporal anterior
     dados.forEach(i => {
         const n = i.pick || i.brawler;
         if (!n) return;
@@ -215,7 +240,6 @@ function renderizarTabelaAllMaps(dados) {
         wr: stats[n].p > 0 ? (stats[n].v / stats[n].p) * 100 : 0
     })).sort((a, b) => b.picks - a.picks);
 
-    // Se não houver dados coletados no mês selecionado, exibe um aviso amigável
     if (lista.length === 0) {
         tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#888; padding:30px; font-weight:bold;">NENHUM DADO COLETADO PARA ESTE PERÍODO</td></tr>`;
         return;
@@ -242,12 +266,10 @@ function renderizarDinamico(dados, container, mesChave) {
 
     // 1. Constrói a estrutura visual de exibição baseada estritamente no seu MAPAS_POR_MES
     if (mesChave !== "TODOS" && MAPAS_POR_MES[mesChave]) {
-        // Se um mês específico e exato for selecionado
         Object.keys(MAPAS_POR_MES[mesChave]).forEach(modo => {
             estructuraVisual[modo] = MAPAS_POR_MES[mesChave][modo];
         });
     } else {
-        // Se estiver em "TODOS" ou filtrado parcialmente por Ano/Mês
         const selectAno = document.getElementById('select-ano');
         const selectMes = document.getElementById('select-mes');
         let anoAlvo = selectAno ? selectAno.value : "TODOS";
@@ -282,7 +304,6 @@ function renderizarDinamico(dados, container, mesChave) {
         const mapasAlvo = estructuraVisual[modo];
 
         mapasAlvo.forEach(mapa => {
-            // Varre o arquivo JSON filtrando os dados que pertencem a este modo e mapa específicos
             const filtrados = dados.filter(i => i.modo?.toLowerCase() === modo.toLowerCase() && i.mapa?.toLowerCase() === mapa.toLowerCase());
             
             if (filtrados.length > 0) {
@@ -333,7 +354,6 @@ function renderizarDinamico(dados, container, mesChave) {
         });
 
         if (mapasHTML) {
-            // Formata o nome interno ex: "brawlBall" para exibição amigável "BRAWL BALL"
             const nomeExibicaoModo = modo.replace(/([A-Z])/g, ' $1').trim().toUpperCase();
             section.innerHTML = `
                 <div class="modo-header" onclick="toggleElemento(this)">${nomeExibicaoModo} <span>▶</span></div>
