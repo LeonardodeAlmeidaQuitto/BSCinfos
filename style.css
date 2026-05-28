@@ -29,6 +29,32 @@ nav {
 .nav-link { color: #fff; text-decoration: none; font-weight: 900; font-size: 13px; text-transform: uppercase; transition: 0.3s; }
 .nav-link:hover { color: var(--accent-purple); }
 
+/* SEÇÃO DE FILTROS DE TEMPO (ANO E MÊS) */
+.filter-container {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 0 auto 30px auto;
+    width: 95%;
+    max-width: 1200px;
+}
+.filter-select {
+    background: #0a0a0a;
+    color: #ffffff;
+    border: 1px solid var(--border-dark);
+    padding: 12px 24px;
+    font-size: 13px;
+    font-weight: 900;
+    border-radius: 4px;
+    cursor: pointer;
+    outline: none;
+    text-transform: uppercase;
+    transition: 0.2s border-color;
+}
+.filter-select:focus, .filter-select:hover {
+    border-color: var(--accent-purple);
+}
+
 /* SEÇÕES E ACCORDIONS */
 .modo-section { 
     width: 95%; max-width: 1200px; 
@@ -46,7 +72,7 @@ nav {
 
 .mapa-content { display: none; background: #050505; padding: 15px; border-top: 1px solid var(--border-dark); }
 
-/* TABELAS (ALINHAMENTO IGUAL À IMAGEM 2) */
+/* TABELAS */
 .excel-table { 
     width: 100%; border-collapse: collapse; 
     table-layout: fixed; 
