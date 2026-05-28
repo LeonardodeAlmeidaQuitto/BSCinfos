@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>All Infos</title>
+    <title>Draft Infos - Geral Analysis</title>
     <link rel="stylesheet" href="style.css">
     <script src="app.js"></script>
 </head>
@@ -23,6 +23,15 @@
             <h1>ALL INFOS <span class="accent">ANALYSIS</span></h1>
             <p class="subtitle">Dados extraídos de Scrims e Torneios Oficiais</p>
         </header>
+
+        <div class="filter-container">
+            <select id="select-ano" class="filter-select" onchange="filtrarEAplicarDados()">
+                <option value="TODOS">ANO: TODOS</option>
+            </select>
+            <select id="select-mes" class="filter-select" onchange="filtrarEAplicarDados()">
+                <option value="TODOS">MÊS: TODOS</option>
+            </select>
+        </div>
         
         <div id="grid-modos"></div> 
 
