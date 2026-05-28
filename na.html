@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>NA Infos</title>
+    <title>NORTH AMERICA Infos</title>
     <link rel="stylesheet" href="style.css">
     <script src="app.js"></script>
 </head>
@@ -20,9 +20,18 @@
 
     <main>
         <header class="page-header">
-            <h1>NORTH AMÉRICA <span class="accent">ANALYSIS</span></h1>
+            <h1>NORTH AMERICA INFOS <span class="accent">ANALYSIS</span></h1>
             <p class="subtitle">Dados extraídos de Scrims e Torneios Oficiais</p>
         </header>
+        
+        <div class="filter-container">
+            <select id="select-ano" class="filter-select" onchange="filtrarEAplicarDados()">
+                <option value="TODOS">ANO: TODOS</option>
+            </select>
+            <select id="select-mes" class="filter-select" onchange="filtrarEAplicarDados()">
+                <option value="TODOS">MÊS: TODOS</option>
+            </select>
+        </div>
         
         <div id="grid-modos"></div> 
 
