@@ -26,8 +26,10 @@ const MODOS_DO_JOGO = ["brawlBall", "bounty", "heist", "knockout", "gemGrab", "h
 // Armazenamento global dos dados originais da região ativa
 let dadosOriginaisRegiao = [];
 
+// Formatação do link das imagens removendo caracteres especiais e espaços
 const formatarNomeImagem = (n) => `brawlers/${n.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
 
+// Retorna a classe CSS de cor correspondente à taxa de vitória
 const obterClasseColorida = (wr) => {
     const v = parseFloat(wr);
     if (v >= 80) return 'wr-80';
@@ -36,11 +38,32 @@ const obterClasseColorida = (wr) => {
     return 'wr-30';
 };
 
-// Auxiliar para ler a data do JSON e quebrar em Ano e Mês por extenso
+/**
+ * Auxiliar para ler o tempo do JSON de forma flexível e robusta
+ */
 function obterAnoEMes(item) {
-    if (!item.data) return { ano: "SEM DATA", mesCodigo: "SEM DATA", mesNome: "SEM DATA" };
+    // Tratamento direto se o Python já gerou as chaves 'ano' e 'mes' explícitas
+    if (item.ano && item.mes) {
+        const mesesNomesInvertido = {
+            "JANEIRO": "01", "FEVEREIRO": "02", "MARÇO": "03", "ABRIL": "04",
+            "MAIO": "05", "JUNHO": "06", "JULHO": "07", "AGOSTO": "08",
+            "SETEMBRO": "09", "OUTUBRO": "10", "NOVEMBRO": "11", "DEZEMBRO": "12"
+        };
+        const anoStr = String(item.ano).toUpperCase();
+        if (anoStr === "ANTIGO" || anoStr === "ANTIGA") {
+            return { ano: "ANTIGO", mesCodigo: "ANTIGO", mesNome: "ANTIGO" };
+        }
+        const mesChave = String(item.mes).toUpperCase();
+        const mesCod = mesesNomesInvertido[mesChave] || "SEM DATA";
+        const mesNomeFormatado = mesChave.charAt(0) + mesChave.slice(1).toLowerCase();
+        return { ano: anoStr, mesCodigo: mesCod, mesNome: mesNomeFormatado };
+    }
+
+    // Fallback de contingência analisando as propriedades 'data' ou 'data_adicao'
+    const campoData = item.data || item.data_adicao;
+    if (!campoData) return { ano: "SEM DATA", mesCodigo: "SEM DATA", mesNome: "SEM DATA" };
     
-    const dataStr = String(item.data).trim().toUpperCase();
+    const dataStr = String(campoData).trim().toUpperCase();
     if (dataStr === "ANTIGO" || dataStr === "ANTIGA") {
         return { ano: "ANTIGO", mesCodigo: "ANTIGO", mesNome: "ANTIGO" };
     }
@@ -71,7 +94,9 @@ function obterAnoEMes(item) {
     };
 }
 
-// Função de abrir/fechar (Toggle)
+/**
+ * Controla a expansão e colapso de seções (Accordion) com rotação do ícone
+ */
 function toggleElemento(header) {
     const content = header.nextElementSibling;
     if (!content) return;
@@ -81,7 +106,9 @@ function toggleElemento(header) {
     if (seta) seta.style.transform = isHidden ? "rotate(90deg)" : "rotate(0deg)";
 }
 
-// LÓGICA DE FILTRO E ORDENAÇÃO POR CATEGORIAS (Brawler, Picks, Wins, WR)
+/**
+ * Ordenação interativa de tabelas ao clicar no cabeçalho das colunas (.sortable)
+ */
 function ordenarTabela(thElement, tipo) {
     const table = thElement.closest('table');
     const tbody = table.querySelector('tbody');
@@ -117,7 +144,9 @@ function ordenarTabela(thElement, tipo) {
     rows.forEach(row => tbody.appendChild(row));
 }
 
-// Carrega os dados brutos e gera a interface de tempo
+/**
+ * Consome os dados JSON da API e inicializa os filtros da região ativa
+ */
 async function carregarRegiao(sigla) {
     const container = document.getElementById('grid-modos');
     if (!container) return;
@@ -134,7 +163,9 @@ async function carregarRegiao(sigla) {
     }
 }
 
-// Monta as caixas de seleção de Ano e Mês dinamicamente baseado no JSON carregado
+/**
+ * Reconstrói dinamicamente os menus de seleção <select> baseando-se no histórico
+ */
 function gerarOpcoesDosFiltros() {
     const selectAno = document.getElementById('select-ano');
     const selectMes = document.getElementById('select-mes');
@@ -156,7 +187,7 @@ function gerarOpcoesDosFiltros() {
         }
     });
 
-    // Ordena os anos colocando "ANTIGO" no final da lista se existir
+    // Ordena as opções inserindo registros legados ao fim da lista
     Array.from(anosExistentes).sort((a, b) => {
         if (a === "ANTIGO") return 1;
         if (b === "ANTIGO") return -1;
@@ -171,12 +202,12 @@ function gerarOpcoesDosFiltros() {
             selectMes.innerHTML += `<option value="${m.cod}">${m.nome.toUpperCase()}</option>`;
         });
 
-    // Vincula os eventos para filtrar as tabelas automaticamente ao mudar as caixas de seleção
+    // Registra os ouvintes (listeners) evitando duplicação
     if (!selectAno.dataset.hasListener) {
         selectAno.addEventListener('change', () => {
             if (selectAno.value === "ANTIGO") {
                 selectMes.value = "TODOS";
-                selectMes.disabled = true; // Desativa meses para dados legados antigos
+                selectMes.disabled = true;
             } else {
                 selectMes.disabled = false;
             }
@@ -191,7 +222,9 @@ function gerarOpcoesDosFiltros() {
     }
 }
 
-// Executa a filtragem por tempo e reconstrói as tabelas na tela
+/**
+ * Filtra a matriz bruta e comanda a atualização dos blocos visuais na tela
+ */
 function filtrarEAplicarDados() {
     const container = document.getElementById('grid-modos');
     const selectAno = document.getElementById('select-ano');
@@ -200,7 +233,6 @@ function filtrarEAplicarDados() {
     let anoAlvo = selectAno ? selectAno.value : "TODOS";
     let mesAlvo = selectMes ? selectMes.value : "TODOS";
 
-    // Filtra os dados conforme a escolha dos seletores
     let dadosFiltrados = dadosOriginaisRegiao.filter(item => {
         const infoTempo = obterAnoEMes(item);
         const matchAno = (anoAlvo === "TODOS" || infoTempo.ano === anoAlvo);
@@ -208,14 +240,15 @@ function filtrarEAplicarDados() {
         return matchAno && matchMes;
     });
 
-    // Cria a chave única do mês ativo (Ex: "2026-05") apenas se for um ano válido com mês definido
     let mesChave = (anoAlvo !== "TODOS" && anoAlvo !== "ANTIGO" && mesAlvo !== "TODOS") ? `${anoAlvo}-${mesAlvo}` : "TODOS";
 
     renderizarDinamico(dadosFiltrados, container, mesChave);
     renderizarTabelaAllMaps(dadosFiltrados);
 }
 
-// Renderiza a Tabela Geral Combinada (All Maps Analysis)
+/**
+ * Agrupa, consolida e renderiza o painel unificado "ALL MAPS ANALYSIS"
+ */
 function renderizarTabelaAllMaps(dados) {
     const tbody = document.getElementById('tbody-all-maps');
     if (!tbody) return;
@@ -230,13 +263,16 @@ function renderizarTabelaAllMaps(dados) {
     });
 
     const lista = Object.keys(stats).map(n => ({
-        nome: n, picks: stats[n].p, wins: stats[n].v, wr: (stats[n].v / stats[n].p) * 100
+        nome: n, 
+        picks: stats[n].p, 
+        wins: stats[n].v, 
+        wr: stats[n].p > 0 ? (stats[n].v / stats[n].p) * 100 : 0
     })).sort((a, b) => b.picks - a.picks);
 
     tbody.innerHTML = lista.map(b => `
         <tr>
             <td><img src="${formatarNomeImagem(b.nome)}" onerror="this.src='brawlers/default.png';"></td>
-            <td>${b.nome.toUpperCase()}</td>
+            <td style="text-align: left !important; padding-left: 15px !important;">${b.nome.toUpperCase()}</td>
             <td>${b.picks}</td>
             <td>${b.wins}</td>
             <td class="${obterClasseColorida(b.wr)}">${b.wr.toFixed(1)}%</td>
@@ -244,7 +280,9 @@ function renderizarTabelaAllMaps(dados) {
     `).join('');
 }
 
-// Renderiza os Modos e Mapas Dinamicamente respeitando a rotação do mês selecionado
+/**
+ * Renderiza os Modos e Mapas respeitando os agrupamentos e a rotação ativa
+ */
 function renderizarDinamico(dados, container, mesChave) {
     container.innerHTML = ""; 
 
@@ -253,32 +291,47 @@ function renderizarDinamico(dados, container, mesChave) {
         section.className = 'modo-section';
         let mapasHTML = "";
 
-        // DETERMINAÇÃO DO POOL DE MAPAS:
         let mapasAlvo = [];
         
-        // Se houver uma lista cadastrada exata para este mês, usa ela ("os 3 que eu quero")
+        // Aplicação do Pool de Mapas estrito ou dinâmico por varredura
         if (mesChave !== "TODOS" && MAPAS_POR_MES[mesChave] && MAPAS_POR_MES[mesChave][modo]) {
             mapasAlvo = MAPAS_POR_MES[mesChave][modo];
         } else {
-            // Caso contrário (Modo de Segurança / TODOS / ANTIGO), extrai automaticamente os mapas do JSON
             const encontrados = dados
                 .filter(i => i.modo?.toLowerCase() === modo.toLowerCase() && i.mapa)
                 .map(i => i.mapa);
-            mapasAlvo = Array.from(new Set(encontrados)); // Remove duplicados
+            mapasAlvo = Array.from(new Set(encontrados));
         }
 
-        // Gera o HTML apenas para os mapas determinados acima
         mapasAlvo.forEach(mapa => {
             const filtrados = dados.filter(i => i.modo?.toLowerCase() === modo.toLowerCase() && i.mapa?.toLowerCase() === mapa.toLowerCase());
             
             if (filtrados.length > 0) {
-                const rows = filtrados.sort((a,b) => parseFloat(b.win_rate) - parseFloat(a.win_rate)).map(b => `
+                // 🌟 CORREÇÃO DE ACUMULAÇÃO: Agrupa registros temporais do brawler para evitar duplicados no mesmo mapa
+                const statsMapa = {};
+                filtrados.forEach(i => {
+                    const bName = i.pick || i.brawler;
+                    if (!bName) return;
+                    if (!statsMapa[bName]) statsMapa[bName] = { p: 0, v: 0 };
+                    statsMapa[bName].p += Number(i.picks || 1);
+                    statsMapa[bName].v += Number(i.vitorias || i.win || 0);
+                });
+
+                // Converte em array calculado e aplica a ordenação pelo maior Win Rate (Padrão dos Mapas)
+                const listaMapaOrdenada = Object.keys(statsMapa).map(bName => {
+                    const p = statsMapa[bName].p;
+                    const v = statsMapa[bName].v;
+                    const wr = p > 0 ? (v / p * 100) : 0;
+                    return { nome: bName, picks: p, vitorias: v, winRate: wr };
+                }).sort((a, b) => b.winRate - a.winRate);
+
+                const rows = listaMapaOrdenada.map(b => `
                     <tr>
-                        <td><img src="${formatarNomeImagem(b.pick || b.brawler)}" onerror="this.src='brawlers/default.png';"></td>
-                        <td>${b.pick || b.brawler}</td>
-                        <td>${b.picks || 1}</td>
-                        <td>${b.vitorias || b.win || 0}</td>
-                        <td class="${obterClasseColorida(b.win_rate)}">${b.win_rate}</td>
+                        <td><img src="${formatarNomeImagem(b.nome)}" onerror="this.src='brawlers/default.png';"></td>
+                        <td style="text-align: left !important; padding-left: 15px !important;">${b.nome}</td>
+                        <td>${b.picks}</td>
+                        <td>${b.vitorias}</td>
+                        <td class="${obterClasseColorida(b.winRate)}">${b.winRate.toFixed(1)}%</td>
                     </tr>`).join('');
 
                 mapasHTML += `
