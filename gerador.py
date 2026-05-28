@@ -22,14 +22,24 @@ TAG_PARA_REGIAO = {tag: reg for reg, lista in REGIOES.items() for tag in lista}
 
 
 def extrair_ano_mes(dt_str):
-    """Função auxiliar para formatar a data de adição no JSON como AAAA-MM."""
+    """Função auxiliar robusta para formatar a data de adição no JSON como AAAA-MM."""
     dt_str = str(dt_str).strip()
+    
+    # Suporte a formatos com hífen (Ex: 2026-05-28)
+    if '-' in dt_str:
+        partes = dt_str.split(' ')[0].split('-')
+        if len(partes) >= 2:
+            return f"{partes[0]}-{partes[1]}"  # Retorna no formato AAAA-MM
+            
+    # Suporte a formatos com barra (Ex: 28/05/2026)
     if '/' in dt_str:
         partes = dt_str.split(' ')[0].split('/')
         if len(partes) == 3:
-            return f"{partes[2]}-{partes[1]}"  # Retorna no formato AAAA-MM (Ex: 2026-05)
+            return f"{partes[2]}-{partes[1]}"  # Retorna no formato AAAA-MM
+            
     if "antig" in dt_str.lower():
         return "ANTIGO"
+        
     return "SEM DATA"
 
 
