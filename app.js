@@ -105,7 +105,7 @@ async function carregarRegiao(sigla) {
 }
 
 /**
- * RESOLVIDO: Monta as caixas de seleção baseando-se estritamente no seu MAPAS_POR_MES
+ * Monta as caixas de seleção baseando-se estritamente no seu MAPAS_POR_MES
  */
 function gerarOpcoesDosFiltros() {
     const selectAno = document.getElementById('select-ano');
@@ -174,35 +174,20 @@ function filtrarEAplicarDados() {
     let anoAlvo = selectAno ? selectAno.value : "TODOS";
     let mesAlvo = selectMes ? selectMes.value : "TODOS";
 
-    let mesChave = (anoAlvo !== "TODOS" && mesAlvo !== "TODOS") ? `${anoAlvo}-${mesAlvo}` : "TODOS";
-
-    // Atualiza a visualização dos modos e mapas rotativos
-    renderizarDinamico(dadosOriginaisRegiao, container, mesChave);
-    
-    // Filtra inteligentemente a tabela unificada inferior "All Maps Analysis" 
-    // para mostrar apenas brawlers baseados no escopo temporal ativo
-    let dadosTabelaGeral = dadosOriginaisRegiao;
-    const mapasPermitidos = [];
-
-    Object.keys(MAPAS_POR_MES).forEach(chave => {
-        const [ano, mesCod] = chave.split('-');
-        const matchAno = (anoAlvo === "TODOS" || ano === anoAlvo);
-        const matchMes = (mesAlvo === "TODOS" || mesCod === mesAlvo);
-
-        if (matchAno && matchMes) {
-            Object.keys(MAPAS_POR_MES[chave]).forEach(modo => {
-                MAPAS_POR_MES[chave][modo].forEach(mapa => {
-                    mapasPermitidos.push(mapa.toLowerCase());
-                });
-            });
-        }
+    // 1. Filtra estritamente as linhas do JSON que pertencem ao Ano e Mês selecionados nos dropdowns
+    let dadosFiltradosPelaData = dadosOriginaisRegiao.filter(item => {
+        const matchAno = (anoAlvo === "TODOS" || String(item.ano) === String(anoAlvo));
+        const matchMes = (mesAlvo === "TODOS" || String(item.mes) === String(mesAlvo));
+        return matchAno && matchMes;
     });
 
-    if (anoAlvo !== "TODOS" || mesAlvo !== "TODOS") {
-        dadosTabelaGeral = dadosOriginaisRegiao.filter(i => i.mapa && mapasPermitidos.includes(i.mapa.toLowerCase()));
-    }
+    let mesChave = (anoAlvo !== "TODOS" && mesAlvo !== "TODOS") ? `${anoAlvo}-${mesAlvo}` : "TODOS";
 
-    renderizarTabelaAllMaps(dadosTabelaGeral);
+    // 2. Renderiza as caixas de modos superiores (esses continuam respeitando a árvore do MAPAS_POR_MES)
+    renderizarDinamico(dadosFiltradosPelaData, container, mesChave);
+    
+    // 3. CORRIGIDO: O "All Maps" agora computa absolutamente TODOS os dados daquele período filtrado nativamente
+    renderizarTabelaAllMaps(dadosFiltradosPelaData);
 }
 
 /**
@@ -213,6 +198,8 @@ function renderizarTabelaAllMaps(dados) {
     if (!tbody) return;
 
     const stats = {};
+    
+    // Processa os dados que foram previamente isolados por ano/mês
     dados.forEach(i => {
         const n = i.pick || i.brawler;
         if (!n) return;
@@ -228,6 +215,12 @@ function renderizarTabelaAllMaps(dados) {
         wr: stats[n].p > 0 ? (stats[n].v / stats[n].p) * 100 : 0
     })).sort((a, b) => b.picks - a.picks);
 
+    // Se não houver dados coletados no mês selecionado, exibe um aviso amigável
+    if (lista.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#888; padding:30px; font-weight:bold;">NENHUM DADO COLETADO PARA ESTE PERÍODO</td></tr>`;
+        return;
+    }
+
     tbody.innerHTML = lista.map(b => `
         <tr>
             <td><img src="${formatarNomeImagem(b.nome)}" onerror="this.src='brawlers/default.png';"></td>
@@ -240,18 +233,18 @@ function renderizarTabelaAllMaps(dados) {
 }
 
 /**
- * RESOLVIDO: Renderiza APENAS os modos e mapas que você colocou nas configurações
+ * Renderiza APENAS os modos e mapas que você colocou nas configurações
  */
 function renderizarDinamico(dados, container, mesChave) {
     container.innerHTML = ""; 
 
-    let estruturaVisual = {};
+    let estructuraVisual = {};
 
     // 1. Constrói a estrutura visual de exibição baseada estritamente no seu MAPAS_POR_MES
     if (mesChave !== "TODOS" && MAPAS_POR_MES[mesChave]) {
         // Se um mês específico e exato for selecionado
         Object.keys(MAPAS_POR_MES[mesChave]).forEach(modo => {
-            estruturaVisual[modo] = MAPAS_POR_MES[mesChave][modo];
+            estructuraVisual[modo] = MAPAS_POR_MES[mesChave][modo];
         });
     } else {
         // Se estiver em "TODOS" ou filtrado parcialmente por Ano/Mês
@@ -267,12 +260,12 @@ function renderizarDinamico(dados, container, mesChave) {
 
             if (matchAno && matchMes) {
                 Object.keys(MAPAS_POR_MES[chave]).forEach(modo => {
-                    if (!estruturaVisual[modo]) {
-                        estruturaVisual[modo] = [];
+                    if (!estructuraVisual[modo]) {
+                        estructuraVisual[modo] = [];
                     }
                     MAPAS_POR_MES[chave][modo].forEach(mapa => {
-                        if (!estruturaVisual[modo].includes(mapa)) {
-                            estruturaVisual[modo].push(mapa);
+                        if (!estructuraVisual[modo].includes(mapa)) {
+                            estructuraVisual[modo].push(mapa);
                         }
                     });
                 });
@@ -281,12 +274,12 @@ function renderizarDinamico(dados, container, mesChave) {
     }
 
     // 2. Transforma a estrutura visual permitida em tabelas HTML na tela
-    Object.keys(estruturaVisual).forEach(modo => {
+    Object.keys(estructuraVisual).forEach(modo => {
         const section = document.createElement('div');
         section.className = 'modo-section';
         let mapasHTML = "";
 
-        const mapasAlvo = estruturaVisual[modo];
+        const mapasAlvo = estructuraVisual[modo];
 
         mapasAlvo.forEach(mapa => {
             // Varre o arquivo JSON filtrando os dados que pertencem a este modo e mapa específicos
