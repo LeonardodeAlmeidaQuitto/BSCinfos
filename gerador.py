@@ -20,6 +20,29 @@ REGIOES = {
 
 TAG_PARA_REGIAO = {tag: reg for reg, lista in REGIOES.items() for tag in lista}
 
+
+def extrair_ano_mes(dt_str):
+    """Função auxiliar para formatar a data de adição no JSON como AAAA-MM."""
+    dt_str = str(dt_str).strip()
+    if '/' in dt_str:
+        partes = dt_str.split(' ')[0].split('/')
+        if len(partes) == 3:
+            return f"{partes[2]}-{partes[1]}"  # Retorna no formato AAAA-MM (Ex: 2026-05)
+    if "antig" in dt_str.lower():
+        return "ANTIGO"
+    return "SEM DATA"
+
+
+def gerar_json_consolidado(df_input, path):
+    """Gera o arquivo JSON agrupando também pela nova coluna 'data'."""
+    consolidado = df_input.groupby(['modo', 'mapa', 'pick', 'data']).agg(
+        picks=('win', 'count'),
+        vitorias=('win', 'sum')
+    ).reset_index()
+    consolidado['win_rate'] = (consolidado['vitorias'] / consolidado['picks'] * 100).round(1).astype(str) + '%'
+    consolidado.to_json(path, orient='records', force_ascii=False)
+
+
 def minerar_dados():
     fuso_brasilia = timezone(timedelta(hours=-3))
     momento_revisao = datetime.now(fuso_brasilia).strftime('%d/%m/%Y %H:%M:%S')
@@ -30,12 +53,12 @@ def minerar_dados():
     
     if os.path.exists(ARQUIVO_BRUTO):
         try:
-            df_existente = pd.read_csv(ARQUIVO_BRUTO, sep=',', dtype=str, keep_default_na=False)
+            df_existente = pd.read_csv(ARQUIVO_BRUTO, sep=',', dtype=str, keep_default_na=False, encoding='utf-8')
             ids_registrados = set(df_existente['id_partida'].unique())
         except:
             ids_registrados = set()
     else:
-        pd.DataFrame(columns=colunas).to_csv(ARQUIVO_BRUTO, index=False)
+        pd.DataFrame(columns=colunas).to_csv(ARQUIVO_BRUTO, index=False, encoding='utf-8')
         ids_registrados = set()
 
     novas_linhas = []
@@ -81,19 +104,10 @@ def minerar_dados():
         df_novos.to_csv(ARQUIVO_BRUTO, mode='a', header=False, index=False, sep=',', encoding='utf-8')
         
     if os.path.exists(ARQUIVO_BRUTO):
-        df_total = pd.read_csv(ARQUIVO_BRUTO, keep_default_na=False)
+        df_total = pd.read_csv(ARQUIVO_BRUTO, keep_default_na=False, encoding='utf-8')
         df_total['win'] = pd.to_numeric(df_total['win'], errors='coerce').fillna(0)
         
-        # --- FUNÇÃO AUXILIAR PARA FORMATAR A DATA NO JSON ---
-        def extrair_ano_mes(dt_str):
-            dt_str = str(dt_str).strip()
-            if '/' in dt_str:
-                partes = dt_str.split(' ')[0].split('/')
-                if len(partes) == 3:
-                    return f"{partes[2]}-{partes[1]}"  # Retorna no formato AAAA-MM (Ex: 2026-05)
-            return "SEM DATA"
-
-        # Aplica a extração criando a coluna 'data'
+        # Aplica a extração criando a nova coluna 'data' utilizada no GroupBy
         df_total['data'] = df_total['data_adicao'].apply(extrair_ano_mes)
         
         df_total['regiao_list'] = df_total['regiao'].str.split('/')
@@ -101,24 +115,17 @@ def minerar_dados():
         
         os.makedirs('api/stats', exist_ok=True)
 
-        # --- MODIFICAÇÃO DO GROUPBY PARA INCLUIR A DATA ---
-        def gerar_json_consolidado(df_input, path):
-            # Adicionado 'data' ao agrupamento para separar as estatísticas por mês
-            consolidado = df_input.groupby(['modo', 'mapa', 'pick', 'data']).agg(
-                picks=('win', 'count'),
-                vitorias=('win', 'sum')
-            ).reset_index()
-            consolidado['win_rate'] = (consolidado['vitorias'] / consolidado['picks'] * 100).round(1).astype(str) + '%'
-            consolidado.to_json(path, orient='records')
-
+        # Gera o JSON geral consolidado com meses separados
         gerar_json_consolidado(df_stats, 'api/stats/geral.json')
 
+        # Gera os JSONs específicos por região
         for reg in df_stats['regiao_list'].unique():
             if reg:
                 df_reg = df_stats[df_stats['regiao_list'] == reg]
                 gerar_json_consolidado(df_reg, f"api/stats/{str(reg).lower()}.json")
 
     print(f"\n✅ Concluído! Total de novas partidas: {total_novas}")
+
 
 if __name__ == "__main__":
     minerar_dados()
