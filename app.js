@@ -1,5 +1,5 @@
 // --- CONFIGURAÇÃO DOS MAPAS POR MÊS ---
-// Aqui você define exatamente os 3 mapas de cada modo para cada ano/mês (Formato: AAAA-MM)
+// Aqui você define exatamente os mapas de cada modo para cada ano/mês (Formato: AAAA-MM)
 const MAPAS_POR_MES = {
     "2026-04": {
         "brawlBall": ["Super Beach", "Pinhole Punt", "Sneaky Fields"],
@@ -20,9 +20,6 @@ const MAPAS_POR_MES = {
     // Você pode ir adicionando os próximos meses aqui seguindo o mesmo padrão...
 };
 
-// Lista padrão de todos os modos do jogo para renderização
-const MODOS_DO_JOGO = ["brawlBall", "bounty", "heist", "knockout", "gemGrab", "hotZone"];
-
 // Armazenamento global dos dados originais da região ativa
 let dadosOriginaisRegiao = [];
 
@@ -37,62 +34,6 @@ const obterClasseColorida = (wr) => {
     if (v >= 50) return 'wr-50';
     return 'wr-30';
 };
-
-/**
- * Auxiliar para ler o tempo do JSON de forma flexível e robusta
- */
-function obterAnoEMes(item) {
-    // Tratamento direto se o Python já gerou as chaves 'ano' e 'mes' explícitas
-    if (item.ano && item.mes) {
-        const mesesNomesInvertido = {
-            "JANEIRO": "01", "FEVEREIRO": "02", "MARÇO": "03", "ABRIL": "04",
-            "MAIO": "05", "JUNHO": "06", "JULHO": "07", "AGOSTO": "08",
-            "SETEMBRO": "09", "OUTUBRO": "10", "NOVEMBRO": "11", "DEZEMBRO": "12"
-        };
-        const anoStr = String(item.ano).toUpperCase();
-        if (anoStr === "ANTIGO" || anoStr === "ANTIGA") {
-            return { ano: "ANTIGO", mesCodigo: "ANTIGO", mesNome: "ANTIGO" };
-        }
-        const mesChave = String(item.mes).toUpperCase();
-        const mesCod = mesesNomesInvertido[mesChave] || "SEM DATA";
-        const mesNomeFormatado = mesChave.charAt(0) + mesChave.slice(1).toLowerCase();
-        return { ano: anoStr, mesCodigo: mesCod, mesNome: mesNomeFormatado };
-    }
-
-    // Fallback de contingência analisando as propriedades 'data' ou 'data_adicao'
-    const campoData = item.data || item.data_adicao;
-    if (!campoData) return { ano: "SEM DATA", mesCodigo: "SEM DATA", mesNome: "SEM DATA" };
-    
-    const dataStr = String(campoData).trim().toUpperCase();
-    if (dataStr === "ANTIGO" || dataStr === "ANTIGA") {
-        return { ano: "ANTIGO", mesCodigo: "ANTIGO", mesNome: "ANTIGO" };
-    }
-    
-    let ano = "", mesCodigo = "";
-    if (dataStr.includes('-')) {
-        const partes = dataStr.split('-');
-        ano = partes[0];
-        mesCodigo = partes[1];
-    } else if (dataStr.includes('/')) {
-        const partes = dataStr.split(' ')[0].split('/');
-        if (partes.length === 3) {
-            ano = partes[2];
-            mesCodigo = partes[1];
-        }
-    }
-
-    const mesesNomes = {
-        "01": "Janeiro", "02": "Fevereiro", "03": "Março", "04": "Abril",
-        "05": "Maio", "06": "Junho", "07": "Julho", "08": "Agosto",
-        "09": "Setembro", "10": "Outubro", "11": "Novembro", "12": "Dezembro"
-    };
-
-    return {
-        ano: ano || "SEM DATA",
-        mesCodigo: mesCodigo || "SEM DATA",
-        mesNome: mesesNomes[mesCodigo] || "Desconhecido"
-    };
-}
 
 /**
  * Controla a expansão e colapso de seções (Accordion) com rotação do ícone
@@ -164,58 +105,58 @@ async function carregarRegiao(sigla) {
 }
 
 /**
- * Reconstrói dinamicamente os menus de seleção <select> baseando-se no histórico
+ * RESOLVIDO: Monta as caixas de seleção baseando-se estritamente no seu MAPAS_POR_MES
  */
 function gerarOpcoesDosFiltros() {
     const selectAno = document.getElementById('select-ano');
     const selectMes = document.getElementById('select-mes');
     if (!selectAno || !selectMes) return;
 
-    selectAno.innerHTML = '<option value="TODOS">ANO: TODOS</option>';
-    selectMes.innerHTML = '<option value="TODOS">MÊS: TODOS</option>';
+    // Preserva a seleção atual do usuário para não resetar a navegação
+    const anoSelecionado = selectAno.value || "TODOS";
+    const mesSelecionado = selectMes.value || "TODOS";
 
     const anosExistentes = new Set();
-    const mesesExistentes = new Set();
+    const mesesExistentes = new Map(); // Codigo -> Nome em string
 
-    dadosOriginaisRegiao.forEach(item => {
-        const infoTempo = obterAnoEMes(item);
-        if (infoTempo.ano && infoTempo.ano !== "SEM DATA") {
-            anosExistentes.add(infoTempo.ano);
-        }
-        if (infoTempo.mesCodigo && infoTempo.mesCodigo !== "SEM DATA" && infoTempo.mesCodigo !== "ANTIGO") {
-            mesesExistentes.add(JSON.stringify({ cod: infoTempo.mesCodigo, nome: infoTempo.mesNome }));
-        }
-    });
+    const mesesNomes = {
+        "01": "Janeiro", "02": "Fevereiro", "03": "Março", "04": "Abril",
+        "05": "Maio", "06": "Junho", "07": "Julho", "08": "Agosto",
+        "09": "Setembro", "10": "Outubro", "11": "Novembro", "12": "Dezembro"
+    };
 
-    // Ordena as opções inserindo registros legados ao fim da lista
-    Array.from(anosExistentes).sort((a, b) => {
-        if (a === "ANTIGO") return 1;
-        if (b === "ANTIGO") return -1;
-        return b - a;
-    }).forEach(ano => {
-        selectAno.innerHTML += `<option value="${ano}">${ano === "ANTIGO" ? "DADOS LEGADOS (ANTIGOS)" : ano}</option>`;
-    });
-
-    Array.from(mesesExistentes).map(m => JSON.parse(m))
-        .sort((a, b) => parseInt(a.cod) - parseInt(b.cod))
-        .forEach(m => {
-            selectMes.innerHTML += `<option value="${m.cod}">${m.nome.toUpperCase()}</option>`;
-        });
-
-    // Registra os ouvintes (listeners) evitando duplicação
-    if (!selectAno.dataset.hasListener) {
-        selectAno.addEventListener('change', () => {
-            if (selectAno.value === "ANTIGO") {
-                selectMes.value = "TODOS";
-                selectMes.disabled = true;
-            } else {
-                selectMes.disabled = false;
+    // Varre o MAPAS_POR_MES para descobrir quais datas você configurou manualmente
+    Object.keys(MAPAS_POR_MES).forEach(chave => {
+        if (chave.includes('-')) {
+            const [ano, mesCod] = chave.split('-');
+            if (ano) anosExistentes.add(ano);
+            if (mesCod && mesesNomes[mesCod]) {
+                mesesExistentes.set(mesCod, mesesNomes[mesCod]);
             }
-            filtrarEAplicarDados();
-        });
+        }
+    });
+
+    // Popula o seletor de Anos
+    selectAno.innerHTML = '<option value="TODOS">ANO: TODOS</option>';
+    Array.from(anosExistentes).sort((a, b) => b - a).forEach(ano => {
+        selectAno.innerHTML += `<option value="${ano}">${ano}</option>`;
+    });
+
+    // Popula o seletor de Meses
+    selectMes.innerHTML = '<option value="TODOS">MÊS: TODOS</option>';
+    Array.from(mesesExistentes.keys()).sort((a, b) => parseInt(a) - parseInt(b)).forEach(cod => {
+        selectMes.innerHTML += `<option value="${cod}">${mesesExistentes.get(cod).toUpperCase()}</option>`;
+    });
+
+    // Restaura o estado anterior se ele ainda fizer sentido na lista
+    selectAno.value = anoSelecionado;
+    selectMes.value = mesSelecionado;
+
+    // Vincula os manipuladores de eventos evitando escutas duplicadas
+    if (!selectAno.dataset.hasListener) {
+        selectAno.addEventListener('change', filtrarEAplicarDados);
         selectAno.dataset.hasListener = "true";
     }
-
     if (!selectMes.dataset.hasListener) {
         selectMes.addEventListener('change', filtrarEAplicarDados);
         selectMes.dataset.hasListener = "true";
@@ -223,7 +164,7 @@ function gerarOpcoesDosFiltros() {
 }
 
 /**
- * Filtra a matriz bruta e comanda a atualização dos blocos visuais na tela
+ * Controla os escopos de pool e gerencia o filtro de atualização
  */
 function filtrarEAplicarDados() {
     const container = document.getElementById('grid-modos');
@@ -233,17 +174,35 @@ function filtrarEAplicarDados() {
     let anoAlvo = selectAno ? selectAno.value : "TODOS";
     let mesAlvo = selectMes ? selectMes.value : "TODOS";
 
-    let dadosFiltrados = dadosOriginaisRegiao.filter(item => {
-        const infoTempo = obterAnoEMes(item);
-        const matchAno = (anoAlvo === "TODOS" || infoTempo.ano === anoAlvo);
-        const matchMes = (mesAlvo === "TODOS" || infoTempo.mesCodigo === mesAlvo);
-        return matchAno && matchMes;
+    let mesChave = (anoAlvo !== "TODOS" && mesAlvo !== "TODOS") ? `${anoAlvo}-${mesAlvo}` : "TODOS";
+
+    // Atualiza a visualização dos modos e mapas rotativos
+    renderizarDinamico(dadosOriginaisRegiao, container, mesChave);
+    
+    // Filtra inteligentemente a tabela unificada inferior "All Maps Analysis" 
+    // para mostrar apenas brawlers baseados no escopo temporal ativo
+    let dadosTabelaGeral = dadosOriginaisRegiao;
+    const mapasPermitidos = [];
+
+    Object.keys(MAPAS_POR_MES).forEach(chave => {
+        const [ano, mesCod] = chave.split('-');
+        const matchAno = (anoAlvo === "TODOS" || ano === anoAlvo);
+        const matchMes = (mesAlvo === "TODOS" || mesCod === mesAlvo);
+
+        if (matchAno && matchMes) {
+            Object.keys(MAPAS_POR_MES[chave]).forEach(modo => {
+                MAPAS_POR_MES[chave][modo].forEach(mapa => {
+                    mapasPermitidos.push(mapa.toLowerCase());
+                });
+            });
+        }
     });
 
-    let mesChave = (anoAlvo !== "TODOS" && anoAlvo !== "ANTIGO" && mesAlvo !== "TODOS") ? `${anoAlvo}-${mesAlvo}` : "TODOS";
+    if (anoAlvo !== "TODOS" || mesAlvo !== "TODOS") {
+        dadosTabelaGeral = dadosOriginaisRegiao.filter(i => i.mapa && mapasPermitidos.includes(i.mapa.toLowerCase()));
+    }
 
-    renderizarDinamico(dadosFiltrados, container, mesChave);
-    renderizarTabelaAllMaps(dadosFiltrados);
+    renderizarTabelaAllMaps(dadosTabelaGeral);
 }
 
 /**
@@ -281,33 +240,59 @@ function renderizarTabelaAllMaps(dados) {
 }
 
 /**
- * Renderiza os Modos e Mapas respeitando os agrupamentos e a rotação ativa
+ * RESOLVIDO: Renderiza APENAS os modos e mapas que você colocou nas configurações
  */
 function renderizarDinamico(dados, container, mesChave) {
     container.innerHTML = ""; 
 
-    MODOS_DO_JOGO.forEach(modo => {
+    let estruturaVisual = {};
+
+    // 1. Constrói a estrutura visual de exibição baseada estritamente no seu MAPAS_POR_MES
+    if (mesChave !== "TODOS" && MAPAS_POR_MES[mesChave]) {
+        // Se um mês específico e exato for selecionado
+        Object.keys(MAPAS_POR_MES[mesChave]).forEach(modo => {
+            estruturaVisual[modo] = MAPAS_POR_MES[mesChave][modo];
+        });
+    } else {
+        // Se estiver em "TODOS" ou filtrado parcialmente por Ano/Mês
+        const selectAno = document.getElementById('select-ano');
+        const selectMes = document.getElementById('select-mes');
+        let anoAlvo = selectAno ? selectAno.value : "TODOS";
+        let mesAlvo = selectMes ? selectMes.value : "TODOS";
+
+        Object.keys(MAPAS_POR_MES).forEach(chave => {
+            const [ano, mesCod] = chave.split('-');
+            const matchAno = (anoAlvo === "TODOS" || ano === anoAlvo);
+            const matchMes = (mesAlvo === "TODOS" || mesCod === mesAlvo);
+
+            if (matchAno && matchMes) {
+                Object.keys(MAPAS_POR_MES[chave]).forEach(modo => {
+                    if (!estruturaVisual[modo]) {
+                        estruturaVisual[modo] = [];
+                    }
+                    MAPAS_POR_MES[chave][modo].forEach(mapa => {
+                        if (!estruturaVisual[modo].includes(mapa)) {
+                            estruturaVisual[modo].push(mapa);
+                        }
+                    });
+                });
+            }
+        });
+    }
+
+    // 2. Transforma a estrutura visual permitida em tabelas HTML na tela
+    Object.keys(estruturaVisual).forEach(modo => {
         const section = document.createElement('div');
         section.className = 'modo-section';
         let mapasHTML = "";
 
-        let mapasAlvo = [];
-        
-        // Aplicação do Pool de Mapas estrito ou dinâmico por varredura
-        if (mesChave !== "TODOS" && MAPAS_POR_MES[mesChave] && MAPAS_POR_MES[mesChave][modo]) {
-            mapasAlvo = MAPAS_POR_MES[mesChave][modo];
-        } else {
-            const encontrados = dados
-                .filter(i => i.modo?.toLowerCase() === modo.toLowerCase() && i.mapa)
-                .map(i => i.mapa);
-            mapasAlvo = Array.from(new Set(encontrados));
-        }
+        const mapasAlvo = estruturaVisual[modo];
 
         mapasAlvo.forEach(mapa => {
+            // Varre o arquivo JSON filtrando os dados que pertencem a este modo e mapa específicos
             const filtrados = dados.filter(i => i.modo?.toLowerCase() === modo.toLowerCase() && i.mapa?.toLowerCase() === mapa.toLowerCase());
             
             if (filtrados.length > 0) {
-                // 🌟 CORREÇÃO DE ACUMULAÇÃO: Agrupa registros temporais do brawler para evitar duplicados no mesmo mapa
                 const statsMapa = {};
                 filtrados.forEach(i => {
                     const bName = i.pick || i.brawler;
@@ -317,7 +302,6 @@ function renderizarDinamico(dados, container, mesChave) {
                     statsMapa[bName].v += Number(i.vitorias || i.win || 0);
                 });
 
-                // Converte em array calculado e aplica a ordenação pelo maior Win Rate (Padrão dos Mapas)
                 const listaMapaOrdenada = Object.keys(statsMapa).map(bName => {
                     const p = statsMapa[bName].p;
                     const v = statsMapa[bName].v;
@@ -356,8 +340,10 @@ function renderizarDinamico(dados, container, mesChave) {
         });
 
         if (mapasHTML) {
+            // Formata o nome interno ex: "brawlBall" para exibição amigável "BRAWL BALL"
+            const nomeExibicaoModo = modo.replace(/([A-Z])/g, ' $1').trim().toUpperCase();
             section.innerHTML = `
-                <div class="modo-header" onclick="toggleElemento(this)">${modo.toUpperCase()} <span>▶</span></div>
+                <div class="modo-header" onclick="toggleElemento(this)">${nomeExibicaoModo} <span>▶</span></div>
                 <div class="mapa-content" style="display:none">${mapasHTML}</div>`;
             container.appendChild(section);
         }
