@@ -4,56 +4,74 @@ import os
 from datetime import datetime, timedelta, timezone
 
 # --- CONFIGURAÇÃO ---
+# Substitua pela sua NOVA CHAVE gerada com o IP 45.79.218.79
 API_KEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjU0ODZlOGQxLTRkNWQtNDJmYy1iOWE3LWU5ODYyMWJhOWI0NSIsImlhdCI6MTc3ODUwODgwOCwic3ViIjoiZGV2ZWxvcGVyLzc0NjFhNGJkLThhZDctNjg2Mi0wOGVkLTJiYmEzMzAxMWE3NiIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiNDUuNzkuMjE4Ljc5Il0sInR5cGUiOiJjbGllbnQifV19.yvcSQalBqNz6Q6DjZWU5IL1XvBjn5DGckYvy2bgl5tjVeRJ2GMhY_I2JP1zdEeLAfEG2hGVJT7OMZro4kkegFA"
 
 client = brawlstats.Client(API_KEY, base_url="https://bsproxy.royaleapi.dev/v1")
 
+# --- DEFINIÇÃO DOS ARQUIVOS ---
 ARQUIVO_BRUTO = "historico_bruto.csv"
 ARQUIVO_FINAL = "estatisticas_finais.csv"
 
 REGIOES = {
-    "SA": {"#PLLRJC2V": "BH|Wesley", "#2GV09VJJP": "LOUD|FireCrow", "#CQLR0Y80": "ELV|Tufa", "#L9PQUV0YC": "OS|BrabaoBs", "#JQ8LLLY": "AL|FireMirillo", "#202GJJR28": "Doritos", "#PR0P8QVQ": "SKC| Kr ;)", "#R2LR2QLG": "ETN|Mohtep", "#80VLPJCCC": "Tilo", "#GJPVYUQG": "ENO|Deykonn", "#2P8RVJVUY": "OCX|Sterixx", "#2QCCC29QV": "ODS|Magic"},
-    "NA": {"#LVRRYPV": "RLM|Bobby", "#82RCQCVG": "TRB|Lxffy", "#YUJ8PJ0LR": "TE|Snoiy", "#VPVLG2": "ZOOS|Tyrant", "#P8GVQ28": "Math", "#QURVLPG": "VTC|Ezlivi", "#R9CCLP8Q": "LGCY|Rafiki", "#28LUY98": "OG", "#82J2VLRQ": "Zhar", "#9PP0G2CG": "VIC|SecondBest", "#GCJCRVQ8": "STMN|Tacos", "#2G82CGU": "NAME|Zee"},
-    "EMEA": {"#9PCV9L982": "FUT|AngelBoy", "#2208QGGGL": "BGT|Dompe", "#80PVPCC29": "NAVI|Enraged", "#9JRGJ0RY9": "MAD|Rup", "#YQUCCJ2": "HMB|Symantec", "#9LVUC2PY": "SK| Ope", "#PCPRPJV": "TH|IKaoss", "#CJ9YRGGC": "HK|Natrix", "#2Q892QVU": "TTM|Maru", "#9PQQ8GQQ": "NOVO|Filippo", "#2Y822YJYJC": "Decaii", "#PLV89CGP": "BIG|Salty"},
-    "EA": {"#9ULYPV8": "CR|Tensai", "#P0Y8JGL0U": "ZETA|Battoman", "#J99YU9QY": "SKCEA|Kuru", "#2RQQ9PGC": "FG|Shigemyon", "#GJ9V99VJG": "DF|Clarx", "#82CJYJPG2": "RVL|Yutapin", "#8J9GUJJVY": "RC|Melty", "#28PU0P9L0": "FL|Achapi", "#28VP0G808": "INS|Koga", "#89UUQLJCC": "FZ|Toridesu", "#2LJVR0RQ8G": "TL|Engine"} 
+
+    "SA": {"#PLLRJC2V": "BH|Wesley",
+           "#2GV09VJJP": "LOUD|FireCrow",
+           "#CQLR0Y80": "ELV|Tufa",
+           "#L9PQUV0YC": "OS|BrabaoBs",
+           "#JQ8LLLY": "AL|FireMirillo",
+           "#202GJJR28": "Doritos",
+           "#PR0P8QVQ": "SKC| Kr ;)",
+           "#R2LR2QLG": "ETN|Mohtep",
+           "#80VLPJCCC": "Tilo",
+           "#GJPVYUQG": "ENO|Deykonn",
+           "#2P8RVJVUY": "OCX|Sterixx",
+           "#2QCCC29QV": "ODS|Magic"},
+
+    "NA": {"#LVRRYPV": "RLM|Bobby",
+           "#82RCQCVG": "TRB|Lxffy",
+           "#YUJ8PJ0LR": "TE|Snoiy",
+           "#VPVLG2": "ZOOS|Tyrant",
+           "#P8GVQ28": "Math",
+           "#QURVLPG": "VTC|Ezlivi",
+           "#R9CCLP8Q": "LGCY|Rafiki",
+           "#28LUY98": "OG",
+           "#82J2VLRQ": "Zhar",
+           "#9PP0G2CG": "VIC|SecondBest",
+           "#GCJCRVQ8": "STMN|Tacos",
+           "#2G82CGU": "NAME|Zee"},
+
+    "EMEA": {"#9PCV9L982": "FUT|AngelBoy",
+             "#2208QGGGL": "BGT|Dompe",
+             "#80PVPCC29": "NAVI|Enraged",
+             "#9JRGJ0RY9": "MAD|Rup",
+             "#YQUCCJ2": "HMB|Symantec",
+             "#9LVUC2PY": "SK| Ope",
+             "#PCPRPJV": "TH|IKaoss",
+             "#CJ9YRGGC": "HK|Natrix",
+             "#2Q892QVU": "TTM|Maru",
+             "#9PQQ8GQQ": "NOVO|Filippo",
+             "#2Y822YJYJC": "Decaii",  
+             "#PLV89CGP": "BIG|Salty"},
+
+    "EA": {"#9ULYPV8": "CR|Tensai",
+           "#P0Y8JGL0U": "ZETA|Battoman",
+           "#J99YU9QY": "SKCEA|Kuru",
+           "#2RQQ9PGC": "FG|Shigemyon",
+           "#GJ9V99VJG": "DF|Clarx",
+           "#82CJYJPG2": "RVL|Yutapin",
+           "#8J9GUJJVY": "RC|Melty",
+           "#28PU0P9L0": "FL|Achapi",
+           "#28VP0G808": "INS|Koga",
+           "#89UUQLJCC": "FZ|Toridesu",
+           "#2LJVR0RQ8G": "TL|Engine"} 
+
 }
 
 TAG_PARA_REGIAO = {tag: reg for reg, lista in REGIOES.items() for tag in lista}
 
-
-def extrair_ano_mes(dt_str):
-    """Função auxiliar robusta para formatar a data de adição no JSON como AAAA-MM."""
-    dt_str = str(dt_str).strip()
-    
-    # Suporte a formatos com hífen (Ex: 2026-05-28)
-    if '-' in dt_str:
-        partes = dt_str.split(' ')[0].split('-')
-        if len(partes) >= 2:
-            return f"{partes[0]}-{partes[1]}"  # Retorna no formato AAAA-MM
-            
-    # Suporte a formatos com barra (Ex: 28/05/2026)
-    if '/' in dt_str:
-        partes = dt_str.split(' ')[0].split('/')
-        if len(partes) == 3:
-            return f"{partes[2]}-{partes[1]}"  # Retorna no formato AAAA-MM
-            
-    if "antig" in dt_str.lower():
-        return "ANTIGO"
-        
-    return "SEM DATA"
-
-
-def gerar_json_consolidado(df_input, path):
-    """Gera o arquivo JSON agrupando também pela nova coluna 'data'."""
-    consolidado = df_input.groupby(['modo', 'mapa', 'pick', 'data']).agg(
-        picks=('win', 'count'),
-        vitorias=('win', 'sum')
-    ).reset_index()
-    consolidado['win_rate'] = (consolidado['vitorias'] / consolidado['picks'] * 100).round(1).astype(str) + '%'
-    consolidado.to_json(path, orient='records', force_ascii=False)
-
-
 def minerar_dados():
+    # Ajuste de Horário Brasília
     fuso_brasilia = timezone(timedelta(hours=-3))
     momento_revisao = datetime.now(fuso_brasilia).strftime('%d/%m/%Y %H:%M:%S')
     
@@ -61,14 +79,15 @@ def minerar_dados():
     
     colunas = ['id_partida', 'regiao', 'id_players', 'name_players', 'pick', 'win', 'win_rate', 'modo', 'mapa', 'data_adicao']
     
+    # Verifica ou cria o arquivo bruto
     if os.path.exists(ARQUIVO_BRUTO):
         try:
-            df_existente = pd.read_csv(ARQUIVO_BRUTO, sep=',', dtype=str, keep_default_na=False, encoding='utf-8')
+            df_existente = pd.read_csv(ARQUIVO_BRUTO, sep=',', dtype=str, keep_default_na=False)
             ids_registrados = set(df_existente['id_partida'].unique())
         except:
             ids_registrados = set()
     else:
-        pd.DataFrame(columns=colunas).to_csv(ARQUIVO_BRUTO, index=False, encoding='utf-8')
+        pd.DataFrame(columns=colunas).to_csv(ARQUIVO_BRUTO, index=False)
         ids_registrados = set()
 
     novas_linhas = []
@@ -114,28 +133,48 @@ def minerar_dados():
         df_novos.to_csv(ARQUIVO_BRUTO, mode='a', header=False, index=False, sep=',', encoding='utf-8')
         
     if os.path.exists(ARQUIVO_BRUTO):
-        df_total = pd.read_csv(ARQUIVO_BRUTO, keep_default_na=False, encoding='utf-8')
+        df_total = pd.read_csv(ARQUIVO_BRUTO, keep_default_na=False)
         df_total['win'] = pd.to_numeric(df_total['win'], errors='coerce').fillna(0)
         
-        # Aplica a extração criando a nova coluna 'data' utilizada no GroupBy
-        df_total['data'] = df_total['data_adicao'].apply(extrair_ano_mes)
-        
+        # 🌟 MODIFICAÇÃO: Função para extrair Ano e Mês por extenso da coluna data_adicao
+        def tratar_datas(data_str):
+            try:
+                if not data_str or "antig" in str(data_str).lower():
+                    return "ANTIGO", "ANTIGO"
+                # Converte o formato padronizado "28/05/2026 11:22:39"
+                dt = datetime.strptime(str(data_str).strip(), '%d/%m/%Y %H:%M:%S')
+                meses_nome = ["JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"]
+                return str(dt.year), meses_nome[dt.month - 1]
+            except:
+                return "OUTRO", "OUTRO"
+
+        # Criação das colunas temporárias para agrupamento no JSON
+        df_total['ano'] = df_total['data_adicao'].apply(lambda x: tratar_datas(x)[0])
+        df_total['mes'] = df_total['data_adicao'].apply(lambda x: tratar_datas(x)[1])
+
         df_total['regiao_list'] = df_total['regiao'].str.split('/')
         df_stats = df_total.explode('regiao_list')
         
         os.makedirs('api/stats', exist_ok=True)
 
-        # Gera o JSON geral consolidado com meses separados
+        # 🌟 MODIFICAÇÃO: Incluídos 'ano' e 'mes' dentro do agrupamento (groupby)
+        def gerar_json_consolidado(df_input, path):
+            consolidado = df_input.groupby(['modo', 'mapa', 'pick', 'ano', 'mes']).agg(
+                picks=('win', 'count'),
+                vitorias=('win', 'sum')
+            ).reset_index()
+            consolidado['win_rate'] = (consolidado['vitorias'] / consolidado['picks'] * 100).round(1).astype(str) + '%'
+            # force_ascii=False garante a codificação correta de caracteres especiais (ex: Março)
+            consolidado.to_json(path, orient='records', force_ascii=False)
+
         gerar_json_consolidado(df_stats, 'api/stats/geral.json')
 
-        # Gera os JSONs específicos por região
         for reg in df_stats['regiao_list'].unique():
             if reg:
                 df_reg = df_stats[df_stats['regiao_list'] == reg]
                 gerar_json_consolidado(df_reg, f"api/stats/{str(reg).lower()}.json")
 
     print(f"\n✅ Concluído! Total de novas partidas: {total_novas}")
-
 
 if __name__ == "__main__":
     minerar_dados()
