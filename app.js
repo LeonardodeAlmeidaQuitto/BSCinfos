@@ -1,11 +1,27 @@
-const MAPAS_ALVO = {
-    "brawlBall": ["Super Beach", "Pinhole Punt", "Sneaky Fields"],
-    "bounty": ["Shooting Star", "Hideout", "Layer Cake"],
-    "heist": ["Hot Potato", "Safe Zone", "Bridge Too Far"],
-    "knockout": ["Goldarm Gulch", "Belle's Rock", "Out in the Open"],
-    "gemGrab": ["Hard Rock Mine", "Double Swoosh", "Deathcap Trap"],
-    "hotZone": ["Ring of Fire", "Open Business", "Dueling Beetles"]
+// --- CONFIGURAÇÃO DOS MAPAS POR MÊS ---
+// Aqui você define exatamente os 3 mapas de cada modo para cada ano/mês (Formato: AAAA-MM)
+const MAPAS_POR_MES = {
+    "2026-04": {
+        "brawlBall": ["Super Beach", "Pinhole Punt", "Sneaky Fields"],
+        "bounty": ["Shooting Star", "Hideout", "Layer Cake"],
+        "heist": ["Hot Potato", "Safe Zone", "Bridge Too Far"],
+        "knockout": ["Goldarm Gulch", "Belle's Rock", "Out in the Open"],
+        "gemGrab": ["Hard Rock Mine", "Double Swoosh", "Deathcap Trap"],
+        "hotZone": ["Ring of Fire", "Open Business", "Dueling Beetles"]
+    },
+    "2026-05": {
+        "brawlBall": ["Triple Dribble", "Pinhole Punt", "Pinball Dreams"], // Exemplos para o próximo mês
+        "bounty": ["Dry Season", "Hideout", "Layer Cake"],
+        "heist": ["Pit Stop", "Safe Zone", "Kaboom Canyon"],
+        "knockout": ["Goldarm Gulch", "New Horizons", "Out in the Open"],
+        "gemGrab": ["Hard Rock Mine", "Gem Fort", "Crystal Arcade"],
+        "hotZone": ["Ring of Fire", "Dueling Beetles", "Open Business"]
+    }
+    // Você pode ir adicionando os próximos meses aqui seguindo o mesmo padrão...
 };
+
+// Lista padrão de todos os modos do jogo para renderização
+const MODOS_DO_JOGO = ["brawlBall", "bounty", "heist", "knockout", "gemGrab", "hotZone"];
 
 // Armazenamento global dos dados originais da região ativa
 let dadosOriginaisRegiao = [];
@@ -131,12 +147,10 @@ function gerarOpcoesDosFiltros() {
         }
     });
 
-    // Adiciona anos encontrados de forma decrescente
     Array.from(anosExistentes).sort((a, b) => b - a).forEach(ano => {
         selectAno.innerHTML += `<option value="${ano}">${ano}</option>`;
     });
 
-    // Adiciona meses encontrados de forma crescente
     Array.from(mesesExistentes).map(m => JSON.parse(m))
         .sort((a, b) => parseInt(a.cod) - parseInt(b.cod))
         .forEach(m => {
@@ -153,7 +167,7 @@ function filtrarEAplicarDados() {
     let anoAlvo = selectAno ? selectAno.value : "TODOS";
     let mesAlvo = selectMes ? selectMes.value : "TODOS";
 
-    // Filtra a matriz bruta conforme a escolha do usuário
+    // Filtra os dados conforme a escolha dos filtros
     let dadosFiltrados = dadosOriginaisRegiao.filter(item => {
         const infoTempo = obterAnoEMes(item);
         const matchAno = (anoAlvo === "TODOS" || infoTempo.ano === anoAlvo);
@@ -161,8 +175,10 @@ function filtrarEAplicarDados() {
         return matchAno && matchMes;
     });
 
-    // Renderiza as seções individuais e a tabela unificada
-    renderizarDinamico(dadosFiltrados, container);
+    // Cria a chave única do mês ativo (Ex: "2026-05") para buscar o pool de mapas correspondente
+    let mesChave = (anoAlvo !== "TODOS" && mesAlvo !== "TODOS") ? `${anoAlvo}-${mesAlvo}` : "TODOS";
+
+    renderizarDinamico(dadosFiltrados, container, mesChave);
     renderizarTabelaAllMaps(dadosFiltrados);
 }
 
@@ -195,20 +211,37 @@ function renderizarTabelaAllMaps(dados) {
     `).join('');
 }
 
-// Renderiza os Modos e Mapas Dinamicamente
-function renderizarDinamico(dados, container) {
+// Renderiza os Modos e Mapas Dinamicamente respeitando a rotação do mês selecionado
+function renderizarDinamico(dados, container, mesChave) {
     container.innerHTML = ""; 
-    Object.keys(MAPAS_ALVO).forEach(modo => {
+
+    MODOS_DO_JOGO.forEach(modo => {
         const section = document.createElement('div');
         section.className = 'modo-section';
         let mapasHTML = "";
 
-        MAPAS_ALVO[modo].forEach(mapa => {
+        // DETERMINAÇÃO DO POOL DE MAPAS:
+        let mapasAlvo = [];
+        
+        // Se houver uma lista cadastrada exata para este mês, usa ela ("os 3 que eu quero")
+        if (mesChave !== "TODOS" && MAPAS_POR_MES[mesChave] && MAPAS_POR_MES[mesChave][modo]) {
+            mapasAlvo = MAPAS_POR_MES[mesChave][modo];
+        } else {
+            // Caso contrário (Modo de Segurança / TODOS), extrai automaticamente os mapas do JSON
+            const encontrados = dados
+                .filter(i => i.modo?.toLowerCase() === modo.toLowerCase() && i.mapa)
+                .map(i => i.mapa);
+            mapasAlvo = Array.from(new Set(encontrados)); // Remove duplicados
+        }
+
+        // Gera o HTML apenas para os mapas determinados acima
+        mapasAlvo.forEach(mapa => {
             const filtrados = dados.filter(i => i.modo?.toLowerCase() === modo.toLowerCase() && i.mapa?.toLowerCase() === mapa.toLowerCase());
+            
             if (filtrados.length > 0) {
                 const rows = filtrados.sort((a,b) => parseFloat(b.win_rate) - parseFloat(a.win_rate)).map(b => `
                     <tr>
-                        <td><img src="${formatarNomeImagem(b.pick || b.brawler)}"></td>
+                        <td><img src="${formatarNomeImagem(b.pick || b.brawler)}" onerror="this.src='brawlers/default.png';"></td>
                         <td>${b.pick || b.brawler}</td>
                         <td>${b.picks || 1}</td>
                         <td>${b.vitorias || b.win || 0}</td>
