@@ -7,6 +7,9 @@ const MAPAS_ALVO = {
     "hotZone": ["Ring of Fire", "Open Business", "Dueling Beetles"]
 };
 
+// Armazenamento global dos dados originais da região ativa
+let dadosOriginaisRegiao = [];
+
 const formatarNomeImagem = (n) => `brawlers/${n.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
 
 const obterClasseColorida = (wr) => {
@@ -16,6 +19,34 @@ const obterClasseColorida = (wr) => {
     if (v >= 50) return 'wr-50';
     return 'wr-30';
 };
+
+// Auxiliar para ler a data do JSON e quebrar em Ano e Mês por extenso
+function obterAnoEMes(item) {
+    if (!item.data) return { ano: "SEM DATA", mesCodigo: "SEM DATA", mesNome: "SEM DATA" };
+    
+    let ano = "", mesCodigo = "";
+    if (item.data.includes('-')) {
+        const partes = item.data.split('-');
+        ano = partes[0];
+        mesCodigo = partes[1];
+    } else if (item.data.includes('/')) {
+        const partes = item.data.split('/');
+        ano = partes[2];
+        mesCodigo = partes[1];
+    }
+
+    const mesesNomes = {
+        "01": "Janeiro", "02": "Fevereiro", "03": "Março", "04": "Abril",
+        "05": "Maio", "06": "Junho", "07": "Julho", "08": "Agosto",
+        "09": "Setembro", "10": "Outubro", "11": "Novembro", "12": "Dezembro"
+    };
+
+    return {
+        ano: ano,
+        mesCodigo: mesCodigo,
+        mesNome: mesesNomes[mesCodigo] || "Desconhecido"
+    };
+}
 
 // Função de abrir/fechar (Toggle)
 function toggleElemento(header) {
@@ -27,18 +58,16 @@ function toggleElemento(header) {
     if (seta) seta.style.transform = isHidden ? "rotate(90deg)" : "rotate(0deg)";
 }
 
-// LÓGICA DE FILTRO E ORDENAÇÃO POR CATEGORIAS
+// LÓGICA DE FILTRO E ORDENAÇÃO POR CATEGORIAS (Brawler, Picks, Wins, WR)
 function ordenarTabela(thElement, tipo) {
     const table = thElement.closest('table');
     const tbody = table.querySelector('tbody');
     const rows = Array.from(tbody.querySelectorAll('tr'));
     const colIndex = thElement.cellIndex;
 
-    // Define se a ordem atual será ascendente ou descendente
     let isAsc = thElement.getAttribute('data-sort') === 'asc';
     thElement.setAttribute('data-sort', isAsc ? 'desc' : 'asc');
 
-    // Limpa os indicadores visuais das outras colunas da mesma tabela
     thElement.parentElement.querySelectorAll('th').forEach(th => {
         if (th !== thElement && th.classList.contains('sortable')) {
             th.removeAttribute('data-sort');
@@ -46,7 +75,6 @@ function ordenarTabela(thElement, tipo) {
         }
     });
 
-    // Ordena as linhas baseado no tipo de dado da coluna
     rows.sort((a, b) => {
         let valA = a.cells[colIndex].innerText.trim();
         let valB = b.cells[colIndex].innerText.trim();
@@ -56,19 +84,17 @@ function ordenarTabela(thElement, tipo) {
             let numB = parseFloat(valB.replace('%', '')) || 0;
             return isAsc ? numA - numB : numB - numA;
         } 
-        // Ordem Alfabética (Brawlers)
         return isAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
     });
 
-    // Atualiza o ícone do cabeçalho clicado (▲ para crescente, ▼ para decrescente)
     const textoBase = thElement.innerHTML.replace(/[▲▼↕]/g, '').trim();
     thElement.innerHTML = textoBase + ' ' + (isAsc ? '▲' : '▼');
 
-    // Recoloca as linhas ordenadas de volta na tabela
     tbody.innerHTML = '';
     rows.forEach(row => tbody.appendChild(row));
 }
 
+// Carrega os dados brutos e gera a interface de tempo
 async function carregarRegiao(sigla) {
     const container = document.getElementById('grid-modos');
     if (!container) return;
@@ -76,15 +102,71 @@ async function carregarRegiao(sigla) {
 
     try {
         const res = await fetch(`api/stats/${sigla.toLowerCase()}.json`);
-        const dados = await res.json();
-        renderizarDinamico(dados, container);
-        renderizarTabelaAllMaps(dados); 
+        dadosOriginaisRegiao = await res.json();
+        
+        gerarOpcoesDosFiltros();
+        filtrarEAplicarDados();
     } catch (e) {
         container.innerHTML = `<h2 style="text-align:center; color:white;">ERRO AO CARREGAR DADOS</h2>`;
     }
 }
 
-// Renderiza a Tabela Geral (Inferior) com 5 Colunas
+// Monta as caixas de seleção de Ano e Mês dinamicamente baseado no JSON carregado
+function gerarOpcoesDosFiltros() {
+    const selectAno = document.getElementById('select-ano');
+    const selectMes = document.getElementById('select-mes');
+    if (!selectAno || !selectMes) return;
+
+    selectAno.innerHTML = '<option value="TODOS">ANO: TODOS</option>';
+    selectMes.innerHTML = '<option value="TODOS">MÊS: TODOS</option>';
+
+    const anosExistentes = new Set();
+    const mesesExistentes = new Set();
+
+    dadosOriginaisRegiao.forEach(item => {
+        const infoTempo = obterAnoEMes(item);
+        if (infoTempo.ano && infoTempo.ano !== "SEM DATA") anosExistentes.add(infoTempo.ano);
+        if (infoTempo.mesCodigo && infoTempo.mesCodigo !== "SEM DATA") {
+            mesesExistentes.add(JSON.stringify({ cod: infoTempo.mesCodigo, nome: infoTempo.mesNome }));
+        }
+    });
+
+    // Adiciona anos encontrados de forma decrescente
+    Array.from(anosExistentes).sort((a, b) => b - a).forEach(ano => {
+        selectAno.innerHTML += `<option value="${ano}">${ano}</option>`;
+    });
+
+    // Adiciona meses encontrados de forma crescente
+    Array.from(mesesExistentes).map(m => JSON.parse(m))
+        .sort((a, b) => parseInt(a.cod) - parseInt(b.cod))
+        .forEach(m => {
+            selectMes.innerHTML += `<option value="${m.cod}">${m.nome.toUpperCase()}</option>`;
+        });
+}
+
+// Executa a filtragem por tempo e reconstrói as tabelas na tela
+function filtrarEAplicarDados() {
+    const container = document.getElementById('grid-modos');
+    const selectAno = document.getElementById('select-ano');
+    const selectMes = document.getElementById('select-mes');
+
+    let anoAlvo = selectAno ? selectAno.value : "TODOS";
+    let mesAlvo = selectMes ? selectMes.value : "TODOS";
+
+    // Filtra a matriz bruta conforme a escolha do usuário
+    let dadosFiltrados = dadosOriginaisRegiao.filter(item => {
+        const infoTempo = obterAnoEMes(item);
+        const matchAno = (anoAlvo === "TODOS" || infoTempo.ano === anoAlvo);
+        const matchMes = (mesAlvo === "TODOS" || infoTempo.mesCodigo === mesAlvo);
+        return matchAno && matchMes;
+    });
+
+    // Renderiza as seções individuais e a tabela unificada
+    renderizarDinamico(dadosFiltrados, container);
+    renderizarTabelaAllMaps(dadosFiltrados);
+}
+
+// Renderiza a Tabela Geral Combinada (All Maps Analysis)
 function renderizarTabelaAllMaps(dados) {
     const tbody = document.getElementById('tbody-all-maps');
     if (!tbody) return;
@@ -113,7 +195,7 @@ function renderizarTabelaAllMaps(dados) {
     `).join('');
 }
 
-// Renderiza os Modos Dinamicamente
+// Renderiza os Modos e Mapas Dinamicamente
 function renderizarDinamico(dados, container) {
     container.innerHTML = ""; 
     Object.keys(MAPAS_ALVO).forEach(modo => {
