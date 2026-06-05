@@ -2,11 +2,14 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EMEA Infos</title>
     <link rel="stylesheet" href="style.css">
     <script src="app.js"></script>
 </head>
 <body>
+
+    <!-- NAVBAR -->
     <nav>
         <a href="index.html" class="nav-link">MENU</a>
         <div class="nav-links">
@@ -24,6 +27,7 @@
             <p class="subtitle">Dados extraídos de Scrims e Torneios Oficiais</p>
         </header>
         
+        <!-- FILTROS CENTRALIZADOS -->
         <div class="filter-container">
             <select id="select-ano" class="filter-select" onchange="filtrarEAplicarDados()">
                 <option value="TODOS">ANO: TODOS</option>
@@ -35,6 +39,7 @@
         
         <div id="grid-modos"></div> 
 
+        <!-- SEÇÃO DE ANÁLISE -->
         <div class="modo-section">
             <button class="modo-header" onclick="toggleElemento(this)">
                 ALL MAPS ANALYSIS <span>▶</span>
@@ -50,11 +55,17 @@
                             <th class="col-stats sortable" onclick="ordenarTabela(this, 'percent')">WIN RATE ↕</th>
                         </tr>
                     </thead>
-                    <tbody id="tbody-all-maps"></tbody>
+                    <tbody id="tbody-all-maps">
+                        <!-- Os dados são preenchidos dinamicamente pelo app.js -->
+                    </tbody>
                 </table>
             </div>
         </div>
     </main>
-    <script>document.addEventListener('DOMContentLoaded', () => carregarRegiao('emea'));</script>
+
+    <script>
+        // Inicia o carregamento dos dados específicos da região SA
+        document.addEventListener('DOMContentLoaded', () => carregarRegiao('emea'));
+    </script>
 </body>
 </html>
