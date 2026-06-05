@@ -72,8 +72,8 @@ text-align: center; vertical-align: middle; font-size: 13px;
 .excel-table td:nth-child(2) { text-align: left; padding-left: 15px; font-weight: 800; }
 
 .excel-table img {
-    width: 50px; 
-    height: 50px; 
+    width: 25px; 
+    height: 25px; 
     object-fit: contain; /* Muda de 'cover' para 'contain' */
 }
 
