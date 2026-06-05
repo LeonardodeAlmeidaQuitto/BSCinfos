@@ -77,11 +77,11 @@ border-radius: 3px; vertical-align: middle;
 }
 
 /* --- 5. CORES DE WIN RATE --- */
-.wr-90-100 { color: #00ff00 !important; font-weight: 800; }
-.wr-80 { color: #adff2f !important; font-weight: 800; }
-.wr-60-70 { color: #ffde21 !important; font-weight: 800; }
-.wr-50 { color: #ffff00 !important; font-weight: 800; }
-.wr-30 { color: #ff4500 !important; font-weight: 800; }
+.wr-90-100 { color: #00FF00 !important; font-weight: 800; }
+.wr-80 { color: #CCFF00 !important; font-weight: 800; }
+.wr-60-70 { color: #FFA500 !important; font-weight: 800; }
+.wr-50 { color: #FF4500 !important; font-weight: 800; }
+.wr-30 { color: #FF0000 !important; font-weight: 800; }
 
 /* --- 6. UTILITÁRIOS --- */
 .page-header { text-align: center; margin-bottom: 40px; }
