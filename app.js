@@ -28,9 +28,9 @@ const obterClasseColorida = (wr) => {
     if (v >= 80) return 'wr-80';
     if (v >= 60) return 'wr-60-70';
     if (v >= 50) return 'wr-50';
-    if (v >= 30) return 'wr-30-40';
+    if (v <= 40) return 'wr-30-40';
     if (v >= 20) return 'wr-20';
-    if (v >= 0) return 'wr-0-10';
+    if (v <= 10) return 'wr-0-10';
 };
 
 function toggleElemento(header) {
