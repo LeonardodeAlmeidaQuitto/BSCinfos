@@ -49,13 +49,18 @@ font-size: 1.2rem; font-weight: 900; text-transform: uppercase; border: none;
 
 /* --- 4. TABELAS PADRONIZADAS (ALINHAMENTO VERTICAL) --- */
 .excel-table {
-width: 100%; border-collapse: collapse;
-table-layout: fixed; /* Força o alinhamento entre diferentes tabelas */
+    table-layout: fixed !important;
+    width: 100% !important;
 }
 
 /* Definição de Largura das Colunas para Alinhamento Perfeito */
-.col-brawler { width: 220px; }
-.col-stats { width: 120px; }
+.col-brawler { 
+    width: 240px !important;      /* Espaço confortável para o nome do brawler */
+}
+
+.col-stats { 
+    width: 130px !important;      /* Espaço perfeito para as métricas (Picks, Wins, WR) */
+}
 
 .excel-table th {
 background: #0d0d0d; color: #666; padding: 10px;
@@ -63,8 +68,12 @@ border: 1px solid var(--border-dark); font-size: 11px; text-transform: uppercase
 }
 
 .excel-table td {
-height: 48px; border: 1px solid var(--border-dark);
-text-align: center; vertical-align: middle; font-size: 13px;
+border: 1px solid var(--border-dark);
+text-align: center; 
+vertical-align: middle; 
+font-size: 13px;
+height: 65px !important;      /* Altura ideal para fotos de 55px */
+vertical-align: middle !important;
 }
 
 /* Nome do Brawler alinhado à esquerda com a imagem */
@@ -124,17 +133,17 @@ text-align: center; vertical-align: middle; font-size: 13px;
 }
 
 .excel-table td img {
-    width: 42px !important;
-    height: 42px !important;
-    object-fit: cover !important; /* Faz com que a imagem preencha o quadrado sem distorcer */
-    border-radius: 6px;           /* Deixa as bordas levemente arredondadas (opcional) */
+    width: 55px !important;       /* Aumentado de 42px para 55px */
+    height: 55px !important;      /* Garante o quadrado perfeito */
+    object-fit: cover !important; /* Preenche o espaço sem distorcer o rosto */
+    border-radius: 8px;           /* Cantos arredondados mais elegantes */
     display: block;
     margin: 0 auto;               /* Centraliza a imagem na célula */
 }
 
 /* Garante que a coluna da imagem tenha sempre o mesmo espaço fixo */
 .col-img, .excel-table th:first-child, .excel-table td:first-child {
-    width: 60px !important;
+    width: 85px !important;
     min-width: 60px !important;
     max-width: 60px !important;
     text-align: center !important;
