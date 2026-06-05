@@ -1,0 +1,32 @@
+/* team.css */
+.tabs-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    justify-content: center;
+}
+
+.tab-btn {
+    background: #1a1a1a;
+    color: white;
+    border: 1px solid #444;
+    padding: 10px 25px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.tab-btn.active {
+    background: #e50914; /* Cor de destaque (ex: vermelho) */
+    border-color: #e50914;
+}
+
+.tab-content {
+    display: none;
+    width: 100%;
+}
+
+.tab-content.active {
+    display: block;
+}
