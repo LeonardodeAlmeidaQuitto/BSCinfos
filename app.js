@@ -20,6 +20,7 @@ const MAPAS_POR_MES = {
 
 let dadosOriginaisRegiao = [];
 
+// --- FUNÇÕES UTILITÁRIAS ---
 const formatarNomeImagem = (n) => `brawlers/${n.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
 
 const obterClasseColorida = (wr) => {
@@ -28,11 +29,12 @@ const obterClasseColorida = (wr) => {
     if (v >= 80) return 'wr-80';
     if (v >= 60) return 'wr-60-70';
     if (v >= 50) return 'wr-50';
-    if (v >= 40) return 'wr-30-40'; //Qualquer valor entre 40 e 49.9 entra aqui
+    if (v >= 40) return 'wr-30-40';
     if (v >= 20) return 'wr-20';
-    return 'wr-0-10';               //Qualquer valor abaixo de 20 cai aqui
+    return 'wr-0-10';
 };
 
+// --- INTERAÇÕES DA UI ---
 function toggleElemento(header) {
     const content = header.nextElementSibling;
     if (!content) return;
@@ -77,6 +79,7 @@ function ordenarTabela(thElement, tipo) {
     rows.forEach(row => tbody.appendChild(row));
 }
 
+// --- LÓGICA PRINCIPAL DE DADOS ---
 async function carregarRegiao(sigla) {
     const container = document.getElementById('grid-modos');
     if (!container) return;
@@ -149,7 +152,6 @@ function filtrarEAplicarDados() {
     let mesAlvo = selectMes ? selectMes.value : "TODOS";
     let mesChave = (anoAlvo !== "TODOS" && mesAlvo !== "TODOS") ? `${anoAlvo}-${mesAlvo}` : "TODOS";
 
-    // 1. Identificar quais mapas são permitidos com base nos filtros selecionados
     let mapasPermitidos = [];
     Object.keys(MAPAS_POR_MES).forEach(chave => {
         const [ano, mesCod] = chave.split('-');
@@ -163,8 +165,6 @@ function filtrarEAplicarDados() {
         }
     });
 
-    // 2. Filtrar os dados originais da região
-    // Se "TODOS" em ambos, retorna tudo. Se filtrado, filtra pelo nome do mapa.
     let dadosFiltrados = [];
     if (anoAlvo === "TODOS" && mesAlvo === "TODOS") {
         dadosFiltrados = dadosOriginaisRegiao;
@@ -174,11 +174,11 @@ function filtrarEAplicarDados() {
         );
     }
 
-    // 3. Atualizar as duas seções da UI com os mesmos dados filtrados
     renderizarDinamico(dadosFiltrados, container, mesChave);
     renderizarTabelaAllMaps(dadosFiltrados);
 }
 
+// --- RENDERIZAÇÃO DAS TABELAS ---
 function renderizarTabelaAllMaps(dados) {
     const tbody = document.getElementById('tbody-all-maps');
     if (!tbody) return;
@@ -262,12 +262,12 @@ function renderizarDinamico(dados, container, mesChave) {
                     const v = statsMapa[bName].v;
                     const wr = p > 0 ? (v / p * 100) : 0;
                     return { nome: bName, picks: p, vitorias: v, winRate: wr };
-                }).sort((a, b) => b.winRate - a.winRate);
+                }).sort((a, b) => b.picks - a.picks); // Ordenado por Picks por padrão
 
                 const rows = listaMapaOrdenada.map(b => `
                     <tr>
                         <td><img src="${formatarNomeImagem(b.nome)}" onerror="this.src='brawlers/default.png';"></td>
-                        <td style="text-align: left !important; padding-left: 15px !important;">${b.nome}</td>
+                        <td style="text-align: left !important; padding-left: 15px !important;">${b.nome.toUpperCase()}</td>
                         <td>${b.picks}</td>
                         <td>${b.vitorias}</td>
                         <td class="${obterClasseColorida(b.winRate)}">${b.winRate.toFixed(1)}%</td>
@@ -280,11 +280,11 @@ function renderizarDinamico(dados, container, mesChave) {
                             <table class="excel-table">
                                 <thead>
                                     <tr>
-                                        <th>IMG</th>
-                                        <th style="text-align:left" onclick="ordenarTabela(this, 'string')" class="sortable">BRAWLER ↕</th>
-                                        <th onclick="ordenarTabela(this, 'number')" class="sortable">PICKS ↕</th>
-                                        <th onclick="ordenarTabela(this, 'number')" class="sortable">WINS ↕</th>
-                                        <th onclick="ordenarTabela(this, 'percent')" class="sortable">WR% ↕</th>
+                                        <th class="col-img">IMG</th>
+                                        <th class="col-brawler sortable" style="text-align:left" onclick="ordenarTabela(this, 'string')">BRAWLER ↕</th>
+                                        <th class="col-stats sortable" onclick="ordenarTabela(this, 'number')">PICKS ↕</th>
+                                        <th class="col-stats sortable" onclick="ordenarTabela(this, 'number')">WINS ↕</th>
+                                        <th class="col-stats sortable" onclick="ordenarTabela(this, 'percent')">WR% ↕</th>
                                     </tr>
                                 </thead>
                                 <tbody>${rows}</tbody>
