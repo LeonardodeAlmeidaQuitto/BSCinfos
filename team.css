@@ -1,24 +1,26 @@
-/* team.css */
+/* teams.css */
 .tabs-container {
     display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
     justify-content: center;
+    gap: 15px;
+    margin-bottom: 25px;
 }
 
 .tab-btn {
-    background: #1a1a1a;
-    color: white;
-    border: 1px solid #444;
-    padding: 10px 25px;
+    background: #111;
+    color: #888;
+    border: 1px solid #333;
+    padding: 12px 30px;
     cursor: pointer;
-    border-radius: 5px;
+    border-radius: 6px;
     font-weight: bold;
+    text-transform: uppercase;
     transition: 0.3s;
 }
 
 .tab-btn.active {
-    background: #e50914; /* Cor de destaque (ex: vermelho) */
+    background: #e50914; /* Cor de destaque (ajuste para a sua cor do app.js) */
+    color: #fff;
     border-color: #e50914;
 }
 
