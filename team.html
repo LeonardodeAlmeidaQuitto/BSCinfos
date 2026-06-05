@@ -2,12 +2,8 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estatísticas - Teams</title>
-
-    <link rel="stylesheet" href="team.css">
-
-</head>
+    <title>Teams Stats</title>
+    <link rel="stylesheet" href="style.css"> <link rel="stylesheet" href="teams.css"> </head>
 <body>
 
     <div class="tabs-container">
@@ -15,6 +11,14 @@
         <button class="tab-btn" onclick="trocarAba(event, 'coach')">COACH</button>
     </div>
 
-    <script src="team.js"></script>
+    <div id="content-player" class="tab-content active">
+        <div id="grid-teams-player"></div>
+    </div>
+
+    <div id="content-coach" class="tab-content">
+        <div id="grid-teams-coach"></div>
+    </div>
+
+    <script src="teams.js"></script>
 </body>
 </html>
