@@ -24,6 +24,7 @@ const formatarNomeImagem = (n) => `brawlers/${n.toLowerCase().replace(/[^a-z0-9]
 
 const obterClasseColorida = (wr) => {
     const v = parseFloat(wr);
+    if (v >= 90) return 'wr-90-100';
     if (v >= 80) return 'wr-80';
     if (v >= 60) return 'wr-60-70';
     if (v >= 50) return 'wr-50';
