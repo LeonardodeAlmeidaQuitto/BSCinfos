@@ -303,3 +303,34 @@ function renderizarDinamico(dados, container, mesChave) {
         }
     });
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    // Seleciona todos os menus dropdown
+    const dropdowns = document.querySelectorAll(".dropdown");
+
+    dropdowns.forEach(dropdown => {
+        const link = dropdown.querySelector(".nav-link");
+
+        // Deteta o clique (apertar) no botão principal do menu
+        link.addEventListener("click", (e) => {
+            e.preventDefault(); // Evita que a página salte para o topo
+
+            // Fecha qualquer outro dropdown que estivesse aberto antes
+            dropdowns.forEach(other => {
+                if (other !== dropdown) {
+                    other.classList.remove("active");
+                }
+            });
+
+            // Liga ou desliga o menu atual
+            dropdown.classList.toggle("active");
+        });
+    });
+
+    // Se o utilizador clicar em qualquer outro lugar da ecrã, fecha os menus
+    document.addEventListener("click", (e) => {
+        if (!e.target.closest(".dropdown")) {
+            dropdowns.forEach(d => d.classList.remove("active"));
+        }
+    });
+});
