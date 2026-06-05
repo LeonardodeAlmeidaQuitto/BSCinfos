@@ -1,55 +1,55 @@
 :root {
-    --bg-total: #000000;
-    --bg-cards: #111111;
-    --azul: #005ce6;
-    --vermelho: #e60000;
-    --texto: #ffffff;
-    --border-dark: #262626;
-    --accent-purple: rgb(204, 0, 255);
+    --bg-total: #000000;
+    --bg-cards: #111111;
+    --azul: #005ce6;
+    --vermelho: #e60000;
+    --texto: #ffffff;
+    --border-dark: #262626;
+    --accent-purple: rgb(204, 0, 255);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { 
-    font-family: 'Inter', sans-serif; 
-    background: var(--bg-total); 
-    color: var(--texto); 
-    padding-top: 80px; 
+body { 
+    font-family: 'Inter', sans-serif; 
+    background: var(--bg-total); 
+    color: var(--texto); 
+    padding-top: 80px; 
 }
 
 /* NAVBAR */
 nav {
-    width: 100%; height: 65px;
-    background-color: #0a0a0a;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 40px; position: fixed; top: 0; z-index: 1000;
-    border-bottom: 2px solid transparent;
-    border-image: linear-gradient(90deg, var(--azul), var(--vermelho)) 1;
+    width: 100%; height: 65px;
+    background-color: #0a0a0a;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 40px; position: fixed; top: 0; z-index: 1000;
+    border-bottom: 2px solid transparent;
+    border-image: linear-gradient(90deg, var(--azul), var(--vermelho)) 1;
 }
 .nav-links { display: flex; gap: 30px; position: absolute; left: 50%; transform: translateX(-50%); }
 .nav-link { color: #fff; text-decoration: none; font-weight: 900; font-size: 13px; text-transform: uppercase; transition: 0.3s; }
 .nav-link:hover { color: var(--accent-purple); }
 
 /* SEÇÕES E ACCORDIONS */
-.modo-section { 
-    width: 95%; max-width: 1200px; 
-    margin: 0 auto 15px auto; 
-    background: var(--bg-cards); 
-    border-radius: 4px; border: 1px solid var(--border-dark);
+.modo-section { 
+    width: 95%; max-width: 1200px; 
+    margin: 0 auto 15px auto; 
+    background: var(--bg-cards); 
+    border-radius: 4px; border: 1px solid var(--border-dark);
 }
 
-.modo-header { 
-    width: 100%; padding: 18px 25px; 
-    background: transparent; color: #fff; 
-    cursor: pointer; display: flex; justify-content: space-between; align-items: center;
-    font-size: 1.2rem; font-weight: 900; text-transform: uppercase; border: none;
+.modo-header { 
+    width: 100%; padding: 18px 25px; 
+    background: transparent; color: #fff; 
+    cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+    font-size: 1.2rem; font-weight: 900; text-transform: uppercase; border: none;
 }
 
 .mapa-content { display: none; background: #050505; padding: 15px; border-top: 1px solid var(--border-dark); }
 
 /* TABELAS (ALINHAMENTO IGUAL À IMAGEM 2) */
-.excel-table { 
-    width: 100%; border-collapse: collapse; 
-    table-layout: fixed; 
+.excel-table { 
+    width: 100%; border-collapse: collapse; 
+    table-layout: fixed; 
 }
 
 /* Definição de Larguras Fixas */
@@ -57,18 +57,29 @@ nav {
 .col-brawler, th:nth-child(2), td:nth-child(2) { width: 220px; text-align: left !important; }
 .col-stats, th:nth-child(n+3), td:nth-child(n+3) { width: 120px; text-align: center; }
 
-.excel-table th { 
-    background: #0d0d0d; color: #666; padding: 10px; 
-    border: 1px solid var(--border-dark); font-size: 11px; text-transform: uppercase;
+.excel-table th { 
+    background: #0d0d0d; color: #666; padding: 10px; 
+    border: 1px solid var(--border-dark); font-size: 11px; text-transform: uppercase;
 }
 
-.excel-table td { 
-    height: 48px; border: 1px solid var(--border-dark); 
-    vertical-align: middle; font-size: 13px; color: #fff;
+.excel-table td { 
+    height: 48px; border: 1px solid var(--border-dark); 
+    vertical-align: middle; font-size: 13px; color: #fff;
 }
 
 .excel-table td:nth-child(2) { padding-left: 15px !important; font-weight: 800; text-transform: uppercase; }
 .excel-table img { width: 42px; height: 42px; object-fit: cover; border-radius: 3px; }
+
+/* FILTROS E ELEMENTOS CLICÁVEIS (ORDENAÇÃO) */
+.sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s, color 0.2s;
+}
+.sortable:hover {
+    background: #1a1a1a !important;
+    color: #ffffff !important;
+}
 
 /* CORES DE WIN RATE */
 .wr-80 { color: #00ff00 !important; font-weight: 900; }
@@ -76,10 +87,8 @@ nav {
 .wr-50 { color: #ffff00 !important; font-weight: 800; }
 .wr-30 { color: #ff4500 !important; font-weight: 700; }
 
+/* REGRAS DE HEADER DA PÁGINA */
 .page-header { text-align: center; margin-bottom: 40px; }
 .page-header h1 { font-size: 2.5rem; font-weight: 900; }
 .accent { color: var(--accent-purple); }
 .subtitle { color: #666; font-size: 14px; margin-top: 8px; }
-
-
-aplique o css aqui
