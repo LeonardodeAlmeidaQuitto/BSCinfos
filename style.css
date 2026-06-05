@@ -1,44 +1,85 @@
-/* team.css */
-
-/* Contentores de cada Categoria (Player / Coach) funcionando como os Modos */
-.modo-section {
-    margin-bottom: 20px;
-    background: #141414;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid #222;
+:root {
+    --bg-total: #000000;
+    --bg-cards: #111111;
+    --azul: #005ce6;
+    --vermelho: #e60000;
+    --texto: #ffffff;
+    --border-dark: #262626;
+    --accent-purple: rgb(204, 0, 255);
 }
 
-/* Cabeçalho igual ao do Brawl Ball e outros Modos */
-.modo-header {
-    background: #1e1e1e;
-    color: white;
-    padding: 15px 20px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    user-select: none;
-    border-bottom: 1px solid #2b2b2b;
-    text-transform: uppercase;
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { 
+    font-family: 'Inter', sans-serif; 
+    background: var(--bg-total); 
+    color: var(--texto); 
+    padding-top: 80px; 
 }
 
-.modo-header span {
-    font-size: 0.8rem;
-    transition: transform 0.2s ease;
-    color: #e50914; /* Cor de destaque vermelha */
+/* NAVBAR */
+nav {
+    width: 100%; height: 65px;
+    background-color: #0a0a0a;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 40px; position: fixed; top: 0; z-index: 1000;
+    border-bottom: 2px solid transparent;
+    border-image: linear-gradient(90deg, var(--azul), var(--vermelho)) 1;
+}
+.nav-links { display: flex; gap: 30px; position: absolute; left: 50%; transform: translateX(-50%); }
+.nav-link { color: #fff; text-decoration: none; font-weight: 900; font-size: 13px; text-transform: uppercase; transition: 0.3s; }
+.nav-link:hover { color: var(--accent-purple); }
+
+/* SEÇÕES E ACCORDIONS */
+.modo-section { 
+    width: 95%; max-width: 1200px; 
+    margin: 0 auto 15px auto; 
+    background: var(--bg-cards); 
+    border-radius: 4px; border: 1px solid var(--border-dark);
 }
 
-/* Área da tabela escondida por padrão, expande ao clicar */
-.mapa-content {
-    padding: 15px;
-    background: #0a0a0a;
+.modo-header { 
+    width: 100%; padding: 18px 25px; 
+    background: transparent; color: #fff; 
+    cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+    font-size: 1.2rem; font-weight: 900; text-transform: uppercase; border: none;
 }
 
-/* Classes de Cores para o Win Rate herdadas do padrão do app.js */
-.wr-80 { color: #00ffcc !important; font-weight: bold; }
-.wr-60-70 { color: #00ff66 !important; font-weight: bold; }
-.wr-50 { color: #ffcc00 !important; }
-.wr-30 { color: #ff3333 !important; }
+.mapa-content { display: none; background: #050505; padding: 15px; border-top: 1px solid var(--border-dark); }
+
+/* TABELAS (ALINHAMENTO IGUAL À IMAGEM 2) */
+.excel-table { 
+    width: 100%; border-collapse: collapse; 
+    table-layout: fixed; 
+}
+
+/* Definição de Larguras Fixas */
+.col-img, th:nth-child(1), td:nth-child(1) { width: 65px; text-align: center; }
+.col-brawler, th:nth-child(2), td:nth-child(2) { width: 220px; text-align: left !important; }
+.col-stats, th:nth-child(n+3), td:nth-child(n+3) { width: 120px; text-align: center; }
+
+.excel-table th { 
+    background: #0d0d0d; color: #666; padding: 10px; 
+    border: 1px solid var(--border-dark); font-size: 11px; text-transform: uppercase;
+}
+
+.excel-table td { 
+    height: 48px; border: 1px solid var(--border-dark); 
+    vertical-align: middle; font-size: 13px; color: #fff;
+}
+
+.excel-table td:nth-child(2) { padding-left: 15px !important; font-weight: 800; text-transform: uppercase; }
+.excel-table img { width: 42px; height: 42px; object-fit: cover; border-radius: 3px; }
+
+/* CORES DE WIN RATE */
+.wr-80 { color: #00ff00 !important; font-weight: 900; }
+.wr-60-70 { color: #adff2f !important; font-weight: 800; }
+.wr-50 { color: #ffff00 !important; font-weight: 800; }
+.wr-30 { color: #ff4500 !important; font-weight: 700; }
+
+.page-header { text-align: center; margin-bottom: 40px; }
+.page-header h1 { font-size: 2.5rem; font-weight: 900; }
+.accent { color: var(--accent-purple); }
+.subtitle { color: #666; font-size: 14px; margin-top: 8px; }
+
+
+aplique o css aqui
