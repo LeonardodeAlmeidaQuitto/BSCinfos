@@ -1,65 +1,373 @@
+/* --- 1. VARIÁVEIS E BASE --- */
+
 :root {
-    --bg-color: #050505;
-    --card-bg: #0d0d0d;
-    --accent-red: #ff3e3e; /* Vermelho mais moderno */
-    --text-main: #ffffff;
-    --text-dim: #a0a0a0;
-    --border-color: #1a1a1a;
+
+--bg-total: #000000;
+
+--bg-cards: #111111;
+
+--azul: #005ce6;
+
+--vermelho: #e60000;
+
+--texto: #ffffff;
+
+--border-dark: #262626;
+
+--accent-purple: rgb(204, 0, 255);
+
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
 
-body { background-color: var(--bg-color); color: var(--text-main); }
 
-/* --- NAVBAR MODERNA --- */
-.navbar {
-    background: rgba(10, 10, 10, 0.8);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--border-color);
-    padding: 15px 40px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+
+font-family: 'Inter', sans-serif;
+
+background: var(--bg-total);
+
+color: var(--texto);
+
+padding-top: 80px;
+
 }
 
-.nav-logo { font-size: 1.5rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--text-main); text-decoration: none; }
 
-.nav-links { display: flex; gap: 30px; }
-.nav-link { color: var(--text-dim); text-decoration: none; font-weight: 500; transition: 0.3s; padding: 8px 12px; }
-.nav-link:hover, .nav-link.active { color: var(--accent-red); }
 
-/* --- CARTÕES E TABELAS --- */
-.container { max-width: 1100px; margin: 40px auto; }
+/* --- 2. NAVBAR --- */
+
+nav {
+
+width: 100%; height: 65px;
+
+background-color: #0a0a0a;
+
+display: flex; align-items: center; justify-content: space-between;
+
+padding: 0 40px; position: fixed; top: 0; z-index: 1000;
+
+border-bottom: 2px solid transparent;
+
+border-image: linear-gradient(90deg, var(--azul), var(--vermelho)) 1;
+
+}
+
+.nav-links { display: flex; gap: 30px; position: absolute; left: 50%; transform: translateX(-50%); }
+
+.nav-link { color: #fff; text-decoration: none; font-weight: 900; font-size: 13px; text-transform: uppercase; transition: 0.3s; }
+
+.nav-link:hover { color: var(--accent-purple); }
+
+
+
+/* --- 3. ESTRUTURA DE MODO (ACCORDION) --- */
 
 .modo-section {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    margin-bottom: 20px;
-    overflow: hidden;
-    transition: 0.3s;
+
+width: 95%; max-width: 1200px;
+
+margin: 0 auto 15px auto;
+
+background: var(--bg-cards);
+
+border-radius: 4px; border: 1px solid var(--border-dark);
+
 }
+
+
 
 .modo-header {
-    padding: 20px;
-    display: flex;
-    justify-content: space-between;
-    font-weight: 700;
-    cursor: pointer;
-    background: rgba(255, 255, 255, 0.02);
+
+width: 100%; padding: 18px 25px;
+
+background: transparent; color: #fff;
+
+cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+
+font-size: 1.2rem; font-weight: 900; text-transform: uppercase; border: none;
+
 }
 
-.modo-header:hover { background: rgba(255, 255, 255, 0.05); }
 
-/* Tabela Estilizada */
-.excel-table { width: 100%; border-collapse: collapse; }
-.excel-table th { padding: 15px; color: var(--text-dim); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
-.excel-table td { padding: 15px; text-align: center; border-top: 1px solid var(--border-color); }
-.excel-table tr:hover { background: rgba(255, 255, 255, 0.03); }
 
-/* --- CORES DE WIN RATE --- */
-.wr-80 { color: #00ffcc; font-weight: bold; }
-.wr-30 { color: var(--accent-red); }
+.mapa-content { display: none; background: #050505; padding: 15px; border-top: 1px solid var(--border-dark); }
+
+
+
+/* --- 4. TABELAS PADRONIZADAS (ALINHAMENTO VERTICAL) --- */
+
+.excel-table {
+
+width: 100%; border-collapse: collapse;
+
+table-layout: fixed; /* Força o alinhamento entre diferentes tabelas */
+
+}
+
+
+
+/* Definição de Largura das Colunas para Alinhamento Perfeito */
+
+.col-img { width: 60px; }
+
+.col-brawler { width: 220px; }
+
+.col-stats { width: 120px; }
+
+
+
+.excel-table th {
+
+background: #0d0d0d; color: #666; padding: 10px;
+
+border: 1px solid var(--border-dark); font-size: 11px; text-transform: uppercase;
+
+}
+
+
+
+.excel-table td {
+
+height: 48px; border: 1px solid var(--border-dark);
+
+text-align: center; vertical-align: middle; font-size: 13px;
+
+}
+
+
+
+/* Nome do Brawler alinhado à esquerda com a imagem */
+
+.excel-table td:nth-child(2) { text-align: left; padding-left: 15px; font-weight: 800; }
+
+
+
+.excel-table img {
+
+width: 42px; height: 42px; object-fit: cover;
+
+border-radius: 3px; vertical-align: middle;
+
+}
+
+
+
+/* --- 5. CORES DE WIN RATE --- */
+
+.wr-90 { color: #00ff00 !important; font-weight: 900; }
+
+.wr-70 { color: #adff2f !important; font-weight: 800; }
+
+.wr-50 { color: #ffff00 !important; font-weight: 800; }
+
+.wr-30 { color: #ff4500 !important; font-weight: 700; }
+
+
+
+/* --- 6. UTILITÁRIOS --- */
+
+.page-header { text-align: center; margin-bottom: 40px; }
+
+.page-header h1 { font-size: 2.5rem; font-weight: 900; }
+
+.accent { color: var(--accent-purple); }
+
+.subtitle { color: #666; font-size: 14px; margin-top: 8px; }
+
+STYLE.CSS
+
+
+
+<!DOCTYPE html>
+
+<html lang="pt-pt">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Draft Infos - South América</title>
+
+<link rel="stylesheet" href="style.css">
+
+<script src="app.js"></script>
+
+</head>
+
+<body>
+
+<nav>
+
+<a href="index.html" class="nav-link">MENU</a>
+
+<div class="nav-links">
+
+<a href="sa.html" class="nav-link">SA</a>
+
+<a href="na.html" class="nav-link">NA</a>
+
+<a href="emea.html" class="nav-link">EMEA</a>
+
+<a href="ea.html" class="nav-link">EA</a>
+
+<a href="geral.html" class="nav-link">GERAL</a>
+
+</div>
+
+</nav>
+
+
+
+<main>
+
+<header class="page-header">
+
+<h1>SOUTH AMÉRICA <span class="accent">ANALYSIS</span></h1>
+
+<p class="subtitle">Dados extraídos de Scrims e Torneios Oficiais</p>
+
+</header>
+
+
+<div id="grid-modos"></div>
+
+
+
+<div class="modo-section">
+
+<button class="modo-header" onclick="toggleModo('all-maps-collapse')">
+
+ALL MAPS ANALYSIS
+
+<span id="seta-all">▶</span>
+
+</button>
+
+
+
+<div id="all-maps-collapse" class="mapa-content">
+
+<table class="excel-table">
+
+<thead>
+
+<tr>
+
+<th class="col-img">IMG</th>
+
+<th class="col-brawler">BRAWLER</th>
+
+<th class="col-stats">PICKS</th>
+
+<th class="col-stats">WINS</th>
+
+<th class="col-stats">WIN RATE</th>
+
+</tr>
+
+</thead>
+
+<tbody id="tbody-all-maps">
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</main>
+
+
+
+<script>
+
+document.addEventListener('DOMContentLoaded', () => carregarRegiao('sa'));
+
+
+
+function toggleModo(id) {
+
+const content = document.getElementById(id);
+
+const seta = content.previousElementSibling.querySelector('span');
+
+
+if (content.style.display === "block") {
+
+content.style.display = "none";
+
+seta.style.transform = "rotate(0deg)";
+
+} else {
+
+content.style.display = "block";
+
+seta.style.transform = "rotate(90deg)";
+
+}
+
+}
+
+</script>
+
+</body>
+
+</html>
+
+SA/NA/EMEA/EA.HTML
+
+
+
+// 1. Configuração de Mapas e Modos
+
+const MAPAS_ALVO = {
+
+"brawlBall": ["Super Beach", "Pinhole Punt", "Sneaky Fields"],
+
+"bounty": ["Shooting Star", "Hideout", "Layer Cake"],
+
+"heist": ["Hot Potato", "Safe Zone", "Bridge Too Far"],
+
+"knockout": ["Goldarm Gulch", "Belle's Rock", "Out in the Open"],
+
+"gemGrab": ["Hard Rock Mine", "Double Swoosh", "Deathcap Trap"]
+
+};
+
+
+
+// 2. Helpers (Imagens e Cores)
+
+const formatarNomeImagem = (nome) => {
+
+if (!nome) return "brawlers/default.png";
+
+const nomeLimpo = nome.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+return `brawlers/${nomeLimpo}.png`;
+
+};
+
+
+
+const obterClasseColorida = (wr) => {
+
+const valor = parseFloat(wr);
+
+if (valor >= 80) return 'wr-80'; // Verde Forte
+
+if (valor >= 60) return 'wr-60-70'; // Verde Claro
+
+if (valor >= 50) return 'wr-50'; // Amarelo
+
+if (valor >= 40) return 'wr-40'; // Laranja
+
+if (valor >= 30) return 'wr-30'; // Vermelho Claro
+
+return 'wr-10-20'; // Vermelho
+
+};
