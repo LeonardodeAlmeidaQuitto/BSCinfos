@@ -54,7 +54,6 @@ table-layout: fixed; /* Força o alinhamento entre diferentes tabelas */
 }
 
 /* Definição de Largura das Colunas para Alinhamento Perfeito */
-.col-img { width: 60px; }
 .col-brawler { width: 220px; }
 .col-stats { width: 120px; }
 
@@ -69,7 +68,7 @@ text-align: center; vertical-align: middle; font-size: 13px;
 }
 
 /* Nome do Brawler alinhado à esquerda com a imagem */
-.excel-table td:nth-child(2) { text-align: left; padding-left: 15px; font-weight: 800; }
+.excel-table td:nth-child(2){ text-align: left; padding-left: 15px; font-weight: 800; }
 
 .excel-table img {
     width: 30px; 
@@ -122,4 +121,22 @@ text-align: center; vertical-align: middle; font-size: 13px;
 .filter-select:hover {
     border-color: var(--accent-purple);
     background: #1a1a1a;
+}
+
+.excel-table td img {
+    width: 42px !important;
+    height: 42px !important;
+    object-fit: cover !important; /* Faz com que a imagem preencha o quadrado sem distorcer */
+    border-radius: 6px;           /* Deixa as bordas levemente arredondadas (opcional) */
+    display: block;
+    margin: 0 auto;               /* Centraliza a imagem na célula */
+}
+
+/* Garante que a coluna da imagem tenha sempre o mesmo espaço fixo */
+.col-img, .excel-table th:first-child, .excel-table td:first-child {
+    width: 60px !important;
+    min-width: 60px !important;
+    max-width: 60px !important;
+    text-align: center !important;
+    padding: 0 !important;
 }
