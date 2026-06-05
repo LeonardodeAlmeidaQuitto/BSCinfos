@@ -1,102 +1,43 @@
 /* team.css */
-.teams-wrapper {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
+
+/* Contentores de cada Categoria (Player / Coach) funcionando como os Modos */
+.modo-section {
+    margin-bottom: 20px;
+    background: #141414;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #222;
 }
 
-.page-title {
-    text-align: center;
-    color: #fff;
-    text-transform: uppercase;
-    font-size: 2rem;
-    margin-bottom: 30px;
-    letter-spacing: 1px;
-}
-
-/* Estilo da Navbar */
-.navbar {
-    background-color: #111;
-    border-bottom: 2px solid #e50914;
-    padding: 10px 0;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-}
-
-.nav-container {
-    max-width: 1200px;
-    margin: 0 auto;
+/* Cabeçalho igual ao do Brawl Ball e outros Modos */
+.modo-header {
+    background: #1e1e1e;
+    color: white;
+    padding: 15px 20px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 20px;
-}
-
-.nav-logo {
-    color: white;
-    font-weight: bold;
-    text-decoration: none;
-    font-size: 1.5rem;
+    user-select: none;
+    border-bottom: 1px solid #2b2b2b;
     text-transform: uppercase;
 }
 
-/* Menu Dropdown */
-.dropdown {
-    position: relative;
-    display: inline-block;
+.modo-header span {
+    font-size: 0.8rem;
+    transition: transform 0.2s ease;
+    color: #e50914; /* Cor de destaque vermelha */
 }
 
-.dropdown-btn {
-    background: none;
-    border: 1px solid #444;
-    color: white;
-    padding: 8px 16px;
-    cursor: pointer;
-    font-weight: bold;
-    border-radius: 4px;
-    text-transform: uppercase;
+/* Área da tabela escondida por padrão, expande ao clicar */
+.mapa-content {
+    padding: 15px;
+    background: #0a0a0a;
 }
 
-.dropdown-content {
-    display: none;
-    position: absolute;
-    right: 0;
-    background-color: #1a1a1a;
-    min-width: 160px;
-    box-shadow: 0px 8px 16px rgba(0,0,0,0.5);
-    border: 1px solid #333;
-    z-index: 1;
-}
-
-.dropdown-content a {
-    color: white;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
-    font-size: 0.9rem;
-}
-
-.dropdown-content a:hover {
-    background-color: #e50914;
-}
-
-.dropdown:hover .dropdown-content {
-    display: block;
-}
-
-.dropdown:hover .dropdown-btn {
-    border-color: #e50914;
-}
-
-.loading-status {
-    text-align: center;
-    color: #888;
-    font-size: 1.2rem;
-    padding: 50px 0;
-}
-
-/* Cores de Win Rate baseadas nas regras do seu app.js */
+/* Classes de Cores para o Win Rate herdadas do padrão do app.js */
 .wr-80 { color: #00ffcc !important; font-weight: bold; }
 .wr-60-70 { color: #00ff66 !important; font-weight: bold; }
 .wr-50 { color: #ffcc00 !important; }
