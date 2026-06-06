@@ -152,13 +152,9 @@ function limparNome(nome) {
     return nome.toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
-function getContainer(id, selectorIndex) {
-    let el = document.getElementById(id);
-    if (el) return el;
-    el = document.querySelector('.' + id);
-    if (el) return el;
+function obterGridPorIndice(index) {
     const grids = document.querySelectorAll('.mini-brawler-grid');
-    return grids.length > selectorIndex ? grids[selectorIndex] : null;
+    return grids.length > index ? grids[index] : null;
 }
 
 function criarConteudoSlot(nome, id) {
@@ -214,7 +210,7 @@ function gerarRoster() {
 window.atualizarMeta = function() {
     const select = document.getElementById('map-select') || document.querySelector('.map-selector select') || document.querySelector('select');
     const mapaSelecionado = select ? select.value : '';
-    const container = getContainer('meta-list', 0);
+    const container = obterGridPorIndice(0); // Caixa 1: META TOP 10
     if (!container) return;
     container.innerHTML = "";
     
@@ -234,19 +230,12 @@ window.atualizarMeta = function() {
 };
 
 // =========================================================
-// LÓGICA DE CÁLCULO DE COUNTERS
+// LÓGICA DE CÁLCULO DE COUNTERS (SISTEMA DE INFOS)
 // =========================================================
 
 function calcularCounters() {
-    // Busca robusta pela caixa do meio (Counters do Inimigo)
-    let container = document.getElementById('counters-inimigo') || 
-                    document.querySelector('.counters-inimigo') || 
-                    document.getElementById('counters-list');
-                    
-    if (!container) {
-        const grids = document.querySelectorAll('.mini-brawler-grid');
-        if (grids.length >= 2) container = grids[1]; 
-    }
+    // Caixa 2: COUNTERS (INIMIGO) -> Mostra brawlers que counteram os picks do adversário
+    let container = obterGridPorIndice(1);
     if (!container) return;
     container.innerHTML = "";
 
@@ -278,7 +267,7 @@ function calcularCounters() {
             const id = limparNome(nome);
             let qtd = contagemCounters[nome];
             
-            // Lógica solicitada: Se counterar 2 ou mais adversários, ganha a borda verde e o dragão
+            // Lógica unificada: Se counterar 2 ou mais, ganha moldura verde e o dragão com joia
             let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
             let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
             let dragonIcon = qtd >= 2 ? `<img src="element/dragon_us_full.png" class="dragon-badge">` : '';
@@ -297,15 +286,8 @@ function calcularCounters() {
 }
 
 function calcularPodeTomar() {
-    // Busca robusta pela caixa de baixo (Counters do Nosso Time)
-    let container = document.getElementById('counters-nosso') || 
-                    document.querySelector('.counters-nosso') || 
-                    document.getElementById('podetomar-list');
-
-    if (!container) {
-        const grids = document.querySelectorAll('.mini-brawler-grid');
-        if (grids.length >= 3) container = grids[2]; 
-    }
+    // Caixa 3: COUNTERS (NOSSO) -> Mostra brawlers que counteram os nossos picks
+    let container = obterGridPorIndice(2);
     if (!container) return;
     container.innerHTML = "";
 
@@ -344,12 +326,14 @@ function calcularPodeTomar() {
         brawlersValidos.forEach(nome => {
             const id = limparNome(nome);
             let qtd = contagemAmeacas[nome];
-            let destaqueClass = qtd >= 2 ? 'highlight-danger' : '';
-            let badge = qtd >= 2 ? `<div class="badge-multi-danger">x${qtd}</div>` : '';
-            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_they_full.png" class="dragon-badge">` : '';
+            
+            // Lógica unificada: Se counterar 2 ou mais do nosso time, ganha a moldura verde e o dragão com joia da mesma forma
+            let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
+            let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
+            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_us_full.png" class="dragon-badge">` : '';
 
             container.innerHTML += `
-                <div class="mini-brawler ${destaqueClass}" title="${nome} (Ameaça x${qtd})">
+                <div class="mini-brawler ${destaqueClass}" title="${nome} (Counter x${qtd})">
                     ${dragonIcon}
                     <img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                     <div class="fallback-initials">${nome.substring(0,2).toUpperCase()}</div>
