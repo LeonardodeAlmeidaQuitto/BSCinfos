@@ -7,11 +7,11 @@ const MAPAS_ALVO = {
     "Gem Grab": ["Hard Rock Mine", "Double Swoosh", "Deathcap Trap"]
 };
 
-// SUBSTITUA PELOS SEUS DADOS DA PLANILHA
+// SUBSTITUA PELOS SEUS DADOS DA PLANILHA (META)
 const DADOS_META = {
     "Super Beach": ["Max", "Sandy", "Cordelius", "Melodie", "Stu", "Buster", "Charlie", "Rico", "Fang", "Colt"],
     "Pinhole Punt": [],
-    "Sneak Fields": [],
+    "Sneaky Fields": [],
     "Shooting Star": [],
     "Hideout": [],
     "Layer Cake": [],
@@ -26,120 +26,63 @@ const DADOS_META = {
     "Deathcap Trap": []
 };
 
+// QUEM COUNTERA O BRAWLER SELECIONADO (Bons picks para o teu time)
 const DADOS_COUNTERS = {
     "8-bit": ["Belle", "Najia", "Crow", "Pierce", "Byron", "Penny"],
-    "Alli": ["Otis", "Spike", "Kenji", "Ruffs", "Bull", "Trunk", "Jack", "Sirius", "Mortis", "Spike", "Emz"],
+    "Alli": ["Otis", "Spike", "Kenji", "Ruffs", "Bull", "Trunk", "Jack", "Sirius", "Mortis", "Emz"],
     "Amber": ["Byron", "Angelo", "Nani", "Lily", "Mortis", "Edgar", "Bea"],
     "Angelo": ["Eve", "Ruffs", "Charlie", "Belle", "Kenji", "Pierce", "Nani", "Byron", "Brock", "Kaze"],
-    "Ash": ["Frank", "Trunk", "Edgar", "Rico", "Shade", "Sirius", "Kenji", "Trunk", "Griff"],
-    "Barley": ["Mortis", "Kenji", "Edgar", "Cordelious", "Trunk"],
+    "Ash": ["Frank", "Trunk", "Edgar", "Rico", "Shade", "Sirius", "Kenji", "Griff"],
+    "Barley": ["Mortis", "Kenji", "Edgar", "Cordelius", "Trunk"],
     "Bea": ["Charlie", "Ruffs", "Byron", "Najia", "Belle", "Angelo", "Leon"],
-    "Belle": ["Piper", "Charlie", "Byron", "Nani", "Piper", "Angelo"],
+    "Belle": ["Piper", "Charlie", "Byron", "Nani", "Angelo"],
     "Berry": ["Kaze", "Crow", "Sirius", "Shade", "Trunk", "Clancy", "Edgar"],
     "Bibi": ["Otis", "Edgar", "Colette", "Buzz", "Bull"],
     "Bo": ["Mina", "Mortis", "Buzz", "Edgar"],
     "Bonnie": ["Charlie", "Ruffs", "Leon"],
-    "Brock": ["RT", "Byron", "Pierce", "Najia", "Piper", "Jae Young", "Kaze"],
-    "Bull": ["Cordelious", "Griff", "Colette", "Otis", "Charlie", "Nita"],
+    "Brock": ["RT", "Byron", "Pierce", "Najia", "Piper", "Jae Yong", "Kaze"],
+    "Bull": ["Cordelius", "Griff", "Colette", "Otis", "Charlie", "Nita"],
     "Buster": ["Bull", "Mina", "Kenji", "Edgar", "Mortis"],
-    "Buzz": ["Charlie", "Bull", "Griff", "Cordelious", "Edgar"],
+    "Buzz": ["Charlie", "Bull", "Griff", "Cordelius", "Edgar"],
     "Byron": ["Piper", "Nani", "Pierce", "Najia", "Mortis", "Kenji", "Kaze"],
     "Carl": ["Edgar", "Colette", "Otis", "Buzz"],
     "Charlie": ["Lumi", "Amber", "Byron", "Carl", "Lily", "Ruffs", "Sandy"],
-    "Chester": ["Ruffs", "Alli", "Lumi", "Byron", "Najia", "Moe", "Charlie", "Otis", "Cordelious", "Nita", "Edgar"],
-    "Chuck": ["Charlie", "Cordelious", "Otis", "RT"],
-    "Clancy": ["Charlie", "Ruffs", "Cordelious"],
+    "Chester": ["Ruffs", "Alli", "Lumi", "Byron", "Najia", "Moe", "Charlie", "Otis", "Cordelius", "Nita", "Edgar"],
+    "Chuck": ["Charlie", "Cordelius", "Otis", "R-T"],
+    "Clancy": ["Charlie", "Ruffs", "Cordelius"],
     "Colette": ["Ruffs", "Otis", "Crow", "Charlie"],
     "Colt": ["Pierce", "Charlie", "Nani", "Otis", "Gene", "Ruffs", "Mina", "Leon", "Colette", "Kenji", "Byron", "Crow", "Gus", "Edgar", "Belle", "Clancy", "Lily", "Bull", "Mortis", "Brock", "Angelo", "Nita"],
-    "Cordelious": [""],
-    "Crow": [""],
-    "Damian": [""],
-    "Darryl": [""],
-    "Doug": [""],
-    "Draco": [""],
-    "Dynamike": [""],
-    "Edgar": [""],
-    "El Primo": [""],
-    "Emz": [""],
-    "Eve": [""],
-    "Fang": [""],
-    "Finx": [""],
-    "Frank": [""],
-    "Gale": [""],
-    "Gene": [""],
-    "Gigi": [""],
-    "Glowy": [""],
-    "Gray": [""],
-    "Griff": [""],
-    "Grom": [""],
-    "Gus": [""],
-    "Hank": [""],
-    "Jacky": [""],
-    "Jae-Young": [""],
-    "Janet": [""],
-    "Jessie": [""],
-    "Juju": [""],
-    "Kaze": [""],
-    "Kenji": [""],
-    "Kit": [""],
-    "Larrylawrie": [""],
-    "Leon": [""],
-    "Lily": [""],
-    "Lola": [""],
-    "Lou": [""],
-    "Lumi": [""],
-    "Maisie": [""],
-    "Mandy": [""],
-    "Max": [""],
-    "Meeple": [""],
-    "Meg": [""],
-    "Melodie": [""],
-    "Mico": [""],
-    "Mina": [""],
-    "Moe": [""],
-    "Mortis": [""],
-    "Mr.P": [""],
-    "Najia": [""],
-    "Nani": [""],
-    "Nita": [""],
-    "Ollie": [""],
-    "Otis": [""],
-    "Pam": [""],
-    "Pearl": [""],
-    "Penny": [""],
-    "Pierce": [""],
-    "Piper": [""],
-    "Poco": [""],
-    "R-T": [""],
-    "Rico": [""],
-    "Rosa": [""],
-    "Ruffs": [""],
-    "Sam": [""],
-    "Sandy": [""],
-    "Shade": [""],
-    "Shelly": [""],
-    "Sirius": [""],
-    "Spike": [""],
-    "Starr Nova": [""],
-    "Sprout": [""],
-    "Squeak": [""],
-    "Stu": [""],
-    "Surge": [""],
-    "Tara": [""],
-    "Tick": [""],
-    "Trunk": [""],
-    "Willow": [""],
-    "Ziggy": [""]
+    "Cordelius": [], "Crow": [], "Damian": [], "Darryl": [], "Doug": [], "Draco": [], "Dynamike": [],
+    "Edgar": [], "El Primo": [], "Emz": [], "Eve": [], "Fang": [], "Finx": [], "Frank": [], "Gale": [],
+    "Gene": [], "Gigi": [], "Glowy": [], "Gray": [], "Griff": [], "Grom": [], "Gus": [], "Hank": [],
+    "Jacky": [], "Jae Yong": [], "Janet": [], "Jessie": [], "Juju": [], "Kaze": [], "Kenji": [], "Kit": [],
+    "LarryLawrie": [], "Leon": [], "Lily": [], "Lola": [], "Lou": [], "Lumi": [], "Maisie": [], "Mandy": [],
+    "Max": [], "Meeple": [], "Meg": [], "Melodie": [], "Mico": [], "Mina": [], "Moe": [], "Mortis": [],
+    "Mr.P": [], "Najia": [], "Nani": [], "Nita": [], "Ollie": [], "Otis": [], "Pam": [], "Pearl": [],
+    "Penny": [], "Pierce": [], "Piper": [], "Poco": [], "R-T": [], "Rico": [], "Rosa": [], "Ruffs": [],
+    "Sam": [], "Sandy": [], "Shade": [], "Shelly": [], "Sirius": [], "Spike": [], "Starr Nova": [],
+    "Sprout": [], "Squeak": [], "Stu": [], "Surge": [], "Tara": [], "Tick": [], "Trunk": [], "Willow": [], "Ziggy": []
 };
 
-const BRAWLERS = ["Damian", "8-Bit", "Alli", "Amber", "Angelo", "Ash", "Barley", "Bea", "Belle", "Berry", "Bibi", "Bo", "Bonnie", "Brock", "Bull", "Buster", "Buzz", "Byron", "Carl", "Charlie", "Chester", "Clancy", "Colette", "Colt", "Cordelius", "Crow", "Darryl", "Doug", "Draco", "Dynamike", "Edgar", "El Primo", "Emz", "Eve", "Fang", "Finx", "Frank", "Gale", "Gene", "Gigi", "Glowy", "Gray", "Griff", "Grom", "Gus", "Hank", "Jacky", "Jae Yong", "Janet", "Jessie", "Juju", "Kaze", "Kenji", "Kit", "LarryLawrie", "Leon", "Lily", "Lola", "Lou", "Lumi", "Maisie", "Mandy", "Max", "Meeple", "Meg", "Melodie", "Mico", "Mina", "Moe", "Mortis", "Mr.P", "Najia", "Nani", "Nita", "Ollie", "Otis", "Pam", "Pearl", "Penny", "Pierce", "Piper", "Poco", "R-T", "Rico", "Rosa", "Ruffs", "Sam", "Sandy", "Shade", "Shelly", "Sirius", "Spike", "Sprout", "Squeak", "Stu", "Surge", "Tara", "Tick", "Trunk", "Willow", "Ziggy"].sort();
+// NOVO: QUEM ESSE BRAWLER DA CONTRA (Brawlers ruins para o teu time escolher)
+// Preenche com quem o brawler vermelho consegue destruir facilmente
+const DADOS_PODETOMAR = {
+    "8-bit": [], 
+    "Colt": [],
+    "Edgar": ["Barley", "Dynamike", "Piper"], // Exemplo: se o vermelho pickar Edgar, o teu time "pode tomar" se escolher estes
+    "Mortis": ["Dynamike", "Barley", "Sprout"],
+    // Podes continuar a preencher o resto de acordo com a tua planilha...
+};
+
+const BRAWLERS = ["Damian", "8-Bit", "Alli", "Amber", "Angelo", "Ash", "Barley", "Bea", "Belle", "Berry", "Bibi", "Bo", "Bonnie", "Brock", "Bull", "Buster", "Buzz", "Byron", "Carl", "Charlie", "Chester", "Clancy", "Colette", "Colt", "Cordelius", "Crow", "Darryl", "Doug", "Draco", "Dynamike", "Edgar", "El Primo", "Emz", "Eve", "Fang", "Finx", "Frank", "Gale", "Gene", "Gigi", "Glowy", "Gray", "Griff", "Grom", "Gus", "Hank", "Jacky", "Jae Yong", "Janet", "Jessie", "Juju", "Kaze", "Kenji", "Kit", "LarryLawrie", "Leon", "Lily", "Lola", "Lou", "Lumi", "Maisie", "Mandy", "Max", "Meeple", "Meg", "Melodie", "Mico", "Mina", "Moe", "Mortis", "Mr.P", "Najia", "Nani", "Nita", "Ollie", "Otis", "Pam", "Pearl", "Penny", "Pierce", "Piper", "Poco", "R-T", "Rico", "Rosa", "Ruffs", "Sam", "Sandy", "Shade", "Shelly", "Sirius", "Spike", "Sprout", "Starr Nova", "Squeak", "Stu", "Surge", "Tara", "Tick", "Trunk", "Willow", "Ziggy"].sort();
 
 let currentStep = 0;
 let selected = [];
 let firstPick = 'blue';
 let draftOrder = [];
-let picksVermelhos = []; 
+let picksVermelhos = [];
 
+// --- FUNÇÕES DE INICIALIZAÇÃO ---
 function popularMapas() {
     const select = document.getElementById('map-select');
     if (!select) return;
@@ -171,10 +114,12 @@ function gerarRoster() {
     });
 }
 
+// --- LÓGICA DOS PAINÉIS LATERAIS ---
 window.atualizarMeta = function() {
     const mapaSelecionado = document.getElementById('map-select').value;
     const container = document.getElementById('meta-list');
-    container.innerHTML = ""; 
+    if (!container) return;
+    container.innerHTML = "";
     
     const metaBrawlers = DADOS_META[mapaSelecionado];
 
@@ -190,6 +135,7 @@ window.atualizarMeta = function() {
 
 function calcularCounters() {
     const container = document.getElementById('counters-list');
+    if (!container) return;
     container.innerHTML = "";
 
     if (picksVermelhos.length === 0) {
@@ -198,7 +144,6 @@ function calcularCounters() {
     }
 
     let countersSugeridos = new Set();
-
     picksVermelhos.forEach(brawler => {
         if (DADOS_COUNTERS[brawler]) {
             DADOS_COUNTERS[brawler].forEach(counter => countersSugeridos.add(counter));
@@ -217,10 +162,41 @@ function calcularCounters() {
     }
 }
 
+// NOVA FUNÇÃO: CALCULAR O PAINEL PODE TOMAR
+function calcularPodeTomar() {
+    const container = document.getElementById('podetomar-list');
+    if (!container) return;
+    container.innerHTML = "";
+
+    if (picksVermelhos.length === 0) {
+        container.innerHTML = `<p style="color:#555; font-size:12px; grid-column: span 5; text-align:center;">Aguardando picks vermelhos</p>`;
+        return;
+    }
+
+    let ameacasSugeridas = new Set();
+    picksVermelhos.forEach(brawler => {
+        if (DADOS_PODETOMAR[brawler]) {
+            DADOS_PODETOMAR[brawler].forEach(alvo => ameacasSugeridas.add(alvo));
+        }
+    });
+
+    if (ameacasSugeridas.size > 0) {
+        ameacasSugeridas.forEach(nome => {
+            const id = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (!selected.includes(id)) {
+                container.innerHTML += `<div class="mini-brawler" title="Perigo! Evite pegar: ${nome}"><img src="brawlers/${id}.png" onerror="this.src='brawlers/default.png';"></div>`;
+            }
+        });
+    } else {
+        container.innerHTML = `<p style="color:#555; font-size:12px; grid-column: span 5; text-align:center;">Nenhum perigo mapeado.</p>`;
+    }
+}
+
+// --- LÓGICA DO DRAFT ---
 window.setFirstPick = function(team) {
     firstPick = team;
     document.getElementById('fp-blue').classList.toggle('active', team === 'blue');
-    document.getElementById('fp-red').classList.toggle('active', team === 'red')
+    document.getElementById('fp-red').classList.toggle('active', team === 'red');
     resetDraft();
 };
 
@@ -266,7 +242,8 @@ window.clicarBrawler = function(nome, id) {
         
         currentStep++;
         atualizarFoco();
-        calcularCounters(); 
+        calcularCounters();
+        calcularPodeTomar(); // Atualiza o novo painel simultaneamente
     }
 };
 
@@ -275,21 +252,22 @@ function atualizarFoco() {
     if (currentStep < draftOrder.length) {      
         const next = draftOrder[currentStep];
         const nextSlot = document.getElementById(next.slot);
-    if(nextSlot) nextSlot.classList.add(next.team === 'blue' ? 'active-blue' : 'active-red');
+        if(nextSlot) nextSlot.classList.add(next.team === 'blue' ? 'active-blue' : 'active-red');
     }
 }
 
 window.resetDraft = function() {
     currentStep = 0; 
     selected = [];
-    picksVermelhos = []; 
+    picksVermelhos = [];
     
     document.querySelectorAll('.slot').forEach(s => s.innerHTML = '');
     document.querySelectorAll('.brawler-icon').forEach(b => b.classList.remove('disabled'));
 
     buildOrder();
     atualizarFoco();
-    calcularCounters(); 
+    calcularCounters();
+    calcularPodeTomar(); // Limpa o novo painel no reset
 };
 
 window.filtrar = function() {
