@@ -4,19 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Draft Maker - Brawl Stars</title>
-    <!-- Link para o arquivo CSS completo e corrigido -->
     <link rel="stylesheet" href="draft.css">
 </head>
 <body>
-
+ 
     <!-- NAV BAR SUPERIOR -->
     <div class="navbar">
         <a href="index.html">MENU</a>
         <a href="regioes.html">META</a>
         <a href="draft.html" style="color: #ff00ff;">DRAFT</a>
     </div>
-
-    <!-- CONTROLES DE SELEÇÃO DE SELEÇÃO SUPERIOR (FIRST PICK E MAPA) -->
+ 
+    <!-- CONTROLES DE SELEÇÃO SUPERIOR (FIRST PICK E MAPA) -->
     <div class="top-controls">
         <div class="first-pick-selector">
             <span>FIRST PICK:</span>
@@ -29,7 +28,7 @@
             </select>
         </div>
     </div>
-
+ 
     <!-- CONTAINER PRINCIPAL LADO A LADO (3 COLUNAS) -->
     <div class="main-container">
         
@@ -54,10 +53,10 @@
                     <div class="slot slot-large" id="slot-pA3"></div>
                 </div>
             </div>
-
+ 
             <!-- DIVISOR CENTRAL VS -->
             <div class="center-vs">X</div>
-
+ 
             <!-- LADO INIMIGO: RED TEAM -->
             <div class="team-column">
                 <div class="team-title" style="color: #ff3333;">RED TEAM</div>
@@ -76,9 +75,9 @@
                     <div class="slot slot-large" id="slot-pV3"></div>
                 </div>
             </div>
-
+ 
         </div>
-
+ 
         <!-- COLUNA 2: PAINÉIS LATERAIS DE INFORMAÇÕES (META E COUNTERS) -->
         <div class="info-panels">
             
@@ -89,25 +88,27 @@
                     <!-- Populado via JS -->
                 </div>
             </div>
-
-            <!-- PAINEL COUNTERS INIMIGO (PODE TOMAR / AMEAÇAS) -->
+ 
+            <!-- PAINEL COUNTERS INIMIGO: quem bate nos picks do time vermelho (recomendações para nós) -->
+            <!-- FIX: id="counters-list" estava faltando aqui! Era por isso que o INIMIGO nunca aparecia -->
             <div class="side-panel">
                 <div class="panel-title">COUNTERS (INIMIGO)</div>
-                <div class="mini-brawler-grid">
-                    <!-- Populado via JS com dragon_they_full -->
+                <div class="mini-brawler-grid" id="counters-list">
+                    <!-- Populado via JS → dragon_us_full.png + borda verde -->
                 </div>
             </div>
-
-            <!-- PAINEL COUNTERS NOSSO (VANTAGENS / RECOMENDADOS) -->
+ 
+            <!-- PAINEL COUNTERS NOSSO: quem bate nos nossos picks (ameaças ao nosso time) -->
+            <!-- FIX: era id="counters-list" (errado!) → corrigido para id="podetomar-list" -->
             <div class="side-panel">
                 <div class="panel-title">COUNTERS (NOSSO)</div>
-                <div class="mini-brawler-grid" id="counters-list">
-                    <!-- Populado via JS com dragon_us_full -->
+                <div class="mini-brawler-grid" id="podetomar-list">
+                    <!-- Populado via JS → dragon_they_full.png + borda vermelha -->
                 </div>
             </div>
-
+ 
         </div>
-
+ 
         <!-- COLUNA 3: ROSTER COMPLETO DE SELEÇÃO DOS BRAWLERS -->
         <div class="roster-area">
             <input type="text" id="search" class="search-bar" placeholder="BUSCAR..." oninput="window.filtrar()">
@@ -115,10 +116,9 @@
                 <!-- Todos os ícones gerados dinamicamente via JS -->
             </div>
         </div>
-
+ 
     </div>
-
-    <!-- Script de lógica do Draft carregado no final para garantir o funcionamento -->
+ 
     <script src="draft.js"></script>
 </body>
 </html>
