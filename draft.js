@@ -170,7 +170,11 @@ function obterCaixaPorTexto(textoCabecalho, fallbackIndex) {
 }
 
 function obterContainerInimigo() {
-    return document.getElementById('counters-list') || document.getElementById('counters-inimigo') || obterCaixaPorTexto('COUNTERS (INIMIGO)', 1);
+    return document.getElementById('counters-list');
+}
+
+function obterContainerNosso() {
+    return document.getElementById('podetomar-list');
 }
 
 function obterContainerNosso() {
@@ -260,6 +264,10 @@ window.atualizarMeta = function() {
 function calcularCounters() {
     let container = obterContainerInimigo();
     if (!container) return;
+    
+    // DEBUG: Adicione esta linha temporariamente
+    console.log("Picks Vermelhos atuais:", picksVermelhos);
+    
     container.innerHTML = "";
 
     if (picksVermelhos.length === 0) {
