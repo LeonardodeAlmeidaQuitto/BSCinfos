@@ -1,194 +1,139 @@
 /* =========================================================
-   VARIÁVEIS DE COR E ESTILO BASE
+   ESTILOS GERAIS E CORES BASE (DARK THEME)
    ========================================================= */
 :root {
-    --bg-color: #0b0c10; /* Fundo principal escuro */
-    --panel-bg: #111217; /* Fundo dos painéis */
-    --azul: #007bff; /* Azul do time aliado */
-    --vermelho: #ff3333; /* Vermelho do time inimigo */
-    --rosa-neon: #e024a5; /* Cor de destaque neon */
-    --texto-claro: #ffffff;
-    --texto-escuro: #888888;
-    --borda-escura: #222222;
+    --bg-geral: #0b0c10;
+    --bg-paineis: #111217;
+    --bg-slots: #1c1d24;
+    --borda-suave: #1f2026;
+    --borda-destaque: #2d303a;
+    --rosa-neon: #ff00ff; /* Cor magenta dos títulos do Meta/Counters */
+    --azul-time: #007bff;
+    --vermelho-time: #ff3333;
 }
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Montserrat', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: sans-serif;
 }
 
 body {
-    background-color: var(--bg-color);
-    color: var(--texto-claro);
-    overflow-x: hidden;
+    background-color: var(--bg-geral);
+    color: #ffffff;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
-    height: 100vh;
 }
 
 /* =========================================================
-   HEADER E NAVEGAÇÃO SUPERIOR
+   HEADER / NAVBAR
    ========================================================= */
 .navbar {
     display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    padding: 10px 20px;
-    background-color: var(--bg-color);
-    border-bottom: 2px solid var(--rosa-neon);
-    gap: 40px;
+    background-color: #000000;
+    padding: 15px 30px;
+    border-bottom: 1px solid var(--borda-suave);
+    gap: 30px;
 }
 
-.nav-links {
-    display: flex;
-    gap: 20px;
-}
-
-.nav-links a {
-    color: var(--texto-claro);
+.navbar a, .navbar div {
+    color: #ffffff;
     text-decoration: none;
-    font-weight: 900;
-    font-size: 14px;
-    text-transform: uppercase;
-}
-
-/* Controles de First Pick e Mapa */
-.top-controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 15px;
-    gap: 20px;
-}
-
-.first-pick-selector {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: #000;
-    border-radius: 20px;
-    padding: 5px 15px;
-    border: 1px solid var(--borda-escura);
-}
-
-.first-pick-selector span {
-    font-size: 12px;
     font-weight: bold;
-    color: var(--texto-escuro);
-}
-
-.fp-btn {
-    width: 25px;
-    height: 25px;
-    border-radius: 4px;
-    cursor: pointer;
-    border: none;
-    transition: 0.2s;
-}
-
-#fp-blue { background-color: #003366; }
-#fp-blue.active { background-color: var(--azul); box-shadow: 0 0 10px var(--azul); }
-
-#fp-red { background-color: #660000; }
-#fp-red.active { background-color: var(--vermelho); box-shadow: 0 0 10px var(--vermelho); }
-
-.map-selector select {
-    background-color: #000;
-    color: #fff;
-    border: 1px solid var(--borda-escura);
-    padding: 8px 15px;
-    border-radius: 5px;
-    outline: none;
-    font-weight: bold;
+    font-size: 13px;
     text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 /* =========================================================
-   LAYOUT PRINCIPAL
+   LAYOUT PRINCIPAL (SISTEMA DE 3 COLUNAS LADO A LADO)
    ========================================================= */
 .main-container {
     display: flex;
     flex: 1;
-    padding: 10px 20px;
+    padding: 20px;
     gap: 20px;
-    height: calc(100vh - 120px);
+    align-items: start;
+    max-height: calc(100vh - 50px);
 }
 
-/* --- ÁREA DO DRAFT (Esquerda / Centro) --- */
+/* --- COLUNA 1: ÁREA DO DRAFT (Esquerda/Centro) --- */
 .draft-area {
-    flex: 2;
-    background-color: var(--panel-bg);
-    border-radius: 10px;
-    padding: 20px;
+    flex: 2.5;
+    background-color: var(--bg-paineis);
+    border-radius: 16px;
+    border: 1px solid var(--borda-suave);
+    padding: 25px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
     position: relative;
-    border: 1px solid var(--borda-escura);
+    min-height: 520px;
 }
 
 .team-column {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 15px;
-    width: 40%;
+    width: 46%;
 }
 
 .team-title {
     font-size: 20px;
     font-weight: 900;
     text-transform: uppercase;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
 }
 
 .bans-container {
     display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
+    gap: 8px;
+    margin-bottom: 25px;
 }
 
 .picks-container {
     display: flex;
     flex-direction: column;
     gap: 15px;
+    width: 100%;
+    align-items: center;
 }
 
 .center-vs {
-    font-size: 60px;
-    font-weight: 900;
-    color: #1a1a1a; /* X escuro no fundo */
     position: absolute;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
-    z-index: 0;
+    transform: translate(-50%, -50%);
+    font-size: 55px;
+    font-weight: 900;
+    color: #1c1d24;
+    pointer-events: none;
+    user-select: none;
 }
 
-/* --- SLOTS DE DRAFT (Bans e Picks) --- */
+/* --- SLOTS DE PICKS E BANS --- */
 .slot {
-    background-color: #000;
-    border: 2px solid #333;
-    border-radius: 8px;
+    background-color: var(--bg-slots);
+    border: 2px solid var(--borda-destaque);
+    border-radius: 10px;
     display: flex;
-    justify-content: center;
     align-items: center;
-    position: relative !important; /* Essencial para a sobreposição de confirmação */
+    justify-content: center;
     overflow: hidden;
-    transition: all 0.2s ease-in-out;
-    z-index: 1;
+    position: relative !important;
 }
 
 .slot-small {
-    width: 50px;
-    height: 50px;
+    width: 45px;
+    height: 45px;
 }
 
 .slot-large {
-    width: 90px;
-    height: 90px;
-    border-radius: 12px;
+    width: 95px;
+    height: 95px;
+    border-radius: 14px;
 }
 
 .slot img {
@@ -197,123 +142,114 @@ body {
     object-fit: cover;
 }
 
-/* Indica de quem é o turno */
+/* Bordas de turno ativo */
 .active-blue {
-    border-color: var(--azul);
-    box-shadow: 0 0 15px rgba(0, 123, 255, 0.6);
+    border-color: var(--azul-time);
+    box-shadow: 0 0 15px rgba(0, 123, 255, 0.5);
 }
 
 .active-red {
-    border-color: var(--vermelho);
-    box-shadow: 0 0 15px rgba(255, 51, 51, 0.6);
+    border-color: var(--vermelho-time);
+    box-shadow: 0 0 15px rgba(255, 51, 51, 0.5);
 }
 
-/* --- PAINÉIS LATERAIS DE INFORMAÇÃO (Meio) --- */
+/* --- COLUNA 2: PAINÉIS LATERAIS (Meio) --- */
 .info-panels {
-    flex: 0.8;
+    flex: 1.2;
     display: flex;
     flex-direction: column;
     gap: 15px;
 }
 
 .side-panel {
-    background-color: var(--panel-bg);
-    border-radius: 8px;
-    border: 1px solid var(--borda-escura);
+    background-color: var(--bg-paineis);
+    border: 1px solid var(--borda-suave);
+    border-radius: 12px;
     padding: 15px;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    overflow: hidden;
 }
 
 .panel-title {
     color: var(--rosa-neon);
-    font-size: 14px;
-    font-weight: 900;
-    text-align: center;
-    margin-bottom: 10px;
+    font-weight: bold;
+    font-size: 13px;
     text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 12px;
     letter-spacing: 1px;
 }
 
 .mini-brawler-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(5, 1fr); /* 5 Brawlers por linha igual ao original */
     gap: 6px;
-    justify-content: center;
-    align-content: start;
 }
 
 .mini-brawler {
     width: 100%;
     aspect-ratio: 1;
-    background-color: #000;
-    border-radius: 4px;
-    position: relative; /* Necessário para os badges numéricos */
+    background-color: var(--bg-slots);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative !important;
+    border: 1px solid var(--borda-destaque);
 }
 
 .mini-brawler img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 4px;
 }
 
-/* --- GRELHA DE SELEÇÃO DE BRAWLERS (Direita) --- */
+/* --- COLUNA 3: SELEÇÃO DE BRAWLERS (Direita) --- */
 .roster-area {
-    flex: 1.2;
-    background-color: var(--panel-bg);
-    border-radius: 8px;
+    flex: 1.4;
+    background-color: var(--bg-paineis);
+    border: 1px solid var(--borda-suave);
+    border-radius: 12px;
     padding: 15px;
     display: flex;
     flex-direction: column;
-    border: 1px solid var(--borda-escura);
+    max-height: 85vh;
 }
 
 .search-bar {
     width: 100%;
-    padding: 12px;
-    background-color: #000;
-    border: 1px solid var(--borda-escura);
-    color: var(--texto-claro);
-    border-radius: 5px;
+    padding: 10px;
+    background-color: #000000;
+    border: 1px solid var(--borda-destaque);
+    color: #ffffff;
+    border-radius: 6px;
     margin-bottom: 15px;
     outline: none;
-    font-family: inherit;
-}
-
-.search-bar::placeholder {
-    color: var(--texto-escuro);
+    font-size: 13px;
 }
 
 .roster-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    grid-template-columns: repeat(3, 1fr); /* 3 Colunas perfeitas igual ao original */
     gap: 8px;
     overflow-y: auto;
-    padding-right: 5px;
+    padding-right: 4px;
 }
 
-/* Custom Scrollbar para a lista de Brawlers */
-.roster-grid::-webkit-scrollbar { width: 6px; }
+/* Scrollbar customizado da lista */
+.roster-grid::-webkit-scrollbar { width: 5px; }
 .roster-grid::-webkit-scrollbar-track { background: transparent; }
-.roster-grid::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
-.roster-grid::-webkit-scrollbar-thumb:hover { background: var(--rosa-neon); }
+.roster-grid::-webkit-scrollbar-thumb { background: var(--borda-destaque); border-radius: 10px; }
 
 .brawler-icon {
     width: 100%;
     aspect-ratio: 1;
-    cursor: pointer;
-    border-radius: 5px;
+    border-radius: 6px;
     overflow: hidden;
+    cursor: pointer;
     border: 2px solid transparent;
-    transition: transform 0.1s, border-color 0.1s;
+    transition: transform 0.1s ease;
 }
 
 .brawler-icon:hover {
-    transform: scale(1.05);
-    border-color: var(--texto-claro);
+    transform: scale(1.03);
+    border-color: #ffffff;
 }
 
 .brawler-icon img {
@@ -323,89 +259,70 @@ body {
 }
 
 .brawler-icon.disabled {
-    filter: grayscale(100%) opacity(0.2);
+    filter: grayscale(100%) opacity(0.15);
     pointer-events: none;
-    border-color: transparent;
 }
 
 
 /* =========================================================
-   SISTEMA DE INTERAÇÃO (CONFIRMAÇÃO E DESTAQUES)
+   SISTEMA DE INTERAÇÃO, DESTAQUES E DRAGÕES
    ========================================================= */
 
-/* Overlay de Confirmação (Time Azul) */
+/* Overlay do botão Confirmar */
 .confirm-overlay {
-    position: absolute !important;
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.85); /* Fundo escuro focado */
+    background: rgba(0, 0, 0, 0.85);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff !important;
-    font-weight: 900;
-    font-size: 13px;
-    letter-spacing: 1px;
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 12px;
     cursor: pointer;
-    text-transform: uppercase;
-    text-align: center;
-    z-index: 999 !important;
+    border: 2px solid var(--azul-time);
     box-sizing: border-box;
-    border: 2px solid var(--azul);
-    transition: background 0.2s;
+    text-align: center;
 }
 
-.confirm-overlay:hover {
-    background: rgba(0, 123, 255, 0.8); /* Brilho ao passar o rato */
-}
-
-/* Destaque Verde (Múltiplos Counters a favor) */
+/* Borda brilhante verde (Vantagem) */
 .highlight-good {
     border: 2px solid #00ff00 !important;
-    box-shadow: 0 0 10px rgba(0, 255, 0, 0.7);
-    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.6);
 }
 
-/* Destaque Vermelho (Múltiplas Ameaças no Pode Tomar) */
+/* Borda brilhante vermelha (Perigo) */
 .highlight-danger {
     border: 2px solid #ff0000 !important;
-    box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
-    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
 }
 
-/* Selos Numéricos (Badges) */
+/* Badges multiplicadores (x2, x3) */
 .badge-multi, .badge-multi-danger {
     position: absolute;
-    bottom: -2px;
-    right: -2px;
-    font-size: 11px;
+    bottom: -1px;
+    right: -1px;
+    font-size: 10px;
     font-weight: 900;
-    padding: 2px 5px;
-    border-radius: 4px;
+    padding: 1px 4px;
+    border-radius: 3px;
     z-index: 5;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
-.badge-multi { 
-    background: #00ff00; 
-    color: #000; 
-}
+.badge-multi { background: #00ff00; color: #000; }
+.badge-multi-danger { background: #ff0000; color: #fff; }
 
-.badge-multi-danger { 
-    background: #ff0000; 
-    color: #fff; 
-}
-
-/* --- DISTINTIVOS DOS DRAGÕES (VANTAGEM E PERIGO) --- */
+/* Ícones dos Dragões no canto superior esquerdo */
 .dragon-badge {
     position: absolute;
-    top: -8px; /* Joga um pouco para fora para dar efeito de pin */
-    left: -8px;
-    width: 26px; /* Tamanho ideal para se destacar nos slots pequenos */
-    height: 26px;
-    z-index: 10; /* Garante que fica por cima de tudo */
-    filter: drop-shadow(0px 2px 5px rgba(0, 0, 0, 0.7)); /* Destaca o dragão do fundo escuro */
-    pointer-events: none; /* Evita que o ícone bloqueie cliques ou tooltips */
+    top: -6px;
+    left: -6px;
+    width: 24px;
+    height: 24px;
+    z-index: 10;
+    filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.8));
+    pointer-events: none;
 }
