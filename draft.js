@@ -135,44 +135,97 @@ const DADOS_COUNTERS = {
 
 const BRAWLERS = ["Damian", "8-Bit", "Alli", "Amber", "Angelo", "Ash", "Barley", "Bea", "Belle", "Berry", "Bibi", "Bo", "Bonnie", "Brock", "Bull", "Buster", "Buzz", "Byron", "Carl", "Charlie", "Chester", "Clancy", "Colette", "Colt", "Cordelius", "Crow", "Darryl", "Doug", "Draco", "Dynamike", "Edgar", "El Primo", "Emz", "Eve", "Fang", "Finx", "Frank", "Gale", "Gene", "Gigi", "Glowy", "Gray", "Griff", "Grom", "Gus", "Hank", "Jacky", "Jae Yong", "Janet", "Jessie", "Juju", "Kaze", "Kenji", "Kit", "LarryLawrie", "Leon", "Lily", "Lola", "Lou", "Lumi", "Maisie", "Mandy", "Max", "Meeple", "Meg", "Melodie", "Mico", "Mina", "Moe", "Mortis", "Mr.P", "Najia", "Nani", "Nita", "Ollie", "Otis", "Pam", "Pearl", "Penny", "Pierce", "Piper", "Poco", "R-T", "Rico", "Rosa", "Ruffs", "Sam", "Sandy", "Shade", "Shelly", "Sirius", "Spike", "Sprout", "Squeak", "Stu", "Surge", "Starr Nova", "Tara", "Tick", "Trunk", "Willow", "Ziggy"].sort();
 
-let currentStep = 0; let selected = []; let picksVermelhos = []; let picksAzuis = []; let preSelected = null;
-let draftOrder = []; 
+let currentStep = 0; let selected = []; let firstPick = 'blue';
+let draftOrder = []; let picksVermelhos = []; let picksAzuis = []; let preSelected = null;
 
 function limparNome(nome) { return nome ? nome.toLowerCase().replace(/[^a-z0-9]/g, '') : ""; }
 
-function renderizarLista(containerId, contagem) {
-    const container = document.getElementById(containerId);
+function obterContainer(id) { return document.getElementById(id); }
+
+function criarConteudoSlot(nome, id) {
+    return `<div class="slot-assets"><img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="slot-fallback-text">${nome}</div></div>`;
+}
+
+function popularMapas() {
+    const select = document.querySelector('select');
+    if (!select) return;
+    select.innerHTML = '<option value="" disabled selected>SELECIONE O MAPA</option>';
+    Object.entries(MAPAS_ALVO).forEach(([modo, mapas]) => {
+        const grupo = document.createElement('optgroup'); grupo.label = modo.toUpperCase();
+        mapas.forEach(mapa => { const opt = document.createElement('option'); opt.value = mapa; opt.textContent = mapa; grupo.appendChild(opt); });
+        select.appendChild(grupo);
+    });
+}
+
+function gerarRoster() {
+    const grid = document.getElementById('roster');
+    if (!grid) return;
+    grid.innerHTML = "";
+    BRAWLERS.forEach(nome => {
+        const id = limparNome(nome);
+        const div = document.createElement('div');
+        div.className = 'brawler-icon'; div.id = `b-${id}`;
+        div.innerHTML = `<img src="brawlers/${id}.png"><span class="brawler-name">${nome}</span>`;
+        div.onclick = () => clicarBrawler(nome, id);
+        grid.appendChild(div);
+    });
+}
+
+window.atualizarMeta = function() {
+    const select = document.querySelector('select');
+    const container = obterContainer('meta-list');
+    if (!container || !select) return;
+    container.innerHTML = "";
+    (DADOS_META[select.value] || []).forEach(nome => {
+        container.innerHTML += `<div class="mini-brawler"><img src="brawlers/${limparNome(nome)}.png"></div>`;
+    });
+};
+
+function calcularCounters() {
+    const container = obterContainer('counters-list');
     if (!container) return;
     container.innerHTML = "";
+    if (picksVermelhos.length === 0) { container.innerHTML = '<p>Aguardando adversário</p>'; return; }
+
+    let contagem = {};
+    picksVermelhos.forEach(brawler => {
+        let brawlerKey = Object.keys(DADOS_COUNTERS).find(k => limparNome(k) === limparNome(brawler));
+        if (brawlerKey && DADOS_COUNTERS[brawlerKey]) {
+            DADOS_COUNTERS[brawlerKey].forEach(c => contagem[c] = (contagem[c] || 0) + 1);
+        }
+    });
+
     Object.keys(contagem).sort((a, b) => contagem[b] - contagem[a]).forEach(nome => {
-        container.innerHTML += `<div class="mini-brawler"><img src="brawlers/${limparNome(nome)}.png" title="${nome}"><span>x${contagem[nome]}</span></div>`;
+        container.innerHTML += `<div class="mini-brawler" title="${nome}">x${contagem[nome]}<img src="brawlers/${limparNome(nome)}.png"></div>`;
     });
 }
 
-// CIMA: Quem countera o time inimigo
-function calcularCounters() {
-    let contagem = {};
-    picksVermelhos.forEach(b => {
-        let key = Object.keys(DADOS_COUNTERS).find(k => limparNome(k) === limparNome(b));
-        if (key && DADOS_COUNTERS[key]) DADOS_COUNTERS[key].forEach(c => contagem[c] = (contagem[c] || 0) + 1);
-    });
-    renderizarLista('counters-list', contagem);
-}
-
-// BAIXO: Quem countera o SEU time (Ameaças)
 function calcularPodeTomar() {
-    let contagem = {};
+    const container = obterContainer('podetomar-list');
+    if (!container) return;
+    container.innerHTML = "";
+    
     let listaAzuis = [...picksAzuis];
     if (preSelected) listaAzuis.push(preSelected.nome);
 
-    Object.keys(DADOS_COUNTERS).forEach(candidato => {
+    let contagemAmeacas = {};
+    // LÓGICA INVERTIDA: Verificamos quais brawlers counteram os nossos picks
+    Object.keys(DADOS_COUNTERS).forEach(brawlerAmeaca => {
+        let countersDele = DADOS_COUNTERS[brawlerAmeaca];
         listaAzuis.forEach(meuBrawler => {
-            if (DADOS_COUNTERS[candidato].includes(meuBrawler)) {
-                contagem[candidato] = (contagem[candidato] || 0) + 1;
+            if (countersDele.includes(meuBrawler)) {
+                contagemAmeacas[brawlerAmeaca] = (contagemAmeacas[brawlerAmeaca] || 0) + 1;
             }
         });
     });
-    renderizarLista('podetomar-list', contagem);
+
+    Object.keys(contagemAmeacas).sort((a, b) => contagemAmeacas[b] - contagemAmeacas[a]).forEach(nome => {
+        container.innerHTML += `<div class="mini-brawler" title="${nome}">x${contagemAmeacas[nome]}<img src="brawlers/${limparNome(nome)}.png"></div>`;
+    });
+}
+
+function buildOrder() {
+    draftOrder = [{ slot: 'slot-pA1', team: 'blue', type: 'pick' }, { slot: 'slot-pV1', team: 'red', type: 'pick' }];
 }
 
 window.clicarBrawler = function(nome, id) {
@@ -180,28 +233,27 @@ window.clicarBrawler = function(nome, id) {
     if (!step) return;
     if (step.team === 'blue') {
         preSelected = { nome, id };
-        document.getElementById(step.slot).innerHTML = `SELECIONANDO: ${nome}`;
+        document.getElementById(step.slot).innerHTML = `PRE-SELECIONADO: ${nome}`;
+        calcularCounters(); calcularPodeTomar();
     } else {
-        document.getElementById(step.slot).innerHTML = `<img src="brawlers/${id}.png">`;
+        document.getElementById(step.slot).innerHTML = criarConteudoSlot(nome, id);
         picksVermelhos.push(nome);
         currentStep++;
+        calcularCounters(); calcularPodeTomar();
     }
-    calcularCounters();
-    calcularPodeTomar();
 };
 
 window.confirmarBlueSelection = function() {
     if (!preSelected) return;
-    document.getElementById(draftOrder[currentStep].slot).innerHTML = `<img src="brawlers/${preSelected.id}.png">`;
+    document.getElementById(draftOrder[currentStep].slot).innerHTML = criarConteudoSlot(preSelected.nome, preSelected.id);
     picksAzuis.push(preSelected.nome);
     currentStep++;
     preSelected = null;
-    calcularCounters();
-    calcularPodeTomar();
+    calcularCounters(); calcularPodeTomar();
 };
 
 function inicializarSistema() {
-    draftOrder = [{ slot: 'slot-pA1', team: 'blue', type: 'pick' }, { slot: 'slot-pV1', team: 'red', type: 'pick' }];
+    popularMapas(); gerarRoster(); buildOrder();
 }
 
 inicializarSistema();
