@@ -26,7 +26,7 @@ const DADOS_META = {
     "Deathcap Trap": []
 };
 
-// QUEM COUNTERA O BRAWLER SELECIONADO (Bons picks para o teu time)
+// QUEM COUNTERA O BRAWLER SELECIONADO
 const DADOS_COUNTERS = {
     "8-bit": ["Belle", "Najia", "Crow", "Pierce", "Byron", "Penny"],
     "Alli": ["Otis", "Spike", "Kenji", "Ruffs", "Bull", "Trunk", "Jack", "Sirius", "Mortis", "Emz"],
@@ -40,7 +40,7 @@ const DADOS_COUNTERS = {
     "Bibi": ["Otis", "Edgar", "Colette", "Buzz", "Bull"],
     "Bo": ["Mina", "Mortis", "Buzz", "Edgar"],
     "Bonnie": ["Charlie", "Ruffs", "Leon"],
-    "Brock": ["RT", "Byron", "Pierce", "Najia", "Piper", "Jae Yong", "Kaze"],
+    "Brock": ["RT", "Byron", "Pierce", "Najia", "Piper", "Jae Young", "Kaze"],
     "Bull": ["Cordelius", "Griff", "Colette", "Otis", "Charlie", "Nita"],
     "Buster": ["Bull", "Mina", "Kenji", "Edgar", "Mortis"],
     "Buzz": ["Charlie", "Bull", "Griff", "Cordelius", "Edgar"],
@@ -64,23 +64,15 @@ const DADOS_COUNTERS = {
     "Sprout": [], "Squeak": [], "Stu": [], "Surge": [], "Tara": [], "Tick": [], "Trunk": [], "Willow": [], "Ziggy": []
 };
 
-// NOVO: QUEM ESSE BRAWLER DA CONTRA (Brawlers ruins para o teu time escolher)
-// Preenche com quem o brawler vermelho consegue destruir facilmente
-const DADOS_PODETOMAR = {
-    "8-bit": [], 
-    "Colt": [],
-    "Edgar": ["Barley", "Dynamike", "Piper"], // Exemplo: se o vermelho pickar Edgar, o teu time "pode tomar" se escolher estes
-    "Mortis": ["Dynamike", "Barley", "Sprout"],
-    // Podes continuar a preencher o resto de acordo com a tua planilha...
-};
-
-const BRAWLERS = ["Damian", "8-Bit", "Alli", "Amber", "Angelo", "Ash", "Barley", "Bea", "Belle", "Berry", "Bibi", "Bo", "Bonnie", "Brock", "Bull", "Buster", "Buzz", "Byron", "Carl", "Charlie", "Chester", "Clancy", "Colette", "Colt", "Cordelius", "Crow", "Darryl", "Doug", "Draco", "Dynamike", "Edgar", "El Primo", "Emz", "Eve", "Fang", "Finx", "Frank", "Gale", "Gene", "Gigi", "Glowy", "Gray", "Griff", "Grom", "Gus", "Hank", "Jacky", "Jae Yong", "Janet", "Jessie", "Juju", "Kaze", "Kenji", "Kit", "LarryLawrie", "Leon", "Lily", "Lola", "Lou", "Lumi", "Maisie", "Mandy", "Max", "Meeple", "Meg", "Melodie", "Mico", "Mina", "Moe", "Mortis", "Mr.P", "Najia", "Nani", "Nita", "Ollie", "Otis", "Pam", "Pearl", "Penny", "Pierce", "Piper", "Poco", "R-T", "Rico", "Rosa", "Ruffs", "Sam", "Sandy", "Shade", "Shelly", "Sirius", "Spike", "Sprout", "Starr Nova", "Squeak", "Stu", "Surge", "Tara", "Tick", "Trunk", "Willow", "Ziggy"].sort();
+const BRAWLERS = ["Damian", "8-Bit", "Alli", "Amber", "Angelo", "Ash", "Barley", "Bea", "Belle", "Berry", "Bibi", "Bo", "Bonnie", "Brock", "Bull", "Buster", "Buzz", "Byron", "Carl", "Charlie", "Chester", "Clancy", "Colette", "Colt", "Cordelius", "Crow", "Darryl", "Doug", "Draco", "Dynamike", "Edgar", "El Primo", "Emz", "Eve", "Fang", "Finx", "Frank", "Gale", "Gene", "Gigi", "Glowy", "Gray", "Griff", "Grom", "Gus", "Hank", "Jacky", "Jae Yong", "Janet", "Jessie", "Juju", "Kaze", "Kenji", "Kit", "LarryLawrie", "Leon", "Lily", "Lola", "Lou", "Lumi", "Maisie", "Mandy", "Max", "Meeple", "Meg", "Melodie", "Mico", "Mina", "Moe", "Mortis", "Mr.P", "Najia", "Nani", "Nita", "Ollie", "Otis", "Pam", "Pearl", "Penny", "Pierce", "Piper", "Poco", "R-T", "Rico", "Rosa", "Ruffs", "Sam", "Sandy", "Shade", "Shelly", "Sirius", "Spike", "Sprout", "Squeak", "Stu", "Surge", "Tara", "Tick", "Trunk", "Willow", "Ziggy"].sort();
 
 let currentStep = 0;
 let selected = [];
 let firstPick = 'blue';
 let draftOrder = [];
 let picksVermelhos = [];
+let picksAzuis = [];      // Histórico de picks confirmados do time azul
+let preSelected = null;   // Guarda o brawler temporário que aguarda confirmação azul
 
 // --- FUNÇÕES DE INICIALIZAÇÃO ---
 function popularMapas() {
@@ -162,21 +154,30 @@ function calcularCounters() {
     }
 }
 
-// NOVA FUNÇÃO: CALCULAR O PAINEL PODE TOMAR
+// AJUSTADO: "Pode Tomar" lê o que countera os picks do AZUL (exibe no 1º clique)
 function calcularPodeTomar() {
     const container = document.getElementById('podetomar-list');
     if (!container) return;
     container.innerHTML = "";
 
-    if (picksVermelhos.length === 0) {
-        container.innerHTML = `<p style="color:#555; font-size:12px; grid-column: span 5; text-align:center;">Aguardando picks vermelhos</p>`;
+    // Junta as escolhas azuis confirmadas + escolha pré-selecionada atual (se for um pick azul)
+    let tempPicksAzuis = [...picksAzuis];
+    if (currentStep < draftOrder.length) {
+        const step = draftOrder[currentStep];
+        if (preSelected && step.team === 'blue' && step.type === 'pick') {
+            tempPicksAzuis.push(preSelected.nome);
+        }
+    }
+
+    if (tempPicksAzuis.length === 0) {
+        container.innerHTML = `<p style="color:#555; font-size:12px; grid-column: span 5; text-align:center;">Aguardando picks azuis</p>`;
         return;
     }
 
     let ameacasSugeridas = new Set();
-    picksVermelhos.forEach(brawler => {
-        if (DADOS_PODETOMAR[brawler]) {
-            DADOS_PODETOMAR[brawler].forEach(alvo => ameacasSugeridas.add(alvo));
+    tempPicksAzuis.forEach(brawler => {
+        if (DADOS_COUNTERS[brawler]) {
+            DADOS_COUNTERS[brawler].forEach(counter => ameacasSugeridas.add(counter));
         }
     });
 
@@ -184,11 +185,11 @@ function calcularPodeTomar() {
         ameacasSugeridas.forEach(nome => {
             const id = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
             if (!selected.includes(id)) {
-                container.innerHTML += `<div class="mini-brawler" title="Perigo! Evite pegar: ${nome}"><img src="brawlers/${id}.png" onerror="this.src='brawlers/default.png';"></div>`;
+                container.innerHTML += `<div class="mini-brawler" title="Perigo! Podem counterar o Azul: ${nome}"><img src="brawlers/${id}.png" onerror="this.src='brawlers/default.png';"></div>`;
             }
         });
     } else {
-        container.innerHTML = `<p style="color:#555; font-size:12px; grid-column: span 5; text-align:center;">Nenhum perigo mapeado.</p>`;
+        container.innerHTML = `<p style="color:#555; font-size:12px; grid-column: span 5; text-align:center;">Nenhuma ameaça mapeada.</p>`;
     }
 }
 
@@ -230,21 +231,79 @@ window.clicarBrawler = function(nome, id) {
     if (currentStep >= draftOrder.length || selected.includes(id)) return;
     const step = draftOrder[currentStep];
     const slot = document.getElementById(step.slot);
-    
-    if(slot) {
+    if (!slot) return;
+
+    // SISTEMA DE CONFIRMAÇÃO DO TIME AZUL (Picks e Bans)
+    if (step.team === 'blue') {
+        if (preSelected) {
+            // Se clicar no mesmo brawler novamente, confirma a seleção
+            if (preSelected.id === id) {
+                window.confirmarBlueSelection();
+                return;
+            } else {
+                // Se clicar num brawler diferente, troca a pré-seleção
+                preSelected = { nome, id };
+            }
+        } else {
+            // Primeiro clique no brawler
+            preSelected = { nome, id };
+        }
+
+        // Renderiza no slot com o overlay de CONFIRMAR por cima
+        slot.innerHTML = `
+            <div style="position: relative; width: 100%; height: 100%;">
+                <img src="brawlers/${id}.png" onerror="this.src='brawlers/default.png';" style="width:100%; height:100%; object-fit:cover;">
+                <div class="confirm-overlay" onclick="window.confirmarBlueSelection(event)">CONFIRMAR</div>
+            </div>
+        `;
+
+        // Calcula e exibe instantaneamente os counters no primeiro clique
+        calcularCounters();
+        calcularPodeTomar();
+
+    } else {
+        // TIME VERMELHO - Clique único direto original
         slot.innerHTML = `<img src="brawlers/${id}.png" onerror="this.src='brawlers/default.png';">`;
         document.getElementById(`b-${id}`).classList.add('disabled');
         selected.push(id);
-    
-        if(step.team === 'red' && step.type === 'pick') {
+
+        if (step.type === 'pick') {
             picksVermelhos.push(nome);
         }
-        
+
         currentStep++;
         atualizarFoco();
         calcularCounters();
-        calcularPodeTomar(); // Atualiza o novo painel simultaneamente
+        calcularPodeTomar();
     }
+};
+
+// FUNÇÃO PARA CONFIRMAR DEFINITIVAMENTE A SELEÇÃO AZUL
+window.confirmarBlueSelection = function(event) {
+    if (event) event.stopPropagation(); // Impede bugs de bolhas de clique
+    if (!preSelected) return;
+
+    const { nome, id } = preSelected;
+    const step = draftOrder[currentStep];
+    const slot = document.getElementById(step.slot);
+
+    if (slot) {
+        // Remove o overlay e fixa apenas a imagem limpa
+        slot.innerHTML = `<img src="brawlers/${id}.png" onerror="this.src='brawlers/default.png';">`;
+    }
+
+    document.getElementById(`b-${id}`).classList.add('disabled');
+    selected.push(id);
+
+    if (step.type === 'pick') {
+        picksAzuis.push(nome);
+    }
+
+    preSelected = null; // Reseta o estado temporário
+    currentStep++;
+    atualizarFoco();
+    calcularCounters();
+    calcularPodeTomar();
 };
 
 function atualizarFoco() {
@@ -260,6 +319,8 @@ window.resetDraft = function() {
     currentStep = 0; 
     selected = [];
     picksVermelhos = [];
+    picksAzuis = [];
+    preSelected = null;
     
     document.querySelectorAll('.slot').forEach(s => s.innerHTML = '');
     document.querySelectorAll('.brawler-icon').forEach(b => b.classList.remove('disabled'));
@@ -267,7 +328,7 @@ window.resetDraft = function() {
     buildOrder();
     atualizarFoco();
     calcularCounters();
-    calcularPodeTomar(); // Limpa o novo painel no reset
+    calcularPodeTomar();
 };
 
 window.filtrar = function() {
