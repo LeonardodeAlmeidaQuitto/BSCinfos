@@ -1,28 +1,15 @@
 /* --- CONFIGURAÇÕES GERAIS --- */
 :root {
-    --azul: #007bff;
-    --vermelho: #ff4d4d;
-    --accent: #cc00ff;
     --bg-dark: #050505;
     --bg-panels: #0a0a0a;
     --border: #222;
+    --accent: #cc00ff;
 }
 
-body { 
-    margin: 0; 
-    padding: 0; 
-    background-color: var(--bg-dark); 
-    color: #fff; 
-    font-family: Arial, sans-serif; 
-}
+body { margin: 0; padding: 0; background-color: var(--bg-dark); color: #fff; font-family: Arial, sans-serif; }
 
-/* --- ESTRUTURA PRINCIPAL --- */
-.draft-wrapper { 
-    margin-top: 80px; 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-}
+/* --- ESTRUTURA --- */
+.draft-wrapper { margin-top: 80px; display: flex; flex-direction: column; align-items: center; }
 
 .draft-content-wrapper { 
     display: flex; 
@@ -32,37 +19,35 @@ body {
     max-width: 1400px; 
 }
 
-/* --- LADO ESQUERDO (DRAFT) --- */
-.main-draft-box { 
-    flex: 2; 
-    background: var(--bg-panels); 
-    border: 2px solid var(--border); 
-    border-radius: 15px; 
-    padding: 20px; 
-}
+.main-draft-box { flex: 2; background: var(--bg-panels); border: 2px solid var(--border); border-radius: 15px; padding: 20px; height: 750px; }
 
 /* --- LADO DIREITO (VERTICAL) --- */
 .side-panels {
     width: 320px;
     display: flex;
     flex-direction: column; /* FORÇA O EMPILHAMENTO VERTICAL */
-    gap: 15px;              /* Espaço entre os 3 blocos */
-    height: 750px;          /* Altura fixa para manter tudo alinhado */
+    gap: 15px;              
+    height: 750px;          
 }
 
-/* Estilo de cada bloco (Meta, Counters, Roster) */
-.side-panel, .roster-container-vertical {
+/* Painéis de Meta e Counters (Altura Fixa) */
+.side-panel {
+    background: var(--bg-panels);
+    border: 2px solid var(--border);
+    border-radius: 15px;
+    padding: 15px;
+    min-height: 120px;
+}
+
+/* Roster (Ocupa o resto do espaço vertical) */
+.roster-container-vertical {
     background: var(--bg-panels);
     border: 2px solid var(--border);
     border-radius: 15px;
     padding: 15px;
     display: flex;
     flex-direction: column;
-}
-
-/* Roster ocupa o espaço que sobrar */
-.roster-container-vertical {
-    flex: 1; 
+    flex: 1; /* Estica para preencher o resto da altura */
     min-height: 0; 
 }
 
@@ -71,36 +56,20 @@ body {
     display: grid;
     grid-template-columns: repeat(3, 1fr); /* 3 COLUNAS FIXAS */
     gap: 8px;
-    overflow-y: auto; /* Scroll apenas nos brawlers */
+    overflow-y: auto;
     flex: 1;
     align-content: flex-start;
+    padding-right: 5px;
 }
 
-/* --- BRAWLERS --- */
-.brawler-icon {
-    width: 100%;
-    aspect-ratio: 1/1; /* Quadrado */
-    cursor: pointer;
-    border-radius: 4px;
-    overflow: hidden;
-    transition: 0.2s;
-}
-
-.brawler-icon:hover { transform: scale(1.05); }
+/* --- ESTILOS DOS BRAWLERS --- */
+.brawler-icon { width: 100%; aspect-ratio: 1/1; cursor: pointer; border-radius: 4px; overflow: hidden; transition: 0.2s; }
+.brawler-icon:hover { transform: scale(1.05); box-shadow: 0 0 10px var(--accent); }
 .brawler-icon img { width: 100%; height: 100%; object-fit: cover; }
 .disabled { opacity: 0.2; filter: grayscale(1); pointer-events: none; }
 
 /* --- BUSCA --- */
-.search-wrapper input {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 10px;
-    margin-bottom: 10px;
-    background: #000;
-    border: 1px solid #444;
-    color: #fff;
-    border-radius: 5px;
-}
+.search-wrapper input { width: 100%; box-sizing: border-box; padding: 8px; margin-bottom: 10px; background: #000; border: 1px solid #444; color: #fff; border-radius: 4px; }
 
 /* --- SCROLLBAR --- */
 #roster::-webkit-scrollbar { width: 6px; }
