@@ -72,8 +72,8 @@ let firstPick = 'blue';
 let draftOrder = [];
 let picksVermelhos = [];
 let picksAzuis = [];      
+let preSelected = null; // Armazena o brawler na primeira etapa do clique (Time Azul)
 
-// Gera o HTML interno do slot com suporte a texto se a imagem quebrar
 function criarConteudoSlot(nome, id) {
     return `
         <div class="slot-assets">
@@ -137,7 +137,7 @@ window.atualizarMeta = function() {
                 </div>`;
         });
     } else {
-        container.innerHTML = `<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Selecione um mapa.</p>`;
+        container.innerHTML = `<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Selecione um mapa.</p>';`;
     }
 };
 
@@ -223,7 +223,7 @@ function calcularPodeTomar() {
                 </div>`;
         });
     } else {
-        container.innerHTML = `<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Sem ameaças mapeadas.</p>`;
+        container.innerHTML = `<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Sem ameaças.</p>`;
     }
 }
 
@@ -254,16 +254,63 @@ window.clicarBrawler = function(nome, id) {
     const slot = document.getElementById(step.slot);
     if (!slot) return;
 
-    // Inserção Direta e Instantânea no Slot Ativo
-    slot.innerHTML = criarConteudoSlot(nome, id);
+    // --- LOGICA DE 2 CLIQUES PARA O TIME AZUL ---
+    if (step.team === 'blue') {
+        // Se clicar pela segunda vez no mesmo brawler pré-selecionado -> Confirma!
+        if (preSelected && preSelected.id === id) {
+            window.confirmarBlueSelection();
+            return;
+        }
+
+        // Se clicar em um brawler diferente, atualiza a pré-seleção
+        preSelected = { nome, id };
+
+        // Renderiza visual de rascunho temporário no slot ativo
+        slot.innerHTML = `
+            <div class="slot-assets pre-selecting" onclick="window.confirmarBlueSelection(event)">
+                <img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="slot-fallback-text">${nome}</div>
+                <div class="pre-select-badge">✓</div>
+            </div>
+        `;
+    } 
+    // --- LÓGICA DE 1 CLIQUE DIRETO PARA O TIME VERMELHO ---
+    else {
+        slot.innerHTML = criarConteudoSlot(nome, id);
+        document.getElementById(`b-${id}`).classList.add('disabled');
+        selected.push(id);
+
+        if (step.type === 'pick') {
+            picksVermelhos.push(nome);
+        }
+
+        currentStep++;
+        atualizarFoco();
+        calcularCounters();
+        calcularPodeTomar();
+    }
+};
+
+window.confirmarBlueSelection = function(event) {
+    if (event) event.stopPropagation(); 
+    if (!preSelected) return;
+
+    const { nome, id } = preSelected;
+    const step = draftOrder[currentStep];
+    const slot = document.getElementById(step.slot);
+
+    if (slot) {
+        slot.innerHTML = criarConteudoSlot(nome, id);
+    }
+
     document.getElementById(`b-${id}`).classList.add('disabled');
     selected.push(id);
 
     if (step.type === 'pick') {
-        if (step.team === 'blue') picksAzuis.push(nome);
-        else picksVermelhos.push(nome);
+        picksAzuis.push(nome);
     }
 
+    preSelected = null; 
     currentStep++;
     atualizarFoco();
     calcularCounters();
@@ -287,7 +334,7 @@ window.setFirstPick = function(team) {
 };
 
 window.resetDraft = function() {
-    currentStep = 0; selected = []; picksVermelhos = []; picksAzuis = [];
+    currentStep = 0; selected = []; picksVermelhos = []; picksAzuis = []; preSelected = null;
     document.querySelectorAll('.slot').forEach(s => s.innerHTML = '');
     document.querySelectorAll('.brawler-icon').forEach(b => b.classList.remove('disabled'));
     buildOrder();
@@ -308,4 +355,3 @@ document.addEventListener('DOMContentLoaded', () => {
     popularMapas();
     gerarRoster();
     resetDraft();
-});
