@@ -74,7 +74,6 @@ let picksVermelhos = [];
 let picksAzuis = [];      
 let preSelected = null;
 
-// Helper para buscar containers independentemente do ID no HTML
 function getContainer(id, selectorIndex) {
     const el = document.getElementById(id);
     if (el) return el;
@@ -94,7 +93,6 @@ function criarConteudoSlot(nome, id) {
 function popularMapas() {
     const select = document.getElementById('map-select') || document.querySelector('.map-selector select') || document.querySelector('select');
     if (!select) return;
-    
     select.innerHTML = '<option value="" disabled selected>SELECIONE O MAPA</option>';
     Object.entries(MAPAS_ALVO).forEach(([modo, mapas]) => {
         const grupo = document.createElement('optgroup');
@@ -111,7 +109,6 @@ function popularMapas() {
 function gerarRoster() {
     const grid = document.getElementById('roster') || document.querySelector('.roster-grid');
     if (!grid) return;
-    
     grid.innerHTML = "";
     BRAWLERS.forEach(nome => {
         const id = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -134,7 +131,6 @@ window.atualizarMeta = function() {
     const select = document.getElementById('map-select') || document.querySelector('.map-selector select') || document.querySelector('select');
     const mapaSelecionado = select ? select.value : '';
     const container = getContainer('meta-list', 0);
-    
     if (!container) return;
     container.innerHTML = "";
     
@@ -267,7 +263,6 @@ window.clicarBrawler = function(nome, id) {
     if (!slot) return;
 
     if (step.team === 'blue') {
-        // Lógica 2 cliques
         if (preSelected && preSelected.id === id) {
             window.confirmarBlueSelection();
             return;
@@ -281,7 +276,6 @@ window.clicarBrawler = function(nome, id) {
             </div>
         `;
     } else {
-        // Lógica 1 clique direto pro Vermelho
         slot.innerHTML = criarConteudoSlot(nome, id);
         const icon = document.getElementById(`b-${id}`);
         if(icon) icon.classList.add('disabled');
@@ -337,8 +331,10 @@ function atualizarFoco() {
 
 window.setFirstPick = function(team) {
     firstPick = team;
-    document.getElementById('fp-blue').classList.toggle('active', team === 'blue');
-    document.getElementById('fp-red').classList.toggle('active', team === 'red');
+    const btnBlue = document.getElementById('fp-blue');
+    const btnRed = document.getElementById('fp-red');
+    if(btnBlue) btnBlue.classList.toggle('active', team === 'blue');
+    if(btnRed) btnRed.classList.toggle('active', team === 'red');
     resetDraft();
 };
 
@@ -354,26 +350,29 @@ window.resetDraft = function() {
 };
 
 window.filtrar = function() {
-    const t = document.getElementById('search').value.toLowerCase();
+    const searchInput = document.getElementById('search') || document.querySelector('.search-bar');
+    if(!searchInput) return;
+    const t = searchInput.value.toLowerCase();
     document.querySelectorAll('.brawler-icon').forEach(div => {
         const n = div.querySelector('.brawler-name').textContent.toLowerCase();
         div.style.display = n.includes(t) ? 'flex' : 'none';
     });
 };
 
-// =========================================================
-// SISTEMA DE INICIALIZAÇÃO BLINDADO
-// Garante que o código só execute quando o HTML existir
-// =========================================================
 function inicializarSistema() {
     popularMapas();
     gerarRoster();
     resetDraft();
     
-    // Vincula a mudança do mapa
     const mapSelect = document.getElementById('map-select') || document.querySelector('.map-selector select') || document.querySelector('select');
     if (mapSelect) {
         mapSelect.addEventListener('change', window.atualizarMeta);
+    }
+    
+    const searchInput = document.getElementById('search') || document.querySelector('.search-bar');
+    if (searchInput) {
+        searchInput.removeAttribute('oninput'); 
+        searchInput.addEventListener('input', window.filtrar);
     }
 }
 
