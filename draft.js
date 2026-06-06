@@ -74,7 +74,6 @@ let picksVermelhos = [];
 let picksAzuis = [];      
 let preSelected = null;
 
-// Função utilitária para padronizar e limpar nomes de brawlers
 function limparNome(nome) {
     if (!nome) return "";
     return nome.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -177,7 +176,12 @@ function calcularCounters() {
         }
     });
 
-    let brawlersValidos = Object.keys(contagemCounters).filter(nome => !selected.includes(limparNome(nome)));
+    let brawlersValidos = Object.keys(contagemCounters).filter(nome => {
+        const idNome = limparNome(nome);
+        if (selected.includes(idNome)) return false;
+        if (preSelected && limparNome(preSelected.nome) === idNome) return false;
+        return true;
+    });
 
     if (brawlersValidos.length > 0) {
         brawlersValidos.sort((a, b) => contagemCounters[b] - contagemCounters[a]);
@@ -206,13 +210,22 @@ function calcularPodeTomar() {
     if (!container) return;
     container.innerHTML = "";
 
-    if (picksAzuis.length === 0) {
+    // Junta os já confirmados com o pré-selecionado atual para simular o resultado em tempo real
+    let listaAzuisParaCalcular = [...picksAzuis];
+    const step = draftOrder[currentStep];
+    if (preSelected && step && step.team === 'blue' && step.type === 'pick') {
+        if (!listaAzuisParaCalcular.includes(preSelected.nome)) {
+            listaAzuisParaCalcular.push(preSelected.nome);
+        }
+    }
+
+    if (listaAzuisParaCalcular.length === 0) {
         container.innerHTML = '<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Aguardando nosso time</p>';
         return;
     }
 
     let contagemAmeacas = {};
-    picksAzuis.forEach(brawler => {
+    listaAzuisParaCalcular.forEach(brawler => {
         let brawlerKey = Object.keys(DADOS_COUNTERS).find(k => limparNome(k) === limparNome(brawler));
         if (brawlerKey && DADOS_COUNTERS[brawlerKey]) {
             DADOS_COUNTERS[brawlerKey].forEach(counter => {
@@ -221,7 +234,12 @@ function calcularPodeTomar() {
         }
     });
 
-    let brawlersValidos = Object.keys(contagemAmeacas).filter(nome => !selected.includes(limparNome(nome)));
+    let brawlersValidos = Object.keys(contagemAmeacas).filter(nome => {
+        const idNome = limparNome(nome);
+        if (selected.includes(idNome)) return false;
+        if (preSelected && limparNome(preSelected.nome) === idNome) return false;
+        return true;
+    });
 
     if (brawlersValidos.length > 0) {
         brawlersValidos.sort((a, b) => contagemAmeacas[b] - contagemAmeacas[a]);
@@ -285,6 +303,10 @@ window.clicarBrawler = function(nome, id) {
                 <div class="pre-select-badge">✓</div>
             </div>
         `;
+        
+        // Dispara os cálculos imediatamente no primeiro clique!
+        calcularCounters();
+        calcularPodeTomar();
     } else {
         slot.innerHTML = criarConteudoSlot(nome, id);
         const icon = document.getElementById(`b-${id}`);
