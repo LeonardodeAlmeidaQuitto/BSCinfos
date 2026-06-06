@@ -72,7 +72,15 @@ let firstPick = 'blue';
 let draftOrder = [];
 let picksVermelhos = [];
 let picksAzuis = [];      
-let preSelected = null; // Armazena o brawler na primeira etapa do clique (Time Azul)
+let preSelected = null;
+
+// Helper para buscar containers independentemente do ID no HTML
+function getContainer(id, selectorIndex) {
+    const el = document.getElementById(id);
+    if (el) return el;
+    const grids = document.querySelectorAll('.mini-brawler-grid');
+    return grids.length > selectorIndex ? grids[selectorIndex] : null;
+}
 
 function criarConteudoSlot(nome, id) {
     return `
@@ -84,8 +92,9 @@ function criarConteudoSlot(nome, id) {
 }
 
 function popularMapas() {
-    const select = document.getElementById('map-select');
+    const select = document.getElementById('map-select') || document.querySelector('.map-selector select') || document.querySelector('select');
     if (!select) return;
+    
     select.innerHTML = '<option value="" disabled selected>SELECIONE O MAPA</option>';
     Object.entries(MAPAS_ALVO).forEach(([modo, mapas]) => {
         const grupo = document.createElement('optgroup');
@@ -100,8 +109,9 @@ function popularMapas() {
 }
 
 function gerarRoster() {
-    const grid = document.getElementById('roster');
+    const grid = document.getElementById('roster') || document.querySelector('.roster-grid');
     if (!grid) return;
+    
     grid.innerHTML = "";
     BRAWLERS.forEach(nome => {
         const id = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -121,8 +131,10 @@ function gerarRoster() {
 }
 
 window.atualizarMeta = function() {
-    const mapaSelecionado = document.getElementById('map-select').value;
-    const container = document.getElementById('meta-list');
+    const select = document.getElementById('map-select') || document.querySelector('.map-selector select') || document.querySelector('select');
+    const mapaSelecionado = select ? select.value : '';
+    const container = getContainer('meta-list', 0);
+    
     if (!container) return;
     container.innerHTML = "";
     
@@ -137,17 +149,17 @@ window.atualizarMeta = function() {
                 </div>`;
         });
     } else {
-        container.innerHTML = `<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Selecione um mapa.</p>';`;
+        container.innerHTML = '<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Selecione um mapa.</p>';
     }
 };
 
 function calcularCounters() {
-    const container = document.getElementById('counters-list');
+    const container = getContainer('counters-list', 1);
     if (!container) return;
     container.innerHTML = "";
 
     if (picksVermelhos.length === 0) {
-        container.innerHTML = `<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Aguardando adversário</p>`;
+        container.innerHTML = '<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Aguardando adversário</p>';
         return;
     }
 
@@ -180,17 +192,17 @@ function calcularCounters() {
                 </div>`;
         });
     } else {
-        container.innerHTML = `<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Sem recomendações.</p>`;
+        container.innerHTML = '<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Sem recomendações.</p>';
     }
 }
 
 function calcularPodeTomar() {
-    const container = document.getElementById('podetomar-list');
+    const container = getContainer('podetomar-list', 2);
     if (!container) return;
     container.innerHTML = "";
 
     if (picksAzuis.length === 0) {
-        container.innerHTML = `<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Aguardando nosso time</p>`;
+        container.innerHTML = '<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Aguardando nosso time</p>';
         return;
     }
 
@@ -223,7 +235,7 @@ function calcularPodeTomar() {
                 </div>`;
         });
     } else {
-        container.innerHTML = `<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Sem ameaças.</p>`;
+        container.innerHTML = '<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Sem ameaças.</p>';
     }
 }
 
@@ -254,18 +266,13 @@ window.clicarBrawler = function(nome, id) {
     const slot = document.getElementById(step.slot);
     if (!slot) return;
 
-    // --- LOGICA DE 2 CLIQUES PARA O TIME AZUL ---
     if (step.team === 'blue') {
-        // Se clicar pela segunda vez no mesmo brawler pré-selecionado -> Confirma!
+        // Lógica 2 cliques
         if (preSelected && preSelected.id === id) {
             window.confirmarBlueSelection();
             return;
         }
-
-        // Se clicar em um brawler diferente, atualiza a pré-seleção
         preSelected = { nome, id };
-
-        // Renderiza visual de rascunho temporário no slot ativo
         slot.innerHTML = `
             <div class="slot-assets pre-selecting" onclick="window.confirmarBlueSelection(event)">
                 <img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -273,11 +280,11 @@ window.clicarBrawler = function(nome, id) {
                 <div class="pre-select-badge">✓</div>
             </div>
         `;
-    } 
-    // --- LÓGICA DE 1 CLIQUE DIRETO PARA O TIME VERMELHO ---
-    else {
+    } else {
+        // Lógica 1 clique direto pro Vermelho
         slot.innerHTML = criarConteudoSlot(nome, id);
-        document.getElementById(`b-${id}`).classList.add('disabled');
+        const icon = document.getElementById(`b-${id}`);
+        if(icon) icon.classList.add('disabled');
         selected.push(id);
 
         if (step.type === 'pick') {
@@ -285,6 +292,7 @@ window.clicarBrawler = function(nome, id) {
         }
 
         currentStep++;
+        preSelected = null;
         atualizarFoco();
         calcularCounters();
         calcularPodeTomar();
@@ -303,7 +311,8 @@ window.confirmarBlueSelection = function(event) {
         slot.innerHTML = criarConteudoSlot(nome, id);
     }
 
-    document.getElementById(`b-${id}`).classList.add('disabled');
+    const icon = document.getElementById(`b-${id}`);
+    if(icon) icon.classList.add('disabled');
     selected.push(id);
 
     if (step.type === 'pick') {
@@ -339,6 +348,7 @@ window.resetDraft = function() {
     document.querySelectorAll('.brawler-icon').forEach(b => b.classList.remove('disabled'));
     buildOrder();
     atualizarFoco();
+    window.atualizarMeta();
     calcularCounters();
     calcularPodeTomar();
 };
@@ -351,7 +361,24 @@ window.filtrar = function() {
     });
 };
 
-document.addEventListener('DOMContentLoaded', () => {
+// =========================================================
+// SISTEMA DE INICIALIZAÇÃO BLINDADO
+// Garante que o código só execute quando o HTML existir
+// =========================================================
+function inicializarSistema() {
     popularMapas();
     gerarRoster();
     resetDraft();
+    
+    // Vincula a mudança do mapa
+    const mapSelect = document.getElementById('map-select') || document.querySelector('.map-selector select') || document.querySelector('select');
+    if (mapSelect) {
+        mapSelect.addEventListener('change', window.atualizarMeta);
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', inicializarSistema);
+} else {
+    inicializarSistema();
+}
