@@ -162,22 +162,25 @@ body {
 .divider-x { font-size: 90px; font-weight: 100; color: #1a1a1a; align-self: center; margin-top: 40px; }
 
 
-/* --- COLUNA DIREITA (TRANCADA EM 750PX COM SCROLL INTERNAL) --- */
+/* --- COLUNA DIREITA (ALINHAMENTO E LARGURAS PERFEITAS) --- */
 .side-panels {
     width: 310px; 
     display: flex;
     flex-direction: column; 
-    gap: 15px;
-    height: 750px;          /* Tranca rigorosamente a altura igual ao lado esquerdo */
+    gap: 12px;
+    height: 750px;          /* Tranca rigidamente a altura total igual à do painel esquerdo */
     box-sizing: border-box;
 }
 
-.side-panel {
+/* Todos os elementos da direita herdam exatamente o mesmo tamanho */
+.side-panel, .roster-container-vertical {
+    width: 100% !important;
+    max-width: 100% !important;
     background: var(--bg-cards);
     border: 2px solid var(--border-dark);
     border-radius: 15px;
     padding: 12px;
-    box-sizing: border-box;
+    box-sizing: border-box !important;
 }
 
 .panel-title { font-size: 14px; margin-bottom: 10px; color: var(--accent); font-weight: 900; text-align: center; text-transform: uppercase; letter-spacing: 1px; }
@@ -190,22 +193,19 @@ body {
 .mini-brawler { aspect-ratio: 1/1; background: #111; border-radius: 6px; border: 1px solid #333; overflow: hidden; display: flex; align-items: center; justify-content: center;}
 .mini-brawler img { width: 100%; height: 100%; object-fit: cover; }
 
-/* ROSTER CONTAINER (Ajustado para scroll com a roda do mouse) */
+/* CONTAINER DO ROSTER (BLOQUEADO CONTRA EXPANSÃO) */
 .roster-container-vertical {
-    background: var(--bg-cards);
-    border: 2px solid var(--border-dark);
-    border-radius: 15px;
-    padding: 15px;
     display: flex;
     flex-direction: column;
-    flex: 1;               /* Preenche o resto dos 750px */
-    min-height: 0;         /* Impede que a div exploda de tamanho para baixo */
-    box-sizing: border-box;
+    flex: 1 !important;    /* Ocupa dinamicamente a altura restante dos 750px */
+    min-height: 0 !important; /* Impede o container de crescer além do limite */
+    overflow: hidden !important;
 }
 
+.search-wrapper { width: 100%; }
 .search-wrapper input {
     width: 100% !important;
-    box-sizing: border-box;
+    box-sizing: border-box !important;
     margin-bottom: 12px;
     padding: 8px 12px;
     background: #000;
@@ -217,13 +217,14 @@ body {
 }
 .search-wrapper input:focus { border-color: var(--accent); }
 
-/* LISTA DE BRAWLERS EM 3 FILEIRAS COM SCROLL ATIVO */
+/* LISTA INTERNA COM SUAS 3 FILEIRAS E SCROLL ATIVO NO MOUSE */
 #roster, .brawler-grid-vertical {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr) !important; /* Exatamente 3 colunas */
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important; /* 3 colunas impecáveis */
     gap: 8px;
-    overflow-y: auto !important; /* Ativa o scroll da roda do mouse */
-    flex: 1;
+    overflow-y: auto !important; /* Ativa de vez o uso da roda do mouse aqui dentro */
+    flex: 1 !important;
+    min-height: 0;
     align-content: flex-start;
     padding-right: 4px;
 }
@@ -243,7 +244,7 @@ body {
 .btn-reset-draft { margin-top: 12px; font-size: 12px; font-weight: 800; padding: 10px; cursor: pointer; background: #111; color: #666; border: 1px solid #222; border-radius: 6px; text-transform: uppercase; width: 100%; transition: 0.2s; }
 .btn-reset-draft:hover { color: #fff; background: #551111; border-color: #ff3333; }
 
-/* ESTILIZAÇÃO DO SCROLLBAR */
+/* DESIGN DO SCROLLBAR */
 #roster::-webkit-scrollbar { width: 6px; }
 #roster::-webkit-scrollbar-track { background: transparent; }
 #roster::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
