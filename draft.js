@@ -140,20 +140,19 @@ let selected = [];
 let firstPick = 'blue';
 let draftOrder = [];
 let picksVermelhos = [];
-let picksAzuis = [];      
+let picksAzuis = [];
 let preSelected = null;
-
+ 
 // =========================================================
 // INTERRUPTORES RESILIENTES DE SELEÇÃO DOM (ANTI-ERRO)
 // =========================================================
-
+ 
 function limparNome(nome) {
     if (!nome) return "";
     return nome.toLowerCase().replace(/[^a-z0-9]/g, '');
 }
-
+ 
 function obterCaixaPorTexto(textoCabecalho, fallbackIndex) {
-    // Busca inteligente: Varre a tela procurando o título exato da seção
     const elementos = document.querySelectorAll('*');
     for (let el of elementos) {
         if (el.textContent.trim().toUpperCase() === textoCabecalho.toUpperCase()) {
@@ -164,27 +163,22 @@ function obterCaixaPorTexto(textoCabecalho, fallbackIndex) {
             }
         }
     }
-    // Caso falhe, usa a ordem padrão de indexação das classes
     const grids = document.querySelectorAll('.mini-brawler-grid');
     return grids.length > fallbackIndex ? grids[fallbackIndex] : null;
 }
-
+ 
 function obterContainerInimigo() {
     return document.getElementById('counters-list');
 }
-
-function obterContainerNosso() {
-    return document.getElementById('podetomar-list');
-}
-
+ 
 function obterContainerNosso() {
     return document.getElementById('podetomar-list') || document.getElementById('counters-nosso') || obterCaixaPorTexto('COUNTERS (NOSSO)', 2);
 }
-
+ 
 function obterContainerMeta() {
     return document.getElementById('meta-list') || obterCaixaPorTexto('META TOP 10', 0);
 }
-
+ 
 function criarConteudoSlot(nome, id) {
     return `
         <div class="slot-assets">
@@ -193,11 +187,11 @@ function criarConteudoSlot(nome, id) {
         </div>
     `;
 }
-
+ 
 // =========================================================
 // RENDERIZAÇÃO DE INTERFACE
 // =========================================================
-
+ 
 function popularMapas() {
     const select = document.getElementById('map-select') || document.querySelector('.map-selector select') || document.querySelector('select');
     if (!select) return;
@@ -213,7 +207,7 @@ function popularMapas() {
         select.appendChild(grupo);
     });
 }
-
+ 
 function gerarRoster() {
     const grid = document.getElementById('roster') || document.querySelector('.roster-grid');
     if (!grid) return;
@@ -234,14 +228,14 @@ function gerarRoster() {
         grid.appendChild(div);
     });
 }
-
+ 
 window.atualizarMeta = function() {
     const select = document.getElementById('map-select') || document.querySelector('.map-selector select') || document.querySelector('select');
     const mapaSelecionado = select ? select.value : '';
     const container = obterContainerMeta();
     if (!container) return;
     container.innerHTML = "";
-    
+ 
     const metaBrawlers = DADOS_META[mapaSelecionado];
     if (metaBrawlers && metaBrawlers.length > 0) {
         metaBrawlers.forEach(nome => {
@@ -256,53 +250,52 @@ window.atualizarMeta = function() {
         container.innerHTML = '<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Selecione um mapa.</p>';
     }
 };
-
+ 
 // =========================================================
-// LÓGICA DE CÁLCULO DE COUNTERS (SINCRO TOTAL)
+// LÓGICA DE CÁLCULO DE COUNTERS (CORRIGIDA)
 // =========================================================
-
+ 
 function calcularCounters() {
     let container = obterContainerInimigo();
     if (!container) return;
-    
-    // DEBUG: Adicione esta linha temporariamente
-    console.log("Picks Vermelhos atuais:", picksVermelhos);
-    
+ 
     container.innerHTML = "";
-
+ 
     if (picksVermelhos.length === 0) {
         container.innerHTML = '<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Aguardando adversário</p>';
         return;
     }
-
+ 
     let contagemCounters = {};
     picksVermelhos.forEach(brawler => {
         let brawlerKey = Object.keys(DADOS_COUNTERS).find(k => limparNome(k) === limparNome(brawler));
         if (brawlerKey && DADOS_COUNTERS[brawlerKey]) {
             DADOS_COUNTERS[brawlerKey].forEach(counter => {
-                contagemCounters[counter] = (contagemCounters[counter] || 0) + 1;
+                if (counter && counter.trim() !== "") {
+                    contagemCounters[counter] = (contagemCounters[counter] || 0) + 1;
+                }
             });
         }
     });
-
+ 
     let brawlersValidos = Object.keys(contagemCounters).filter(nome => {
         const idNome = limparNome(nome);
         if (selected.includes(idNome)) return false;
         if (preSelected && limparNome(preSelected.nome) === idNome) return false;
         return true;
     });
-
+ 
     if (brawlersValidos.length > 0) {
         brawlersValidos.sort((a, b) => contagemCounters[b] - contagemCounters[a]);
         brawlersValidos.forEach(nome => {
             const id = limparNome(nome);
             let qtd = contagemCounters[nome];
-            
-            // Lógica Unificada: Se counterar 2 ou mais adversários, ganha a borda verde e o dragão com joinha
+ 
+            // Dragão com JOINHA (dragon_us_full) = bom pra nós, countera o inimigo
             let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
             let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
             let dragonIcon = qtd >= 2 ? `<img src="element/dragon_us_full.png" class="dragon-badge">` : '';
-
+ 
             container.innerHTML += `
                 <div class="mini-brawler ${destaqueClass}" title="${nome} (Counter x${qtd})">
                     ${dragonIcon}
@@ -315,12 +308,13 @@ function calcularCounters() {
         container.innerHTML = '<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Sem recomendações.</p>';
     }
 }
-
+ 
 function calcularPodeTomar() {
     let container = obterContainerNosso();
     if (!container) return;
     container.innerHTML = "";
-
+ 
+    // Monta lista dos azuis (nosso time), incluindo pré-seleção se for pick do time azul
     let listaAzuisParaCalcular = [...picksAzuis];
     const step = draftOrder[currentStep];
     if (preSelected && step && step.team === 'blue' && step.type === 'pick') {
@@ -328,40 +322,43 @@ function calcularPodeTomar() {
             listaAzuisParaCalcular.push(preSelected.nome);
         }
     }
-
+ 
     if (listaAzuisParaCalcular.length === 0) {
         container.innerHTML = '<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Aguardando nosso time</p>';
         return;
     }
-
+ 
+    // Quem countera os brawlers do NOSSO time (azul) = ameaças que o inimigo pode pegar
     let contagemAmeacas = {};
-    listaVermelhaParaCalcular.forEach(brawler => {
+    listaAzuisParaCalcular.forEach(brawler => {  // ✅ CORRIGIDO: era "listaVermelhaParaCalcular"
         let brawlerKey = Object.keys(DADOS_COUNTERS).find(k => limparNome(k) === limparNome(brawler));
         if (brawlerKey && DADOS_COUNTERS[brawlerKey]) {
             DADOS_COUNTERS[brawlerKey].forEach(counter => {
-                contagemAmeacas[counter] = (contagemAmeacas[counter] || 0) + 1;
+                if (counter && counter.trim() !== "") {
+                    contagemAmeacas[counter] = (contagemAmeacas[counter] || 0) + 1;
+                }
             });
         }
     });
-
+ 
     let brawlersValidos = Object.keys(contagemAmeacas).filter(nome => {
         const idNome = limparNome(nome);
         if (selected.includes(idNome)) return false;
         if (preSelected && limparNome(preSelected.nome) === idNome) return false;
         return true;
     });
-
+ 
     if (brawlersValidos.length > 0) {
         brawlersValidos.sort((a, b) => contagemAmeacas[b] - contagemAmeacas[a]);
         brawlersValidos.forEach(nome => {
             const id = limparNome(nome);
             let qtd = contagemAmeacas[nome];
-            
-            // Faz a MESMA coisa: Se counterar 2 ou mais do nosso time, ganha a borda verde e o dragão com joinha
+ 
+            // Dragão com CHORO (dragon_they_full) = ameaça ao nosso time
             let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
             let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
             let dragonIcon = qtd >= 2 ? `<img src="element/dragon_they_full.png" class="dragon-badge">` : '';
-
+ 
             container.innerHTML += `
                 <div class="mini-brawler ${destaqueClass}" title="${nome} (Counter x${qtd})">
                     ${dragonIcon}
@@ -374,14 +371,14 @@ function calcularPodeTomar() {
         container.innerHTML = '<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Sem ameaças.</p>';
     }
 }
-
+ 
 // =========================================================
 // FLUXO DO DRAFT (ORDEM, CLIQUE E CONFIRMAÇÃO)
 // =========================================================
-
+ 
 function buildOrder() {
     const order = [
-        { slot: 'slot-b0', team: 'blue', type: 'ban' }, { slot: 'slot-b2', team: 'blue', type: 'ban' }, { slot: 'slot-b4', team: 'blue', type: 'ban' }, 
+        { slot: 'slot-b0', team: 'blue', type: 'ban' }, { slot: 'slot-b2', team: 'blue', type: 'ban' }, { slot: 'slot-b4', team: 'blue', type: 'ban' },
         { slot: 'slot-b1', team: 'red', type: 'ban' }, { slot: 'slot-b3', team: 'red', type: 'ban' }, { slot: 'slot-b5', team: 'red', type: 'ban' }
     ];
     if (firstPick === 'blue') {
@@ -399,13 +396,13 @@ function buildOrder() {
     }
     draftOrder = order;
 }
-
+ 
 window.clicarBrawler = function(nome, id) {
     if (currentStep >= draftOrder.length || selected.includes(id)) return;
     const step = draftOrder[currentStep];
     const slot = document.getElementById(step.slot);
     if (!slot) return;
-
+ 
     if (step.team === 'blue') {
         if (preSelected && preSelected.id === id) {
             window.confirmarBlueSelection();
@@ -419,19 +416,19 @@ window.clicarBrawler = function(nome, id) {
                 <div class="pre-select-badge">✓</div>
             </div>
         `;
-        
+ 
         calcularCounters();
         calcularPodeTomar();
     } else {
         slot.innerHTML = criarConteudoSlot(nome, id);
         const icon = document.getElementById(`b-${id}`);
-        if(icon) icon.classList.add('disabled');
+        if (icon) icon.classList.add('disabled');
         selected.push(id);
-
+ 
         if (step.type === 'pick') {
             picksVermelhos.push(nome);
         }
-
+ 
         currentStep++;
         preSelected = null;
         atualizarFoco();
@@ -439,56 +436,56 @@ window.clicarBrawler = function(nome, id) {
         calcularPodeTomar();
     }
 };
-
+ 
 window.confirmarBlueSelection = function(event) {
-    if (event) event.stopPropagation(); 
+    if (event) event.stopPropagation();
     if (!preSelected) return;
-
+ 
     const { nome, id } = preSelected;
     const step = draftOrder[currentStep];
     const slot = document.getElementById(step.slot);
-
+ 
     if (slot) {
         slot.innerHTML = criarConteudoSlot(nome, id);
     }
-
+ 
     const icon = document.getElementById(`b-${id}`);
-    if(icon) icon.classList.add('disabled');
+    if (icon) icon.classList.add('disabled');
     selected.push(id);
-
+ 
     if (step.type === 'pick') {
         picksAzuis.push(nome);
     }
-
-    preSelected = null; 
+ 
+    preSelected = null;
     currentStep++;
     atualizarFoco();
     calcularCounters();
     calcularPodeTomar();
 };
-
+ 
 function atualizarFoco() {
     document.querySelectorAll('.slot').forEach(s => s.classList.remove('active-blue', 'active-red'));
-    if (currentStep < draftOrder.length) {      
+    if (currentStep < draftOrder.length) {
         const next = draftOrder[currentStep];
         const nextSlot = document.getElementById(next.slot);
-        if(nextSlot) nextSlot.classList.add(next.team === 'blue' ? 'active-blue' : 'active-red');
+        if (nextSlot) nextSlot.classList.add(next.team === 'blue' ? 'active-blue' : 'active-red');
     }
 }
-
+ 
 // =========================================================
 // CONTROLES DE SISTEMA (RESET E FILTRO)
 // =========================================================
-
+ 
 window.setFirstPick = function(team) {
     firstPick = team;
     const btnBlue = document.getElementById('fp-blue');
     const btnRed = document.getElementById('fp-red');
-    if(btnBlue) btnBlue.classList.toggle('active', team === 'blue');
-    if(btnRed) btnRed.classList.toggle('active', team === 'red');
+    if (btnBlue) btnBlue.classList.toggle('active', team === 'blue');
+    if (btnRed) btnRed.classList.toggle('active', team === 'red');
     resetDraft();
 };
-
+ 
 window.resetDraft = function() {
     currentStep = 0; selected = []; picksVermelhos = []; picksAzuis = []; preSelected = null;
     document.querySelectorAll('.slot').forEach(s => s.innerHTML = '');
@@ -499,34 +496,34 @@ window.resetDraft = function() {
     calcularCounters();
     calcularPodeTomar();
 };
-
+ 
 window.filtrar = function() {
     const searchInput = document.getElementById('search') || document.querySelector('.search-bar');
-    if(!searchInput) return;
+    if (!searchInput) return;
     const t = searchInput.value.toLowerCase();
     document.querySelectorAll('.brawler-icon').forEach(div => {
         const n = div.querySelector('.brawler-name').textContent.toLowerCase();
         div.style.display = n.includes(t) ? 'flex' : 'none';
     });
 };
-
+ 
 function inicializarSistema() {
     popularMapas();
     gerarRoster();
     resetDraft();
-    
+ 
     const mapSelect = document.getElementById('map-select') || document.querySelector('.map-selector select') || document.querySelector('select');
     if (mapSelect) {
         mapSelect.addEventListener('change', window.atualizarMeta);
     }
-    
+ 
     const searchInput = document.getElementById('search') || document.querySelector('.search-bar');
     if (searchInput) {
-        searchInput.removeAttribute('oninput'); 
+        searchInput.removeAttribute('oninput');
         searchInput.addEventListener('input', window.filtrar);
     }
 }
-
+ 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', inicializarSistema);
 } else {
