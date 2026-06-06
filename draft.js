@@ -74,7 +74,10 @@ let picksVermelhos = [];
 let picksAzuis = [];      
 let preSelected = null;   
 
-// --- FUNÇÕES DE INICIALIZAÇÃO ---
+// =========================================================
+// FUNÇÕES DE INICIALIZAÇÃO E RENDERIZAÇÃO BASE
+// =========================================================
+
 function popularMapas() {
     const select = document.getElementById('map-select');
     if (!select) return;
@@ -100,13 +103,17 @@ function gerarRoster() {
         const div = document.createElement('div');
         div.className = 'brawler-icon';
         div.id = `b-${id}`;
-        div.innerHTML = `<img src="brawlers/${id}.png" onerror="this.src='brawlers/default.png';" title="${nome}">`;
+        // Proteção contra loop infinito de 404 adicionando: this.onerror=null;
+        div.innerHTML = `<img src="brawlers/${id}.png" onerror="this.onerror=null; this.src='brawlers/default.png';" title="${nome}">`;
         div.onclick = () => clicarBrawler(nome, id);
         grid.appendChild(div);
     });
 }
 
-// --- LÓGICA DOS PAINÉIS LATERAIS ---
+// =========================================================
+// LÓGICA E CÁLCULO DOS PAINÉIS LATERAIS (META, COUNTERS E AMEAÇAS)
+// =========================================================
+
 window.atualizarMeta = function() {
     const mapaSelecionado = document.getElementById('map-select').value;
     const container = document.getElementById('meta-list');
@@ -118,10 +125,10 @@ window.atualizarMeta = function() {
     if (metaBrawlers && metaBrawlers.length > 0) {
         metaBrawlers.forEach(nome => {
             const id = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
-            container.innerHTML += `<div class="mini-brawler" title="Top Pick: ${nome}"><img src="brawlers/${id}.png" onerror="this.src='brawlers/default.png';"></div>`;
+            container.innerHTML += `<div class="mini-brawler" title="Top Pick: ${nome}"><img src="brawlers/${id}.png" onerror="this.onerror=null; this.src='brawlers/default.png';"></div>`;
         });
     } else {
-        container.innerHTML = `<p style="color:#555; font-size:12px; grid-column: span 5; text-align:center;">Dados não encontrados para este mapa.</p>`;
+        container.innerHTML = `<p style="color:#555; font-size:12px; grid-column: span 5; text-align:center;">Nenhum mapa selecionado.</p>`;
     }
 };
 
@@ -136,7 +143,6 @@ function calcularCounters() {
     }
 
     let contagemCounters = {};
-    
     picksVermelhos.forEach(brawler => {
         if (DADOS_COUNTERS[brawler]) {
             DADOS_COUNTERS[brawler].forEach(counter => {
@@ -151,26 +157,21 @@ function calcularCounters() {
     });
 
     if (brawlersValidos.length > 0) {
-        brawlersValidos.sort((a, b) => {
-            if (contagemCounters[b] !== contagemCounters[a]) {
-                return contagemCounters[b] - contagemCounters[a];
-            }
-            return a.localeCompare(b);
-        });
+        brawlersValidos.sort((a, b) => (contagemCounters[b] !== contagemCounters[a]) ? contagemCounters[b] - contagemCounters[a] : a.localeCompare(b));
 
         brawlersValidos.forEach(nome => {
             const id = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
             let qtd = contagemCounters[nome];
             
-            // Ativa o Dragão Aliado (Vantagem para nós) se counterar 2 ou 3 oponentes
+            // Ativa Destaque + Ícone dragon_us_full.png caso countere 2 ou mais oponentes
             let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
             let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
-            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_us_full.png" class="dragon-badge" title="Excelente counter!">` : '';
+            let dragonIcon = qtd >= 2 ? `<img src="dragon_us_full.png" class="dragon-badge" title="Excelente counter para o nosso time!">` : '';
 
             container.innerHTML += `
                 <div class="mini-brawler ${destaqueClass}" title="Countera ${qtd} inimigos: ${nome}">
                     ${dragonIcon}
-                    <img src="brawlers/${id}.png" onerror="this.src='brawlers/default.png';">
+                    <img src="brawlers/${id}.png" onerror="this.onerror=null; this.src='brawlers/default.png';">
                     ${badge}
                 </div>`;
         });
@@ -198,7 +199,6 @@ function calcularPodeTomar() {
     }
 
     let contagemAmeacas = {};
-
     tempPicksAzuis.forEach(brawler => {
         if (DADOS_COUNTERS[brawler]) {
             DADOS_COUNTERS[brawler].forEach(counter => {
@@ -213,26 +213,21 @@ function calcularPodeTomar() {
     });
 
     if (brawlersValidos.length > 0) {
-        brawlersValidos.sort((a, b) => {
-            if (contagemAmeacas[b] !== contagemAmeacas[a]) {
-                return contagemAmeacas[b] - contagemAmeacas[a];
-            }
-            return a.localeCompare(b);
-        });
+        brawlersValidos.sort((a, b) => (contagemAmeacas[b] !== contagemAmeacas[a]) ? contagemAmeacas[b] - contagemAmeacas[a] : a.localeCompare(b));
 
         brawlersValidos.forEach(nome => {
             const id = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
             let qtd = contagemAmeacas[nome];
 
-            // Ativa o Dragão Inimigo (Perigo para nós) se counterar 2 ou 3 do nosso time
+            // Ativa Destaque + Ícone dragon_they_full.png caso seja ameaça para 2 ou mais do nosso time
             let destaqueClass = qtd >= 2 ? 'highlight-danger' : '';
             let badge = qtd >= 2 ? `<div class="badge-multi-danger">x${qtd}</div>` : '';
-            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_they_full.png" class="dragon-badge" title="Ameaça crítica!">` : '';
+            let dragonIcon = qtd >= 2 ? `<img src="dragon_they_full.png" class="dragon-badge" title="Ameaça crítica! Eles podem pegar!">` : '';
 
             container.innerHTML += `
                 <div class="mini-brawler ${destaqueClass}" title="Perigo para ${qtd} aliados: ${nome}">
                     ${dragonIcon}
-                    <img src="brawlers/${id}.png" onerror="this.src='brawlers/default.png';">
+                    <img src="brawlers/${id}.png" onerror="this.onerror=null; this.src='brawlers/default.png';">
                     ${badge}
                 </div>`;
         });
@@ -241,13 +236,9 @@ function calcularPodeTomar() {
     }
 }
 
-// --- LÓGICA DO DRAFT ---
-window.setFirstPick = function(team) {
-    firstPick = team;
-    document.getElementById('fp-blue').classList.toggle('active', team === 'blue');
-    document.getElementById('fp-red').classList.toggle('active', team === 'red');
-    resetDraft();
-};
+// =========================================================
+// ORDEM DE FLUXO DO DRAFT (BAN / PICK)
+// =========================================================
 
 function buildOrder() {
     const order = [
@@ -275,34 +266,43 @@ function buildOrder() {
     draftOrder = order;
 }
 
+// =========================================================
+// INTERAÇÕES E CLIQUES DO UTILIZADOR
+// =========================================================
+
+window.setFirstPick = function(team) {
+    firstPick = team;
+    document.getElementById('fp-blue').classList.toggle('active', team === 'blue');
+    document.getElementById('fp-red').classList.toggle('active', team === 'red');
+    resetDraft();
+};
+
 window.clicarBrawler = function(nome, id) {
     if (currentStep >= draftOrder.length || selected.includes(id)) return;
     const step = draftOrder[currentStep];
     const slot = document.getElementById(step.slot);
     if (!slot) return;
 
+    // Se o turno for do TIME AZUL (Nosso time) -> Entra em Pré-Seleção e mostra botão CONFIRMAR
     if (step.team === 'blue') {
-        if (preSelected) {
-            if (preSelected.id === id) {
-                window.confirmarBlueSelection();
-                return;
-            } else {
-                preSelected = { nome, id };
-            }
+        if (preSelected && preSelected.id === id) {
+            window.confirmarBlueSelection();
+            return;
         } else {
             preSelected = { nome, id };
         }
 
         slot.innerHTML = `
-            <img src="brawlers/${id}.png" onerror="this.src='brawlers/default.png';" style="width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0;">
+            <img src="brawlers/${id}.png" onerror="this.onerror=null; this.src='brawlers/default.png';" style="width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0;">
             <div class="confirm-overlay" onclick="window.confirmarBlueSelection(event)">CONFIRMAR</div>
         `;
 
         calcularCounters();
         calcularPodeTomar();
 
+    // Se o turno for do TIME VERMELHO (Inimigo) -> Escolha Direta Sem Confirmação
     } else {
-        slot.innerHTML = `<img src="brawlers/${id}.png" onerror="this.src='brawlers/default.png';">`;
+        slot.innerHTML = `<img src="brawlers/${id}.png" onerror="this.onerror=null; this.src='brawlers/default.png';">`;
         document.getElementById(`b-${id}`).classList.add('disabled');
         selected.push(id);
 
@@ -326,7 +326,7 @@ window.confirmarBlueSelection = function(event) {
     const slot = document.getElementById(step.slot);
 
     if (slot) {
-        slot.innerHTML = `<img src="brawlers/${id}.png" onerror="this.src='brawlers/default.png';">`;
+        slot.innerHTML = `<img src="brawlers/${id}.png" onerror="this.onerror=null; this.src='brawlers/default.png';">`;
     }
 
     document.getElementById(`b-${id}`).classList.add('disabled');
@@ -376,6 +376,7 @@ window.filtrar = function() {
     });
 };
 
+// Inicialização Automática ao Carregar a Página
 document.addEventListener('DOMContentLoaded', () => {
     popularMapas();
     gerarRoster();
