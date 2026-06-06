@@ -1,68 +1,107 @@
-/* --- ESTILO COMPACTO E ORGANIZADO --- */
+/* --- CONFIGURAÇÕES GERAIS --- */
 :root {
     --azul: #007bff;
     --vermelho: #ff4d4d;
     --accent: #cc00ff;
-    --bg-cards: #0a0a0a;
-    --border-dark: #222;
+    --bg-dark: #050505;
+    --bg-panels: #0a0a0a;
+    --border: #222;
 }
 
-body { zoom: 0.95; overflow-x: hidden; background-color: #050505; color: #fff; font-family: 'Arial', sans-serif; margin: 0; padding: 0; }
+body { 
+    margin: 0; 
+    padding: 0; 
+    background-color: var(--bg-dark); 
+    color: #fff; 
+    font-family: Arial, sans-serif; 
+}
 
-/* NAVBAR */
-.navbar { width: 100%; background-color: #000; padding: 18px 0; position: fixed; top: 0; left: 0; z-index: 1000; border-bottom: 2px solid; border-image: linear-gradient(to right, var(--azul), var(--vermelho)) 1; display: flex; justify-content: center; }
+/* --- ESTRUTURA PRINCIPAL --- */
+.draft-wrapper { 
+    margin-top: 80px; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+}
 
-/* GRID PRINCIPAL (LAYOUT VERTICAL) */
-.draft-wrapper { margin-top: 85px; padding: 10px; display: flex; flex-direction: column; align-items: center; }
-.draft-content-wrapper { display: flex; gap: 20px; width: 98%; max-width: 1800px; justify-content: center; align-items: flex-start; }
+.draft-content-wrapper { 
+    display: flex; 
+    justify-content: center; 
+    gap: 20px; 
+    width: 95%; 
+    max-width: 1400px; 
+}
 
-/* PAINÉIS LATERAIS - AGORA EMPILHADOS VERTICALMENTE */
+/* --- LADO ESQUERDO (DRAFT) --- */
+.main-draft-box { 
+    flex: 2; 
+    background: var(--bg-panels); 
+    border: 2px solid var(--border); 
+    border-radius: 15px; 
+    padding: 20px; 
+}
+
+/* --- LADO DIREITO (VERTICAL) --- */
 .side-panels {
-    width: 300px; 
+    width: 320px;
     display: flex;
-    flex-direction: column; /* Empilhamento Vertical */
-    gap: 15px;              /* Separação clara entre os blocos */
-    height: 750px;
+    flex-direction: column; /* FORÇA O EMPILHAMENTO VERTICAL */
+    gap: 15px;              /* Espaço entre os 3 blocos */
+    height: 750px;          /* Altura fixa para manter tudo alinhado */
 }
 
-.side-panel {
-    background: var(--bg-cards);
-    border: 2px solid var(--border-dark);
-    border-radius: 15px;
-    padding: 15px;
-}
-
-/* ROSTER COM 3 COLUNAS FIXAS */
-.roster-container-vertical {
-    flex: 1; /* Ocupa o espaço restante verticalmente */
-    background: var(--bg-cards);
-    border: 2px solid var(--border-dark);
+/* Estilo de cada bloco (Meta, Counters, Roster) */
+.side-panel, .roster-container-vertical {
+    background: var(--bg-panels);
+    border: 2px solid var(--border);
     border-radius: 15px;
     padding: 15px;
     display: flex;
     flex-direction: column;
 }
 
+/* Roster ocupa o espaço que sobrar */
+.roster-container-vertical {
+    flex: 1; 
+    min-height: 0; 
+}
+
+/* --- GRID DE 3 COLUNAS DO ROSTER --- */
 #roster {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3 Colunas fixas */
+    grid-template-columns: repeat(3, 1fr); /* 3 COLUNAS FIXAS */
     gap: 8px;
-    overflow-y: auto;
+    overflow-y: auto; /* Scroll apenas nos brawlers */
     flex: 1;
-    padding-right: 5px;
     align-content: flex-start;
 }
 
-/* ESTILOS DOS BRAWLERS */
-.brawler-icon { width: 100%; aspect-ratio: 1/1; cursor: pointer; transition: 0.2s; border-radius: 4px; overflow: hidden; }
-.brawler-icon:hover { transform: scale(1.05); box-shadow: 0px 4px 10px rgba(204,0,255,0.4); }
+/* --- BRAWLERS --- */
+.brawler-icon {
+    width: 100%;
+    aspect-ratio: 1/1; /* Quadrado */
+    cursor: pointer;
+    border-radius: 4px;
+    overflow: hidden;
+    transition: 0.2s;
+}
+
+.brawler-icon:hover { transform: scale(1.05); }
 .brawler-icon img { width: 100%; height: 100%; object-fit: cover; }
 .disabled { opacity: 0.2; filter: grayscale(1); pointer-events: none; }
 
-/* AJUSTES DE SCROLLBAR */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #000; }
-::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+/* --- BUSCA --- */
+.search-wrapper input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px;
+    margin-bottom: 10px;
+    background: #000;
+    border: 1px solid #444;
+    color: #fff;
+    border-radius: 5px;
+}
 
-/* (O restante do teu CSS original para os slots e header mantém-se igual) */
+/* --- SCROLLBAR --- */
+#roster::-webkit-scrollbar { width: 6px; }
+#roster::-webkit-scrollbar-thumb { background: #444; border-radius: 10px; }
