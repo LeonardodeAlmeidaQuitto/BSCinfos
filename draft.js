@@ -32,12 +32,110 @@ const DADOS_META = {
 
 };
 
-// SUBSTITUA PELOS SEUS DADOS DA PLANILHA
 const DADOS_COUNTERS = {
-    "Edgar": ["Shelly", "Bull", "Surge", "Gale", "Cordelius"],
-    "Piper": ["Leon", "Mico", "Nani", "Mandy", "Max"],
-    "Buster": ["Colette", "Gale", "Lou", "Cordelius", "Charlie"],
-    "Sandy": ["Crow", "Leon", "Max", "Cordelius", "Gene"]
+    "8-bit": ["Belle", "Najia", "Crow", "Pierce", "Byron", "Penny"], //Alcance-Avanço
+    "Alli": ["Otis", "Spike", "Kenji", "Ruffs", "Bull", "Trunk", "Jack", "Sirius", "Mortis", "Spike", "Emz"], //DPS-Alcance
+    "Amber": ["Byron", "Angelo", "Nani", "Lily", "Mortis", "Edgar", "Bea", ], //Alcance-Avanço
+    "Angelo": ["Eve", "Ruffs", "Charlie", "Belle", "Kenji", "Pierce", "Nani", "Byron", "Brock", "Kaze"], //Pet-Avanço-Alcance + Kaze
+    "Ash": ["Frank", "Trunk", "Edgar", "Rico", "Shade", "Sirius", "Kenji", "Trunk", "Griff"], //Avanço-Controle
+    "Barley": ["Mortis", "Kenji", "Edgar", "Cordelious", "Trunk"], //Avanço
+    "Bea": ["Charlie", "Ruffs", "Byron", "Najia", "Belle", "Angelo", "Leon"], //Pet-Alcance
+    "Belle": ["Piper", "Charlie", "Byron", "Nani", "Piper", "Angelo"], //Alcance + Charlie
+    "Berry": ["Kaze", "Crow", "Sirius", "Shade", "Trunk", "Clancy", "Edgar"], //Avanço-Controle
+    "Bibi": ["Otis", "Edgar", "Colette", "Buzz", "Bull"], //DPS(Curto)-Stun
+    "Bo": ["Mina", "Mortis", "Buzz", "Edgar"], //Avanço 
+    "Bonnie": ["Charlie", "Ruffs", "Leon"], //Pet
+    "Brock": ["RT", "Byron", "Pierce", "Najia", "Piper", "Jae Young", "Kaze"], //Alcance + Kaze
+    "Bull": ["Cordelious", "Griff", "Colette", "Otis", "Charlie", "Nita"], //Stun-DPS
+    "Buster": ["Bull", "Mina", "Kenji", "Edgar", "Mortis"], //Avanço
+    "Buzz": ["Charlie", "Bull", "Griff", "Cordelious", "Edgar"], //Stun-DPS(Longo/Curto)
+    "Byron": ["Piper", "Nani", "Pierce", "Najia", "Mortis", "Kenji", "Kaze"], //Alcance-Avanço
+    "Carl": ["Edgar", "Colette", "Otis", "Buzz"], //Avanço-Stun(Cortar Ult)
+    "Charlie": ["Lumi", "Amber", "Byron", "Carl", "Lily", "Ruffs", "Sandy"], //Atravessa Tiro-
+    "Chester": ["Ruffs", "Alli", "Lumi", "Byron", "Najia", "Moe", "Charlie", "Otis", "Cordelious", "Nita", "Edgar"], //Alcance-Avanço
+    "Chuck": ["Charlie", "Cordelious", "Otis", "RT"], //Stun-Heist Safer
+    "Clancy": ["Charlie", "Ruffs", "Cordelious"], //Pet-Stun
+    "Colette": ["Ruffs", "Otis", "Crow", "Charlie"],
+    "Colt": ["Pierce", "Charlie", "Nani", "Otis", "Gene", "Ruffs", "Mina", "Leon", "Colette", "Kenji", "Byron", "Crow", "Gus", "Edgar", "Belle", "Clancy", "Lily", "Bull", "Mortis", "Brock", "Angelo", "Nita"], //Alcance-Avanço
+    "Cordelious": [""],
+    "Crow": [""],
+    "Damian": [""],
+    "Darryl": [""],
+    "Doug": [""],
+    "Draco": [""],
+    "Dynamike": [""],
+    "Edgar": [""],
+    "El Primo": [""],
+    "Emz": [""],
+    "Eve": [""],
+    "Fang": [""],
+    "Finx": [""],
+    "Frank": [""],
+    "Gale": [""],
+    "Gene": [""],
+    "Gigi": [""],
+    "Glowy": [""],
+    "Gray": [""],
+    "Griff": [""],
+    "Grom": [""],
+    "Gus": [""],
+    "Hank": [""],
+    "Jacky": [""],
+    "Jae-Young": [""],
+    "Janet": [""],
+    "Jessie": [""],
+    "Juju": [""],
+    "Kaze": [""],
+    "Kenji": [""],
+    "Kit": [""],
+    "Larrylawrie": [""],
+    "Leon": [""],
+    "Lily": [""],
+    "Lola": [""],
+    "Lou": [""],
+    "Lumi": [""],
+    "Maisie": [""],
+    "Mandy": [""],
+    "Max": [""],
+    "Meeple": [""],
+    "Meg": [""],
+    "Melodie": [""],
+    "Mico": [""],
+    "Mina": [""],
+    "Moe": [""],
+    "Mortis": [""],
+    "Mr.P": [""],
+    "Najia": [""],
+    "Nani: [""],
+    "Nita: [""],
+    "Ollie": [""],
+    "Otis": [""],
+    "Pam": [""],
+    "Pearl": [""],
+    "Penny": [""],
+    "Pierce": [""],
+    "Piper": [""],
+    "Poco": [""],
+    "R-T": [""],
+    "Rico": [""],
+    "Rosa": [""],
+    "Ruffs": [""],
+    "Sam": [""],
+    "Sandy": [""],
+    "Shade": [""],
+    "Shelly": [""],
+    "Sirius": [""],
+    "Spike": [""],
+    "Starr Nova": [""],
+    "Sprout": [""],
+    "Squeak": [""],
+    "Stu": [""],
+    "Surge": [""],
+    "Tara": [""],
+    "Tick": [""],
+    "Trunk": [""],
+    "Willow": [""],
+    "Ziggy": [""],
     // Adicione o resto dos brawlers aqui... (Se não achar, o sistema lida com isso sozinho)
 };
 
