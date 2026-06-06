@@ -250,27 +250,35 @@ body {
 #roster::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
 #roster::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
-/* OVERLAY DE CONFIRMAÇÃO DO CLIQUE AZUL */
+/* Força os slots a aceitarem sobreposição absoluta perfeita */
+.slot-large, .slot-small {
+    position: relative !important;
+    overflow: hidden;
+}
+
+/* Camada do texto CONFIRMAR na frente da imagem */
 .confirm-overlay {
-    position: absolute;
+    position: absolute !important;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.75);
+    background: rgba(0, 0, 0, 0.82); /* Fundo escuro para dar destaque total */
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
+    color: #fff !important;
     font-weight: 900;
-    font-size: 11px;
+    font-size: 14px; /* Tamanho ideal para leitura rápida */
     letter-spacing: 1px;
     cursor: pointer;
     text-transform: uppercase;
     text-align: center;
-    border-radius: inherit;
-    transition: background 0.2s;
+    z-index: 999 !important; /* Garante que fica na frente da imagem */
+    box-sizing: border-box;
+    border: 2px solid var(--azul); /* Borda azul para indicar ação do seu time */
 }
+
 .confirm-overlay:hover {
-    background: rgba(0, 123, 255, 0.85); /* Fica azul luminoso ao passar o mouse */
+    background: rgba(0, 123, 255, 0.9); /* Brilha em azul ao passar o mouse */
 }
