@@ -135,392 +135,122 @@ const DADOS_COUNTERS = {
 
 const BRAWLERS = ["Damian", "8-Bit", "Alli", "Amber", "Angelo", "Ash", "Barley", "Bea", "Belle", "Berry", "Bibi", "Bo", "Bonnie", "Brock", "Bull", "Buster", "Buzz", "Byron", "Carl", "Charlie", "Chester", "Clancy", "Colette", "Colt", "Cordelius", "Crow", "Darryl", "Doug", "Draco", "Dynamike", "Edgar", "El Primo", "Emz", "Eve", "Fang", "Finx", "Frank", "Gale", "Gene", "Gigi", "Glowy", "Gray", "Griff", "Grom", "Gus", "Hank", "Jacky", "Jae Yong", "Janet", "Jessie", "Juju", "Kaze", "Kenji", "Kit", "LarryLawrie", "Leon", "Lily", "Lola", "Lou", "Lumi", "Maisie", "Mandy", "Max", "Meeple", "Meg", "Melodie", "Mico", "Mina", "Moe", "Mortis", "Mr.P", "Najia", "Nani", "Nita", "Ollie", "Otis", "Pam", "Pearl", "Penny", "Pierce", "Piper", "Poco", "R-T", "Rico", "Rosa", "Ruffs", "Sam", "Sandy", "Shade", "Shelly", "Sirius", "Spike", "Sprout", "Squeak", "Stu", "Surge", "Starr Nova", "Tara", "Tick", "Trunk", "Willow", "Ziggy"].sort();
 
-let currentStep = 0;
-let selected = [];
-let firstPick = 'blue';
-let draftOrder = [];
-let picksVermelhos = [];
-let picksAzuis = [];      
-let preSelected = null;
+let currentStep = 0; let selected = []; let firstPick = 'blue';
+let draftOrder = []; let picksVermelhos = []; let picksAzuis = []; let preSelected = null;
 
-// =========================================================
-// INTERRUPTORES RESILIENTES DE SELEÇÃO DOM (ANTI-ERRO)
-// =========================================================
+function limparNome(nome) { return nome ? nome.toLowerCase().replace(/[^a-z0-9]/g, '') : ""; }
 
-function limparNome(nome) {
-    if (!nome) return "";
-    return nome.toLowerCase().replace(/[^a-z0-9]/g, '');
-}
-
-function obterCaixaPorTexto(textoCabecalho, fallbackIndex) {
-    // Busca inteligente: Varre a tela procurando o título exato da seção
-    const elementos = document.querySelectorAll('*');
-    for (let el of elementos) {
-        if (el.textContent.trim().toUpperCase() === textoCabecalho.toUpperCase()) {
-            let pai = el.parentElement;
-            if (pai) {
-                let grid = pai.querySelector('.mini-brawler-grid') || pai.querySelector('div:nth-child(2)') || pai;
-                return grid;
-            }
-        }
-    }
-    // Caso falhe, usa a ordem padrão de indexação das classes
-    const grids = document.querySelectorAll('.mini-brawler-grid');
-    return grids.length > fallbackIndex ? grids[fallbackIndex] : null;
-}
-
-function obterContainerInimigo() {
-    return document.getElementById('counters-list') || document.getElementById('counters-inimigo') || obterCaixaPorTexto('COUNTERS (INIMIGO)', 1);
-}
-
-function obterContainerNosso() {
-    return document.getElementById('podetomar-list') || document.getElementById('counters-nosso') || obterCaixaPorTexto('COUNTERS (NOSSO)', 2);
-}
-
-function obterContainerMeta() {
-    return document.getElementById('meta-list') || obterCaixaPorTexto('META TOP 10', 0);
-}
+function obterContainer(id) { return document.getElementById(id); }
 
 function criarConteudoSlot(nome, id) {
-    return `
-        <div class="slot-assets">
-            <img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-            <div class="slot-fallback-text">${nome}</div>
-        </div>
-    `;
+    return `<div class="slot-assets"><img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="slot-fallback-text">${nome}</div></div>`;
 }
 
-// =========================================================
-// RENDERIZAÇÃO DE INTERFACE
-// =========================================================
-
 function popularMapas() {
-    const select = document.getElementById('map-select') || document.querySelector('.map-selector select') || document.querySelector('select');
+    const select = document.querySelector('select');
     if (!select) return;
     select.innerHTML = '<option value="" disabled selected>SELECIONE O MAPA</option>';
     Object.entries(MAPAS_ALVO).forEach(([modo, mapas]) => {
-        const grupo = document.createElement('optgroup');
-        grupo.label = modo.toUpperCase();
-        mapas.forEach(mapa => {
-            const opt = document.createElement('option');
-            opt.value = mapa; opt.textContent = mapa;
-            grupo.appendChild(opt);
-        });
+        const grupo = document.createElement('optgroup'); grupo.label = modo.toUpperCase();
+        mapas.forEach(mapa => { const opt = document.createElement('option'); opt.value = mapa; opt.textContent = mapa; grupo.appendChild(opt); });
         select.appendChild(grupo);
     });
 }
 
 function gerarRoster() {
-    const grid = document.getElementById('roster') || document.querySelector('.roster-grid');
+    const grid = document.getElementById('roster');
     if (!grid) return;
     grid.innerHTML = "";
     BRAWLERS.forEach(nome => {
         const id = limparNome(nome);
         const div = document.createElement('div');
-        div.className = 'brawler-icon';
-        div.id = `b-${id}`;
-        div.innerHTML = `
-            <div class="brawler-img-container">
-                <img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" title="${nome}">
-                <div class="fallback-initials">${nome.substring(0,2).toUpperCase()}</div>
-            </div>
-            <span class="brawler-name">${nome}</span>
-        `;
+        div.className = 'brawler-icon'; div.id = `b-${id}`;
+        div.innerHTML = `<img src="brawlers/${id}.png"><span class="brawler-name">${nome}</span>`;
         div.onclick = () => clicarBrawler(nome, id);
         grid.appendChild(div);
     });
 }
 
 window.atualizarMeta = function() {
-    const select = document.getElementById('map-select') || document.querySelector('.map-selector select') || document.querySelector('select');
-    const mapaSelecionado = select ? select.value : '';
-    const container = obterContainerMeta();
-    if (!container) return;
+    const select = document.querySelector('select');
+    const container = obterContainer('meta-list');
+    if (!container || !select) return;
     container.innerHTML = "";
-    
-    const metaBrawlers = DADOS_META[mapaSelecionado];
-    if (metaBrawlers && metaBrawlers.length > 0) {
-        metaBrawlers.forEach(nome => {
-            const id = limparNome(nome);
-            container.innerHTML += `
-                <div class="mini-brawler" title="Top Pick: ${nome}">
-                    <img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                    <div class="fallback-initials">${nome.substring(0,2).toUpperCase()}</div>
-                </div>`;
-        });
-    } else {
-        container.innerHTML = '<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Selecione um mapa.</p>';
-    }
+    (DADOS_META[select.value] || []).forEach(nome => {
+        container.innerHTML += `<div class="mini-brawler"><img src="brawlers/${limparNome(nome)}.png"></div>`;
+    });
 };
 
-// =========================================================
-// LÓGICA DE CÁLCULO DE COUNTERS (SINCRO TOTAL)
-// =========================================================
-
 function calcularCounters() {
-    let container = obterContainerInimigo();
+    const container = obterContainer('counters-list');
     if (!container) return;
     container.innerHTML = "";
+    if (picksVermelhos.length === 0) { container.innerHTML = '<p>Aguardando adversário</p>'; return; }
 
-    if (picksVermelhos.length === 0) {
-        container.innerHTML = '<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Aguardando adversário</p>';
-        return;
-    }
-
-    let contagemCounters = {};
+    let contagem = {};
     picksVermelhos.forEach(brawler => {
         let brawlerKey = Object.keys(DADOS_COUNTERS).find(k => limparNome(k) === limparNome(brawler));
         if (brawlerKey && DADOS_COUNTERS[brawlerKey]) {
-            DADOS_COUNTERS[brawlerKey].forEach(counter => {
-                contagemCounters[counter] = (contagemCounters[counter] || 0) + 1;
-            });
+            DADOS_COUNTERS[brawlerKey].forEach(c => contagem[c] = (contagem[c] || 0) + 1);
         }
     });
 
-    let brawlersValidos = Object.keys(contagemCounters).filter(nome => {
-        const idNome = limparNome(nome);
-        if (selected.includes(idNome)) return false;
-        if (preSelected && limparNome(preSelected.nome) === idNome) return false;
-        return true;
+    Object.keys(contagem).sort((a, b) => contagem[b] - contagem[a]).forEach(nome => {
+        container.innerHTML += `<div class="mini-brawler" title="${nome}">x${contagem[nome]}<img src="brawlers/${limparNome(nome)}.png"></div>`;
     });
-
-    if (brawlersValidos.length > 0) {
-        brawlersValidos.sort((a, b) => contagemCounters[b] - contagemCounters[a]);
-        brawlersValidos.forEach(nome => {
-            const id = limparNome(nome);
-            let qtd = contagemCounters[nome];
-            
-            // Lógica Unificada: Se counterar 2 ou mais adversários, ganha a borda verde e o dragão com joinha
-            let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
-            let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
-            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_us_full.png" class="dragon-badge">` : '';
-
-            container.innerHTML += `
-                <div class="mini-brawler ${destaqueClass}" title="${nome} (Counter x${qtd})">
-                    ${dragonIcon}
-                    <img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                    <div class="fallback-initials">${nome.substring(0,2).toUpperCase()}</div>
-                    ${badge}
-                </div>`;
-        });
-    } else {
-        container.innerHTML = '<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Sem recomendações.</p>';
-    }
 }
 
 function calcularPodeTomar() {
-    let container = obterContainerNosso();
+    const container = obterContainer('podetomar-list');
     if (!container) return;
     container.innerHTML = "";
+    
+    let listaAzuis = [...picksAzuis];
+    if (preSelected) listaAzuis.push(preSelected.nome);
 
-    let listaAzuisParaCalcular = [...picksAzuis];
-    const step = draftOrder[currentStep];
-    if (preSelected && step && step.team === 'blue' && step.type === 'pick') {
-        if (!listaAzuisParaCalcular.includes(preSelected.nome)) {
-            listaAzuisParaCalcular.push(preSelected.nome);
-        }
-    }
-
-    if (listaAzuisParaCalcular.length === 0) {
-        container.innerHTML = '<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Aguardando nosso time</p>';
-        return;
-    }
-
-    let contagemAmeacas = {};
-    listaAzuisParaCalcular.forEach(brawler => {
+    let contagem = {};
+    listaAzuis.forEach(brawler => {
         let brawlerKey = Object.keys(DADOS_COUNTERS).find(k => limparNome(k) === limparNome(brawler));
         if (brawlerKey && DADOS_COUNTERS[brawlerKey]) {
-            DADOS_COUNTERS[brawlerKey].forEach(counter => {
-                contagemAmeacas[counter] = (contagemAmeacas[counter] || 0) + 1;
-            });
+            DADOS_COUNTERS[brawlerKey].forEach(c => contagem[c] = (contagem[c] || 0) + 1);
         }
     });
 
-    let brawlersValidos = Object.keys(contagemAmeacas).filter(nome => {
-        const idNome = limparNome(nome);
-        if (selected.includes(idNome)) return false;
-        if (preSelected && limparNome(preSelected.nome) === idNome) return false;
-        return true;
+    Object.keys(contagem).sort((a, b) => contagem[b] - contagem[a]).forEach(nome => {
+        container.innerHTML += `<div class="mini-brawler" title="${nome}">x${contagem[nome]}<img src="brawlers/${limparNome(nome)}.png"></div>`;
     });
-
-    if (brawlersValidos.length > 0) {
-        brawlersValidos.sort((a, b) => contagemAmeacas[b] - contagemAmeacas[a]);
-        brawlersValidos.forEach(nome => {
-            const id = limparNome(nome);
-            let qtd = contagemAmeacas[nome];
-            
-            // Faz a MESMA coisa: Se counterar 2 ou mais do nosso time, ganha a borda verde e o dragão com joinha
-            let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
-            let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
-            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_us_full.png" class="dragon-badge">` : '';
-
-            container.innerHTML += `
-                <div class="mini-brawler ${destaqueClass}" title="${nome} (Counter x${qtd})">
-                    ${dragonIcon}
-                    <img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                    <div class="fallback-initials">${nome.substring(0,2).toUpperCase()}</div>
-                    ${badge}
-                </div>`;
-        });
-    } else {
-        container.innerHTML = '<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Sem ameaças.</p>';
-    }
 }
 
-// =========================================================
-// FLUXO DO DRAFT (ORDEM, CLIQUE E CONFIRMAÇÃO)
-// =========================================================
-
 function buildOrder() {
-    const order = [
-        { slot: 'slot-b0', team: 'blue', type: 'ban' }, { slot: 'slot-b2', team: 'blue', type: 'ban' }, { slot: 'slot-b4', team: 'blue', type: 'ban' }, 
-        { slot: 'slot-b1', team: 'red', type: 'ban' }, { slot: 'slot-b3', team: 'red', type: 'ban' }, { slot: 'slot-b5', team: 'red', type: 'ban' }
-    ];
-    if (firstPick === 'blue') {
-        order.push(
-            { slot: 'slot-pA1', team: 'blue', type: 'pick' }, { slot: 'slot-pV1', team: 'red', type: 'pick' },
-            { slot: 'slot-pV2', team: 'red', type: 'pick' }, { slot: 'slot-pA2', team: 'blue', type: 'pick' },
-            { slot: 'slot-pA3', team: 'blue', type: 'pick' }, { slot: 'slot-pV3', team: 'red', type: 'pick' }
-        );
-    } else {
-        order.push(
-            { slot: 'slot-pV1', team: 'red', type: 'pick' }, { slot: 'slot-pA1', team: 'blue', type: 'pick' },
-            { slot: 'slot-pA2', team: 'blue', type: 'pick' }, { slot: 'slot-pV2', team: 'red', type: 'pick' },
-            { slot: 'slot-pV3', team: 'red', type: 'pick' }, { slot: 'slot-pA3', team: 'blue', type: 'pick' }
-        );
-    }
-    draftOrder = order;
+    draftOrder = [{ slot: 'slot-pA1', team: 'blue', type: 'pick' }, { slot: 'slot-pV1', team: 'red', type: 'pick' }];
 }
 
 window.clicarBrawler = function(nome, id) {
-    if (currentStep >= draftOrder.length || selected.includes(id)) return;
     const step = draftOrder[currentStep];
-    const slot = document.getElementById(step.slot);
-    if (!slot) return;
-
+    if (!step) return;
     if (step.team === 'blue') {
-        if (preSelected && preSelected.id === id) {
-            window.confirmarBlueSelection();
-            return;
-        }
         preSelected = { nome, id };
-        slot.innerHTML = `
-            <div class="slot-assets pre-selecting" onclick="window.confirmarBlueSelection(event)">
-                <img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                <div class="slot-fallback-text">${nome}</div>
-                <div class="pre-select-badge">✓</div>
-            </div>
-        `;
-        
-        calcularCounters();
-        calcularPodeTomar();
+        document.getElementById(step.slot).innerHTML = `PRE-SELECIONADO: ${nome}`;
+        calcularCounters(); calcularPodeTomar();
     } else {
-        slot.innerHTML = criarConteudoSlot(nome, id);
-        const icon = document.getElementById(`b-${id}`);
-        if(icon) icon.classList.add('disabled');
-        selected.push(id);
-
-        if (step.type === 'pick') {
-            picksVermelhos.push(nome);
-        }
-
+        document.getElementById(step.slot).innerHTML = criarConteudoSlot(nome, id);
+        picksVermelhos.push(nome);
         currentStep++;
-        preSelected = null;
-        atualizarFoco();
-        calcularCounters();
-        calcularPodeTomar();
+        calcularCounters(); calcularPodeTomar();
     }
 };
 
-window.confirmarBlueSelection = function(event) {
-    if (event) event.stopPropagation(); 
+window.confirmarBlueSelection = function() {
     if (!preSelected) return;
-
-    const { nome, id } = preSelected;
-    const step = draftOrder[currentStep];
-    const slot = document.getElementById(step.slot);
-
-    if (slot) {
-        slot.innerHTML = criarConteudoSlot(nome, id);
-    }
-
-    const icon = document.getElementById(`b-${id}`);
-    if(icon) icon.classList.add('disabled');
-    selected.push(id);
-
-    if (step.type === 'pick') {
-        picksAzuis.push(nome);
-    }
-
-    preSelected = null; 
+    document.getElementById(draftOrder[currentStep].slot).innerHTML = criarConteudoSlot(preSelected.nome, preSelected.id);
+    picksAzuis.push(preSelected.nome);
     currentStep++;
-    atualizarFoco();
-    calcularCounters();
-    calcularPodeTomar();
-};
-
-function atualizarFoco() {
-    document.querySelectorAll('.slot').forEach(s => s.classList.remove('active-blue', 'active-red'));
-    if (currentStep < draftOrder.length) {      
-        const next = draftOrder[currentStep];
-        const nextSlot = document.getElementById(next.slot);
-        if(nextSlot) nextSlot.classList.add(next.team === 'blue' ? 'active-blue' : 'active-red');
-    }
-}
-
-// =========================================================
-// CONTROLES DE SISTEMA (RESET E FILTRO)
-// =========================================================
-
-window.setFirstPick = function(team) {
-    firstPick = team;
-    const btnBlue = document.getElementById('fp-blue');
-    const btnRed = document.getElementById('fp-red');
-    if(btnBlue) btnBlue.classList.toggle('active', team === 'blue');
-    if(btnRed) btnRed.classList.toggle('active', team === 'red');
-    resetDraft();
-};
-
-window.resetDraft = function() {
-    currentStep = 0; selected = []; picksVermelhos = []; picksAzuis = []; preSelected = null;
-    document.querySelectorAll('.slot').forEach(s => s.innerHTML = '');
-    document.querySelectorAll('.brawler-icon').forEach(b => b.classList.remove('disabled'));
-    buildOrder();
-    atualizarFoco();
-    window.atualizarMeta();
-    calcularCounters();
-    calcularPodeTomar();
-};
-
-window.filtrar = function() {
-    const searchInput = document.getElementById('search') || document.querySelector('.search-bar');
-    if(!searchInput) return;
-    const t = searchInput.value.toLowerCase();
-    document.querySelectorAll('.brawler-icon').forEach(div => {
-        const n = div.querySelector('.brawler-name').textContent.toLowerCase();
-        div.style.display = n.includes(t) ? 'flex' : 'none';
-    });
+    preSelected = null;
+    calcularCounters(); calcularPodeTomar();
 };
 
 function inicializarSistema() {
-    popularMapas();
-    gerarRoster();
-    resetDraft();
-    
-    const mapSelect = document.getElementById('map-select') || document.querySelector('.map-selector select') || document.querySelector('select');
-    if (mapSelect) {
-        mapSelect.addEventListener('change', window.atualizarMeta);
-    }
-    
-    const searchInput = document.getElementById('search') || document.querySelector('.search-bar');
-    if (searchInput) {
-        searchInput.removeAttribute('oninput'); 
-        searchInput.addEventListener('input', window.filtrar);
-    }
+    popularMapas(); gerarRoster(); buildOrder();
 }
 
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', inicializarSistema);
-} else {
-    inicializarSistema();
-}
+inicializarSistema();
