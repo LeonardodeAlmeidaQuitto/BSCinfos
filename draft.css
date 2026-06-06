@@ -77,7 +77,7 @@ body {
 .center-vs { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 55px; font-weight: 900; color: #1c1d24; user-select: none; }
 
 /* SLOTS */
-.slot { background-color: var(--bg-slots); border: 2px solid var(--borda-destaque); border-radius: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative !important; }
+.slot { background-color: var(--bg-slots); border: 2px solid var(--borda-destaque); border-radius: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative !important; cursor: pointer; }
 .slot-small { width: 45px; height: 45px; }
 .slot-large { width: 95px; height: 95px; border-radius: 14px; }
 .active-blue { border-color: var(--azul-time); box-shadow: 0 0 15px rgba(0, 123, 255, 0.5); }
@@ -95,17 +95,17 @@ body {
 .mini-brawler-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; overflow-y: auto; flex: 1; }
 .mini-brawler { width: 100%; aspect-ratio: 1; background-color: var(--bg-slots); border-radius: 6px; overflow: hidden; position: relative !important; border: 1px solid var(--borda-destaque); }
 
-/* ROSTER COMPLETO DA DIREITA (SISTEMA DE CARDS INDEPENDENTES) */
+/* ROSTER COMPLETO DA DIREITA (PROPORÇÕES PERFEITAS ANTI-ESPREMIDO) */
 .roster-area { flex: 1.4; background-color: var(--bg-paineis); border: 1px solid var(--borda-suave); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; height: 100%; }
 .search-bar { width: 100%; padding: 10px 12px; background-color: #000000; border: 1px solid var(--borda-destaque); color: #ffffff; border-radius: 6px; margin-bottom: 15px; outline: none; font-size: 13px; }
 
 .roster-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3 colunas perfeitas */
-    gap: 12px; /* Margem generosa de afastamento para nunca mais grudarem */
+    grid-template-columns: repeat(3, 1fr); /* 3 colunas impecáveis */
+    gap: 10px;
     overflow-y: auto;
     flex: 1;
-    padding: 4px;
+    padding-right: 4px;
 }
 
 .brawler-icon {
@@ -114,22 +114,31 @@ body {
     background-color: var(--bg-slots);
     border: 2px solid var(--borda-destaque);
     border-radius: 8px;
-    padding: 8px;
+    padding: 6px;
     align-items: center;
-    justify-content: center;
     cursor: pointer;
     transition: transform 0.15s ease, border-color 0.15s ease;
-    min-height: 92px; /* Altura mínima estável */
 }
 .brawler-icon:hover { transform: translateY(-2px); border-color: var(--rosa-neon); }
 .brawler-icon.disabled { filter: grayscale(100%) opacity(0.15); pointer-events: none; }
 
-.brawler-img-container { width: 44px; height: 44px; border-radius: 6px; overflow: hidden; position: relative; background-color: #000000; display: flex; align-items: center; justify-content: center; }
-.brawler-name { font-size: 11px; font-weight: 700; color: #e2e4e9; margin-top: 8px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+/* TRANCANDO PROPORÇÃO DO CARD PARA EVITAR EFEITO FATIA */
+.brawler-img-container { 
+    width: 100%; 
+    aspect-ratio: 1; /* Força um quadrado idêntico para todos */
+    border-radius: 6px; 
+    overflow: hidden; 
+    position: relative; 
+    background-color: #000000; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+}
+.brawler-name { font-size: 11px; font-weight: 700; color: #e2e4e9; margin-top: 6px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
 
-/* DESIGN PREMIUM DO FALLBACK DE TEXTO (Substitutos caso falte a imagem) */
+/* FALLBACK DE TEXTO SE A IMAGEM NÃO CARREGAR */
 .fallback-initials {
-    display: none; /* Só ativa via script se a imagem der erro 404 */
+    display: none;
     width: 100%;
     height: 100%;
     align-items: center;
@@ -141,10 +150,45 @@ body {
     border-radius: 4px;
 }
 
-/* TRAVA GERAL DE TAMANHO DE MEDIA */
+/* SISTEMA VISUAL DA PRÉ-SELEÇÃO DE 2 CLIQUES (TIME AZUL) */
+.pre-selecting {
+    animation: pulse-draft 1.2s infinite ease-in-out;
+}
+@keyframes pulse-draft {
+    0% { opacity: 0.5; }
+    50% { opacity: 0.85; }
+    100% { opacity: 0.5; }
+}
+
+/* Selo de verificação redondo e universal (funciona em slots grandes e pequenos) */
+.pre-select-badge {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 123, 255, 0.95);
+    color: #ffffff;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 900;
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.8);
+    z-index: 15;
+}
+.slot-large .pre-select-badge {
+    width: 30px;
+    height: 30px;
+    font-size: 15px;
+}
+
+/* TRAVA DE SEGURANÇA IMAGENS */
 .brawler-icon img, .mini-brawler img, .slot img { width: 100% !important; height: 100% !important; object-fit: cover !important; display: block; }
 
-/* DESTAQUES E ICONE DO DRAGÃO (AJUSTADO PARA O CANTO SUPERIOR DIREITO E MENOR) */
+/* DRAGÕES E BADGES */
 .highlight-good { border: 2px solid #00ff00 !important; box-shadow: 0 0 10px rgba(0, 255, 0, 0.6); }
 .highlight-danger { border: 2px solid #ff0000 !important; box-shadow: 0 0 10px rgba(255, 0, 0, 0.6); }
 .badge-multi, .badge-multi-danger { position: absolute; bottom: 1px; right: 1px; font-size: 9px; font-weight: 900; padding: 1px 3px; border-radius: 3px; z-index: 5; }
@@ -153,10 +197,10 @@ body {
 
 .dragon-badge {
     position: absolute;
-    top: 2px;          /* Ajustado para dentro da borda */
-    right: 2px;        /* Fixado no canto superior DIREITO */
-    width: 14px;       /* Tamanho bem menor e discreto */
-    height: 14px;      /* Tamanho bem menor e discreto */
+    top: 2px;
+    right: 2px;
+    width: 14px;
+    height: 14px;
     z-index: 10;
     filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.9));
     pointer-events: none;
