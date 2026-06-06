@@ -373,11 +373,11 @@ body {
 
 .dragon-badge {
     position: absolute;
-    top: -6px;
-    left: -6px;
-    width: 24px;
-    height: 24px;
+    top: 2px;       /* Alinhado ao topo */
+    right: 2px;     /* Movido para o canto DIREITO */
+    width: 16px;    /* Reduzido de 24px para 16px (Bem menor) */
+    height: 16px;   /* Reduzido de 24px para 16px (Bem menor) */
     z-index: 10;
-    filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.8));
+    filter: drop-shadow(0px 1px 3px rgba(0, 0, 0, 0.9));
     pointer-events: none;
 }
