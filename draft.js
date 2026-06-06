@@ -72,11 +72,16 @@ let firstPick = 'blue';
 let draftOrder = [];
 let picksVermelhos = [];
 let picksAzuis = [];      
-let preSelected = null;   
 
-// =========================================================
-// FUNÇÕES DE INICIALIZAÇÃO E RENDERIZAÇÃO BASE
-// =========================================================
+// Gera o HTML interno do slot com suporte a texto se a imagem quebrar
+function criarConteudoSlot(nome, id) {
+    return `
+        <div class="slot-assets">
+            <img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="slot-fallback-text">${nome}</div>
+        </div>
+    `;
+}
 
 function popularMapas() {
     const select = document.getElementById('map-select');
@@ -103,16 +108,17 @@ function gerarRoster() {
         const div = document.createElement('div');
         div.className = 'brawler-icon';
         div.id = `b-${id}`;
-        // Proteção contra loop infinito de 404 adicionando: this.onerror=null;
-        div.innerHTML = `<img src="brawlers/${id}.png" onerror="this.onerror=null; this.src='brawlers/default.png';" title="${nome}">`;
+        div.innerHTML = `
+            <div class="brawler-img-container">
+                <img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" title="${nome}">
+                <div class="fallback-initials">${nome.substring(0,2).toUpperCase()}</div>
+            </div>
+            <span class="brawler-name">${nome}</span>
+        `;
         div.onclick = () => clicarBrawler(nome, id);
         grid.appendChild(div);
     });
 }
-
-// =========================================================
-// LÓGICA E CÁLCULO DOS PAINÉIS LATERAIS (META, COUNTERS E AMEAÇAS)
-// =========================================================
 
 window.atualizarMeta = function() {
     const mapaSelecionado = document.getElementById('map-select').value;
@@ -121,14 +127,17 @@ window.atualizarMeta = function() {
     container.innerHTML = "";
     
     const metaBrawlers = DADOS_META[mapaSelecionado];
-
     if (metaBrawlers && metaBrawlers.length > 0) {
         metaBrawlers.forEach(nome => {
             const id = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
-            container.innerHTML += `<div class="mini-brawler" title="Top Pick: ${nome}"><img src="brawlers/${id}.png" onerror="this.onerror=null; this.src='brawlers/default.png';"></div>`;
+            container.innerHTML += `
+                <div class="mini-brawler" title="Top Pick: ${nome}">
+                    <img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="fallback-initials">${nome.substring(0,2).toUpperCase()}</div>
+                </div>`;
         });
     } else {
-        container.innerHTML = `<p style="color:#555; font-size:12px; grid-column: span 5; text-align:center;">Nenhum mapa selecionado.</p>`;
+        container.innerHTML = `<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Selecione um mapa.</p>`;
     }
 };
 
@@ -138,7 +147,7 @@ function calcularCounters() {
     container.innerHTML = "";
 
     if (picksVermelhos.length === 0) {
-        container.innerHTML = `<p style="color:#555; font-size:12px; grid-column: span 5; text-align:center;">Aguardando picks vermelhos</p>`;
+        container.innerHTML = `<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Aguardando adversário</p>`;
         return;
     }
 
@@ -151,32 +160,27 @@ function calcularCounters() {
         }
     });
 
-    let brawlersValidos = Object.keys(contagemCounters).filter(nome => {
-        const id = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
-        return !selected.includes(id);
-    });
+    let brawlersValidos = Object.keys(contagemCounters).filter(nome => !selected.includes(nome.toLowerCase().replace(/[^a-z0-9]/g, '')));
 
     if (brawlersValidos.length > 0) {
-        brawlersValidos.sort((a, b) => (contagemCounters[b] !== contagemCounters[a]) ? contagemCounters[b] - contagemCounters[a] : a.localeCompare(b));
-
+        brawlersValidos.sort((a, b) => contagemCounters[b] - contagemCounters[a]);
         brawlersValidos.forEach(nome => {
             const id = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
             let qtd = contagemCounters[nome];
-            
-            // Ativa Destaque + Ícone dragon_us_full.png caso countere 2 ou mais oponentes
             let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
             let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
-            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_us_full.png" class="dragon-badge" title="Excelente counter para o nosso time!">` : '';
+            let dragonIcon = qtd >= 2 ? `<img src="dragon_us_full.png" class="dragon-badge">` : '';
 
             container.innerHTML += `
-                <div class="mini-brawler ${destaqueClass}" title="Countera ${qtd} inimigos: ${nome}">
+                <div class="mini-brawler ${destaqueClass}" title="${nome} (Counter x${qtd})">
                     ${dragonIcon}
-                    <img src="brawlers/${id}.png" onerror="this.onerror=null; this.src='brawlers/default.png';">
+                    <img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="fallback-initials">${nome.substring(0,2).toUpperCase()}</div>
                     ${badge}
                 </div>`;
         });
     } else {
-        container.innerHTML = `<p style="color:#555; font-size:12px; grid-column: span 5; text-align:center;">Nenhum counter mapeado.</p>`;
+        container.innerHTML = `<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Sem recomendações.</p>`;
     }
 }
 
@@ -185,21 +189,13 @@ function calcularPodeTomar() {
     if (!container) return;
     container.innerHTML = "";
 
-    let tempPicksAzuis = [...picksAzuis];
-    if (currentStep < draftOrder.length) {
-        const step = draftOrder[currentStep];
-        if (preSelected && step.team === 'blue' && step.type === 'pick') {
-            tempPicksAzuis.push(preSelected.nome);
-        }
-    }
-
-    if (tempPicksAzuis.length === 0) {
-        container.innerHTML = `<p style="color:#555; font-size:12px; grid-column: span 5; text-align:center;">Aguardando picks azuis</p>`;
+    if (picksAzuis.length === 0) {
+        container.innerHTML = `<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Aguardando nosso time</p>`;
         return;
     }
 
     let contagemAmeacas = {};
-    tempPicksAzuis.forEach(brawler => {
+    picksAzuis.forEach(brawler => {
         if (DADOS_COUNTERS[brawler]) {
             DADOS_COUNTERS[brawler].forEach(counter => {
                 contagemAmeacas[counter] = (contagemAmeacas[counter] || 0) + 1;
@@ -207,49 +203,35 @@ function calcularPodeTomar() {
         }
     });
 
-    let brawlersValidos = Object.keys(contagemAmeacas).filter(nome => {
-        const id = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
-        return !selected.includes(id);
-    });
+    let brawlersValidos = Object.keys(contagemAmeacas).filter(nome => !selected.includes(nome.toLowerCase().replace(/[^a-z0-9]/g, '')));
 
     if (brawlersValidos.length > 0) {
-        brawlersValidos.sort((a, b) => (contagemAmeacas[b] !== contagemAmeacas[a]) ? contagemAmeacas[b] - contagemAmeacas[a] : a.localeCompare(b));
-
+        brawlersValidos.sort((a, b) => contagemAmeacas[b] - contagemAmeacas[a]);
         brawlersValidos.forEach(nome => {
             const id = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
             let qtd = contagemAmeacas[nome];
-
-            // Ativa Destaque + Ícone dragon_they_full.png caso seja ameaça para 2 ou mais do nosso time
             let destaqueClass = qtd >= 2 ? 'highlight-danger' : '';
             let badge = qtd >= 2 ? `<div class="badge-multi-danger">x${qtd}</div>` : '';
-            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_they_full.png" class="dragon-badge" title="Ameaça crítica! Eles podem pegar!">` : '';
+            let dragonIcon = qtd >= 2 ? `<img src="dragon_they_full.png" class="dragon-badge">` : '';
 
             container.innerHTML += `
-                <div class="mini-brawler ${destaqueClass}" title="Perigo para ${qtd} aliados: ${nome}">
+                <div class="mini-brawler ${destaqueClass}" title="${nome} (Ameaça x${qtd})">
                     ${dragonIcon}
-                    <img src="brawlers/${id}.png" onerror="this.onerror=null; this.src='brawlers/default.png';">
+                    <img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="fallback-initials">${nome.substring(0,2).toUpperCase()}</div>
                     ${badge}
                 </div>`;
         });
     } else {
-        container.innerHTML = `<p style="color:#555; font-size:12px; grid-column: span 5; text-align:center;">Nenhuma ameaça mapeada.</p>`;
+        container.innerHTML = `<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Sem ameaças mapeadas.</p>`;
     }
 }
 
-// =========================================================
-// ORDEM DE FLUXO DO DRAFT (BAN / PICK)
-// =========================================================
-
 function buildOrder() {
     const order = [
-        { slot: 'slot-b0', team: 'blue', type: 'ban' }, 
-        { slot: 'slot-b2', team: 'blue', type: 'ban' },
-        { slot: 'slot-b4', team: 'blue', type: 'ban' }, 
-        { slot: 'slot-b1', team: 'red', type: 'ban' },
-        { slot: 'slot-b3', team: 'red', type: 'ban' }, 
-        { slot: 'slot-b5', team: 'red', type: 'ban' }
+        { slot: 'slot-b0', team: 'blue', type: 'ban' }, { slot: 'slot-b2', team: 'blue', type: 'ban' }, { slot: 'slot-b4', team: 'blue', type: 'ban' }, 
+        { slot: 'slot-b1', team: 'red', type: 'ban' }, { slot: 'slot-b3', team: 'red', type: 'ban' }, { slot: 'slot-b5', team: 'red', type: 'ban' }
     ];
-
     if (firstPick === 'blue') {
         order.push(
             { slot: 'slot-pA1', team: 'blue', type: 'pick' }, { slot: 'slot-pV1', team: 'red', type: 'pick' },
@@ -266,77 +248,22 @@ function buildOrder() {
     draftOrder = order;
 }
 
-// =========================================================
-// INTERAÇÕES E CLIQUES DO UTILIZADOR
-// =========================================================
-
-window.setFirstPick = function(team) {
-    firstPick = team;
-    document.getElementById('fp-blue').classList.toggle('active', team === 'blue');
-    document.getElementById('fp-red').classList.toggle('active', team === 'red');
-    resetDraft();
-};
-
 window.clicarBrawler = function(nome, id) {
     if (currentStep >= draftOrder.length || selected.includes(id)) return;
     const step = draftOrder[currentStep];
     const slot = document.getElementById(step.slot);
     if (!slot) return;
 
-    // Se o turno for do TIME AZUL (Nosso time) -> Entra em Pré-Seleção e mostra botão CONFIRMAR
-    if (step.team === 'blue') {
-        if (preSelected && preSelected.id === id) {
-            window.confirmarBlueSelection();
-            return;
-        } else {
-            preSelected = { nome, id };
-        }
-
-        slot.innerHTML = `
-            <img src="brawlers/${id}.png" onerror="this.onerror=null; this.src='brawlers/default.png';" style="width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0;">
-            <div class="confirm-overlay" onclick="window.confirmarBlueSelection(event)">CONFIRMAR</div>
-        `;
-
-        calcularCounters();
-        calcularPodeTomar();
-
-    // Se o turno for do TIME VERMELHO (Inimigo) -> Escolha Direta Sem Confirmação
-    } else {
-        slot.innerHTML = `<img src="brawlers/${id}.png" onerror="this.onerror=null; this.src='brawlers/default.png';">`;
-        document.getElementById(`b-${id}`).classList.add('disabled');
-        selected.push(id);
-
-        if (step.type === 'pick') {
-            picksVermelhos.push(nome);
-        }
-
-        currentStep++;
-        atualizarFoco();
-        calcularCounters();
-        calcularPodeTomar();
-    }
-};
-
-window.confirmarBlueSelection = function(event) {
-    if (event) event.stopPropagation(); 
-    if (!preSelected) return;
-
-    const { nome, id } = preSelected;
-    const step = draftOrder[currentStep];
-    const slot = document.getElementById(step.slot);
-
-    if (slot) {
-        slot.innerHTML = `<img src="brawlers/${id}.png" onerror="this.onerror=null; this.src='brawlers/default.png';">`;
-    }
-
+    // Inserção Direta e Instantânea no Slot Ativo
+    slot.innerHTML = criarConteudoSlot(nome, id);
     document.getElementById(`b-${id}`).classList.add('disabled');
     selected.push(id);
 
     if (step.type === 'pick') {
-        picksAzuis.push(nome);
+        if (step.team === 'blue') picksAzuis.push(nome);
+        else picksVermelhos.push(nome);
     }
 
-    preSelected = null; 
     currentStep++;
     atualizarFoco();
     calcularCounters();
@@ -352,16 +279,17 @@ function atualizarFoco() {
     }
 }
 
+window.setFirstPick = function(team) {
+    firstPick = team;
+    document.getElementById('fp-blue').classList.toggle('active', team === 'blue');
+    document.getElementById('fp-red').classList.toggle('active', team === 'red');
+    resetDraft();
+};
+
 window.resetDraft = function() {
-    currentStep = 0; 
-    selected = [];
-    picksVermelhos = [];
-    picksAzuis = [];
-    preSelected = null;
-    
+    currentStep = 0; selected = []; picksVermelhos = []; picksAzuis = [];
     document.querySelectorAll('.slot').forEach(s => s.innerHTML = '');
     document.querySelectorAll('.brawler-icon').forEach(b => b.classList.remove('disabled'));
-
     buildOrder();
     atualizarFoco();
     calcularCounters();
@@ -371,12 +299,11 @@ window.resetDraft = function() {
 window.filtrar = function() {
     const t = document.getElementById('search').value.toLowerCase();
     document.querySelectorAll('.brawler-icon').forEach(div => {
-        const n = div.querySelector('img').title.toLowerCase();
-        div.style.display = n.includes(t) ? 'block' : 'none';
+        const n = div.querySelector('.brawler-name').textContent.toLowerCase();
+        div.style.display = n.includes(t) ? 'flex' : 'none';
     });
 };
 
-// Inicialização Automática ao Carregar a Página
 document.addEventListener('DOMContentLoaded', () => {
     popularMapas();
     gerarRoster();
