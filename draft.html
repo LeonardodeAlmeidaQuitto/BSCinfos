@@ -1,98 +1,124 @@
 <!DOCTYPE html>
-<html lang="pt-pt">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Draft Maker</title>
-    <script src="{{ url_for('static', filename='app.js') }}"></script>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Draft Maker - Brawl Stars</title>
+    <!-- Link para o arquivo CSS completo e corrigido -->
     <link rel="stylesheet" href="draft.css">
 </head>
 <body>
-    <nav>
-        <a href="index.html" class="nav-link">MENU</a>
-        
-        <div class="nav-links">
-            <a href="regioes.html" class="nav-link">META</a>
-            <a href="draft.html" class="nav-link">DRAFT</a>
 
+    <!-- NAV BAR SUPERIOR -->
+    <div class="navbar">
+        <a href="#">MENU</a>
+        <a href="#">META</a>
+        <a href="#" style="color: #ff00ff;">DRAFT</a>
+    </div>
+
+    <!-- CONTROLES DE SELEÇÃO DE SELEÇÃO SUPERIOR (FIRST PICK E MAPA) -->
+    <div class="top-controls">
+        <div class="first-pick-selector">
+            <span>FIRST PICK:</span>
+            <button id="fp-blue" class="fp-btn active" onclick="window.setFirstPick('blue')"></button>
+            <button id="fp-red" class="fp-btn" onclick="window.setFirstPick('red')"></button>
         </div>
-        <div class="nav-right"></div>
-    </nav>
-        <div class="nav-right"></div>
-    </nav>
-
-    <div class="draft-wrapper">
-        <div class="draft-header-controls">
-            <div class="first-pick-selector">
-                <span class="fp-label">First Pick:</span>
-                <div id="fp-blue" class="fp-btn fp-blue active" onclick="setFirstPick('blue')"></div>
-                <div id="fp-red" class="fp-btn fp-red" onclick="setFirstPick('red')"></div>
-            </div>
-            <select id="map-select" class="map-dropdown" onchange="atualizarMeta()">
-                <option value="" disabled selected>Select Map</option>
+        <div class="map-selector">
+            <select id="map-select" onchange="window.atualizarMeta()">
+                <!-- Populado automaticamente pelo JavaScript -->
             </select>
-        </div>
-
-        <div class="draft-content-wrapper">
-            <div class="main-draft-box">
-                <div class="team-side">
-                    <div class="team-name blue-text">BLUE TEAM</div>
-                    <div class="bans-row">
-                        <div class="slot slot-small" id="slot-b0"></div>
-                        <div class="slot slot-small" id="slot-b2"></div>
-                        <div class="slot slot-small" id="slot-b4"></div>
-                    </div>
-                    <div class="picks-column">
-                        <div class="slot slot-large" id="slot-pA1"></div>
-                        <div class="slot slot-large" id="slot-pA2"></div>
-                        <div class="slot slot-large" id="slot-pA3"></div>
-                    </div>
-                </div>
-
-                <div class="divider-x">X</div>
-
-                <div class="team-side" style="align-items: flex-end;">
-                    <div class="team-name red-text">RED TEAM</div>
-                    <div class="bans-row">
-                        <div class="slot slot-small" id="slot-b1"></div>
-                        <div class="slot slot-small" id="slot-b3"></div>
-                        <div class="slot slot-small" id="slot-b5"></div>
-                    </div>
-                    <div class="picks-column">
-                        <div class="slot slot-large" id="slot-pV1"></div>
-                        <div class="slot slot-large" id="slot-pV2"></div>
-                        <div class="slot slot-large" id="slot-pV3"></div>
-                    </div>
-                </div>
-            </div>
-
-            <section class="side-panels">
-                <div class="side-panel">
-                    <div class="panel-title">META TOP 10</div>
-                    <div id="meta-list" class="mini-brawler-grid"></div>
-                </div>
-                <div class="side-panel">
-                    <div class="panel-title">COUNTERS (inimigo)</div>
-                    <div id="counters-list" class="mini-brawler-grid"></div>
-                </div>
-            <div class="side-panel" id="podetomar-container">
-                <div class="panel-title">COUNTERS (nosso)</div>
-                <div id="podetomar-list" class="mini-brawler-grid"></div>
-            </div>
-
-<div class="roster-container-vertical">
-            </section>
-
-            <aside class="roster-container-vertical">
-                <div class="search-wrapper">
-                    <input type="text" id="search" placeholder="BUSCAR..." oninput="filtrar()">
-                </div>
-                <div class="brawler-grid-vertical" id="roster"></div>
-                <button class="btn-reset-draft" onclick="resetDraft()">RESET DRAFT</button>
-            </aside>
         </div>
     </div>
 
+    <!-- CONTAINER PRINCIPAL LADO A LADO (3 COLUNAS) -->
+    <div class="main-container">
+        
+        <!-- COLUNA 1: ÁREA DE DRAFT (BLUE TEAM vs RED TEAM) -->
+        <div class="draft-area">
+            
+            <!-- LADO ALIADO: BLUE TEAM -->
+            <div class="team-column">
+                <div class="team-title" style="color: #007bff;">BLUE TEAM</div>
+                
+                <!-- BANS AZUIS -->
+                <div class="bans-container">
+                    <div class="slot slot-small" id="slot-b0"></div>
+                    <div class="slot slot-small" id="slot-b2"></div>
+                    <div class="slot slot-small" id="slot-b4"></div>
+                </div>
+                
+                <!-- PICKS AZUIS -->
+                <div class="picks-container">
+                    <div class="slot slot-large" id="slot-pA1"></div>
+                    <div class="slot slot-large" id="slot-pA2"></div>
+                    <div class="slot slot-large" id="slot-pA3"></div>
+                </div>
+            </div>
+
+            <!-- DIVISOR CENTRAL VS -->
+            <div class="center-vs">X</div>
+
+            <!-- LADO INIMIGO: RED TEAM -->
+            <div class="team-column">
+                <div class="team-title" style="color: #ff3333;">RED TEAM</div>
+                
+                <!-- BANS VERMELHOS -->
+                <div class="bans-container">
+                    <div class="slot slot-small" id="slot-b1"></div>
+                    <div class="slot slot-small" id="slot-b3"></div>
+                    <div class="slot slot-small" id="slot-b5"></div>
+                </div>
+                
+                <!-- PICKS VERMELHOS -->
+                <div class="picks-container">
+                    <div class="slot slot-large" id="slot-pV1"></div>
+                    <div class="slot slot-large" id="slot-pV2"></div>
+                    <div class="slot slot-large" id="slot-pV3"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- COLUNA 2: PAINÉIS LATERAIS DE INFORMAÇÕES (META E COUNTERS) -->
+        <div class="info-panels">
+            
+            <!-- PAINEL META TOP 10 -->
+            <div class="side-panel">
+                <div class="panel-title">META TOP 10</div>
+                <div class="mini-brawler-grid" id="meta-list">
+                    <!-- Populado via JS -->
+                </div>
+            </div>
+
+            <!-- PAINEL COUNTERS INIMIGO (PODE TOMAR / AMEAÇAS) -->
+            <div class="side-panel">
+                <div class="panel-title">COUNTERS (INIMIGO)</div>
+                <div class="mini-brawler-grid" id="podetomar-list">
+                    <!-- Populado via JS com dragon_they_full -->
+                </div>
+            </div>
+
+            <!-- PAINEL COUNTERS NOSSO (VANTAGENS / RECOMENDADOS) -->
+            <div class="side-panel">
+                <div class="panel-title">COUNTERS (NOSSO)</div>
+                <div class="mini-brawler-grid" id="counters-list">
+                    <!-- Populado via JS com dragon_us_full -->
+                </div>
+            </div>
+
+        </div>
+
+        <!-- COLUNA 3: ROSTER COMPLETO DE SELEÇÃO DOS BRAWLERS -->
+        <div class="roster-area">
+            <input type="text" id="search" class="search-bar" placeholder="BUSCAR..." oninput="window.filtrar()">
+            <div class="roster-grid" id="roster">
+                <!-- Todos os ícones gerados dinamicamente via JS -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script de lógica do Draft carregado no final para garantir o funcionamento -->
     <script src="draft.js"></script>
 </body>
 </html>
