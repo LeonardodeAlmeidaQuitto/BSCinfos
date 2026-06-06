@@ -137,7 +137,6 @@ function calcularCounters() {
 
     let contagemCounters = {};
     
-    // Conta quantas vezes cada brawler é sugerido
     picksVermelhos.forEach(brawler => {
         if (DADOS_COUNTERS[brawler]) {
             DADOS_COUNTERS[brawler].forEach(counter => {
@@ -146,7 +145,6 @@ function calcularCounters() {
         }
     });
 
-    // Filtra brawlers já escolhidos e ordena (Mais vezes counter -> Alfabética)
     let brawlersValidos = Object.keys(contagemCounters).filter(nome => {
         const id = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
         return !selected.includes(id);
@@ -155,21 +153,23 @@ function calcularCounters() {
     if (brawlersValidos.length > 0) {
         brawlersValidos.sort((a, b) => {
             if (contagemCounters[b] !== contagemCounters[a]) {
-                return contagemCounters[b] - contagemCounters[a]; // Do maior para o menor x
+                return contagemCounters[b] - contagemCounters[a];
             }
-            return a.localeCompare(b); // Desempate por nome
+            return a.localeCompare(b);
         });
 
         brawlersValidos.forEach(nome => {
             const id = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
             let qtd = contagemCounters[nome];
             
-            // Se countera 2 ou mais, ganha classes e badge especial
+            // Ativa o Dragão Aliado (Vantagem para nós) se counterar 2 ou 3 oponentes
             let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
             let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
+            let dragonIcon = qtd >= 2 ? `<img src="dragon_us_full.png" class="dragon-badge" title="Excelente counter!">` : '';
 
             container.innerHTML += `
                 <div class="mini-brawler ${destaqueClass}" title="Countera ${qtd} inimigos: ${nome}">
+                    ${dragonIcon}
                     <img src="brawlers/${id}.png" onerror="this.src='brawlers/default.png';">
                     ${badge}
                 </div>`;
@@ -199,7 +199,6 @@ function calcularPodeTomar() {
 
     let contagemAmeacas = {};
 
-    // Conta quantas vezes os inimigos podem counterar o teu time
     tempPicksAzuis.forEach(brawler => {
         if (DADOS_COUNTERS[brawler]) {
             DADOS_COUNTERS[brawler].forEach(counter => {
@@ -225,12 +224,14 @@ function calcularPodeTomar() {
             const id = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
             let qtd = contagemAmeacas[nome];
 
-            // Se é ameaça para 2 ou mais, ganha classes e badge de perigo
+            // Ativa o Dragão Inimigo (Perigo para nós) se counterar 2 ou 3 do nosso time
             let destaqueClass = qtd >= 2 ? 'highlight-danger' : '';
             let badge = qtd >= 2 ? `<div class="badge-multi-danger">x${qtd}</div>` : '';
+            let dragonIcon = qtd >= 2 ? `<img src="dragon_they_full.png" class="dragon-badge" title="Ameaça crítica!">` : '';
 
             container.innerHTML += `
                 <div class="mini-brawler ${destaqueClass}" title="Perigo para ${qtd} aliados: ${nome}">
+                    ${dragonIcon}
                     <img src="brawlers/${id}.png" onerror="this.src='brawlers/default.png';">
                     ${badge}
                 </div>`;
