@@ -360,7 +360,7 @@ function calcularPodeTomar() {
             // Faz a MESMA coisa: Se counterar 2 ou mais do nosso time, ganha a borda verde e o dragão com joinha
             let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
             let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
-            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_us_full.png" class="dragon-badge">` : '';
+            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_they_full.png" class="dragon-badge">` : '';
 
             container.innerHTML += `
                 <div class="mini-brawler ${destaqueClass}" title="${nome} (Counter x${qtd})">
