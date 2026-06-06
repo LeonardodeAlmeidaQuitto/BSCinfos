@@ -234,3 +234,9 @@ font-size: 1.2rem; font-weight: 900; text-transform: uppercase; border: none;
     flex-shrink: 0;                 /* Garante que o navegador não esmague a foto */
     margin: 0 !important;           /* Remove qualquer margem externa que mude a posição */
 }
+
+/* Altera APENAS o tamanho da imagem da logo */
+.nav-logo img, img.nav-logo {
+    height: 28px !important;  /* Ajusta este valor (ex: 25px, 30px) para o tamanho que quiseres */
+    width: auto !important;   /* Mantém a proporção correta para a imagem não ficar distorcida */
+}
