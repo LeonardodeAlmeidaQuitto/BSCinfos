@@ -7,7 +7,7 @@
     --bg-slots: #1c1d24;
     --borda-suave: #1f2026;
     --borda-destaque: #2d303a;
-    --rosa-neon: #ff00ff; /* Cor magenta dos títulos do Meta/Counters */
+    --rosa-neon: #ff00ff;
     --azul-time: #007bff;
     --vermelho-time: #ff3333;
 }
@@ -16,15 +16,31 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: sans-serif;
+    font-family: system-ui, -apple-system, sans-serif;
 }
 
 body {
     background-color: var(--bg-geral);
     color: #ffffff;
-    min-height: 100vh;
+    height: 100vh;
     display: flex;
     flex-direction: column;
+    overflow: hidden; /* Impede a página de criar barra de rolagem externa */
+}
+
+/* Scrollbar Customizado Global (Premium) */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--borda-destaque);
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #3d4152;
 }
 
 /* =========================================================
@@ -38,7 +54,7 @@ body {
     gap: 30px;
 }
 
-.navbar a, .navbar div {
+.navbar a {
     color: #ffffff;
     text-decoration: none;
     font-weight: bold;
@@ -48,18 +64,93 @@ body {
 }
 
 /* =========================================================
-   LAYOUT PRINCIPAL (SISTEMA DE 3 COLUNAS LADO A LADO)
+   CONTROLES SUPERIORES (ESTILIZAÇÃO MAPA E FIRST PICK)
+   ========================================================= */
+.top-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--bg-paineis);
+    border: 1px solid var(--borda-suave);
+    border-radius: 12px;
+    padding: 12px 24px;
+    margin: 20px 20px 15px 20px;
+}
+
+.first-pick-selector {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #888a93;
+}
+
+.fp-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+    outline: none;
+}
+
+#fp-blue { background-color: var(--azul-time); }
+#fp-red { background-color: var(--vermelho-time); }
+
+.fp-btn:hover {
+    transform: scale(1.12);
+}
+
+/* Indicador brilhante de qual time está ativo no First Pick */
+.fp-btn.active::after {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    right: -6px;
+    bottom: -6px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+}
+
+.map-selector select {
+    background-color: #000000;
+    color: #ffffff;
+    border: 1px solid var(--borda-destaque);
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: bold;
+    outline: none;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    min-width: 240px;
+    transition: border-color 0.2s ease;
+}
+
+.map-selector select:focus {
+    border-color: var(--rosa-neon);
+}
+
+/* =========================================================
+   LAYOUT PRINCIPAL (SISTEMA DE 3 COLUNAS ALINHADAS)
    ========================================================= */
 .main-container {
     display: flex;
     flex: 1;
-    padding: 20px;
+    padding: 0 20px 20px 20px;
     gap: 20px;
-    align-items: start;
-    max-height: calc(100vh - 50px);
+    align-items: stretch; /* Força todas as colunas a terem exatamente a mesma altura */
+    height: calc(100vh - 140px); /* Preenche a tela perfeitamente descontando os menus */
+    overflow: hidden;
 }
 
-/* --- COLUNA 1: ÁREA DO DRAFT (Esquerda/Centro) --- */
+/* --- COLUNA 1: ÁREA DO DRAFT --- */
 .draft-area {
     flex: 2.5;
     background-color: var(--bg-paineis);
@@ -69,7 +160,6 @@ body {
     display: flex;
     justify-content: space-between;
     position: relative;
-    min-height: 520px;
 }
 
 .team-column {
@@ -125,35 +215,14 @@ body {
     position: relative !important;
 }
 
-.slot-small {
-    width: 45px;
-    height: 45px;
-}
-
-.slot-large {
-    width: 95px;
-    height: 95px;
-    border-radius: 14px;
-}
-
-.slot img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
+.slot-small { width: 45px; height: 45px; }
+.slot-large { width: 95px; height: 95px; border-radius: 14px; }
 
 /* Bordas de turno ativo */
-.active-blue {
-    border-color: var(--azul-time);
-    box-shadow: 0 0 15px rgba(0, 123, 255, 0.5);
-}
+.active-blue { border-color: var(--azul-time); box-shadow: 0 0 15px rgba(0, 123, 255, 0.5); }
+.active-red { border-color: var(--vermelho-time); box-shadow: 0 0 15px rgba(255, 51, 51, 0.5); }
 
-.active-red {
-    border-color: var(--vermelho-time);
-    box-shadow: 0 0 15px rgba(255, 51, 51, 0.5);
-}
-
-/* --- COLUNA 2: PAINÉIS LATERAIS (Meio) --- */
+/* --- COLUNA 2: PAINÉIS LATERAIS (MEIO) --- */
 .info-panels {
     flex: 1.2;
     display: flex;
@@ -166,6 +235,10 @@ body {
     border: 1px solid var(--borda-suave);
     border-radius: 12px;
     padding: 15px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* Garante estabilidade do flexbox */
 }
 
 .panel-title {
@@ -180,8 +253,10 @@ body {
 
 .mini-brawler-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr); /* 5 Brawlers por linha igual ao original */
+    grid-template-columns: repeat(5, 1fr);
     gap: 6px;
+    overflow-y: auto;
+    flex: 1;
 }
 
 .mini-brawler {
@@ -194,13 +269,7 @@ body {
     border: 1px solid var(--borda-destaque);
 }
 
-.mini-brawler img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-/* --- COLUNA 3: SELEÇÃO DE BRAWLERS (Direita) --- */
+/* --- COLUNA 3: SELEÇÃO DE BRAWLERS (DIREITA ARRUMADA) --- */
 .roster-area {
     flex: 1.4;
     background-color: var(--bg-paineis);
@@ -209,12 +278,12 @@ body {
     padding: 15px;
     display: flex;
     flex-direction: column;
-    max-height: 85vh;
+    height: 100%; /* Ocupa exatamente o tamanho vertical da tela */
 }
 
 .search-bar {
     width: 100%;
-    padding: 10px;
+    padding: 10px 12px;
     background-color: #000000;
     border: 1px solid var(--borda-destaque);
     color: #ffffff;
@@ -226,16 +295,12 @@ body {
 
 .roster-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3 Colunas perfeitas igual ao original */
+    grid-template-columns: repeat(3, 1fr); /* 3 Colunas fixas e perfeitas */
     gap: 8px;
-    overflow-y: auto;
+    overflow-y: auto; /* Cria a rolagem apenas dentro do grid dos brawlers */
+    flex: 1;
     padding-right: 4px;
 }
-
-/* Scrollbar customizado da lista */
-.roster-grid::-webkit-scrollbar { width: 5px; }
-.roster-grid::-webkit-scrollbar-track { background: transparent; }
-.roster-grid::-webkit-scrollbar-thumb { background: var(--borda-destaque); border-radius: 10px; }
 
 .brawler-icon {
     width: 100%;
@@ -245,17 +310,12 @@ body {
     cursor: pointer;
     border: 2px solid transparent;
     transition: transform 0.1s ease;
+    background-color: var(--bg-slots);
 }
 
 .brawler-icon:hover {
-    transform: scale(1.03);
+    transform: scale(1.04);
     border-color: #ffffff;
-}
-
-.brawler-icon img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
 }
 
 .brawler-icon.disabled {
@@ -263,12 +323,19 @@ body {
     pointer-events: none;
 }
 
+/* TRAVA DE SEGURANÇA TOTAL PARA IMAGENS */
+.brawler-icon img, .mini-brawler img, .slot img {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: cover !important;
+    display: block;
+}
 
 /* =========================================================
    SISTEMA DE INTERAÇÃO, DESTAQUES E DRAGÕES
    ========================================================= */
-
-/* Overlay do botão Confirmar */
 .confirm-overlay {
     position: absolute;
     top: 0;
@@ -281,26 +348,16 @@ body {
     justify-content: center;
     color: #ffffff;
     font-weight: bold;
-    font-size: 12px;
+    font-size: 11px;
     cursor: pointer;
     border: 2px solid var(--azul-time);
     box-sizing: border-box;
     text-align: center;
 }
 
-/* Borda brilhante verde (Vantagem) */
-.highlight-good {
-    border: 2px solid #00ff00 !important;
-    box-shadow: 0 0 10px rgba(0, 255, 0, 0.6);
-}
+.highlight-good { border: 2px solid #00ff00 !important; box-shadow: 0 0 10px rgba(0, 255, 0, 0.6); }
+.highlight-danger { border: 2px solid #ff0000 !important; box-shadow: 0 0 10px rgba(255, 0, 0, 0.6); }
 
-/* Borda brilhante vermelha (Perigo) */
-.highlight-danger {
-    border: 2px solid #ff0000 !important;
-    box-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
-}
-
-/* Badges multiplicadores (x2, x3) */
 .badge-multi, .badge-multi-danger {
     position: absolute;
     bottom: -1px;
@@ -311,11 +368,9 @@ body {
     border-radius: 3px;
     z-index: 5;
 }
-
 .badge-multi { background: #00ff00; color: #000; }
 .badge-multi-danger { background: #ff0000; color: #fff; }
 
-/* Ícones dos Dragões no canto superior esquerdo */
 .dragon-badge {
     position: absolute;
     top: -6px;
