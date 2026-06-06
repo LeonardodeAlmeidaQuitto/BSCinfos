@@ -335,7 +335,7 @@ function calcularPodeTomar() {
     }
 
     let contagemAmeacas = {};
-    listaAzuisParaCalcular.forEach(brawler => {
+    listaVermelhaParaCalcular.forEach(brawler => {
         let brawlerKey = Object.keys(DADOS_COUNTERS).find(k => limparNome(k) === limparNome(brawler));
         if (brawlerKey && DADOS_COUNTERS[brawlerKey]) {
             DADOS_COUNTERS[brawlerKey].forEach(counter => {
