@@ -74,8 +74,16 @@ let picksVermelhos = [];
 let picksAzuis = [];      
 let preSelected = null;
 
+// Função utilitária para padronizar e limpar nomes de brawlers
+function limparNome(nome) {
+    if (!nome) return "";
+    return nome.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
 function getContainer(id, selectorIndex) {
-    const el = document.getElementById(id);
+    let el = document.getElementById(id);
+    if (el) return el;
+    el = document.querySelector('.' + id);
     if (el) return el;
     const grids = document.querySelectorAll('.mini-brawler-grid');
     return grids.length > selectorIndex ? grids[selectorIndex] : null;
@@ -111,7 +119,7 @@ function gerarRoster() {
     if (!grid) return;
     grid.innerHTML = "";
     BRAWLERS.forEach(nome => {
-        const id = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const id = limparNome(nome);
         const div = document.createElement('div');
         div.className = 'brawler-icon';
         div.id = `b-${id}`;
@@ -137,7 +145,7 @@ window.atualizarMeta = function() {
     const metaBrawlers = DADOS_META[mapaSelecionado];
     if (metaBrawlers && metaBrawlers.length > 0) {
         metaBrawlers.forEach(nome => {
-            const id = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const id = limparNome(nome);
             container.innerHTML += `
                 <div class="mini-brawler" title="Top Pick: ${nome}">
                     <img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -161,23 +169,24 @@ function calcularCounters() {
 
     let contagemCounters = {};
     picksVermelhos.forEach(brawler => {
-        if (DADOS_COUNTERS[brawler]) {
-            DADOS_COUNTERS[brawler].forEach(counter => {
+        let brawlerKey = Object.keys(DADOS_COUNTERS).find(k => limparNome(k) === limparNome(brawler));
+        if (brawlerKey && DADOS_COUNTERS[brawlerKey]) {
+            DADOS_COUNTERS[brawlerKey].forEach(counter => {
                 contagemCounters[counter] = (contagemCounters[counter] || 0) + 1;
             });
         }
     });
 
-    let brawlersValidos = Object.keys(contagemCounters).filter(nome => !selected.includes(nome.toLowerCase().replace(/[^a-z0-9]/g, '')));
+    let brawlersValidos = Object.keys(contagemCounters).filter(nome => !selected.includes(limparNome(nome)));
 
     if (brawlersValidos.length > 0) {
         brawlersValidos.sort((a, b) => contagemCounters[b] - contagemCounters[a]);
         brawlersValidos.forEach(nome => {
-            const id = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const id = limparNome(nome);
             let qtd = contagemCounters[nome];
             let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
             let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
-            let dragonIcon = qtd >= 2 ? `<img src="dragon_us_full.png" class="dragon-badge">` : '';
+            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_us_full.png" class="dragon-badge">` : '';
 
             container.innerHTML += `
                 <div class="mini-brawler ${destaqueClass}" title="${nome} (Counter x${qtd})">
@@ -204,23 +213,24 @@ function calcularPodeTomar() {
 
     let contagemAmeacas = {};
     picksAzuis.forEach(brawler => {
-        if (DADOS_COUNTERS[brawler]) {
-            DADOS_COUNTERS[brawler].forEach(counter => {
+        let brawlerKey = Object.keys(DADOS_COUNTERS).find(k => limparNome(k) === limparNome(brawler));
+        if (brawlerKey && DADOS_COUNTERS[brawlerKey]) {
+            DADOS_COUNTERS[brawlerKey].forEach(counter => {
                 contagemAmeacas[counter] = (contagemAmeacas[counter] || 0) + 1;
             });
         }
     });
 
-    let brawlersValidos = Object.keys(contagemAmeacas).filter(nome => !selected.includes(nome.toLowerCase().replace(/[^a-z0-9]/g, '')));
+    let brawlersValidos = Object.keys(contagemAmeacas).filter(nome => !selected.includes(limparNome(nome)));
 
     if (brawlersValidos.length > 0) {
         brawlersValidos.sort((a, b) => contagemAmeacas[b] - contagemAmeacas[a]);
         brawlersValidos.forEach(nome => {
-            const id = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const id = limparNome(nome);
             let qtd = contagemAmeacas[nome];
             let destaqueClass = qtd >= 2 ? 'highlight-danger' : '';
             let badge = qtd >= 2 ? `<div class="badge-multi-danger">x${qtd}</div>` : '';
-            let dragonIcon = qtd >= 2 ? `<img src="dragon_they_full.png" class="dragon-badge">` : '';
+            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_they_full.png" class="dragon-badge">` : '';
 
             container.innerHTML += `
                 <div class="mini-brawler ${destaqueClass}" title="${nome} (Ameaça x${qtd})">
