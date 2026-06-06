@@ -140,7 +140,7 @@ let selected = [];
 let firstPick = 'blue';
 let draftOrder = [];
 let picksVermelhos = [];
-let picksAzuis = [];
+let picksAzuis = [];      
 let preSelected = null;
  
 // =========================================================
@@ -235,7 +235,7 @@ window.atualizarMeta = function() {
     const container = obterContainerMeta();
     if (!container) return;
     container.innerHTML = "";
- 
+    
     const metaBrawlers = DADOS_META[mapaSelecionado];
     if (metaBrawlers && metaBrawlers.length > 0) {
         metaBrawlers.forEach(nome => {
@@ -252,13 +252,30 @@ window.atualizarMeta = function() {
 };
  
 // =========================================================
-// LÓGICA DE CÁLCULO DE COUNTERS (CORRIGIDA)
+// LÓGICA DE CÁLCULO DE COUNTERS
 // =========================================================
  
+// FIX AUXILIAR: filtra entradas vazias do array de counters
+function contarCounters(listaBrawlers) {
+    let contagem = {};
+    listaBrawlers.forEach(brawler => {
+        let brawlerKey = Object.keys(DADOS_COUNTERS).find(k => limparNome(k) === limparNome(brawler));
+        if (brawlerKey && Array.isArray(DADOS_COUNTERS[brawlerKey])) {
+            DADOS_COUNTERS[brawlerKey]
+                .filter(counter => counter && counter.trim() !== "") // FIX: ignora strings vazias [""]
+                .forEach(counter => {
+                    contagem[counter] = (contagem[counter] || 0) + 1;
+                });
+        }
+    });
+    return contagem;
+}
+ 
+// COUNTERS (INIMIGO): quem countera os picks VERMELHOS → recomendações para nós
+// Dragon: dragon_they_full.png (vermelho)
 function calcularCounters() {
     let container = obterContainerInimigo();
     if (!container) return;
- 
     container.innerHTML = "";
  
     if (picksVermelhos.length === 0) {
@@ -266,17 +283,7 @@ function calcularCounters() {
         return;
     }
  
-    let contagemCounters = {};
-    picksVermelhos.forEach(brawler => {
-        let brawlerKey = Object.keys(DADOS_COUNTERS).find(k => limparNome(k) === limparNome(brawler));
-        if (brawlerKey && DADOS_COUNTERS[brawlerKey]) {
-            DADOS_COUNTERS[brawlerKey].forEach(counter => {
-                if (counter && counter.trim() !== "") {
-                    contagemCounters[counter] = (contagemCounters[counter] || 0) + 1;
-                }
-            });
-        }
-    });
+    let contagemCounters = contarCounters(picksVermelhos);
  
     let brawlersValidos = Object.keys(contagemCounters).filter(nome => {
         const idNome = limparNome(nome);
@@ -291,10 +298,10 @@ function calcularCounters() {
             const id = limparNome(nome);
             let qtd = contagemCounters[nome];
  
-            // Dragão com JOINHA (dragon_us_full) = bom pra nós, countera o inimigo
             let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
             let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
-            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_us_full.png" class="dragon-badge">` : '';
+            // FIX: INIMIGO usa dragon_they (vermelho) — counter do time inimigo
+            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_they_full.png" class="dragon-badge">` : '';
  
             container.innerHTML += `
                 <div class="mini-brawler ${destaqueClass}" title="${nome} (Counter x${qtd})">
@@ -309,12 +316,13 @@ function calcularCounters() {
     }
 }
  
+// COUNTERS (NOSSO): quem countera os picks AZUIS → ameaças ao nosso time
+// Dragon: dragon_us_full.png (verde)
 function calcularPodeTomar() {
     let container = obterContainerNosso();
     if (!container) return;
     container.innerHTML = "";
  
-    // Monta lista dos azuis (nosso time), incluindo pré-seleção se for pick do time azul
     let listaAzuisParaCalcular = [...picksAzuis];
     const step = draftOrder[currentStep];
     if (preSelected && step && step.team === 'blue' && step.type === 'pick') {
@@ -328,18 +336,8 @@ function calcularPodeTomar() {
         return;
     }
  
-    // Quem countera os brawlers do NOSSO time (azul) = ameaças que o inimigo pode pegar
-    let contagemAmeacas = {};
-    listaAzuisParaCalcular.forEach(brawler => {  // ✅ CORRIGIDO: era "listaVermelhaParaCalcular"
-        let brawlerKey = Object.keys(DADOS_COUNTERS).find(k => limparNome(k) === limparNome(brawler));
-        if (brawlerKey && DADOS_COUNTERS[brawlerKey]) {
-            DADOS_COUNTERS[brawlerKey].forEach(counter => {
-                if (counter && counter.trim() !== "") {
-                    contagemAmeacas[counter] = (contagemAmeacas[counter] || 0) + 1;
-                }
-            });
-        }
-    });
+    // FIX PRINCIPAL: era "listaVermelhaParaCalcular" (variável inexistente!) → corrigido para "listaAzuisParaCalcular"
+    let contagemAmeacas = contarCounters(listaAzuisParaCalcular);
  
     let brawlersValidos = Object.keys(contagemAmeacas).filter(nome => {
         const idNome = limparNome(nome);
@@ -354,10 +352,10 @@ function calcularPodeTomar() {
             const id = limparNome(nome);
             let qtd = contagemAmeacas[nome];
  
-            // Dragão com CHORO (dragon_they_full) = ameaça ao nosso time
             let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
             let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
-            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_they_full.png" class="dragon-badge">` : '';
+            // FIX: NOSSO usa dragon_us (verde) — ameaça ao nosso time
+            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_us_full.png" class="dragon-badge">` : '';
  
             container.innerHTML += `
                 <div class="mini-brawler ${destaqueClass}" title="${nome} (Counter x${qtd})">
@@ -378,7 +376,7 @@ function calcularPodeTomar() {
  
 function buildOrder() {
     const order = [
-        { slot: 'slot-b0', team: 'blue', type: 'ban' }, { slot: 'slot-b2', team: 'blue', type: 'ban' }, { slot: 'slot-b4', team: 'blue', type: 'ban' },
+        { slot: 'slot-b0', team: 'blue', type: 'ban' }, { slot: 'slot-b2', team: 'blue', type: 'ban' }, { slot: 'slot-b4', team: 'blue', type: 'ban' }, 
         { slot: 'slot-b1', team: 'red', type: 'ban' }, { slot: 'slot-b3', team: 'red', type: 'ban' }, { slot: 'slot-b5', team: 'red', type: 'ban' }
     ];
     if (firstPick === 'blue') {
@@ -416,13 +414,13 @@ window.clicarBrawler = function(nome, id) {
                 <div class="pre-select-badge">✓</div>
             </div>
         `;
- 
+        
         calcularCounters();
         calcularPodeTomar();
     } else {
         slot.innerHTML = criarConteudoSlot(nome, id);
         const icon = document.getElementById(`b-${id}`);
-        if (icon) icon.classList.add('disabled');
+        if(icon) icon.classList.add('disabled');
         selected.push(id);
  
         if (step.type === 'pick') {
@@ -438,7 +436,7 @@ window.clicarBrawler = function(nome, id) {
 };
  
 window.confirmarBlueSelection = function(event) {
-    if (event) event.stopPropagation();
+    if (event) event.stopPropagation(); 
     if (!preSelected) return;
  
     const { nome, id } = preSelected;
@@ -450,14 +448,14 @@ window.confirmarBlueSelection = function(event) {
     }
  
     const icon = document.getElementById(`b-${id}`);
-    if (icon) icon.classList.add('disabled');
+    if(icon) icon.classList.add('disabled');
     selected.push(id);
  
     if (step.type === 'pick') {
         picksAzuis.push(nome);
     }
  
-    preSelected = null;
+    preSelected = null; 
     currentStep++;
     atualizarFoco();
     calcularCounters();
@@ -466,10 +464,10 @@ window.confirmarBlueSelection = function(event) {
  
 function atualizarFoco() {
     document.querySelectorAll('.slot').forEach(s => s.classList.remove('active-blue', 'active-red'));
-    if (currentStep < draftOrder.length) {
+    if (currentStep < draftOrder.length) {      
         const next = draftOrder[currentStep];
         const nextSlot = document.getElementById(next.slot);
-        if (nextSlot) nextSlot.classList.add(next.team === 'blue' ? 'active-blue' : 'active-red');
+        if(nextSlot) nextSlot.classList.add(next.team === 'blue' ? 'active-blue' : 'active-red');
     }
 }
  
@@ -481,8 +479,8 @@ window.setFirstPick = function(team) {
     firstPick = team;
     const btnBlue = document.getElementById('fp-blue');
     const btnRed = document.getElementById('fp-red');
-    if (btnBlue) btnBlue.classList.toggle('active', team === 'blue');
-    if (btnRed) btnRed.classList.toggle('active', team === 'red');
+    if(btnBlue) btnBlue.classList.toggle('active', team === 'blue');
+    if(btnRed) btnRed.classList.toggle('active', team === 'red');
     resetDraft();
 };
  
@@ -499,7 +497,7 @@ window.resetDraft = function() {
  
 window.filtrar = function() {
     const searchInput = document.getElementById('search') || document.querySelector('.search-bar');
-    if (!searchInput) return;
+    if(!searchInput) return;
     const t = searchInput.value.toLowerCase();
     document.querySelectorAll('.brawler-icon').forEach(div => {
         const n = div.querySelector('.brawler-name').textContent.toLowerCase();
@@ -511,15 +509,15 @@ function inicializarSistema() {
     popularMapas();
     gerarRoster();
     resetDraft();
- 
+    
     const mapSelect = document.getElementById('map-select') || document.querySelector('.map-selector select') || document.querySelector('select');
     if (mapSelect) {
         mapSelect.addEventListener('change', window.atualizarMeta);
     }
- 
+    
     const searchInput = document.getElementById('search') || document.querySelector('.search-bar');
     if (searchInput) {
-        searchInput.removeAttribute('oninput');
+        searchInput.removeAttribute('oninput'); 
         searchInput.addEventListener('input', window.filtrar);
     }
 }
