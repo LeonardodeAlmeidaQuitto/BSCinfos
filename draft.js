@@ -144,7 +144,7 @@ let picksAzuis = [];
 let preSelected = null;
 
 // =========================================================
-// FUNÇÕES DE TRATAMENTO E AUXILIARES
+// INTERRUPTORES RESILIENTES DE SELEÇÃO DOM (ANTI-ERRO)
 // =========================================================
 
 function limparNome(nome) {
@@ -152,9 +152,33 @@ function limparNome(nome) {
     return nome.toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
-function obterGridPorIndice(index) {
+function obterCaixaPorTexto(textoCabecalho, fallbackIndex) {
+    // Busca inteligente: Varre a tela procurando o título exato da seção
+    const elementos = document.querySelectorAll('*');
+    for (let el of elementos) {
+        if (el.textContent.trim().toUpperCase() === textoCabecalho.toUpperCase()) {
+            let pai = el.parentElement;
+            if (pai) {
+                let grid = pai.querySelector('.mini-brawler-grid') || pai.querySelector('div:nth-child(2)') || pai;
+                return grid;
+            }
+        }
+    }
+    // Caso falhe, usa a ordem padrão de indexação das classes
     const grids = document.querySelectorAll('.mini-brawler-grid');
-    return grids.length > index ? grids[index] : null;
+    return grids.length > fallbackIndex ? grids[fallbackIndex] : null;
+}
+
+function obterContainerInimigo() {
+    return document.getElementById('counters-list') || document.getElementById('counters-inimigo') || obterCaixaPorTexto('COUNTERS (INIMIGO)', 1);
+}
+
+function obterContainerNosso() {
+    return document.getElementById('podetomar-list') || document.getElementById('counters-nosso') || obterCaixaPorTexto('COUNTERS (NOSSO)', 2);
+}
+
+function obterContainerMeta() {
+    return document.getElementById('meta-list') || obterCaixaPorTexto('META TOP 10', 0);
 }
 
 function criarConteudoSlot(nome, id) {
@@ -210,7 +234,7 @@ function gerarRoster() {
 window.atualizarMeta = function() {
     const select = document.getElementById('map-select') || document.querySelector('.map-selector select') || document.querySelector('select');
     const mapaSelecionado = select ? select.value : '';
-    const container = obterGridPorIndice(0); // Caixa 1: META TOP 10
+    const container = obterContainerMeta();
     if (!container) return;
     container.innerHTML = "";
     
@@ -230,12 +254,11 @@ window.atualizarMeta = function() {
 };
 
 // =========================================================
-// LÓGICA DE CÁLCULO DE COUNTERS (SISTEMA DE INFOS)
+// LÓGICA DE CÁLCULO DE COUNTERS (SINCRO TOTAL)
 // =========================================================
 
 function calcularCounters() {
-    // Caixa 2: COUNTERS (INIMIGO) -> Mostra brawlers que counteram os picks do adversário
-    let container = obterGridPorIndice(1);
+    let container = obterContainerInimigo();
     if (!container) return;
     container.innerHTML = "";
 
@@ -267,7 +290,7 @@ function calcularCounters() {
             const id = limparNome(nome);
             let qtd = contagemCounters[nome];
             
-            // Lógica unificada: Se counterar 2 ou mais, ganha moldura verde e o dragão com joia
+            // Lógica Unificada: Se counterar 2 ou mais adversários, ganha a borda verde e o dragão com joinha
             let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
             let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
             let dragonIcon = qtd >= 2 ? `<img src="element/dragon_us_full.png" class="dragon-badge">` : '';
@@ -286,8 +309,7 @@ function calcularCounters() {
 }
 
 function calcularPodeTomar() {
-    // Caixa 3: COUNTERS (NOSSO) -> Mostra brawlers que counteram os nossos picks
-    let container = obterGridPorIndice(2);
+    let container = obterContainerNosso();
     if (!container) return;
     container.innerHTML = "";
 
@@ -327,7 +349,7 @@ function calcularPodeTomar() {
             const id = limparNome(nome);
             let qtd = contagemAmeacas[nome];
             
-            // Lógica unificada: Se counterar 2 ou mais do nosso time, ganha a moldura verde e o dragão com joia da mesma forma
+            // Faz a MESMA coisa: Se counterar 2 ou mais do nosso time, ganha a borda verde e o dragão com joinha
             let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
             let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
             let dragonIcon = qtd >= 2 ? `<img src="element/dragon_us_full.png" class="dragon-badge">` : '';
