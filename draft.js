@@ -135,19 +135,44 @@ function calcularCounters() {
         return;
     }
 
-    let countersSugeridos = new Set();
+    let contagemCounters = {};
+    
+    // Conta quantas vezes cada brawler é sugerido
     picksVermelhos.forEach(brawler => {
         if (DADOS_COUNTERS[brawler]) {
-            DADOS_COUNTERS[brawler].forEach(counter => countersSugeridos.add(counter));
+            DADOS_COUNTERS[brawler].forEach(counter => {
+                contagemCounters[counter] = (contagemCounters[counter] || 0) + 1;
+            });
         }
     });
 
-    if (countersSugeridos.size > 0) {
-        countersSugeridos.forEach(nome => {
-            const id = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
-            if (!selected.includes(id)) {
-                container.innerHTML += `<div class="mini-brawler" title="Countera o time vermelho: ${nome}"><img src="brawlers/${id}.png" onerror="this.src='brawlers/default.png';"></div>`;
+    // Filtra brawlers já escolhidos e ordena (Mais vezes counter -> Alfabética)
+    let brawlersValidos = Object.keys(contagemCounters).filter(nome => {
+        const id = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
+        return !selected.includes(id);
+    });
+
+    if (brawlersValidos.length > 0) {
+        brawlersValidos.sort((a, b) => {
+            if (contagemCounters[b] !== contagemCounters[a]) {
+                return contagemCounters[b] - contagemCounters[a]; // Do maior para o menor x
             }
+            return a.localeCompare(b); // Desempate por nome
+        });
+
+        brawlersValidos.forEach(nome => {
+            const id = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
+            let qtd = contagemCounters[nome];
+            
+            // Se countera 2 ou mais, ganha classes e badge especial
+            let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
+            let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
+
+            container.innerHTML += `
+                <div class="mini-brawler ${destaqueClass}" title="Countera ${qtd} inimigos: ${nome}">
+                    <img src="brawlers/${id}.png" onerror="this.src='brawlers/default.png';">
+                    ${badge}
+                </div>`;
         });
     } else {
         container.innerHTML = `<p style="color:#555; font-size:12px; grid-column: span 5; text-align:center;">Nenhum counter mapeado.</p>`;
@@ -172,19 +197,43 @@ function calcularPodeTomar() {
         return;
     }
 
-    let ameacasSugeridas = new Set();
+    let contagemAmeacas = {};
+
+    // Conta quantas vezes os inimigos podem counterar o teu time
     tempPicksAzuis.forEach(brawler => {
         if (DADOS_COUNTERS[brawler]) {
-            DADOS_COUNTERS[brawler].forEach(counter => ameacasSugeridas.add(counter));
+            DADOS_COUNTERS[brawler].forEach(counter => {
+                contagemAmeacas[counter] = (contagemAmeacas[counter] || 0) + 1;
+            });
         }
     });
 
-    if (ameacasSugeridas.size > 0) {
-        ameacasSugeridas.forEach(nome => {
-            const id = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
-            if (!selected.includes(id)) {
-                container.innerHTML += `<div class="mini-brawler" title="Perigo! Podem counterar o Azul: ${nome}"><img src="brawlers/${id}.png" onerror="this.src='brawlers/default.png';"></div>`;
+    let brawlersValidos = Object.keys(contagemAmeacas).filter(nome => {
+        const id = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
+        return !selected.includes(id);
+    });
+
+    if (brawlersValidos.length > 0) {
+        brawlersValidos.sort((a, b) => {
+            if (contagemAmeacas[b] !== contagemAmeacas[a]) {
+                return contagemAmeacas[b] - contagemAmeacas[a];
             }
+            return a.localeCompare(b);
+        });
+
+        brawlersValidos.forEach(nome => {
+            const id = nome.toLowerCase().replace(/[^a-z0-9]/g, '');
+            let qtd = contagemAmeacas[nome];
+
+            // Se é ameaça para 2 ou mais, ganha classes e badge de perigo
+            let destaqueClass = qtd >= 2 ? 'highlight-danger' : '';
+            let badge = qtd >= 2 ? `<div class="badge-multi-danger">x${qtd}</div>` : '';
+
+            container.innerHTML += `
+                <div class="mini-brawler ${destaqueClass}" title="Perigo para ${qtd} aliados: ${nome}">
+                    <img src="brawlers/${id}.png" onerror="this.src='brawlers/default.png';">
+                    ${badge}
+                </div>`;
         });
     } else {
         container.innerHTML = `<p style="color:#555; font-size:12px; grid-column: span 5; text-align:center;">Nenhuma ameaça mapeada.</p>`;
@@ -243,7 +292,6 @@ window.clicarBrawler = function(nome, id) {
             preSelected = { nome, id };
         }
 
-        // Renderização absoluta para evitar retângulos fantasmas e sobrepor corretamente
         slot.innerHTML = `
             <img src="brawlers/${id}.png" onerror="this.src='brawlers/default.png';" style="width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0;">
             <div class="confirm-overlay" onclick="window.confirmarBlueSelection(event)">CONFIRMAR</div>
