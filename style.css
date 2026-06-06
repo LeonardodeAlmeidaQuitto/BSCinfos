@@ -225,3 +225,12 @@ font-size: 1.2rem; font-weight: 900; text-transform: uppercase; border: none;
 .dropdown.active .dropdown-content {
     display: block !important;
 }
+
+.dropdown-content a img {
+    width: 18px !important;         /* Tamanho pequeno ideal para ícones */
+    height: 18px !important;        /* Mantém o quadrado perfeito */
+    object-fit: cover !important;   /* Foca na imagem sem distorcer */
+    border-radius: 2px;             /* Cantos levemente arredondados */
+    flex-shrink: 0;                 /* Garante que o navegador não esmague a foto */
+    margin: 0 !important;           /* Remove qualquer margem externa que mude a posição */
+}
