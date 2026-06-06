@@ -166,7 +166,7 @@ function calcularCounters() {
             // Ativa Destaque + Ícone dragon_us_full.png caso countere 2 ou mais oponentes
             let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
             let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
-            let dragonIcon = qtd >= 2 ? `<img src="dragon_us_full.png" class="dragon-badge" title="Excelente counter para o nosso time!">` : '';
+            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_us_full.png" class="dragon-badge" title="Excelente counter para o nosso time!">` : '';
 
             container.innerHTML += `
                 <div class="mini-brawler ${destaqueClass}" title="Countera ${qtd} inimigos: ${nome}">
@@ -222,7 +222,7 @@ function calcularPodeTomar() {
             // Ativa Destaque + Ícone dragon_they_full.png caso seja ameaça para 2 ou mais do nosso time
             let destaqueClass = qtd >= 2 ? 'highlight-danger' : '';
             let badge = qtd >= 2 ? `<div class="badge-multi-danger">x${qtd}</div>` : '';
-            let dragonIcon = qtd >= 2 ? `<img src="dragon_they_full.png" class="dragon-badge" title="Ameaça crítica! Eles podem pegar!">` : '';
+            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_they_full.png" class="dragon-badge" title="Ameaça crítica! Eles podem pegar!">` : '';
 
             container.innerHTML += `
                 <div class="mini-brawler ${destaqueClass}" title="Perigo para ${qtd} aliados: ${nome}">
