@@ -1,10 +1,10 @@
 // --- DADOS DO SISTEMA ---
 const MAPAS_ALVO = {
-    "Brawl Ball": ["Super Beach", "Pinhole Punt", "Sneaky Fields"],
-    "Bounty": ["Shooting Star", "Hideout", "Layer Cake"],
-    "Heist": ["Hot Potato", "Safe Zone", "Bridge Too Far"],
-    "Knockout": ["Goldarm Gulch", "Belle's Rock", "Out in the Open"],
-    "Gem Grab": ["Hard Rock Mine", "Double Swoosh", "Deathcap Trap"]
+    "Brawl Ball": ["Super Beach", "Pinhole Punt", "Sneaky Fields", "Triple Dribble", "Pinhole Punt", "Pinball Dreams"],
+    "Bounty": ["Shooting Star", "Hideout", "Layer Cake", "Dry Season"],
+    "Heist": ["Hot Potato", "Safe Zone", "Bridge Too Far", "Pit Stop", "Kaboom Canyon"],
+    "Knockout": ["Goldarm Gulch", "Belle's Rock", "Out in the Open", "New Horizons"],
+    "Gem Grab": ["Hard Rock Mine", "Double Swoosh", "Deathcap Trap", "Ring of Fire", "Dueling Beetles", "Open Business"]
 };
 
 // SUBSTITUA PELOS SEUS DADOS DA PLANILHA (META)
