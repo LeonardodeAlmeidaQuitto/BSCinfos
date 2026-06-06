@@ -40,7 +40,7 @@ const DADOS_COUNTERS = {
     "Bibi": ["Otis", "Edgar", "Colette", "Buzz", "Bull"],
     "Bo": ["Mina", "Mortis", "Buzz", "Edgar"],
     "Bonnie": ["Charlie", "Ruffs", "Leon"],
-    "Brock": ["RT", "Byron", "Pierce", "Najia", "Piper", "Jae Young", "Kaze"],
+    "Brock": ["RT", "Byron", "Pierce", "Najia", "Piper", "Jae Yong", "Kaze"],
     "Bull": ["Cordelius", "Griff", "Colette", "Otis", "Charlie", "Nita"],
     "Buster": ["Bull", "Mina", "Kenji", "Edgar", "Mortis"],
     "Buzz": ["Charlie", "Bull", "Griff", "Cordelius", "Edgar"],
@@ -71,8 +71,8 @@ let selected = [];
 let firstPick = 'blue';
 let draftOrder = [];
 let picksVermelhos = [];
-let picksAzuis = [];      // Histórico de picks confirmados do time azul
-let preSelected = null;   // Guarda o brawler temporário que aguarda confirmação azul
+let picksAzuis = [];      
+let preSelected = null;   
 
 // --- FUNÇÕES DE INICIALIZAÇÃO ---
 function popularMapas() {
@@ -154,13 +154,11 @@ function calcularCounters() {
     }
 }
 
-// AJUSTADO: "Pode Tomar" lê o que countera os picks do AZUL (exibe no 1º clique)
 function calcularPodeTomar() {
     const container = document.getElementById('podetomar-list');
     if (!container) return;
     container.innerHTML = "";
 
-    // Junta as escolhas azuis confirmadas + escolha pré-selecionada atual (se for um pick azul)
     let tempPicksAzuis = [...picksAzuis];
     if (currentStep < draftOrder.length) {
         const step = draftOrder[currentStep];
@@ -233,36 +231,28 @@ window.clicarBrawler = function(nome, id) {
     const slot = document.getElementById(step.slot);
     if (!slot) return;
 
-    // SISTEMA DE CONFIRMAÇÃO DO TIME AZUL (Picks e Bans)
     if (step.team === 'blue') {
         if (preSelected) {
-            // Se clicar no mesmo brawler novamente, confirma a seleção
             if (preSelected.id === id) {
                 window.confirmarBlueSelection();
                 return;
             } else {
-                // Se clicar num brawler diferente, troca a pré-seleção
                 preSelected = { nome, id };
             }
         } else {
-            // Primeiro clique no brawler
             preSelected = { nome, id };
         }
 
-        // Renderiza no slot com o overlay de CONFIRMAR por cima
+        // Renderização absoluta para evitar retângulos fantasmas e sobrepor corretamente
         slot.innerHTML = `
-            <div style="position: relative; width: 100%; height: 100%;">
-                <img src="brawlers/${id}.png" onerror="this.src='brawlers/default.png';" style="width:100%; height:100%; object-fit:cover;">
-                <div class="confirm-overlay" onclick="window.confirmarBlueSelection(event)">CONFIRMAR</div>
-            </div>
+            <img src="brawlers/${id}.png" onerror="this.src='brawlers/default.png';" style="width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0;">
+            <div class="confirm-overlay" onclick="window.confirmarBlueSelection(event)">CONFIRMAR</div>
         `;
 
-        // Calcula e exibe instantaneamente os counters no primeiro clique
         calcularCounters();
         calcularPodeTomar();
 
     } else {
-        // TIME VERMELHO - Clique único direto original
         slot.innerHTML = `<img src="brawlers/${id}.png" onerror="this.src='brawlers/default.png';">`;
         document.getElementById(`b-${id}`).classList.add('disabled');
         selected.push(id);
@@ -278,9 +268,8 @@ window.clicarBrawler = function(nome, id) {
     }
 };
 
-// FUNÇÃO PARA CONFIRMAR DEFINITIVAMENTE A SELEÇÃO AZUL
 window.confirmarBlueSelection = function(event) {
-    if (event) event.stopPropagation(); // Impede bugs de bolhas de clique
+    if (event) event.stopPropagation(); 
     if (!preSelected) return;
 
     const { nome, id } = preSelected;
@@ -288,7 +277,6 @@ window.confirmarBlueSelection = function(event) {
     const slot = document.getElementById(step.slot);
 
     if (slot) {
-        // Remove o overlay e fixa apenas a imagem limpa
         slot.innerHTML = `<img src="brawlers/${id}.png" onerror="this.src='brawlers/default.png';">`;
     }
 
@@ -299,7 +287,7 @@ window.confirmarBlueSelection = function(event) {
         picksAzuis.push(nome);
     }
 
-    preSelected = null; // Reseta o estado temporário
+    preSelected = null; 
     currentStep++;
     atualizarFoco();
     calcularCounters();
