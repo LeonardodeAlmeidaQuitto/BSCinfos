@@ -143,10 +143,6 @@ let picksVermelhos = [];
 let picksAzuis = [];      
 let preSelected = null;
 
-// =========================================================
-// FUNÇÕES DE TRATAMENTO E AUXILIARES
-// =========================================================
-
 function limparNome(nome) {
     if (!nome) return "";
     return nome.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -169,10 +165,6 @@ function criarConteudoSlot(nome, id) {
         </div>
     `;
 }
-
-// =========================================================
-// RENDERIZAÇÃO DE INTERFACE
-// =========================================================
 
 function popularMapas() {
     const select = document.getElementById('map-select') || document.querySelector('.map-selector select') || document.querySelector('select');
@@ -233,10 +225,6 @@ window.atualizarMeta = function() {
     }
 };
 
-// =========================================================
-// LÓGICA DE CÁLCULO DE COUNTERS
-// =========================================================
-
 function calcularCounters() {
     const container = getContainer('counters-list', 1);
     if (!container) return;
@@ -291,7 +279,6 @@ function calcularPodeTomar() {
     if (!container) return;
     container.innerHTML = "";
 
-    // Junta escolhas salvas com a pré-seleção em tempo real
     let listaAzuisParaCalcular = [...picksAzuis];
     const step = draftOrder[currentStep];
     if (preSelected && step && step.team === 'blue' && step.type === 'pick') {
@@ -344,10 +331,6 @@ function calcularPodeTomar() {
     }
 }
 
-// =========================================================
-// FLUXO DO DRAFT (ORDEM, CLIQUE E CONFIRMAÇÃO)
-// =========================================================
-
 function buildOrder() {
     const order = [
         { slot: 'slot-b0', team: 'blue', type: 'ban' }, { slot: 'slot-b2', team: 'blue', type: 'ban' }, { slot: 'slot-b4', team: 'blue', type: 'ban' }, 
@@ -388,8 +371,6 @@ window.clicarBrawler = function(nome, id) {
                 <div class="pre-select-badge">✓</div>
             </div>
         `;
-        
-        // Dispara os cálculos IMEDIATAMENTE no primeiro clique!
         calcularCounters();
         calcularPodeTomar();
     } else {
@@ -445,10 +426,6 @@ function atualizarFoco() {
         if(nextSlot) nextSlot.classList.add(next.team === 'blue' ? 'active-blue' : 'active-red');
     }
 }
-
-// =========================================================
-// CONTROLES DE SISTEMA (RESET E FILTRO)
-// =========================================================
 
 window.setFirstPick = function(team) {
     firstPick = team;
