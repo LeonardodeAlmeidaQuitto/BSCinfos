@@ -1,284 +1,399 @@
-/* --- ESTILO COMPACTO --- */
+/* =========================================================
+   VARIÁVEIS DE COR E ESTILO BASE
+   ========================================================= */
 :root {
-    --azul: #007bff;
-    --vermelho: #ff4d4d;
-    --accent: #cc00ff;
-    --bg-cards: #0a0a0a;
-    --border-dark: #222;
+    --bg-color: #0b0c10; /* Fundo principal escuro */
+    --panel-bg: #111217; /* Fundo dos painéis */
+    --azul: #007bff; /* Azul do time aliado */
+    --vermelho: #ff3333; /* Vermelho do time inimigo */
+    --rosa-neon: #e024a5; /* Cor de destaque neon */
+    --texto-claro: #ffffff;
+    --texto-escuro: #888888;
+    --borda-escura: #222222;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Montserrat', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
-    zoom: 0.95;
+    background-color: var(--bg-color);
+    color: var(--texto-claro);
     overflow-x: hidden;
-    background-color: #050505;
-    color: #fff;
-    font-family: 'Arial', sans-serif;
-    margin: 0;
-    padding: 0;
-}
-
-/* NAVBAR - CENTRALIZADA COM MAIS RESPIRO (ORIGINAL) */
-.navbar {
-    width: 100%;
-    background-color: #000;
-    padding: 18px 0;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1000;
-    border-bottom: 2px solid;
-    border-image: linear-gradient(to right, var(--azul), var(--vermelho)) 1;
-    display: flex;
-    justify-content: center;
-}
-
-.nav-container {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.nav-center-links { display: flex; gap: 40px; }
-.nav-btn { 
-    background: none; 
-    border: none; 
-    color: #ffffff; 
-    font-size: 16px; 
-    font-weight: 700; 
-    cursor: pointer; 
-    text-transform: uppercase; 
-    transition: 0.3s; 
-    text-decoration: none; 
-    letter-spacing: 2px; 
-    opacity: 0.6; 
-}
-.nav-btn:hover { color: #fff; opacity: 1; }
-.active-nav { opacity: 1; color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 4px; }
-
-/* --- CONTEÚDO PRINCIPAL --- */
-.draft-wrapper {
-    margin-top: 85px;
-    padding: 10px;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    height: 100vh;
 }
 
-/* --- CONTROLES SUPERIORES --- */
-.draft-header-controls {
+/* =========================================================
+   HEADER E NAVEGAÇÃO SUPERIOR
+   ========================================================= */
+.navbar {
     display: flex;
+    justify-content: flex-start;
     align-items: center;
-    gap: 30px;
-    margin-bottom: 25px;
-    width: 100%;
+    padding: 10px 20px;
+    background-color: var(--bg-color);
+    border-bottom: 2px solid var(--rosa-neon);
+    gap: 40px;
+}
+
+.nav-links {
+    display: flex;
+    gap: 20px;
+}
+
+.nav-links a {
+    color: var(--texto-claro);
+    text-decoration: none;
+    font-weight: 900;
+    font-size: 14px;
+    text-transform: uppercase;
+}
+
+/* Controles de First Pick e Mapa */
+.top-controls {
+    display: flex;
     justify-content: center;
+    align-items: center;
+    padding: 15px;
+    gap: 20px;
 }
 
 .first-pick-selector {
     display: flex;
     align-items: center;
-    gap: 15px;
-    background: linear-gradient(145deg, #111, #0a0a0a);
-    padding: 10px 25px;
-    border-radius: 50px;
-    border: 2px solid #333;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    gap: 10px;
+    background: #000;
+    border-radius: 20px;
+    padding: 5px 15px;
+    border: 1px solid var(--borda-escura);
 }
 
-.fp-label { font-weight: 900; font-size: 14px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+.first-pick-selector span {
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--texto-escuro);
+}
 
 .fp-btn {
-    width: 45px;
-    height: 45px;
-    border-radius: 10px;
+    width: 25px;
+    height: 25px;
+    border-radius: 4px;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    transition: 0.2s;
 }
 
-.fp-blue { background: var(--azul); }
-.fp-red { background: var(--vermelho); }
-.fp-btn.active { border: 3px solid #fff; transform: scale(1.15); box-shadow: 0 0 15px currentColor; }
-.fp-btn:not(.active) { opacity: 0.3; filter: grayscale(1); }
+#fp-blue { background-color: #003366; }
+#fp-blue.active { background-color: var(--azul); box-shadow: 0 0 10px var(--azul); }
 
-.map-dropdown {
-    background: #000;
+#fp-red { background-color: #660000; }
+#fp-red.active { background-color: var(--vermelho); box-shadow: 0 0 10px var(--vermelho); }
+
+.map-selector select {
+    background-color: #000;
     color: #fff;
-    border: 2px solid #333;
-    padding: 15px 25px;
-    border-radius: 12px;
-    font-size: 16px;
-    font-weight: 900;
+    border: 1px solid var(--borda-escura);
+    padding: 8px 15px;
+    border-radius: 5px;
     outline: none;
-    cursor: pointer;
+    font-weight: bold;
     text-transform: uppercase;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-    transition: all 0.3s ease;
 }
-.map-dropdown:hover { border-color: var(--accent); }
 
-/* --- GRID DE DRAFT (TABULEIRO ESQUERDO) --- */
-.draft-content-wrapper {
+/* =========================================================
+   LAYOUT PRINCIPAL
+   ========================================================= */
+.main-container {
     display: flex;
+    flex: 1;
+    padding: 10px 20px;
     gap: 20px;
-    width: 98%;
-    max-width: 1800px;
-    justify-content: center;
-    align-items: flex-start;
+    height: calc(100vh - 120px);
 }
 
-.main-draft-box {
+/* --- ÁREA DO DRAFT (Esquerda / Centro) --- */
+.draft-area {
     flex: 2;
-    min-width: 650px !important;
-    background: var(--bg-cards);
-    border: 2px solid var(--border-dark);
-    border-radius: 20px;
+    background-color: var(--panel-bg);
+    border-radius: 10px;
     padding: 20px;
     display: flex;
-    justify-content: center;
-    gap: 80px; 
+    justify-content: space-between;
     align-items: center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    height: 750px;
-    box-sizing: border-box;
+    position: relative;
+    border: 1px solid var(--borda-escura);
 }
 
-.team-side { width: 250px; display: flex; flex-direction: column; }
-.team-name { font-size: 24px; font-weight: 900; margin-bottom: 20px; text-align: center; }
-
-.bans-row { display: flex; gap: 10px; margin-bottom: 15px; justify-content: center; }
-.slot-small { width: 70px; height: 70px; background: #111; border-radius: 10px; border: 1px solid #333; overflow: hidden; }
-
-.picks-column { display: flex; flex-direction: column; gap: 12px; align-items: center; }
-.slot-large { width: 140px; height: 140px; background: #111; border-radius: 15px; border: 2px solid #333; overflow: hidden; }
-
-.active-blue { border-color: var(--azul) !important; box-shadow: 0 0 15px var(--azul); }
-.active-red { border-color: var(--vermelho) !important; box-shadow: 0 0 15px var(--vermelho); }
-
-.slot img { width: 100%; height: 100%; object-fit: cover; }
-.divider-x { font-size: 90px; font-weight: 100; color: #1a1a1a; align-self: center; margin-top: 40px; }
-
-
-/* --- COLUNA DIREITA (ALINHAMENTO E LARGURAS PERFEITAS) --- */
-.side-panels {
-    width: 310px; 
+.team-column {
     display: flex;
-    flex-direction: column; 
-    gap: 12px;
-    height: 750px;          /* Tranca rigidamente a altura total igual à do painel esquerdo */
-    box-sizing: border-box;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: 40%;
 }
 
-/* Todos os elementos da direita herdam exatamente o mesmo tamanho */
-.side-panel, .roster-container-vertical {
-    width: 100% !important;
-    max-width: 100% !important;
-    background: var(--bg-cards);
-    border: 2px solid var(--border-dark);
-    border-radius: 15px;
-    padding: 12px;
-    box-sizing: border-box !important;
+.team-title {
+    font-size: 20px;
+    font-weight: 900;
+    text-transform: uppercase;
+    margin-bottom: 10px;
 }
 
-.panel-title { font-size: 14px; margin-bottom: 10px; color: var(--accent); font-weight: 900; text-align: center; text-transform: uppercase; letter-spacing: 1px; }
+.bans-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.picks-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.center-vs {
+    font-size: 60px;
+    font-weight: 900;
+    color: #1a1a1a; /* X escuro no fundo */
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 0;
+}
+
+/* --- SLOTS DE DRAFT (Bans e Picks) --- */
+.slot {
+    background-color: #000;
+    border: 2px solid #333;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative !important; /* Essencial para a sobreposição de confirmação */
+    overflow: hidden;
+    transition: all 0.2s ease-in-out;
+    z-index: 1;
+}
+
+.slot-small {
+    width: 50px;
+    height: 50px;
+}
+
+.slot-large {
+    width: 90px;
+    height: 90px;
+    border-radius: 12px;
+}
+
+.slot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Indica de quem é o turno */
+.active-blue {
+    border-color: var(--azul);
+    box-shadow: 0 0 15px rgba(0, 123, 255, 0.6);
+}
+
+.active-red {
+    border-color: var(--vermelho);
+    box-shadow: 0 0 15px rgba(255, 51, 51, 0.6);
+}
+
+/* --- PAINÉIS LATERAIS DE INFORMAÇÃO (Meio) --- */
+.info-panels {
+    flex: 0.8;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.side-panel {
+    background-color: var(--panel-bg);
+    border-radius: 8px;
+    border: 1px solid var(--borda-escura);
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+}
+
+.panel-title {
+    color: var(--rosa-neon);
+    font-size: 14px;
+    font-weight: 900;
+    text-align: center;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
 
 .mini-brawler-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 8px;
+    gap: 6px;
+    justify-content: center;
+    align-content: start;
 }
-.mini-brawler { aspect-ratio: 1/1; background: #111; border-radius: 6px; border: 1px solid #333; overflow: hidden; display: flex; align-items: center; justify-content: center;}
-.mini-brawler img { width: 100%; height: 100%; object-fit: cover; }
 
-/* CONTAINER DO ROSTER (BLOQUEADO CONTRA EXPANSÃO) */
-.roster-container-vertical {
+.mini-brawler {
+    width: 100%;
+    aspect-ratio: 1;
+    background-color: #000;
+    border-radius: 4px;
+    position: relative; /* Necessário para os badges numéricos */
+}
+
+.mini-brawler img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+/* --- GRELHA DE SELEÇÃO DE BRAWLERS (Direita) --- */
+.roster-area {
+    flex: 1.2;
+    background-color: var(--panel-bg);
+    border-radius: 8px;
+    padding: 15px;
     display: flex;
     flex-direction: column;
-    flex: 1 !important;    /* Ocupa dinamicamente a altura restante dos 750px */
-    min-height: 0 !important; /* Impede o container de crescer além do limite */
-    overflow: hidden !important;
+    border: 1px solid var(--borda-escura);
 }
 
-.search-wrapper { width: 100%; }
-.search-wrapper input {
-    width: 100% !important;
-    box-sizing: border-box !important;
-    margin-bottom: 12px;
-    padding: 8px 12px;
-    background: #000;
-    border: 1px solid #333;
-    border-radius: 6px;
-    color: #fff;
-    font-size: 13px;
+.search-bar {
+    width: 100%;
+    padding: 12px;
+    background-color: #000;
+    border: 1px solid var(--borda-escura);
+    color: var(--texto-claro);
+    border-radius: 5px;
+    margin-bottom: 15px;
     outline: none;
+    font-family: inherit;
 }
-.search-wrapper input:focus { border-color: var(--accent); }
 
-/* LISTA INTERNA COM SUAS 3 FILEIRAS E SCROLL ATIVO NO MOUSE */
-#roster, .brawler-grid-vertical {
-    display: grid !important;
-    grid-template-columns: repeat(3, 1fr) !important; /* 3 colunas impecáveis */
+.search-bar::placeholder {
+    color: var(--texto-escuro);
+}
+
+.roster-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
     gap: 8px;
-    overflow-y: auto !important; /* Ativa de vez o uso da roda do mouse aqui dentro */
-    flex: 1 !important;
-    min-height: 0;
-    align-content: flex-start;
-    padding-right: 4px;
+    overflow-y: auto;
+    padding-right: 5px;
 }
 
-.brawler-icon { 
-    width: 100% !important; 
-    aspect-ratio: 1/1; 
-    cursor: pointer; 
-    transition: 0.15s ease; 
-    border-radius: 6px; 
-    overflow: hidden; 
-}
-.brawler-icon:hover { transform: scale(1.05); box-shadow: 0 0 8px var(--accent); }
-.brawler-icon img { width: 100%; height: 100%; object-fit: cover; }
-.disabled { opacity: 0.15; filter: grayscale(1); pointer-events: none; }
+/* Custom Scrollbar para a lista de Brawlers */
+.roster-grid::-webkit-scrollbar { width: 6px; }
+.roster-grid::-webkit-scrollbar-track { background: transparent; }
+.roster-grid::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+.roster-grid::-webkit-scrollbar-thumb:hover { background: var(--rosa-neon); }
 
-.btn-reset-draft { margin-top: 12px; font-size: 12px; font-weight: 800; padding: 10px; cursor: pointer; background: #111; color: #666; border: 1px solid #222; border-radius: 6px; text-transform: uppercase; width: 100%; transition: 0.2s; }
-.btn-reset-draft:hover { color: #fff; background: #551111; border-color: #ff3333; }
-
-/* DESIGN DO SCROLLBAR */
-#roster::-webkit-scrollbar { width: 6px; }
-#roster::-webkit-scrollbar-track { background: transparent; }
-#roster::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
-#roster::-webkit-scrollbar-thumb:hover { background: var(--accent); }
-
-/* Força os slots a aceitarem sobreposição absoluta perfeita */
-.slot-large, .slot-small {
-    position: relative !important;
+.brawler-icon {
+    width: 100%;
+    aspect-ratio: 1;
+    cursor: pointer;
+    border-radius: 5px;
     overflow: hidden;
+    border: 2px solid transparent;
+    transition: transform 0.1s, border-color 0.1s;
 }
 
-/* Camada do texto CONFIRMAR na frente da imagem */
+.brawler-icon:hover {
+    transform: scale(1.05);
+    border-color: var(--texto-claro);
+}
+
+.brawler-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.brawler-icon.disabled {
+    filter: grayscale(100%) opacity(0.2);
+    pointer-events: none;
+    border-color: transparent;
+}
+
+
+/* =========================================================
+   SISTEMA DE INTERAÇÃO (CONFIRMAÇÃO E DESTAQUES)
+   ========================================================= */
+
+/* Overlay de Confirmação (Time Azul) */
 .confirm-overlay {
     position: absolute !important;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.82); /* Fundo escuro para dar destaque total */
+    background: rgba(0, 0, 0, 0.85); /* Fundo escuro focado */
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff !important;
     font-weight: 900;
-    font-size: 14px; /* Tamanho ideal para leitura rápida */
+    font-size: 13px;
     letter-spacing: 1px;
     cursor: pointer;
     text-transform: uppercase;
     text-align: center;
-    z-index: 999 !important; /* Garante que fica na frente da imagem */
+    z-index: 999 !important;
     box-sizing: border-box;
-    border: 2px solid var(--azul); /* Borda azul para indicar ação do seu time */
+    border: 2px solid var(--azul);
+    transition: background 0.2s;
 }
 
 .confirm-overlay:hover {
-    background: rgba(0, 123, 255, 0.9); /* Brilha em azul ao passar o mouse */
+    background: rgba(0, 123, 255, 0.8); /* Brilho ao passar o rato */
+}
+
+/* Destaque Verde (Múltiplos Counters a favor) */
+.highlight-good {
+    border: 2px solid #00ff00 !important;
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.7);
+    border-radius: 4px;
+}
+
+/* Destaque Vermelho (Múltiplas Ameaças no Pode Tomar) */
+.highlight-danger {
+    border: 2px solid #ff0000 !important;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+    border-radius: 4px;
+}
+
+/* Selos Numéricos (Badges) */
+.badge-multi, .badge-multi-danger {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    font-size: 11px;
+    font-weight: 900;
+    padding: 2px 5px;
+    border-radius: 4px;
+    z-index: 5;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.badge-multi { 
+    background: #00ff00; 
+    color: #000; 
+}
+
+.badge-multi-danger { 
+    background: #ff0000; 
+    color: #fff; 
 }
