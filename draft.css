@@ -249,3 +249,28 @@ body {
 #roster::-webkit-scrollbar-track { background: transparent; }
 #roster::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
 #roster::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* OVERLAY DE CONFIRMAÇÃO DO CLIQUE AZUL */
+.confirm-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 900;
+    font-size: 11px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    text-transform: uppercase;
+    text-align: center;
+    border-radius: inherit;
+    transition: background 0.2s;
+}
+.confirm-overlay:hover {
+    background: rgba(0, 123, 255, 0.85); /* Fica azul luminoso ao passar o mouse */
+}
