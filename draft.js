@@ -255,14 +255,13 @@ window.atualizarMeta = function() {
 // LÓGICA DE CÁLCULO DE COUNTERS
 // =========================================================
  
-// FIX AUXILIAR: filtra entradas vazias do array de counters
 function contarCounters(listaBrawlers) {
     let contagem = {};
     listaBrawlers.forEach(brawler => {
         let brawlerKey = Object.keys(DADOS_COUNTERS).find(k => limparNome(k) === limparNome(brawler));
         if (brawlerKey && Array.isArray(DADOS_COUNTERS[brawlerKey])) {
             DADOS_COUNTERS[brawlerKey]
-                .filter(counter => counter && counter.trim() !== "") // FIX: ignora strings vazias [""]
+                .filter(counter => counter && counter.trim() !== "")
                 .forEach(counter => {
                     contagem[counter] = (contagem[counter] || 0) + 1;
                 });
@@ -271,8 +270,7 @@ function contarCounters(listaBrawlers) {
     return contagem;
 }
  
-// COUNTERS (INIMIGO): quem countera os picks VERMELHOS → recomendações para nós
-// Dragon: dragon_they_full.png (vermelho)
+// COUNTERS (INIMIGO): recomendações para nós batermos neles (Borda verde, Badge Verde x2)
 function calcularCounters() {
     let container = obterContainerInimigo();
     if (!container) return;
@@ -300,12 +298,9 @@ function calcularCounters() {
  
             let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
             let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
-            // FIX: INIMIGO usa dragon_they (vermelho) — counter do time inimigo
-            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_happy.png" class="dragon-badge" style="position: absolute !important; top: -30px !important; right: -30px !important; width: 40px !important; height: 40px !important; min-width: 40px !important; min-height: 40px !important; max-width: 40px !important; max-height: 40px !important; object-fit: contain !important; z-index: 100 !important; pointer-events: none !important; margin: 0 !important; padding: 0 !important; border: none !important; background: transparent !important;">` : '';
  
             container.innerHTML += `
                 <div class="mini-brawler ${destaqueClass}" title="${nome} (Counter x${qtd})">
-                    ${dragonIcon}
                     <img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                     <div class="fallback-initials">${nome.substring(0,2).toUpperCase()}</div>
                     ${badge}
@@ -316,8 +311,7 @@ function calcularCounters() {
     }
 }
  
-// COUNTERS (NOSSO): quem countera os picks AZUIS → ameaças ao nosso time
-// Dragon: dragon_us_full.png (verde)
+// COUNTERS (NOSSO): ameaças contra o nosso time (Borda vermelha, Badge Vermelha x2)
 function calcularPodeTomar() {
     let container = obterContainerNosso();
     if (!container) return;
@@ -336,7 +330,6 @@ function calcularPodeTomar() {
         return;
     }
  
-    // FIX PRINCIPAL: era "listaVermelhaParaCalcular" (variável inexistente!) → corrigido para "listaAzuisParaCalcular"
     let contagemAmeacas = contarCounters(listaAzuisParaCalcular);
  
     let brawlersValidos = Object.keys(contagemAmeacas).filter(nome => {
@@ -353,12 +346,11 @@ function calcularPodeTomar() {
             let qtd = contagemAmeacas[nome];
  
             let destaqueClass = qtd >= 2 ? 'highlight-bad' : '';
-            let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
-            // FIX: NOSSO usa dragon_us (verde) — ameaça ao nosso time
-            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_cry.png" class="dragon-badge" style="position: absolute !important; top: -30px !important; right: -30px !important; width: 40px !important; height: 40px !important; min-width: 40px !important; min-height: 40px !important; max-width: 40px !important; max-height: 40px !important; object-fit: contain !important; z-index: 100 !important; pointer-events: none !important; margin: 0 !important; padding: 0 !important; border: none !important; background: transparent !important;">` : '';
+            // MUDADO AQUI: Agora aplica a classe 'badge-multi-danger' para ficar vermelha
+            let badge = qtd >= 2 ? `<div class="badge-multi-danger">x${qtd}</div>` : '';
+ 
             container.innerHTML += `
                 <div class="mini-brawler ${destaqueClass}" title="${nome} (Counter x${qtd})">
-                    ${dragonIcon}
                     <img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                     <div class="fallback-initials">${nome.substring(0,2).toUpperCase()}</div>
                     ${badge}
