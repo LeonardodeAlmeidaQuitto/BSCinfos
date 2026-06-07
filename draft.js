@@ -298,10 +298,9 @@ function calcularCounters() {
             const id = limparNome(nome);
             let qtd = contagemCounters[nome];
  
-            let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
-            let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
-            // FIX: INIMIGO usa dragon_they (vermelho) — counter do time inimigo
-            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_happy.png" class="dragon-badge">` : '';
+           let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
+           let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
+           let dragonIcon = qtd >= 2 ? `<img src="element/dragon_us_full.png" class="dragon-badge">` : '';
  
             container.innerHTML += `
                 <div class="mini-brawler ${destaqueClass}" title="${nome} (Counter x${qtd})">
@@ -352,10 +351,9 @@ function calcularPodeTomar() {
             const id = limparNome(nome);
             let qtd = contagemAmeacas[nome];
  
-            let destaqueClass = qtd >= 2 ? 'highlight-danger' : '';
+            let destaqueClass = qtd >= 2 ? 'highlight-bad' : '';
             let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
-            // FIX: NOSSO usa dragon_THEY (verde) — ameaça ao nosso time
-            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_cry.png" class="dragon-badge">` : '';
+            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_they_full.png" class="dragon-badge">` : '';
  
             container.innerHTML += `
                 <div class="mini-brawler ${destaqueClass}" title="${nome} (Counter x${qtd})">
