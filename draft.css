@@ -228,19 +228,28 @@ body {
     display: block !important;
 }
 
-/* --- O DRAGÃO COMO MEDALHA INTERNA (CANTINHO SUPERIOR ESQUERDO) --- */
+/* --- POSICIONAMENTO E CORREÇÃO DO DRAGÃO --- */
 .mini-brawler img.dragon-badge {
     position: absolute !important;
-    top: 2px !important;      /* Afastamento do topo interno */
-    left: 2px !important;     /* Posicionado no canto esquerdo para não trombar com o badge x2 da direita */
-    width: 18px !important;    /* Tamanho pequeno e totalmente visível */
-    height: 18px !important;
-    min-width: 18px !important;
-    min-height: 18px !important;
-    max-width: 18px !important;
-    max-height: 18px !important;
-    z-index: 99 !important;    /* Força a ficar por cima da foto do brawler */
-    object-fit: contain !important;
+    top: 2px !important;       /* Distância do topo (para dentro da imagem) */
+    left: 2px !important;      /* Distância da esquerda (para dentro da imagem) */
+    
+    /* Define o tamanho pequeno e fixo do dragão */
+    width: 20px !important;     
+    height: 20px !important;    
+    min-width: 20px !important;
+    min-height: 20px !important;
+    max-width: 20px !important;
+    max-height: 20px !important;
+    
+    /* ESTE É O SEGREDO: Corta a trava antiga e impede o dragão de esticar */
+    object-fit: contain !important; 
+    display: block !important;
+    
+    /* Garante que ele fique flutuando exatamente na camada acima do brawler */
+    z-index: 99 !important;     
+    
+    /* Remove decorações indesejadas */
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
