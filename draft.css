@@ -220,36 +220,25 @@ body {
     display: block !important;
 }
 
-/* Força apenas a foto do BRAWLER a ocupar 100% do fundo */
-.mini-brawler > img:not(.dragon-badge) {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
-    display: block !important;
-}
-
-/* --- REGRA PARA MANDAR O DRAGÃO PARA BAIXO NA ESQUERDA --- */
-.mini-brawler img.dragon-badge {
+/* === FORÇA MÁXIMA PARA O DRAGÃO === */
+div.mini-brawler > img.dragon-badge {
     position: absolute !important;
-    bottom: 2px !important;    /* Fixa na parte de BAIXO */
-    left: 2px !important;      /* Fixa na ESQUERDA */
-    top: auto !important;      /* Anula regras de topo anteriores */
-    right: auto !important;    /* Anula regras de direita anteriores */
-    
-    /* Mantém o tamanho pequeno desejado */
-    width: 16px !important;    
+    bottom: 2px !important;
+    left: 2px !important;
+    top: auto !important;
+    right: auto !important;
+    width: 16px !important;
     height: 16px !important;
     min-width: 16px !important;
     min-height: 16px !important;
     max-width: 16px !important;
     max-height: 16px !important;
-    
-    /* Garante o formato correto e sobreposição */
     object-fit: contain !important;
-    z-index: 99 !important;
+    z-index: 9999 !important;
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
+    display: block !important;
 }
 
 /* Ajuste do multiplicador (x2, x3) para ficar na ponta oposta (inferior direita) */
