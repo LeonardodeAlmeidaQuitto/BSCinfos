@@ -29,27 +29,11 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--borda-destaque); border-radius: 10px; }
 
-/* NAVBAR */
-.navbar {
-    display: flex;
-    background-color: #000000;
-    padding: 15px 30px;
-    border-bottom: 1px solid var(--borda-suave);
-    gap: 30px;
-}
+/* NAVBAR & CONTROLS */
+.navbar { display: flex; background-color: #000000; padding: 15px 30px; border-bottom: 1px solid var(--borda-suave); gap: 30px; }
 .navbar a { color: #ffffff; text-decoration: none; font-weight: bold; font-size: 13px; text-transform: uppercase; }
 
-/* MAPA E FIRST PICK CONTROLES */
-.top-controls {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background-color: var(--bg-paineis);
-    border: 1px solid var(--borda-suave);
-    border-radius: 12px;
-    padding: 12px 24px;
-    margin: 20px 20px 15px 20px;
-}
+.top-controls { display: flex; align-items: center; justify-content: space-between; background-color: var(--bg-paineis); border: 1px solid var(--borda-suave); border-radius: 12px; padding: 12px 24px; margin: 20px 20px 15px 20px; }
 .first-pick-selector { display: flex; align-items: center; gap: 14px; font-size: 12px; font-weight: 800; color: #888a93; }
 .fp-btn { width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; position: relative; outline: none; }
 #fp-blue { background-color: var(--azul-time); }
@@ -57,175 +41,74 @@ body {
 .fp-btn.active::after { content: ''; position: absolute; top: -6px; left: -6px; right: -6px; bottom: -6px; border: 2px solid #ffffff; border-radius: 50%; box-shadow: 0 0 10px rgba(255, 255, 255, 0.8); }
 .map-selector select { background-color: #000000; color: #ffffff; border: 1px solid var(--borda-destaque); padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: bold; outline: none; min-width: 240px; }
 
-/* CONTAINER PRINCIPAL LADO A LADO */
-.main-container {
-    display: flex;
-    flex: 1;
-    padding: 0 20px 20px 20px;
-    gap: 20px;
-    align-items: stretch;
-    height: calc(100vh - 140px);
-    overflow: hidden;
-}
+/* MAIN CONTAINER */
+.main-container { display: flex; flex: 1; padding: 0 20px 20px 20px; gap: 20px; align-items: stretch; height: calc(100vh - 140px); overflow: hidden; }
 
-/* COLUNA DRAFT */
-.draft-area { flex: 2.5; background-color: var(--bg-paineis); border-radius: 16px; border: 1px solid var(--borda-suave); padding: 25px; display: flex; justify-content: space-between; position: relative; }
-.team-column { display: flex; flex-direction: column; align-items: center; width: 46%; }
-.team-title { font-size: 20px; font-weight: 900; text-transform: uppercase; margin-bottom: 15px; }
-.bans-container { display: flex; gap: 8px; margin-bottom: 25px; }
-.picks-container { display: flex; flex-direction: column; gap: 15px; width: 100%; align-items: center; }
-.center-vs { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 55px; font-weight: 900; color: #1c1d24; user-select: none; }
+/* ======================================================== */
+/* NOVO LAYOUT DO DRAFT (VERTICAL COM MAPA NO CENTRO)       */
+/* ======================================================== */
+.draft-area { flex: 2.5; background-color: var(--bg-paineis); border-radius: 16px; border: 1px solid var(--borda-suave); padding: 25px; position: relative; }
 
-/* SLOTS */
+.vertical-layout { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 25px; width: 100%; height: 100%; }
+.team-col { display: flex; flex-direction: row; align-items: center; gap: 15px; }
+.ban-col, .pick-col { display: flex; flex-direction: column; gap: 15px; justify-content: center; }
+
+/* SLOTS GERAIS */
 .slot { background-color: var(--bg-slots); border: 2px solid var(--borda-destaque); border-radius: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative !important; cursor: pointer; }
-.slot-small { width: 45px; height: 45px; }
-.slot-large { width: 95px; height: 95px; border-radius: 14px; }
-.active-blue { border-color: var(--azul-time); box-shadow: 0 0 15px rgba(0, 123, 255, 0.5); }
-.active-red { border-color: var(--vermelho-time); box-shadow: 0 0 15px rgba(255, 51, 51, 0.5); }
+.active-blue { border-color: var(--azul-time) !important; box-shadow: 0 0 15px rgba(0, 123, 255, 0.5); }
+.active-red { border-color: var(--vermelho-time) !important; box-shadow: 0 0 15px rgba(255, 51, 51, 0.5); }
 
-/* SLOTS ASSETS E TEXT FALLBACK */
+/* BANS E PICKS TAMANHOS */
+.ban-slot { width: 45px !important; height: 45px !important; border-radius: 8px; }
+.pick-slot { width: 85px !important; height: 85px !important; border-radius: 12px; }
+
+/* FILTROS DE BANS E INVERSÃO DO RED TEAM */
+.ban-slot .slot-assets img { filter: grayscale(100%) !important; opacity: 0.5; }
+.red-team-imgs img { transform: scaleX(-1); }
+
+/* MAPA CENTRAL */
+.map-col { width: 180px; height: 280px; background-color: var(--bg-slots); border: 2px solid var(--borda-destaque); border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; margin: 0 10px; }
+.map-col img { width: 100%; height: 100%; object-fit: cover; display: none; z-index: 2; }
+#map-placeholder { position: absolute; z-index: 1; }
+
+/* ASSETS E TEXTOS FALLBACK DOS SLOTS */
 .slot-assets { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; position: relative; }
 .slot-fallback-text { display: none; width: 100%; height: 100%; align-items: center; justify-content: center; text-align: center; font-weight: 800; font-size: 11px; padding: 4px; background: linear-gradient(135deg, #1f2026, #111217); color: #ffffff; text-transform: uppercase; word-break: break-all; }
-.slot-small .slot-fallback-text { font-size: 8px; line-height: 1; }
+.ban-slot .slot-fallback-text { font-size: 8px; line-height: 1; }
 
 /* PAINÉIS LATERAIS DO MEIO */
 .info-panels { flex: 1.2; display: flex; flex-direction: column; gap: 15px; }
 .side-panel { background-color: var(--bg-paineis); border: 1px solid var(--borda-suave); border-radius: 12px; padding: 15px; flex: 1; display: flex; flex-direction: column; min-height: 0; }
 .panel-title { color: var(--rosa-neon); font-weight: bold; font-size: 13px; text-transform: uppercase; text-align: center; margin-bottom: 12px; }
 
-/* FIX DO ALINHAMENTO DAS LISTAS LATERAIS */
-#counters-list, #podetomar-list {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    gap: 8px !important;
-    padding: 10px !important;
-    overflow-y: auto;
-}
+#counters-list, #podetomar-list, #meta-list { display: flex !important; flex-wrap: wrap !important; gap: 8px !important; padding: 5px !important; overflow-y: auto; align-items: flex-start; align-content: flex-start; }
+
+/* MINI BRAWLERS DOS PAINÉIS */
+.mini-brawler { position: relative !important; width: 45px !important; height: 45px !important; background-color: var(--bg-slots); border-radius: 8px !important; overflow: hidden !important; display: block !important; border: 1px solid var(--borda-destaque); }
+.highlight-good { border: 2px solid #00ff00 !important; box-shadow: 0 0 10px rgba(0, 255, 0, 0.4); }
+.highlight-bad { border: 2px solid #ff3333 !important; box-shadow: 0 0 10px rgba(255, 51, 51, 0.4); }
+
+/* BADGES MULTIPLICADORES (VERDE E VERMELHO) */
+.badge-multi, .badge-multi-danger { position: absolute !important; bottom: 2px !important; right: 2px !important; font-size: 9px !important; font-weight: 900 !important; padding: 1px 4px !important; border-radius: 4px !important; z-index: 10 !important; }
+.badge-multi { background: #00ff00 !important; color: #000000 !important; }
+.badge-multi-danger { background: #ff3333 !important; color: #000000 !important; }
 
 /* ROSTER COMPLETO DA DIREITA */
 .roster-area { flex: 1.4; background-color: var(--bg-paineis); border: 1px solid var(--borda-suave); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; height: 100%; }
 .search-bar { width: 100%; padding: 10px 12px; background-color: #000000; border: 1px solid var(--borda-destaque); color: #ffffff; border-radius: 6px; margin-bottom: 15px; outline: none; font-size: 13px; }
-
-.roster-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    overflow-y: auto;
-    flex: 1;
-    padding-right: 4px;
-}
-
-.brawler-icon {
-    display: flex;
-    flex-direction: column;
-    background-color: var(--bg-slots);
-    border: 2px solid var(--borda-destaque);
-    border-radius: 8px;
-    padding: 6px;
-    align-items: center;
-    cursor: pointer;
-    transition: transform 0.15s ease, border-color 0.15s ease;
-}
+.roster-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; overflow-y: auto; flex: 1; padding-right: 4px; }
+.brawler-icon { display: flex; flex-direction: column; background-color: var(--bg-slots); border: 2px solid var(--borda-destaque); border-radius: 8px; padding: 6px; align-items: center; cursor: pointer; transition: transform 0.15s ease, border-color 0.15s ease; }
 .brawler-icon:hover { transform: translateY(-2px); border-color: var(--rosa-neon); }
 .brawler-icon.disabled { filter: grayscale(100%) opacity(0.15); pointer-events: none; }
-
-.brawler-img-container { 
-    width: 100%; 
-    aspect-ratio: 1; 
-    border-radius: 6px; 
-    overflow: hidden; 
-    position: relative; 
-    background-color: #000000; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-}
+.brawler-img-container { width: 100%; aspect-ratio: 1; border-radius: 6px; overflow: hidden; position: relative; background-color: #000000; display: flex; align-items: center; justify-content: center; }
 .brawler-name { font-size: 11px; font-weight: 700; color: #e2e4e9; margin-top: 6px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
 
-.fallback-initials {
-    display: none;
-    width: 100%;
-    height: 100%;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #2d303a, #1c1d24);
-    color: var(--rosa-neon);
-    font-weight: bold;
-    font-size: 13px;
-    border-radius: 4px;
-}
+/* TRAVA GERAL DE IMAGENS */
+.brawler-icon img, .slot img, .mini-brawler img { width: 100% !important; height: 100% !important; object-fit: cover !important; display: block; }
+.fallback-initials { display: none; width: 100%; height: 100%; align-items: center; justify-content: center; background: linear-gradient(135deg, #2d303a, #1c1d24); color: var(--rosa-neon); font-weight: bold; font-size: 13px; border-radius: 4px; }
 
+/* PRÉ-SELEÇÃO */
 .pre-selecting { animation: pulse-draft 1.2s infinite ease-in-out; }
 @keyframes pulse-draft { 0% { opacity: 0.5; } 50% { opacity: 0.85; } 100% { opacity: 0.5; } }
-
-.pre-select-badge {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: rgba(0, 123, 255, 0.95);
-    color: #ffffff;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    font-weight: 900;
-    box-shadow: 0 0 8px rgba(0, 123, 255, 0.8);
-    z-index: 15;
-}
-.slot-large .pre-select-badge { width: 30px; height: 30px; font-size: 15px; }
-
-
-/* ======================================================== */
-/* TRAVA DE SEGURANÇA GERAL (IMPEDE IMAGENS GIGANTES)       */
-/* ======================================================== */
-.brawler-icon img, 
-.slot img,
-.mini-brawler img { 
-    width: 100% !important; 
-    height: 100% !important; 
-    object-fit: cover !important; 
-    display: block; 
-}
-
-/* FORMATO DOS BRAWLERS PEQUENOS (COUNTERS) */
-.mini-brawler { 
-    position: relative !important; 
-    width: 48px !important;  
-    height: 48px !important;
-    background-color: var(--bg-slots); 
-    border-radius: 8px !important; 
-    overflow: hidden !important; 
-    display: block !important;
-    border: 1px solid var(--borda-destaque); 
-}
-
-/* DESTAQUES DE BORDA (Sem dragões) */
-.highlight-good { border: 2px solid #00ff00 !important; box-shadow: 0 0 10px rgba(0, 255, 0, 0.4); }
-.highlight-bad { border: 2px solid #ff0000 !important; box-shadow: 0 0 8px rgba(255, 0, 0, 0.4); }
-
-.badge-multi, .badge-multi-danger { 
-    position: absolute !important; 
-    bottom: 2px !important; 
-    right: 2px !important; 
-    font-size: 9px !important; 
-    font-weight: 900 !important; 
-    padding: 1px 3px !important; 
-    border-radius: 4px !important; 
-    z-index: 10 !important; 
-}
-
-/* Verde para o Inimigo (Texto Preto, Fundo Verde) */
-.badge-multi { 
-    background: #00ff00 !important; 
-    color: #000000 !important; 
-}
-
-/* Vermelho para o NOSSO (Texto Preto, Fundo Vermelho - Idêntico ao do inimigo) */
-.badge-multi-danger { 
-    background: #ff3333 !important; 
-    color: #000000 !important; 
-}
+.pre-select-badge { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(0, 123, 255, 0.95); color: #ffffff; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; box-shadow: 0 0 8px rgba(0, 123, 255, 0.8); z-index: 15; }
+.pick-slot .pre-select-badge { width: 30px; height: 30px; font-size: 15px; }
