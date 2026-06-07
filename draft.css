@@ -45,36 +45,78 @@ body {
 .main-container { display: flex; flex: 1; padding: 0 20px 20px 20px; gap: 20px; align-items: stretch; height: calc(100vh - 140px); overflow: hidden; }
 
 /* ======================================================== */
-/* NOVO LAYOUT DO DRAFT (VERTICAL COM MAPA NO CENTRO)       */
+/* LAYOUT DO DRAFT (VERTICAL COM MAPA NO CENTRO)            */
+/* Hierarquia de tamanho: mapa > picks > bans               */
 /* ======================================================== */
-.draft-area { flex: 2.5; background-color: var(--bg-paineis); border-radius: 16px; border: 1px solid var(--borda-suave); padding: 25px; position: relative; }
+.draft-area {
+    flex: 2.5;
+    background-color: var(--bg-paineis);
+    border-radius: 16px;
+    border: 1px solid var(--borda-suave);
+    padding: 25px;
+    position: relative;
+}
 
-.vertical-layout { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 25px; width: 100%; height: 100%; }
-.team-col { display: flex; flex-direction: row; align-items: center; gap: 15px; }
-.ban-col, .pick-col { display: flex; flex-direction: column; gap: 15px; justify-content: center; }
+.vertical-layout {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;          /* era 25px → mais respiro entre seções */
+    width: 100%;
+    height: 100%;
+}
+
+.team-col {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 18px;          /* era 15px → mais espaço entre ban-col e pick-col */
+}
+
+.ban-col, .pick-col {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;          /* era 15px → mais respiro entre slots */
+    justify-content: center;
+}
 
 /* SLOTS GERAIS */
 .slot { background-color: var(--bg-slots); border: 2px solid var(--borda-destaque); border-radius: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative !important; cursor: pointer; }
 .active-blue { border-color: var(--azul-time) !important; box-shadow: 0 0 15px rgba(0, 123, 255, 0.5); }
 .active-red { border-color: var(--vermelho-time) !important; box-shadow: 0 0 15px rgba(255, 51, 51, 0.5); }
 
-/* BANS E PICKS TAMANHOS */
-.ban-slot { width: 45px !important; height: 45px !important; border-radius: 8px; }
-.pick-slot { width: 85px !important; height: 85px !important; border-radius: 12px; }
+/* ── TAMANHOS DOS SLOTS (hierarquia clara) ── */
+/* Bans: menores */
+.ban-slot  { width: 65px !important;  height: 65px !important;  border-radius: 10px; }
+/* Picks: médios */
+.pick-slot { width: 120px !important; height: 120px !important; border-radius: 14px; }
 
 /* FILTROS DE BANS E INVERSÃO DO RED TEAM */
 .ban-slot .slot-assets img { filter: grayscale(100%) !important; opacity: 0.5; }
 .red-team-imgs img { transform: scaleX(-1); }
 
-/* MAPA CENTRAL */
-.map-col { width: 180px; height: 280px; background-color: var(--bg-slots); border: 2px solid var(--borda-destaque); border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; margin: 0 10px; }
+/* ── MAPA CENTRAL: maior elemento ── */
+.map-col {
+    width: 240px;       /* era 180px */
+    height: 430px;      /* era 280px */
+    background-color: var(--bg-slots);
+    border: 2px solid var(--borda-destaque);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    margin: 0 10px;
+}
 .map-col img { width: 100%; height: 100%; object-fit: cover; display: none; z-index: 2; }
 #map-placeholder { position: absolute; z-index: 1; }
 
 /* ASSETS E TEXTOS FALLBACK DOS SLOTS */
 .slot-assets { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; position: relative; }
 .slot-fallback-text { display: none; width: 100%; height: 100%; align-items: center; justify-content: center; text-align: center; font-weight: 800; font-size: 11px; padding: 4px; background: linear-gradient(135deg, #1f2026, #111217); color: #ffffff; text-transform: uppercase; word-break: break-all; }
-.ban-slot .slot-fallback-text { font-size: 8px; line-height: 1; }
+.ban-slot .slot-fallback-text { font-size: 9px; line-height: 1.2; }
 
 /* PAINÉIS LATERAIS DO MEIO */
 .info-panels { flex: 1.2; display: flex; flex-direction: column; gap: 15px; }
@@ -86,12 +128,16 @@ body {
 /* MINI BRAWLERS DOS PAINÉIS */
 .mini-brawler { position: relative !important; width: 45px !important; height: 45px !important; background-color: var(--bg-slots); border-radius: 8px !important; overflow: hidden !important; display: block !important; border: 1px solid var(--borda-destaque); }
 .highlight-good { border: 2px solid #00ff00 !important; box-shadow: 0 0 10px rgba(0, 255, 0, 0.4); }
-.highlight-bad { border: 2px solid #ff3333 !important; box-shadow: 0 0 10px rgba(255, 51, 51, 0.4); }
+.highlight-bad   { border: 2px solid #ff3333 !important; box-shadow: 0 0 10px rgba(255, 51, 51, 0.4); }
+.highlight-danger { border: 2px solid #ff3333 !important; box-shadow: 0 0 10px rgba(255, 51, 51, 0.4); }
 
 /* BADGES MULTIPLICADORES (VERDE E VERMELHO) */
 .badge-multi, .badge-multi-danger { position: absolute !important; bottom: 2px !important; right: 2px !important; font-size: 9px !important; font-weight: 900 !important; padding: 1px 4px !important; border-radius: 4px !important; z-index: 10 !important; }
-.badge-multi { background: #00ff00 !important; color: #000000 !important; }
+.badge-multi        { background: #00ff00 !important; color: #000000 !important; }
 .badge-multi-danger { background: #ff3333 !important; color: #000000 !important; }
+
+/* DRAGON BADGE NOS MINI BRAWLERS */
+.dragon-badge { position: absolute; top: 2px; right: 2px; width: 14px; height: 14px; z-index: 10; filter: drop-shadow(0px 1px 2px rgba(0,0,0,0.9)); pointer-events: none; }
 
 /* ROSTER COMPLETO DA DIREITA */
 .roster-area { flex: 1.4; background-color: var(--bg-paineis); border: 1px solid var(--borda-suave); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; height: 100%; }
@@ -110,5 +156,13 @@ body {
 /* PRÉ-SELEÇÃO */
 .pre-selecting { animation: pulse-draft 1.2s infinite ease-in-out; }
 @keyframes pulse-draft { 0% { opacity: 0.5; } 50% { opacity: 0.85; } 100% { opacity: 0.5; } }
-.pre-select-badge { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(0, 123, 255, 0.95); color: #ffffff; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; box-shadow: 0 0 8px rgba(0, 123, 255, 0.8); z-index: 15; }
-.pick-slot .pre-select-badge { width: 30px; height: 30px; font-size: 15px; }
+.pre-select-badge {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background-color: rgba(0, 123, 255, 0.95); color: #ffffff;
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 900;
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.8); z-index: 15;
+}
+/* Badge maior nos picks (120px) */
+.pick-slot .pre-select-badge { width: 40px; height: 40px; font-size: 20px; }
