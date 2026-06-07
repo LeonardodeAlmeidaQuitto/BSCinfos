@@ -142,16 +142,16 @@ let draftOrder = [];
 let picksVermelhos = [];
 let picksAzuis = [];      
 let preSelected = null;
- 
+
 // =========================================================
 // INTERRUPTORES RESILIENTES DE SELEÇÃO DOM (ANTI-ERRO)
 // =========================================================
- 
+
 function limparNome(nome) {
     if (!nome) return "";
     return nome.toLowerCase().replace(/[^a-z0-9]/g, '');
 }
- 
+
 function obterCaixaPorTexto(textoCabecalho, fallbackIndex) {
     const elementos = document.querySelectorAll('*');
     for (let el of elementos) {
@@ -166,19 +166,19 @@ function obterCaixaPorTexto(textoCabecalho, fallbackIndex) {
     const grids = document.querySelectorAll('.mini-brawler-grid');
     return grids.length > fallbackIndex ? grids[fallbackIndex] : null;
 }
- 
+
 function obterContainerInimigo() {
     return document.getElementById('counters-list');
 }
- 
+
 function obterContainerNosso() {
     return document.getElementById('podetomar-list') || document.getElementById('counters-nosso') || obterCaixaPorTexto('COUNTERS (NOSSO)', 2);
 }
- 
+
 function obterContainerMeta() {
     return document.getElementById('meta-list') || obterCaixaPorTexto('META TOP 10', 0);
 }
- 
+
 function criarConteudoSlot(nome, id) {
     return `
         <div class="slot-assets">
@@ -187,11 +187,11 @@ function criarConteudoSlot(nome, id) {
         </div>
     `;
 }
- 
+
 // =========================================================
 // RENDERIZAÇÃO DE INTERFACE
 // =========================================================
- 
+
 function popularMapas() {
     const select = document.getElementById('map-select') || document.querySelector('.map-selector select') || document.querySelector('select');
     if (!select) return;
@@ -207,7 +207,7 @@ function popularMapas() {
         select.appendChild(grupo);
     });
 }
- 
+
 function gerarRoster() {
     const grid = document.getElementById('roster') || document.querySelector('.roster-grid');
     if (!grid) return;
@@ -228,7 +228,7 @@ function gerarRoster() {
         grid.appendChild(div);
     });
 }
- 
+
 window.atualizarMeta = function() {
     const select = document.getElementById('map-select') || document.querySelector('.map-selector select') || document.querySelector('select');
     const mapaSelecionado = select ? select.value : '';
@@ -250,19 +250,18 @@ window.atualizarMeta = function() {
         container.innerHTML = '<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Selecione um mapa.</p>';
     }
 };
- 
+
 // =========================================================
 // LÓGICA DE CÁLCULO DE COUNTERS
 // =========================================================
- 
-// FIX AUXILIAR: filtra entradas vazias do array de counters
+
 function contarCounters(listaBrawlers) {
     let contagem = {};
     listaBrawlers.forEach(brawler => {
         let brawlerKey = Object.keys(DADOS_COUNTERS).find(k => limparNome(k) === limparNome(brawler));
         if (brawlerKey && Array.isArray(DADOS_COUNTERS[brawlerKey])) {
             DADOS_COUNTERS[brawlerKey]
-                .filter(counter => counter && counter.trim() !== "") // FIX: ignora strings vazias [""]
+                .filter(counter => counter && counter.trim() !== "") 
                 .forEach(counter => {
                     contagem[counter] = (contagem[counter] || 0) + 1;
                 });
@@ -270,39 +269,36 @@ function contarCounters(listaBrawlers) {
     });
     return contagem;
 }
- 
-// COUNTERS (INIMIGO): quem countera os picks VERMELHOS → recomendações para nós
-// Dragon: dragon_they_full.png (vermelho)
+
 function calcularCounters() {
     let container = obterContainerInimigo();
     if (!container) return;
     container.innerHTML = "";
- 
+
     if (picksVermelhos.length === 0) {
         container.innerHTML = '<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Aguardando adversário</p>';
         return;
     }
- 
+
     let contagemCounters = contarCounters(picksVermelhos);
- 
+
     let brawlersValidos = Object.keys(contagemCounters).filter(nome => {
         const idNome = limparNome(nome);
         if (selected.includes(idNome)) return false;
         if (preSelected && limparNome(preSelected.nome) === idNome) return false;
         return true;
     });
- 
+
     if (brawlersValidos.length > 0) {
         brawlersValidos.sort((a, b) => contagemCounters[b] - contagemCounters[a]);
         brawlersValidos.forEach(nome => {
             const id = limparNome(nome);
             let qtd = contagemCounters[nome];
- 
+
             let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
             let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
-            // FIX: INIMIGO usa dragon_they (vermelho) — counter do time inimigo
-            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_they_full.png" class="dragon-badge">` : '';
- 
+            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_they_full.png" style="position: absolute !important; top: -30px !important; right: -30px !important; width: 80px !important; height: 80px !important; min-width: 80px !important; min-height: 80px !important; max-width: 80px !important; max-height: 80px !important; object-fit: contain !important; z-index: 100 !important; pointer-events: none !important; margin: 0 !important; padding: 0 !important; border: none !important; background: transparent !important;">` : '';
+
             container.innerHTML += `
                 <div class="mini-brawler ${destaqueClass}" title="${nome} (Counter x${qtd})">
                     ${dragonIcon}
@@ -315,14 +311,12 @@ function calcularCounters() {
         container.innerHTML = '<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Sem recomendações.</p>';
     }
 }
- 
-// COUNTERS (NOSSO): quem countera os picks AZUIS → ameaças ao nosso time
-// Dragon: dragon_us_full.png (verde)
+
 function calcularPodeTomar() {
     let container = obterContainerNosso();
     if (!container) return;
     container.innerHTML = "";
- 
+
     let listaAzuisParaCalcular = [...picksAzuis];
     const step = draftOrder[currentStep];
     if (preSelected && step && step.team === 'blue' && step.type === 'pick') {
@@ -330,33 +324,31 @@ function calcularPodeTomar() {
             listaAzuisParaCalcular.push(preSelected.nome);
         }
     }
- 
+
     if (listaAzuisParaCalcular.length === 0) {
         container.innerHTML = '<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Aguardando nosso time</p>';
         return;
     }
- 
-    // FIX PRINCIPAL: era "listaVermelhaParaCalcular" (variável inexistente!) → corrigido para "listaAzuisParaCalcular"
+
     let contagemAmeacas = contarCounters(listaAzuisParaCalcular);
- 
+
     let brawlersValidos = Object.keys(contagemAmeacas).filter(nome => {
         const idNome = limparNome(nome);
         if (selected.includes(idNome)) return false;
         if (preSelected && limparNome(preSelected.nome) === idNome) return false;
         return true;
     });
- 
+
     if (brawlersValidos.length > 0) {
         brawlersValidos.sort((a, b) => contagemAmeacas[b] - contagemAmeacas[a]);
         brawlersValidos.forEach(nome => {
             const id = limparNome(nome);
             let qtd = contagemAmeacas[nome];
- 
+
             let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
             let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
-            // FIX: NOSSO usa dragon_us (verde) — ameaça ao nosso time
-            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_us_full.png" class="dragon-badge">` : '';
- 
+            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_us_full.png" style="position: absolute !important; top: -30px !important; right: -30px !important; width: 80px !important; height: 80px !important; min-width: 80px !important; min-height: 80px !important; max-width: 80px !important; max-height: 80px !important; object-fit: contain !important; z-index: 100 !important; pointer-events: none !important; margin: 0 !important; padding: 0 !important; border: none !important; background: transparent !important;">` : '';
+
             container.innerHTML += `
                 <div class="mini-brawler ${destaqueClass}" title="${nome} (Counter x${qtd})">
                     ${dragonIcon}
@@ -369,11 +361,11 @@ function calcularPodeTomar() {
         container.innerHTML = '<p style="color:#555; font-size:11px; grid-column: span 5; text-align:center;">Sem ameaças.</p>';
     }
 }
- 
+
 // =========================================================
 // FLUXO DO DRAFT (ORDEM, CLIQUE E CONFIRMAÇÃO)
 // =========================================================
- 
+
 function buildOrder() {
     const order = [
         { slot: 'slot-b0', team: 'blue', type: 'ban' }, { slot: 'slot-b2', team: 'blue', type: 'ban' }, { slot: 'slot-b4', team: 'blue', type: 'ban' }, 
@@ -394,13 +386,13 @@ function buildOrder() {
     }
     draftOrder = order;
 }
- 
+
 window.clicarBrawler = function(nome, id) {
     if (currentStep >= draftOrder.length || selected.includes(id)) return;
     const step = draftOrder[currentStep];
     const slot = document.getElementById(step.slot);
     if (!slot) return;
- 
+
     if (step.team === 'blue') {
         if (preSelected && preSelected.id === id) {
             window.confirmarBlueSelection();
@@ -422,11 +414,11 @@ window.clicarBrawler = function(nome, id) {
         const icon = document.getElementById(`b-${id}`);
         if(icon) icon.classList.add('disabled');
         selected.push(id);
- 
+
         if (step.type === 'pick') {
             picksVermelhos.push(nome);
         }
- 
+
         currentStep++;
         preSelected = null;
         atualizarFoco();
@@ -434,34 +426,34 @@ window.clicarBrawler = function(nome, id) {
         calcularPodeTomar();
     }
 };
- 
+
 window.confirmarBlueSelection = function(event) {
     if (event) event.stopPropagation(); 
     if (!preSelected) return;
- 
+
     const { nome, id } = preSelected;
     const step = draftOrder[currentStep];
     const slot = document.getElementById(step.slot);
- 
+
     if (slot) {
         slot.innerHTML = criarConteudoSlot(nome, id);
     }
- 
+
     const icon = document.getElementById(`b-${id}`);
     if(icon) icon.classList.add('disabled');
     selected.push(id);
- 
+
     if (step.type === 'pick') {
         picksAzuis.push(nome);
     }
- 
+
     preSelected = null; 
     currentStep++;
     atualizarFoco();
     calcularCounters();
     calcularPodeTomar();
 };
- 
+
 function atualizarFoco() {
     document.querySelectorAll('.slot').forEach(s => s.classList.remove('active-blue', 'active-red'));
     if (currentStep < draftOrder.length) {      
@@ -470,11 +462,11 @@ function atualizarFoco() {
         if(nextSlot) nextSlot.classList.add(next.team === 'blue' ? 'active-blue' : 'active-red');
     }
 }
- 
+
 // =========================================================
 // CONTROLES DE SISTEMA (RESET E FILTRO)
 // =========================================================
- 
+
 window.setFirstPick = function(team) {
     firstPick = team;
     const btnBlue = document.getElementById('fp-blue');
@@ -483,7 +475,7 @@ window.setFirstPick = function(team) {
     if(btnRed) btnRed.classList.toggle('active', team === 'red');
     resetDraft();
 };
- 
+
 window.resetDraft = function() {
     currentStep = 0; selected = []; picksVermelhos = []; picksAzuis = []; preSelected = null;
     document.querySelectorAll('.slot').forEach(s => s.innerHTML = '');
@@ -494,7 +486,7 @@ window.resetDraft = function() {
     calcularCounters();
     calcularPodeTomar();
 };
- 
+
 window.filtrar = function() {
     const searchInput = document.getElementById('search') || document.querySelector('.search-bar');
     if(!searchInput) return;
@@ -504,7 +496,7 @@ window.filtrar = function() {
         div.style.display = n.includes(t) ? 'flex' : 'none';
     });
 };
- 
+
 function inicializarSistema() {
     popularMapas();
     gerarRoster();
@@ -521,7 +513,7 @@ function inicializarSistema() {
         searchInput.addEventListener('input', window.filtrar);
     }
 }
- 
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', inicializarSistema);
 } else {
