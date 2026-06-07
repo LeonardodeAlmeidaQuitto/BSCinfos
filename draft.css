@@ -207,7 +207,6 @@ body {
 .highlight-good { border: 2px solid #00ff00 !important; box-shadow: 0 0 10px rgba(0, 255, 0, 0.4); }
 .highlight-bad { border: 2px solid #ff0000 !important; box-shadow: 0 0 8px rgba(255, 0, 0, 0.4); }
 
-/* BADGE MULTIPLICADORA (x2, x3) NO CANTO */
 .badge-multi, .badge-multi-danger { 
     position: absolute !important; 
     bottom: 2px !important; 
@@ -218,5 +217,15 @@ body {
     border-radius: 4px !important; 
     z-index: 10 !important; 
 }
-.badge-multi { background: #00ff00 !important; color: #000 !important; }
-.badge-multi-bad { background: #ff0000 !important; color: #fff !important; }
+
+/* Verde para o Inimigo (Texto Preto, Fundo Verde) */
+.badge-multi { 
+    background: #00ff00 !important; 
+    color: #000000 !important; 
+}
+
+/* Vermelho para o NOSSO (Texto Preto, Fundo Vermelho - Idêntico ao do inimigo) */
+.badge-multi-danger { 
+    background: #ff3333 !important; 
+    color: #000000 !important; 
+}
