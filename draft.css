@@ -92,16 +92,34 @@ body {
 .info-panels { flex: 1.2; display: flex; flex-direction: column; gap: 15px; }
 .side-panel { background-color: var(--bg-paineis); border: 1px solid var(--borda-suave); border-radius: 12px; padding: 15px; flex: 1; display: flex; flex-direction: column; min-height: 0; }
 .panel-title { color: var(--rosa-neon); font-weight: bold; font-size: 13px; text-transform: uppercase; text-align: center; margin-bottom: 12px; }
-.mini-brawler-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; overflow-y: auto; flex: 1; }
-.mini-brawler { width: 100%; position: relative; aspect-ratio: 1; background-color: var(--bg-slots); border-radius: 6px; overflow: hidden; position: relative !important; border: 1px solid var(--borda-destaque); }
 
-/* ROSTER COMPLETO DA DIREITA (PROPORÇÕES PERFEITAS ANTI-ESPREMIDO) */
+/* FIX DO ALINHAMENTO DO INIMIGO */
+#counters-list, #podetomar-list {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    padding: 10px !important;
+    overflow-y: auto;
+}
+
+.mini-brawler { 
+    position: relative !important; 
+    width: 48px !important;  
+    height: 48px !important;
+    background-color: var(--bg-slots); 
+    border-radius: 8px !important; 
+    overflow: hidden !important; 
+    display: block !important;
+    border: 1px solid var(--borda-destaque); 
+}
+
+/* ROSTER COMPLETO DA DIREITA */
 .roster-area { flex: 1.4; background-color: var(--bg-paineis); border: 1px solid var(--borda-suave); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; height: 100%; }
 .search-bar { width: 100%; padding: 10px 12px; background-color: #000000; border: 1px solid var(--borda-destaque); color: #ffffff; border-radius: 6px; margin-bottom: 15px; outline: none; font-size: 13px; }
 
 .roster-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3 colunas impecáveis */
+    grid-template-columns: repeat(3, 1fr);
     gap: 10px;
     overflow-y: auto;
     flex: 1;
@@ -122,10 +140,9 @@ body {
 .brawler-icon:hover { transform: translateY(-2px); border-color: var(--rosa-neon); }
 .brawler-icon.disabled { filter: grayscale(100%) opacity(0.15); pointer-events: none; }
 
-/* TRANCANDO PROPORÇÃO DO CARD PARA EVITAR EFEITO FATIA */
 .brawler-img-container { 
     width: 100%; 
-    aspect-ratio: 1; /* Força um quadrado idêntico para todos */
+    aspect-ratio: 1; 
     border-radius: 6px; 
     overflow: hidden; 
     position: relative; 
@@ -136,7 +153,6 @@ body {
 }
 .brawler-name { font-size: 11px; font-weight: 700; color: #e2e4e9; margin-top: 6px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
 
-/* FALLBACK DE TEXTO SE A IMAGEM NÃO CARREGAR */
 .fallback-initials {
     display: none;
     width: 100%;
@@ -150,17 +166,9 @@ body {
     border-radius: 4px;
 }
 
-/* SISTEMA VISUAL DA PRÉ-SELEÇÃO DE 2 CLIQUES (TIME AZUL) */
-.pre-selecting {
-    animation: pulse-draft 1.2s infinite ease-in-out;
-}
-@keyframes pulse-draft {
-    0% { opacity: 0.5; }
-    50% { opacity: 0.85; }
-    100% { opacity: 0.5; }
-}
+.pre-selecting { animation: pulse-draft 1.2s infinite ease-in-out; }
+@keyframes pulse-draft { 0% { opacity: 0.5; } 50% { opacity: 0.85; } 100% { opacity: 0.5; } }
 
-/* Selo de verificação redondo e universal (funciona em slots grandes e pequenos) */
 .pre-select-badge {
     position: absolute;
     top: 50%;
@@ -179,60 +187,37 @@ body {
     box-shadow: 0 0 8px rgba(0, 123, 255, 0.8);
     z-index: 15;
 }
-.slot-large .pre-select-badge {
-    width: 30px;
-    height: 30px;
-    font-size: 15px;
+.slot-large .pre-select-badge { width: 30px; height: 30px; font-size: 15px; }
+
+/* ======================================================== */
+/* A CORREÇÃO DE OURO: TRAVA QUE IGNORA O DRAGÃO (:not)     */
+/* ======================================================== */
+.brawler-icon img, 
+.mini-brawler img:not(.dragon-badge), 
+.slot img { 
+    width: 100% !important; 
+    height: 100% !important; 
+    object-fit: cover !important; 
+    display: block; 
 }
 
-/* TRAVA DE SEGURANÇA IMAGENS */
-.brawler-icon img, .mini-brawler img, .slot img { width: 100% !important; height: 100% !important; object-fit: cover !important; display: block; }
+/* DESTAQUES E DRAGÕES */
+.highlight-good { border: 2px solid #00ff00 !important; box-shadow: 0 0 10px rgba(0, 255, 0, 0.6); }
+.highlight-bad { border: 2px solid #ff0000 !important; box-shadow: 0 0 8px rgba(255, 0, 0, 0.6); }
 
-/* DRAGÕES E BADGES */
-.highlight-good { 
-    border: 2px solid #00ff00 !important; 
-    box-shadow: 0 0 10px rgba(0, 255, 0, 0.6); 
-}
-
-.highlight-bad { 
-    border: 2px solid #ff0000 !important; 
-    box-shadow: 0 0 8px rgba(255, 0, 0, 0.6); 
-}
-
-.badge-multi, .badge-multi-danger { position: absolute; bottom: 1px; right: 1px; font-size: 9px; font-weight: 900; padding: 1px 3px; border-radius: 3px; z-index: 5; }
-.badge-multi { background: #00ff00; color: #000; }
-.badge-multi-bad { background: #ff0000; color: #fff; }
-
-#counters-list, #podetomar-list {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    gap: 8px !important;
-    padding: 10px !important;
-}
-
-/* O container do brawler precisa esconder o que passa dele, mas o dragão vai ficar dentro */
-.mini-brawler {
-    position: relative !important; 
-    width: 48px !important;  
-    height: 48px !important;
-    border-radius: 8px !important;
-    overflow: hidden !important; /* Garante o formato arredondado nos cantos da foto */
-    display: block !important;
-}
-
-/* === FORÇA MÁXIMA PARA O DRAGÃO === */
-div.mini-brawler > img.dragon-badge {
+/* DRAGÃO NO CANTO INFERIOR ESQUERDO */
+.mini-brawler img.dragon-badge {
     position: absolute !important;
     bottom: 2px !important;
     left: 2px !important;
     top: auto !important;
     right: auto !important;
-    width: 16px !important;
-    height: 16px !important;
-    min-width: 16px !important;
-    min-height: 16px !important;
-    max-width: 16px !important;
-    max-height: 16px !important;
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 18px !important;
+    min-height: 18px !important;
+    max-width: 18px !important;
+    max-height: 18px !important;
     object-fit: contain !important;
     z-index: 9999 !important;
     background: transparent !important;
@@ -241,18 +226,16 @@ div.mini-brawler > img.dragon-badge {
     display: block !important;
 }
 
-/* Ajuste do multiplicador (x2, x3) para ficar na ponta oposta (inferior direita) */
-.badge-multi {
-    position: absolute !important;
-    bottom: 2px !important;
-    right: 2px !important;
-    background: rgba(0, 0, 0, 0.85) !important;
-    color: #fff !important;
-    font-size: 9px !important;
-    font-weight: bold !important;
-    padding: 1px 3px !important;
-    border-radius: 4px !important;
-    z-index: 100 !important;
+/* BADGE MULTIPLICADORA (X2) NO CANTO OPOSTO (DIREITA) */
+.badge-multi, .badge-multi-danger { 
+    position: absolute !important; 
+    bottom: 2px !important; 
+    right: 2px !important; 
+    font-size: 9px !important; 
+    font-weight: 900 !important; 
+    padding: 1px 3px !important; 
+    border-radius: 4px !important; 
+    z-index: 100 !important; 
 }
-
-
+.badge-multi { background: #00ff00 !important; color: #000 !important; }
+.badge-multi-bad { background: #ff0000 !important; color: #fff !important; }
