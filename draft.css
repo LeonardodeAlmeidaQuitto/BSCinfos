@@ -189,40 +189,69 @@ body {
 .brawler-icon img, .mini-brawler img, .slot img { width: 100% !important; height: 100% !important; object-fit: cover !important; display: block; }
 
 /* DRAGÕES E BADGES */
-.highlight-good { border: 2px solid #00ff00 !important; box-shadow: 0 0 10px rgba(0, 255, 0, 0.6); }
-.highlight-danger { border: 2px solid #ff0000 !important; box-shadow: 0 0 10px rgba(255, 0, 0, 0.6); }
-.badge-multi, .badge-multi-danger { position: absolute; bottom: 1px; right: 1px; font-size: 9px; font-weight: 900; padding: 1px 3px; border-radius: 3px; z-index: 5; }
-.badge-multi { background: #00ff00; color: #000; }
-.badge-multi-danger { background: #ff0000; color: #fff; }
-
-.dragon-badge {
-    position: absolute !important;
-    top: -30px !important;
-    right: -30px !important;
-    width: 80px !important;
-    height: 80px !important;
-    min-width: 80px !important;
-    min-height: 80px !important;
-    max-width: 80px !important;
-    max-height: 80px !important;
-    object-fit: contain !important;
-    z-index: 100 !important;
-    pointer-events: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-    background: transparent !important;
-}
-/* Se tiveres o badge de quantidade (ex: x2), convém ajustá-lo também para não sobrepor */
-.badge-multi {
-    position: absolute;
-    bottom: -5px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
+.highlight-good { 
+    border: 2px solid #00ff00 !important; 
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.6); 
 }
 
 .highlight-bad { 
     border: 2px solid #ff0000 !important; 
     box-shadow: 0 0 8px rgba(255, 0, 0, 0.6); 
 }
+
+.badge-multi, .badge-multi-danger { position: absolute; bottom: 1px; right: 1px; font-size: 9px; font-weight: 900; padding: 1px 3px; border-radius: 3px; z-index: 5; }
+.badge-multi { background: #00ff00; color: #000; }
+.badge-multi-danger { background: #ff0000; color: #fff; }
+
+#counters-list, #podetomar-list {
+    display: flex !important;
+    flex-wrap: wrap !important; /* Faz os brawlers irem para a linha de baixo quando não couberem */
+    gap: 8px !important;        /* Dá um espaçamento limpo entre cada brawler */
+    padding: 10px !important;
+    overflow-y: auto !important; /* Se forem muitos, cria uma barra de rolagem interna */
+    max-height: 100% !important;
+}
+
+/* Garante que o mini-brawler seja o ponto de referência do dragão */
+.mini-brawler {
+    position: relative !important; 
+    width: 45px !important;  /* Define um tamanho fixo e idêntico para todos */
+    height: 45px !important;
+    border-radius: 8px !important;
+    overflow: visible !important;  /* Permite que o dragão saia um pouquinho para fora da borda */
+}
+
+/* --- AJUSTE PERFEITO DO DRAGÃO --- */
+.dragon-badge {
+    position: absolute !important;
+    top: -12px !important;   /* Ajustado para não sumir para fora do painel */
+    right: -12px !important; /* Ajustado para ficar discretamente no canto superior direito */
+    width: 28px !important;  /* Tamanho ideal para mini-grelhas */
+    height: 28px !important;
+    min-width: 28px !important;
+    min-height: 28px !important;
+    max-width: 28px !important;
+    max-height: 28px !important;
+    object-fit: contain !important;
+    z-index: 10 !important;
+    pointer-events: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+}
+
+/* Ajuste fino para o número multiplicador (x2, x3) não embolar com o dragão */
+.badge-multi {
+    position: absolute !important;
+    bottom: -2px !important;
+    right: -2px !important;
+    background: rgba(0, 0, 0, 0.8) !important;
+    color: #fff !important;
+    font-size: 9px !important;
+    padding: 1px 4px !important;
+    border-radius: 4px !important;
+    z-index: 11 !important;
+}
+
+
