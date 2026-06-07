@@ -205,55 +205,59 @@ body {
 
 #counters-list, #podetomar-list {
     display: flex !important;
-    flex-wrap: wrap !important; /* Faz os brawlers irem para a linha de baixo quando não couberem */
-    gap: 8px !important;        /* Dá um espaçamento limpo entre cada brawler */
+    flex-wrap: wrap !important;
+    gap: 8px !important;
     padding: 10px !important;
-    overflow-y: auto !important; /* Se forem muitos, cria uma barra de rolagem interna */
-    max-height: 100% !important;
 }
 
-/* Garante que o mini-brawler seja o ponto de referência do dragão */
+/* O container do brawler precisa esconder o que passa dele, mas o dragão vai ficar dentro */
 .mini-brawler {
-    position: relative !important; /* Obrigatório para o dragão se posicionar */
-    width: 48px !important;  /* Ligeiramente maior para dar espaço */
+    position: relative !important; 
+    width: 48px !important;  
     height: 48px !important;
     border-radius: 8px !important;
-    overflow: visible !important; /* Permite que o dragão "respire" se necessário */
-    border: 1px solid var(--borda-destaque);
+    overflow: hidden !important; /* Garante o formato arredondado nos cantos da foto */
+    display: block !important;
 }
 
-.dragon-badge {
+/* Força apenas a foto do BRAWLER a ocupar 100% do fundo */
+.mini-brawler > img:not(.dragon-badge) {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+}
+
+/* --- O DRAGÃO COMO MEDALHA INTERNA (CANTINHO SUPERIOR ESQUERDO) --- */
+.mini-brawler img.dragon-badge {
     position: absolute !important;
-    top: 1px !important;    
-    right: 1px !important;
-    width: 22px !important;  
-    height: 22px !important;
-    min-width: 22px !important;
-    min-height: 22px !important;
-    max-width: 22px !important;
-    max-height: 22px !important;
-
-    border: 1.5px solid rgba(0, 0, 0, 0.7) !important;
-    border-radius: 50% !important; /* Mantém a forma redonda do broche */
+    top: 2px !important;      /* Afastamento do topo interno */
+    left: 2px !important;     /* Posicionado no canto esquerdo para não trombar com o badge x2 da direita */
+    width: 18px !important;    /* Tamanho pequeno e totalmente visível */
+    height: 18px !important;
+    min-width: 18px !important;
+    min-height: 18px !important;
+    max-width: 18px !important;
+    max-height: 18px !important;
+    z-index: 99 !important;    /* Força a ficar por cima da foto do brawler */
     object-fit: contain !important;
-    z-index: 10 !important;
-    pointer-events: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    background-color: transparent !important;
-    filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.5)); 
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
 }
-/* Ajuste fino para o número multiplicador (x2, x3) não embolar com o dragão */
+
+/* Ajuste do multiplicador (x2, x3) para ficar na ponta oposta (inferior direita) */
 .badge-multi {
     position: absolute !important;
-    bottom: -2px !important;
-    right: -2px !important;
-    background: rgba(0, 0, 0, 0.8) !important;
+    bottom: 2px !important;
+    right: 2px !important;
+    background: rgba(0, 0, 0, 0.85) !important;
     color: #fff !important;
     font-size: 9px !important;
-    padding: 1px 4px !important;
+    font-weight: bold !important;
+    padding: 1px 3px !important;
     border-radius: 4px !important;
-    z-index: 11 !important;
+    z-index: 100 !important;
 }
 
 
