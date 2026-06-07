@@ -9,21 +9,9 @@
     --vermelho-time: #ff3333;
 }
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: system-ui, -apple-system, sans-serif;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
 
-body {
-    background-color: var(--bg-geral);
-    color: #ffffff;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
+body { background-color: var(--bg-geral); color: #ffffff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -42,118 +30,118 @@ body {
 .map-selector select { background-color: #000000; color: #ffffff; border: 1px solid var(--borda-destaque); padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: bold; outline: none; min-width: 240px; }
 
 /* ── MAIN CONTAINER ────────────────────────────────── */
+/* Draft recebe flex: 3 para ter mais espaço e caber o mapa grande */
 .main-container { display: flex; flex: 1; padding: 0 20px 20px 20px; gap: 20px; align-items: stretch; height: calc(100vh - 140px); overflow: hidden; }
 
 /* ══════════════════════════════════════════════════════
-   DRAFT AREA – layout estilo corestats
-   
-   Hierarquia visual:  MAPA  >  PICKS  >  BANS
-   Alinhamento:        topo do mapa = topo dos picks = topo dos bans
-   Posição:            [ban-col | pick-col]  [MAPA]  [pick-col | ban-col]
+   DRAFT AREA
+   O draft-area age como flex-container que centraliza
+   TODO o conteúdo (vertical + horizontalmente).
    ══════════════════════════════════════════════════════ */
-
-/* 1. Draft-area age como flex-container para centralizar tudo */
 .draft-area {
-    flex: 2.5;
+    flex: 3;                      /* mais espaço para o draft (era 2.5) */
     background-color: var(--bg-paineis);
     border-radius: 16px;
     border: 1px solid var(--borda-suave);
     padding: 20px;
     position: relative;
 
-    /* Centra o conteúdo do draft horizontal e verticalmente */
+    /* ↓ CENTRALIZA o bloco bans+picks+mapa dentro do painel */
     display: flex;
-    align-items: center;
-    justify-content: center;
+    align-items: center;          /* centro vertical */
+    justify-content: center;      /* centro horizontal */
 }
 
-/* 2. Layout interno: linha horizontal, alinhado pelo TOPO */
+/* O bloco interno: row, items alinhados pelo TOPO */
 .vertical-layout {
     display: flex;
     flex-direction: row;
     justify-content: center;
-    align-items: flex-start;   /* <- TOPO: bans, picks e mapa começam na mesma linha */
-    gap: 18px;
-    /* SEM width/height 100% — o pai cuida do centramento */
+    align-items: flex-start;      /* TOPO: bans, picks e mapa iniciam juntos */
+    gap: 14px;
+    /* Sem width/height 100% — o pai (draft-area) centraliza */
 }
 
-/* 3. Cada lado do time: ban-col | pick-col, alinhados pelo topo */
+/* Cada lado do time: [ban-col | pick-col], alinhados pelo topo */
 .team-col {
     display: flex;
     flex-direction: row;
-    align-items: flex-start;   /* <- bans e picks começam juntos no topo */
+    align-items: flex-start;      /* bans e picks iniciam no mesmo y */
     gap: 10px;
 }
 
-/* 4. Colunas internas: itens empilhados de CIMA para baixo */
+/* Colunas internas empilhadas de cima para baixo */
 .ban-col, .pick-col {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    justify-content: flex-start;   /* <- começa do topo */
+    justify-content: flex-start;
 }
 
 /* ── SLOTS GERAIS ───────────────────────────────────── */
 .slot { background-color: var(--bg-slots); border: 2px solid var(--borda-destaque); border-radius: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative !important; cursor: pointer; }
-.active-blue { border-color: var(--azul-time) !important;      box-shadow: 0 0 15px rgba(0,123,255,0.5); }
-.active-red  { border-color: var(--vermelho-time) !important;  box-shadow: 0 0 15px rgba(255,51,51,0.5); }
+.active-blue { border-color: var(--azul-time) !important;     box-shadow: 0 0 15px rgba(0,123,255,0.5); }
+.active-red  { border-color: var(--vermelho-time) !important; box-shadow: 0 0 15px rgba(255,51,51,0.5); }
 
-/* ── TAMANHOS (hierarquia: mapa > picks > bans) ─────── */
-/* Bans: menores, ficam no canto externo */
+/* ── TAMANHOS (mesmos do pedido anterior) ───────────── */
 .ban-slot  { width: 55px !important;  height: 55px !important;  border-radius: 8px;  }
-/* Picks: médios, adjacentes ao mapa */
 .pick-slot { width: 115px !important; height: 115px !important; border-radius: 13px; }
 
 /* ── FILTROS E ESPELHAMENTO ─────────────────────────── */
 .ban-slot .slot-assets img { filter: grayscale(100%) !important; opacity: 0.5; }
 .red-team-imgs img { transform: scaleX(-1); }
 
-/* ── MAPA CENTRAL (o maior elemento) ───────────────── */
+/* ══════════════════════════════════════════════════════
+   MAPA CENTRAL — O MAIOR ELEMENTO
+   Largura: aproveita o espaço extra do flex: 3
+   Altura: preenche bem o painel, ligeiramente maior
+           que a coluna de picks (3×115+2×10 = 365 px)
+   ══════════════════════════════════════════════════════ */
 .map-col {
-    width: 210px;          /* maior que os picks (115px) */
-    height: 420px;         /* bem mais alto — preenche o espaço vertical */
+    width: 300px;                 /* era 210px → bem maior */
+    height: 460px;                /* era 420px → um pouco mais alto */
     background-color: var(--bg-slots);
     border: 2px solid var(--borda-destaque);
-    border-radius: 10px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
     position: relative;
-    margin: 0 8px;
+    margin: 0 4px;
     flex-shrink: 0;
 }
 .map-col img { width: 100%; height: 100%; object-fit: cover; display: none; z-index: 2; }
-#map-placeholder { position: absolute; z-index: 1; color: #555; text-align: center; font-size: 12px; font-weight: bold; }
+#map-placeholder { position: absolute; z-index: 1; color: #555; text-align: center; font-size: 13px; font-weight: bold; }
 
-/* ── ASSETS E FALLBACKS DOS SLOTS ──────────────────── */
+/* ── ASSETS E FALLBACKS ─────────────────────────────── */
 .slot-assets { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; position: relative; }
 .slot-fallback-text { display: none; width: 100%; height: 100%; align-items: center; justify-content: center; text-align: center; font-weight: 800; font-size: 11px; padding: 4px; background: linear-gradient(135deg, #1f2026, #111217); color: #ffffff; text-transform: uppercase; word-break: break-all; }
 .ban-slot .slot-fallback-text { font-size: 8px; line-height: 1.2; }
 
-/* ── PAINÉIS LATERAIS DE INFORMAÇÃO ────────────────── */
-.info-panels { flex: 1.2; display: flex; flex-direction: column; gap: 15px; }
+/* ── PAINÉIS LATERAIS ───────────────────────────────── */
+.info-panels { flex: 1; display: flex; flex-direction: column; gap: 15px; }
 .side-panel { background-color: var(--bg-paineis); border: 1px solid var(--borda-suave); border-radius: 12px; padding: 15px; flex: 1; display: flex; flex-direction: column; min-height: 0; }
 .panel-title { color: var(--rosa-neon); font-weight: bold; font-size: 13px; text-transform: uppercase; text-align: center; margin-bottom: 12px; }
 
 #counters-list, #podetomar-list, #meta-list { display: flex !important; flex-wrap: wrap !important; gap: 8px !important; padding: 5px !important; overflow-y: auto; align-items: flex-start; align-content: flex-start; }
 
-/* ── MINI BRAWLERS DOS PAINÉIS ─────────────────────── */
+/* ── MINI BRAWLERS ──────────────────────────────────── */
 .mini-brawler { position: relative !important; width: 45px !important; height: 45px !important; background-color: var(--bg-slots); border-radius: 8px !important; overflow: hidden !important; display: block !important; border: 1px solid var(--borda-destaque); }
 .highlight-good   { border: 2px solid #00ff00 !important; box-shadow: 0 0 10px rgba(0,255,0,0.4); }
 .highlight-bad    { border: 2px solid #ff3333 !important; box-shadow: 0 0 10px rgba(255,51,51,0.4); }
 .highlight-danger { border: 2px solid #ff3333 !important; box-shadow: 0 0 10px rgba(255,51,51,0.4); }
 
-/* ── BADGES (verde para bom, vermelho para ameaça) ─── */
+/* ── BADGES ─────────────────────────────────────────── */
 .badge-multi, .badge-multi-danger { position: absolute !important; bottom: 2px !important; right: 2px !important; font-size: 9px !important; font-weight: 900 !important; padding: 1px 4px !important; border-radius: 4px !important; z-index: 10 !important; }
 .badge-multi        { background: #00ff00 !important; color: #000000 !important; }
 .badge-multi-danger { background: #ff3333 !important; color: #000000 !important; }
 
-/* ── DRAGÃO BADGE NOS MINI BRAWLERS ────────────────── */
+/* ── DRAGON BADGE ───────────────────────────────────── */
 .dragon-badge { position: absolute; top: 2px; right: 2px; width: 14px; height: 14px; z-index: 10; filter: drop-shadow(0px 1px 2px rgba(0,0,0,0.9)); pointer-events: none; }
 
-/* ── ROSTER (coluna da direita) ─────────────────────── */
-.roster-area { flex: 1.4; background-color: var(--bg-paineis); border: 1px solid var(--borda-suave); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; height: 100%; }
+/* ── ROSTER ─────────────────────────────────────────── */
+.roster-area { flex: 1.3; background-color: var(--bg-paineis); border: 1px solid var(--borda-suave); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; height: 100%; }
 .search-bar { width: 100%; padding: 10px 12px; background-color: #000000; border: 1px solid var(--borda-destaque); color: #ffffff; border-radius: 6px; margin-bottom: 15px; outline: none; font-size: 13px; }
 .roster-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; overflow-y: auto; flex: 1; padding-right: 4px; }
 .brawler-icon { display: flex; flex-direction: column; background-color: var(--bg-slots); border: 2px solid var(--borda-destaque); border-radius: 8px; padding: 6px; align-items: center; cursor: pointer; transition: transform 0.15s ease, border-color 0.15s ease; }
@@ -166,16 +154,8 @@ body {
 .brawler-icon img, .slot img, .mini-brawler img { width: 100% !important; height: 100% !important; object-fit: cover !important; display: block; }
 .fallback-initials { display: none; width: 100%; height: 100%; align-items: center; justify-content: center; background: linear-gradient(135deg, #2d303a, #1c1d24); color: var(--rosa-neon); font-weight: bold; font-size: 13px; border-radius: 4px; }
 
-/* ── PRÉ-SELEÇÃO (time azul, 2 cliques) ─────────────── */
+/* ── PRÉ-SELEÇÃO ────────────────────────────────────── */
 .pre-selecting { animation: pulse-draft 1.2s infinite ease-in-out; }
 @keyframes pulse-draft { 0% { opacity: 0.5; } 50% { opacity: 0.85; } 100% { opacity: 0.5; } }
-.pre-select-badge {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    background-color: rgba(0,123,255,0.95); color: #ffffff;
-    width: 22px; height: 22px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 900;
-    box-shadow: 0 0 8px rgba(0,123,255,0.8); z-index: 15;
-}
-/* Badge maior proporcional ao tamanho dos picks (115px) */
+.pre-select-badge { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(0,123,255,0.95); color: #ffffff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 900; box-shadow: 0 0 8px rgba(0,123,255,0.8); z-index: 15; }
 .pick-slot .pre-select-badge { width: 38px; height: 38px; font-size: 19px; }
