@@ -195,15 +195,30 @@ body {
 .badge-multi { background: #00ff00; color: #000; }
 .badge-multi-danger { background: #ff0000; color: #fff; }
 
+/* Garante que o dragão fica "preso" ao ícone do brawler */
+.mini-brawler-grid .brawler-icon {
+    position: relative; 
+}
+
+/* Posiciona o dragão no canto superior direito */
 .dragon-badge {
     position: absolute;
-    top: 2px;
-    right: 2px;
-    width: 14px;
-    height: 14px;
+    top: -8px;    /* Puxa o dragão um pouco para cima (ajusta se necessário) */
+    right: -8px;  /* Puxa o dragão um pouco para a direita (ajusta se necessário) */
+    width: 28px;  /* Define o tamanho do dragão */
+    height: 28px; /* Mantém a proporção */
+    z-index: 10;  /* Garante que o dragão fica por cima da imagem do brawler */
+    pointer-events: none; /* Evita que o dragão bloqueie cliques acidentais */
+    filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5)); /* Dá uma sombrinha para destacar */
+}
+
+/* Se tiveres o badge de quantidade (ex: x2), convém ajustá-lo também para não sobrepor */
+.badge-multi {
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 10;
-    filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.9));
-    pointer-events: none;
 }
 
 .highlight-bad { 
