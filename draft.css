@@ -197,13 +197,13 @@ body {
 
 .dragon-badge {
     position: absolute !important;
-    top: -10px !important;    /* Puxa o dragão para cima */
-    right: -10px !important;  /* Puxa o dragão para a direita */
-    width: 25px;              /* Define o tamanho do dragão (ajuste se precisar) */
+    top: -6px !important;     /* Ajustado para ficar mais perto da borda */
+    right: -6px !important;   /* Ajustado para ficar mais perto da borda */
+    width: 15px !important;   /* Deixamos o dragão bem menor (antes era 25px) */
     height: auto;
     z-index: 10;
-    pointer-events: none;     /* Impede que o dragão atrapalhe o clique */
-    filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5));
+    pointer-events: none;
+    filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.6));
 }
 /* Se tiveres o badge de quantidade (ex: x2), convém ajustá-lo também para não sobrepor */
 .badge-multi {
