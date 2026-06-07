@@ -93,24 +93,13 @@ body {
 .side-panel { background-color: var(--bg-paineis); border: 1px solid var(--borda-suave); border-radius: 12px; padding: 15px; flex: 1; display: flex; flex-direction: column; min-height: 0; }
 .panel-title { color: var(--rosa-neon); font-weight: bold; font-size: 13px; text-transform: uppercase; text-align: center; margin-bottom: 12px; }
 
-/* FIX DO ALINHAMENTO DO INIMIGO */
+/* FIX DO ALINHAMENTO DAS LISTAS LATERAIS */
 #counters-list, #podetomar-list {
     display: flex !important;
     flex-wrap: wrap !important;
     gap: 8px !important;
     padding: 10px !important;
     overflow-y: auto;
-}
-
-.mini-brawler { 
-    position: relative !important; 
-    width: 48px !important;  
-    height: 48px !important;
-    background-color: var(--bg-slots); 
-    border-radius: 8px !important; 
-    overflow: hidden !important; 
-    display: block !important;
-    border: 1px solid var(--borda-destaque); 
 }
 
 /* ROSTER COMPLETO DA DIREITA */
@@ -189,9 +178,20 @@ body {
 }
 .slot-large .pre-select-badge { width: 30px; height: 30px; font-size: 15px; }
 
-.highlight-good { border: 2px solid #00ff00 !important; box-shadow: 0 0 10px rgba(0, 255, 0, 0.6); }
-.highlight-bad { border: 2px solid #ff0000 !important; box-shadow: 0 0 8px rgba(255, 0, 0, 0.6); }
 
+/* ======================================================== */
+/* TRAVA DE SEGURANÇA GERAL (IMPEDE IMAGENS GIGANTES)       */
+/* ======================================================== */
+.brawler-icon img, 
+.slot img,
+.mini-brawler img { 
+    width: 100% !important; 
+    height: 100% !important; 
+    object-fit: cover !important; 
+    display: block; 
+}
+
+/* FORMATO DOS BRAWLERS PEQUENOS (COUNTERS) */
 .mini-brawler { 
     position: relative !important; 
     width: 48px !important;  
@@ -203,26 +203,11 @@ body {
     border: 1px solid var(--borda-destaque); 
 }
 
-/* Removemos a lógica do dragão. Apenas a foto aparece. */
-.mini-brawler img { 
-    width: 100% !important; 
-    height: 100% !important; 
-    object-fit: cover !important; 
-    display: block; 
-}
-
 /* DESTAQUES DE BORDA (Sem dragões) */
-.highlight-good { 
-    border: 2px solid #00ff00 !important; 
-    box-shadow: 0 0 10px rgba(0, 255, 0, 0.4); 
-}
+.highlight-good { border: 2px solid #00ff00 !important; box-shadow: 0 0 10px rgba(0, 255, 0, 0.4); }
+.highlight-bad { border: 2px solid #ff0000 !important; box-shadow: 0 0 8px rgba(255, 0, 0, 0.4); }
 
-.highlight-bad { 
-    border: 2px solid #ff0000 !important; 
-    box-shadow: 0 0 8px rgba(255, 0, 0, 0.4); 
-}
-
-/* Badge multiplicadora (mantida no canto, pois ela é importante para o jogo) */
+/* BADGE MULTIPLICADORA (x2, x3) NO CANTO */
 .badge-multi, .badge-multi-danger { 
     position: absolute !important; 
     bottom: 2px !important; 
