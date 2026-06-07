@@ -346,7 +346,7 @@ function calcularPodeTomar() {
             let qtd = contagemAmeacas[nome];
  
             let destaqueClass = qtd >= 2 ? 'highlight-bad' : '';
-            // MUDADO AQUI: Agora aplica a classe 'badge-multi-danger' para ficar vermelha
+            // Classe alterada aqui para carregar o estilo vermelho definido no CSS
             let badge = qtd >= 2 ? `<div class="badge-multi-danger">x${qtd}</div>` : '';
  
             container.innerHTML += `
