@@ -300,7 +300,7 @@ function calcularCounters() {
  
            let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
            let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
-           let dragonIcon = qtd >= 2 ? `<img src="element/dragon_happy.png" style="position: absolute !important; top: -2px !important; right: -2px !important; width: 12px !important; height: auto !important; z-index: 10; pointer-events: none;">` : '';
+           let dragonIcon = qtd >= 2 ? `<img src="element/dragon_happy.png" style="position: absolute !important; top: -4px !important; right: -4px !important; width: 16px !important; height: 16px !important; min-width: 16px !important; min-height: 16px !important; max-width: 16px !important; max-height: 16px !important; object-fit: contain !important; z-index: 100 !important; pointer-events: none !important; margin: 0 !important; padding: 0 !important; border: none !important;">` : '';
  
             container.innerHTML += `
                 <div class="mini-brawler ${destaqueClass}" title="${nome} (Counter x${qtd})">
@@ -353,7 +353,7 @@ function calcularPodeTomar() {
  
             let destaqueClass = qtd >= 2 ? 'highlight-bad' : '';
             let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
-            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_cry.png" style="position: absolute !important; top: -2px !important; right: -2px !important; width: 12px !important; height: auto !important; z-index: 10; pointer-events: none;">` : '';
+            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_cry.png" style="position: absolute !important; top: -4px !important; right: -4px !important; width: 16px !important; height: 16px !important; min-width: 16px !important; min-height: 16px !important; max-width: 16px !important; max-height: 16px !important; object-fit: contain !important; z-index: 100 !important; pointer-events: none !important; margin: 0 !important; padding: 0 !important; border: none !important;">` : '';
             container.innerHTML += `
                 <div class="mini-brawler ${destaqueClass}" title="${nome} (Counter x${qtd})">
                     ${dragonIcon}
