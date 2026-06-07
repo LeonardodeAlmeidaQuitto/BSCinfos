@@ -1,4 +1,4 @@
-// --- DADOS DO SISTEMA ---
+/ --- DADOS DO SISTEMA ---
 const MAPAS_ALVO = {
     "Brawl Ball": ["Super Beach", "Pinhole Punt", "Sneaky Fields", "Triple Dribble", "Pinhole Punt", "Pinball Dreams"],
     "Bounty": ["Shooting Star", "Hideout", "Layer Cake", "Dry Season"],
@@ -298,9 +298,12 @@ function calcularCounters() {
             const id = limparNome(nome);
             let qtd = contagemCounters[nome];
  
-           let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
-           let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
-           let dragonIcon = qtd >= 2 ? `<img src="element/dragon_happy.png" style="position: absolute !important; top: -4px !important; right: -4px !important; width: 16px !important; height: 16px !important; min-width: 16px !important; min-height: 16px !important; max-width: 16px !important; max-height: 16px !important; object-fit: contain !important; z-index: 100 !important; pointer-events: none !important; margin: 0 !important; padding: 0 !important; border: none !important;">` : '';
+            let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
+            let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
+            // FIX: INIMIGO usa dragon_they (vermelho) — counter do time inimigo
+            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_they_full.png" class="dragon-badge">` : '';
+ 
+            container.innerHTML += `
                 <div class="mini-brawler ${destaqueClass}" title="${nome} (Counter x${qtd})">
                     ${dragonIcon}
                     <img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -314,7 +317,7 @@ function calcularCounters() {
 }
  
 // COUNTERS (NOSSO): quem countera os picks AZUIS → ameaças ao nosso time
-// Dragon: dragon_US_full.png (verde)
+// Dragon: dragon_us_full.png (verde)
 function calcularPodeTomar() {
     let container = obterContainerNosso();
     if (!container) return;
@@ -349,9 +352,11 @@ function calcularPodeTomar() {
             const id = limparNome(nome);
             let qtd = contagemAmeacas[nome];
  
-            let destaqueClass = qtd >= 2 ? 'highlight-bad' : '';
+            let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
             let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
-            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_cry.png" style="position: absolute !important; top: -4px !important; right: -4px !important; width: 16px !important; height: 16px !important; min-width: 16px !important; min-height: 16px !important; max-width: 16px !important; max-height: 16px !important; object-fit: contain !important; z-index: 100 !important; pointer-events: none !important; margin: 0 !important; padding: 0 !important; border: none !important;">` : '';
+            // FIX: NOSSO usa dragon_us (verde) — ameaça ao nosso time
+            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_us_full.png" class="dragon-badge">` : '';
+ 
             container.innerHTML += `
                 <div class="mini-brawler ${destaqueClass}" title="${nome} (Counter x${qtd})">
                     ${dragonIcon}
