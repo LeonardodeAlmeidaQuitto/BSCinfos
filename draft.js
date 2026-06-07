@@ -352,7 +352,7 @@ function calcularPodeTomar() {
             const id = limparNome(nome);
             let qtd = contagemAmeacas[nome];
  
-            let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
+            let destaqueClass = qtd >= 2 ? 'highlight-bad' : '';
             let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
             // FIX: NOSSO usa dragon_us (verde) — ameaça ao nosso time
             let dragonIcon = qtd >= 2 ? `<img src="element/dragon_cry.png" class="dragon-badge" style="position: absolute !important; top: -30px !important; right: -30px !important; width: 40px !important; height: 40px !important; min-width: 40px !important; min-height: 40px !important; max-width: 40px !important; max-height: 40px !important; object-fit: contain !important; z-index: 100 !important; pointer-events: none !important; margin: 0 !important; padding: 0 !important; border: none !important; background: transparent !important;">` : '';
