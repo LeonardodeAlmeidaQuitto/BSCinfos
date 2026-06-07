@@ -228,28 +228,25 @@ body {
     display: block !important;
 }
 
-/* --- POSICIONAMENTO E CORREÇÃO DO DRAGÃO --- */
+/* --- REGRA PARA MANDAR O DRAGÃO PARA BAIXO NA ESQUERDA --- */
 .mini-brawler img.dragon-badge {
     position: absolute !important;
-    top: 2px !important;       /* Distância do topo (para dentro da imagem) */
-    left: 2px !important;      /* Distância da esquerda (para dentro da imagem) */
+    bottom: 2px !important;    /* Fixa na parte de BAIXO */
+    left: 2px !important;      /* Fixa na ESQUERDA */
+    top: auto !important;      /* Anula regras de topo anteriores */
+    right: auto !important;    /* Anula regras de direita anteriores */
     
-    /* Define o tamanho pequeno e fixo do dragão */
-    width: 20px !important;     
-    height: 20px !important;    
-    min-width: 20px !important;
-    min-height: 20px !important;
-    max-width: 20px !important;
-    max-height: 20px !important;
+    /* Mantém o tamanho pequeno desejado */
+    width: 16px !important;    
+    height: 16px !important;
+    min-width: 16px !important;
+    min-height: 16px !important;
+    max-width: 16px !important;
+    max-height: 16px !important;
     
-    /* ESTE É O SEGREDO: Corta a trava antiga e impede o dragão de esticar */
-    object-fit: contain !important; 
-    display: block !important;
-    
-    /* Garante que ele fique flutuando exatamente na camada acima do brawler */
-    z-index: 99 !important;     
-    
-    /* Remove decorações indesejadas */
+    /* Garante o formato correto e sobreposição */
+    object-fit: contain !important;
+    z-index: 99 !important;
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
