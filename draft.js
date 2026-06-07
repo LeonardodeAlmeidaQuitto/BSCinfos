@@ -29,7 +29,7 @@ const DADOS_META = {
 // QUEM COUNTERA O BRAWLER SELECIONADO
 const DADOS_COUNTERS = {
     "8-bit": ["Belle", "Najia", "Crow", "Pierce", "Byron", "Penny"],
-    "Alli": ["Otis", "Spike", "Kenji", "Ruffs", "Bull", "Trunk", "Jack", "Sirius", "Mortis", "Emz"],
+    "Alli": ["Otis", "Spike", "Kenji", "Ruffs", "Bull", "Trunk", "Jacky", "Sirius", "Mortis", "Emz"],
     "Amber": ["Byron", "Angelo", "Nani", "Lily", "Mortis", "Edgar", "Bea"],
     "Angelo": ["Eve", "Ruffs", "Charlie", "Belle", "Kenji", "Pierce", "Nani", "Byron", "Brock", "Kaze"],
     "Ash": ["Frank", "Trunk", "Edgar", "Rico", "Shade", "Sirius", "Kenji", "Griff"],
