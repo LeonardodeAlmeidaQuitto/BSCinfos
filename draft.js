@@ -301,7 +301,7 @@ function calcularCounters() {
             let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
             let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
             // FIX: INIMIGO usa dragon_they (vermelho) — counter do time inimigo
-            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_us_full.png" class="dragon-badge">` : '';
+            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_happy.png" class="dragon-badge">` : '';
  
             container.innerHTML += `
                 <div class="mini-brawler ${destaqueClass}" title="${nome} (Counter x${qtd})">
@@ -317,7 +317,7 @@ function calcularCounters() {
 }
  
 // COUNTERS (NOSSO): quem countera os picks AZUIS → ameaças ao nosso time
-// Dragon: dragon_us_full.png (verde)
+// Dragon: dragon_US_full.png (verde)
 function calcularPodeTomar() {
     let container = obterContainerNosso();
     if (!container) return;
@@ -352,10 +352,10 @@ function calcularPodeTomar() {
             const id = limparNome(nome);
             let qtd = contagemAmeacas[nome];
  
-            let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
+            let destaqueClass = qtd >= 2 ? 'highlight-danger' : '';
             let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
-            // FIX: NOSSO usa dragon_us (verde) — ameaça ao nosso time
-            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_they_full.png" class="dragon-badge">` : '';
+            // FIX: NOSSO usa dragon_THEY (verde) — ameaça ao nosso time
+            let dragonIcon = qtd >= 2 ? `<img src="element/dragon_cry.png" class="dragon-badge">` : '';
  
             container.innerHTML += `
                 <div class="mini-brawler ${destaqueClass}" title="${nome} (Counter x${qtd})">
