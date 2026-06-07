@@ -138,14 +138,8 @@ const BRAWLERS = ["Damian", "8-Bit", "Alli", "Amber", "Angelo", "Ash", "Barley",
 let currentStep = 0, selected = [], firstPick = 'blue', draftOrder = [], picksVermelhos = [], picksAzuis = [], preSelected = null;
 
 function limparNome(nome) { return !nome ? "" : nome.toLowerCase().replace(/[^a-z0-9]/g, ''); }
-function obterCaixaPorTexto(texto, fallback) {
-    const el = Array.from(document.querySelectorAll('*')).find(e => e.textContent.trim().toUpperCase() === texto.toUpperCase());
-    return el ? (el.parentElement.querySelector('.mini-brawler-grid') || el.parentElement) : document.querySelectorAll('.mini-brawler-grid')[fallback];
-}
 function obterContainerInimigo() { return document.getElementById('counters-list'); }
-function obterContainerNosso() { return document.getElementById('podetomar-list') || document.getElementById('counters-nosso'); }
-function obterContainerMeta() { return document.getElementById('meta-list'); }
-function criarConteudoSlot(nome, id) { return `<div class="slot-assets"><img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="slot-fallback-text">${nome}</div></div>`; }
+function obterContainerNosso() { return document.getElementById('podetomar-list'); }
 
 function contarCounters(lista) {
     let contagem = {};
@@ -193,6 +187,53 @@ function buildOrder() {
     draftOrder = draftOrder.concat(picks);
 }
 
+// Funções de Interface
+window.setFirstPick = function(team) {
+    firstPick = team;
+    document.getElementById('fp-blue').className = 'fp-btn ' + (team === 'blue' ? 'active' : '');
+    document.getElementById('fp-red').className = 'fp-btn ' + (team === 'red' ? 'active' : '');
+    window.resetDraft();
+};
+
+window.popularMapas = function() {
+    const select = document.getElementById('map-select');
+    if (!select) return;
+    select.innerHTML = '';
+    Object.keys(MAPAS_ALVO).forEach(cat => {
+        let optgroup = document.createElement('optgroup');
+        optgroup.label = cat;
+        MAPAS_ALVO[cat].forEach(mapa => {
+            let opt = document.createElement('option');
+            opt.value = mapa; opt.textContent = mapa;
+            optgroup.appendChild(opt);
+        });
+        select.appendChild(optgroup);
+    });
+};
+
+window.atualizarMeta = function() {
+    const mapName = document.getElementById('map-select')?.value;
+    if (!mapName) return;
+    const metaList = DADOS_META[mapName] || [];
+    document.querySelectorAll('.brawler-icon').forEach(div => {
+        const nome = div.querySelector('.brawler-name')?.textContent;
+        div.classList.toggle('brawler-meta', metaList.includes(nome));
+    });
+};
+
+window.gerarRoster = function() {
+    const container = document.getElementById('roster');
+    if (!container) return;
+    container.innerHTML = '';
+    BRAWLERS.forEach(nome => {
+        let id = limparNome(nome);
+        container.innerHTML += `<div class="brawler-icon" id="b-${id}" onclick="window.clicarBrawler('${nome}', '${id}')">
+            <img src="brawlers/${id}.png" onerror="this.src='brawlers/default.png'">
+            <div class="brawler-name">${nome}</div>
+        </div>`;
+    });
+};
+
 window.clicarBrawler = function(nome, id) {
     if (currentStep >= draftOrder.length || selected.includes(id)) return;
     const step = draftOrder[currentStep];
@@ -202,7 +243,7 @@ window.clicarBrawler = function(nome, id) {
         document.getElementById(step.slot).innerHTML = `<div class="slot-assets pre-selecting" onclick="window.confirmarBlueSelection(event)"><img src="brawlers/${id}.png"><div class="slot-fallback-text">${nome}</div><div class="pre-select-badge">✓</div></div>`;
         calcularCounters(); calcularPodeTomar();
     } else {
-        document.getElementById(step.slot).innerHTML = criarConteudoSlot(nome, id);
+        document.getElementById(step.slot).innerHTML = `<div class="slot-assets"><img src="brawlers/${id}.png"><div class="slot-fallback-text">${nome}</div></div>`;
         if(document.getElementById(`b-${id}`)) document.getElementById(`b-${id}`).classList.add('disabled');
         selected.push(id); if (step.type === 'pick') picksVermelhos.push(nome);
         currentStep++; preSelected = null; atualizarFoco(); calcularCounters(); calcularPodeTomar();
@@ -211,7 +252,7 @@ window.clicarBrawler = function(nome, id) {
 
 window.confirmarBlueSelection = function(event) {
     if (event) event.stopPropagation(); if (!preSelected) return;
-    document.getElementById(draftOrder[currentStep].slot).innerHTML = criarConteudoSlot(preSelected.nome, preSelected.id);
+    document.getElementById(draftOrder[currentStep].slot).innerHTML = `<div class="slot-assets"><img src="brawlers/${preSelected.id}.png"><div class="slot-fallback-text">${preSelected.nome}</div></div>`;
     if(document.getElementById(`b-${preSelected.id}`)) document.getElementById(`b-${preSelected.id}`).classList.add('disabled');
     selected.push(preSelected.id); picksAzuis.push(preSelected.nome);
     preSelected = null; currentStep++; atualizarFoco(); calcularCounters(); calcularPodeTomar();
@@ -232,12 +273,19 @@ window.resetDraft = function() {
     buildOrder(); atualizarFoco(); window.atualizarMeta(); calcularCounters(); calcularPodeTomar();
 };
 
-window.inicializarSistema = function() {
-    popularMapas(); gerarRoster(); resetDraft();
-    document.getElementById('map-select')?.addEventListener('change', window.atualizarMeta);
-    document.getElementById('search')?.addEventListener('input', () => {
-        let t = document.getElementById('search').value.toLowerCase();
-        document.querySelectorAll('.brawler-icon').forEach(d => d.style.display = d.querySelector('.brawler-name').textContent.toLowerCase().includes(t) ? 'flex' : 'none');
+window.filtrar = function() {
+    const t = document.getElementById('search')?.value.toLowerCase();
+    document.querySelectorAll('.brawler-icon').forEach(div => {
+        const n = div.querySelector('.brawler-name').textContent.toLowerCase();
+        div.style.display = n.includes(t) ? 'flex' : 'none';
     });
+};
+
+function inicializarSistema() {
+    popularMapas();
+    gerarRoster();
+    resetDraft();
+    document.getElementById('map-select')?.addEventListener('change', window.atualizarMeta);
 }
+
 window.onload = inicializarSistema;
