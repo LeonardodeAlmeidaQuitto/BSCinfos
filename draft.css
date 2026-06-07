@@ -201,7 +201,7 @@ body {
 
 .badge-multi, .badge-multi-danger { position: absolute; bottom: 1px; right: 1px; font-size: 9px; font-weight: 900; padding: 1px 3px; border-radius: 3px; z-index: 5; }
 .badge-multi { background: #00ff00; color: #000; }
-.badge-multi-danger { background: #ff0000; color: #fff; }
+.badge-multi-bad { background: #ff0000; color: #fff; }
 
 #counters-list, #podetomar-list {
     display: flex !important;
