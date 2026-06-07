@@ -197,18 +197,21 @@ body {
 
 .dragon-badge {
     position: absolute !important;
-    top: -1px !important;      /* Bem colado na borda */
-    right: -1px !important;    /* Bem colado na borda */
-    
-    /* Força o tamanho para 6px (muito pequeno) */
-    width: 6px !important;     
-    max-width: 6px !important; 
-    min-width: 6px !important; 
-    
-    height: auto !important;
-    z-index: 10;
-    pointer-events: none;
-    filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.9)); 
+    top: -30px !important;
+    right: -30px !important;
+    width: 80px !important;
+    height: 80px !important;
+    min-width: 80px !important;
+    min-height: 80px !important;
+    max-width: 80px !important;
+    max-height: 80px !important;
+    object-fit: contain !important;
+    z-index: 100 !important;
+    pointer-events: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
 }
 /* Se tiveres o badge de quantidade (ex: x2), convém ajustá-lo também para não sobrepor */
 .badge-multi {
