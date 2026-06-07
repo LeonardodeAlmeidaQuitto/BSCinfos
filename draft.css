@@ -189,44 +189,40 @@ body {
 }
 .slot-large .pre-select-badge { width: 30px; height: 30px; font-size: 15px; }
 
-/* ======================================================== */
-/* A CORREÇÃO DE OURO: TRAVA QUE IGNORA O DRAGÃO (:not)     */
-/* ======================================================== */
-.brawler-icon img, 
-.mini-brawler img:not(.dragon-badge), 
-.slot img { 
+.highlight-good { border: 2px solid #00ff00 !important; box-shadow: 0 0 10px rgba(0, 255, 0, 0.6); }
+.highlight-bad { border: 2px solid #ff0000 !important; box-shadow: 0 0 8px rgba(255, 0, 0, 0.6); }
+
+.mini-brawler { 
+    position: relative !important; 
+    width: 48px !important;  
+    height: 48px !important;
+    background-color: var(--bg-slots); 
+    border-radius: 8px !important; 
+    overflow: hidden !important; 
+    display: block !important;
+    border: 1px solid var(--borda-destaque); 
+}
+
+/* Removemos a lógica do dragão. Apenas a foto aparece. */
+.mini-brawler img { 
     width: 100% !important; 
     height: 100% !important; 
     object-fit: cover !important; 
     display: block; 
 }
 
-/* DESTAQUES E DRAGÕES */
-.highlight-good { border: 2px solid #00ff00 !important; box-shadow: 0 0 10px rgba(0, 255, 0, 0.6); }
-.highlight-bad { border: 2px solid #ff0000 !important; box-shadow: 0 0 8px rgba(255, 0, 0, 0.6); }
-
-/* DRAGÃO NO CANTO INFERIOR ESQUERDO */
-.mini-brawler img.dragon-badge {
-    position: absolute !important;
-    bottom: 2px !important;
-    left: 2px !important;
-    top: auto !important;
-    right: auto !important;
-    width: 18px !important;
-    height: 18px !important;
-    min-width: 18px !important;
-    min-height: 18px !important;
-    max-width: 18px !important;
-    max-height: 18px !important;
-    object-fit: contain !important;
-    z-index: 9999 !important;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    display: block !important;
+/* DESTAQUES DE BORDA (Sem dragões) */
+.highlight-good { 
+    border: 2px solid #00ff00 !important; 
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.4); 
 }
 
-/* BADGE MULTIPLICADORA (X2) NO CANTO OPOSTO (DIREITA) */
+.highlight-bad { 
+    border: 2px solid #ff0000 !important; 
+    box-shadow: 0 0 8px rgba(255, 0, 0, 0.4); 
+}
+
+/* Badge multiplicadora (mantida no canto, pois ela é importante para o jogo) */
 .badge-multi, .badge-multi-danger { 
     position: absolute !important; 
     bottom: 2px !important; 
@@ -235,7 +231,7 @@ body {
     font-weight: 900 !important; 
     padding: 1px 3px !important; 
     border-radius: 4px !important; 
-    z-index: 100 !important; 
+    z-index: 10 !important; 
 }
 .badge-multi { background: #00ff00 !important; color: #000 !important; }
 .badge-multi-bad { background: #ff0000 !important; color: #fff !important; }
