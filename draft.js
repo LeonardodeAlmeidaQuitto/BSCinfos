@@ -300,7 +300,7 @@ function calcularCounters() {
  
            let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
            let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
-           let dragonIcon = qtd >= 2 ? `<img src="element/dragon_happy.png" style="position: absolute !important; top: -4px !important; right: -4px !important; width: 24px !important; height: 24px !important; min-width: 24px !important; min-height: 24px !important; max-width: 24px !important; max-height: 24px !important; object-fit: contain !important; z-index: 100 !important; pointer-events: none !important; margin: 0 !important; padding: 0 !important; border: none !important;">` : '';
+           let dragonIcon = qtd >= 2 ? `<img src="element/dragon_happy.png" style="position: absolute !important; top: -15px !important; right: -15px !important; width: 50px !important; height: 50px !important; min-width: 50px !important; min-height: 50px !important; max-width: 50px !important; max-height: 50px !important; object-fit: contain !important; z-index: 100 !important; pointer-events: none !important; margin: 0 !important; padding: 0 !important; border: none !important;">` : '';
             container.innerHTML += `
                 <div class="mini-brawler ${destaqueClass}" title="${nome} (Counter x${qtd})">
                     ${dragonIcon}
