@@ -7,13 +7,13 @@
     <link rel="stylesheet" href="draft.css">
 </head>
 <body>
-
+ 
     <div class="navbar">
         <a href="index.html">MENU</a>
         <a href="regioes.html">META</a>
         <a href="draft.html" style="color: #ff00ff;">DRAFT</a>
     </div>
-
+ 
     <div class="top-controls">
         <div class="first-pick-selector">
             <span>FIRST PICK:</span>
@@ -21,72 +21,78 @@
             <button id="fp-red" class="fp-btn" onclick="window.setFirstPick('red')"></button>
         </div>
         <div class="map-selector">
-            <select id="map-select">
+            <select id="map-select" onchange="window.atualizarMeta()">
                 </select>
         </div>
     </div>
-
+ 
     <div class="main-container">
         
-        <div class="draft-area vertical-layout">
-            
-            <div class="team-col">
-                <div class="ban-col">
-                    <div class="slot ban-slot" id="slot-b0"></div>
-                    <div class="slot ban-slot" id="slot-b2"></div>
-                    <div class="slot ban-slot" id="slot-b4"></div>
+        <div class="draft-area">
+            <div class="vertical-layout">
+                
+                <div class="team-col">
+                    <div class="ban-col">
+                        <div class="slot ban-slot" id="slot-b0"></div>
+                        <div class="slot ban-slot" id="slot-b2"></div>
+                        <div class="slot ban-slot" id="slot-b4"></div>
+                    </div>
+                    <div class="pick-col">
+                        <div class="slot pick-slot" id="slot-pA1"></div>
+                        <div class="slot pick-slot" id="slot-pA2"></div>
+                        <div class="slot pick-slot" id="slot-pA3"></div>
+                    </div>
                 </div>
-                <div class="pick-col">
-                    <div class="slot pick-slot" id="slot-pA1"></div>
-                    <div class="slot pick-slot" id="slot-pA2"></div>
-                    <div class="slot pick-slot" id="slot-pA3"></div>
+     
+                <div class="map-col">
+                    <span id="map-placeholder">SELECIONE O MAPA</span>
+                    <img src="" alt="Mapa" id="map-img">
                 </div>
+     
+                <div class="team-col red-team-imgs">
+                    <div class="pick-col">
+                        <div class="slot pick-slot" id="slot-pV1"></div>
+                        <div class="slot pick-slot" id="slot-pV2"></div>
+                        <div class="slot pick-slot" id="slot-pV3"></div>
+                    </div>
+                    <div class="ban-col">
+                        <div class="slot ban-slot" id="slot-b1"></div>
+                        <div class="slot ban-slot" id="slot-b3"></div>
+                        <div class="slot ban-slot" id="slot-b5"></div>
+                    </div>
+                </div>
+                
             </div>
-
-            <div class="map-col">
-                <img id="center-map-img" src="" alt="Mapa">
-                <div id="map-placeholder" style="color: #555; text-align: center; font-size: 12px; font-weight: bold;">SELECIONE O<br>MAPA</div>
-            </div>
-
-            <div class="team-col">
-                <div class="pick-col red-team-imgs">
-                    <div class="slot pick-slot" id="slot-pV1"></div>
-                    <div class="slot pick-slot" id="slot-pV2"></div>
-                    <div class="slot pick-slot" id="slot-pV3"></div>
-                </div>
-                <div class="ban-col red-team-imgs">
-                    <div class="slot ban-slot" id="slot-b1"></div>
-                    <div class="slot ban-slot" id="slot-b3"></div>
-                    <div class="slot ban-slot" id="slot-b5"></div>
-                </div>
-            </div>
-
         </div>
-
+ 
         <div class="info-panels">
             <div class="side-panel">
                 <div class="panel-title">META TOP 10</div>
-                <div class="mini-brawler-grid" id="meta-list"></div>
+                <div class="mini-brawler-grid" id="meta-list">
+                    </div>
             </div>
-
+ 
             <div class="side-panel">
                 <div class="panel-title">COUNTERS (INIMIGO)</div>
-                <div class="mini-brawler-grid" id="counters-list"></div>
+                <div class="mini-brawler-grid" id="counters-list">
+                    </div>
             </div>
-
+ 
             <div class="side-panel">
                 <div class="panel-title">COUNTERS (NOSSO)</div>
-                <div class="mini-brawler-grid" id="podetomar-list"></div>
+                <div class="mini-brawler-grid" id="podetomar-list">
+                    </div>
             </div>
         </div>
-
+ 
         <div class="roster-area">
-            <input type="text" id="search" class="search-bar" placeholder="BUSCAR...">
-            <div class="roster-grid" id="roster"></div>
+            <input type="text" id="search" class="search-bar" placeholder="BUSCAR..." oninput="window.filtrar()">
+            <div class="roster-grid" id="roster">
+                </div>
         </div>
-
+ 
     </div>
-
+ 
     <script src="draft.js"></script>
 </body>
 </html>
