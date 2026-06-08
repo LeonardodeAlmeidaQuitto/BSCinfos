@@ -110,7 +110,7 @@ const DADOS_COUNTERS = {
     "Penny": [""],
     "Pierce": [""],
     "Piper": [""],
-    "Poco": ["Crow", "Byron", "Meg", "LawrieLarry],
+    "Poco": ["Crow", "Byron", "Meg", "LawrieLarry"],
     "R-T": [""],
     "Rico": [""],
     "Rosa": [""],
