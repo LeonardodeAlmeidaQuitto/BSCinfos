@@ -29,9 +29,9 @@ const DADOS_META = {
 // QUEM COUNTERA O BRAWLER SELECIONADO
 const DADOS_COUNTERS = {
     "8-bit": ["Belle", "Najia", "Crow", "Pierce", "Byron", "Penny"],
-    "Alli": ["Otis", "Spike", "Kenji", "Ruffs", "Bull", "Trunk", "Jacky", "Sirius", "Mortis", "Emz"],
+    "Alli": ["Otis", "Kenji", "Ruffs", "Bull", "Trunk", "Jacky", "Sirius", "Mortis", "Emz"],
     "Amber": ["Byron", "Angelo", "Nani", "Lily", "Mortis", "Edgar", "Bea"],
-    "Angelo": ["Eve", "Ruffs", "Charlie", "Belle", "Kenji", "Pierce", "Nani", "Byron", "Brock", "Kaze"],
+    "Angelo": ["Eve", "Ruffs", "Charlie", "Belle", "Kenji", "Pierce", "Nani", "Byron", "Kaze"],
     "Ash": ["Frank", "Trunk", "Edgar", "Rico", "Shade", "Sirius", "Kenji", "Griff"],
     "Barley": ["Mortis", "Kenji", "Edgar", "Cordelius", "Trunk", "Mico", "Colt"],
     "Bea": ["Charlie", "Ruffs", "Byron", "Najia", "Belle", "Angelo", "Leon"],
@@ -51,7 +51,7 @@ const DADOS_COUNTERS = {
     "Chuck": ["Charlie", "Cordelius", "Otis", "R-T"],
     "Clancy": ["Charlie", "Ruffs", "Cordelius"],
     "Colette": ["Ruffs", "Otis", "Crow", "Charlie"],
-    "Colt": ["Pierce", "Charlie", "Nani", "Otis", "Gene", "Ruffs", "Mina", "Leon", "Colette", "Kenji", "Byron", "Crow", "Gus", "Edgar", "Belle", "Clancy", "Lily", "Bull", "Mortis", "Brock", "Angelo", "Nita"],
+    "Colt": ["Pierce", "Nani", "Ruffs", "Mina", "Leon", "Kenji", "Byron", "Crow", "Gus", "Edgar", "Belle", "Clancy", "Lily", "Mortis", "Angelo"],
    "Cordelius": [""],
     "Crow": [""],
     "Damian": [""],
