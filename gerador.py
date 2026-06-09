@@ -15,18 +15,32 @@ ARQUIVO_FINAL = "estatisticas_finais.csv"
 
 REGIOES = {
 
-    "SA": {"#PLLRJC2V": "BH|Wesley",
-           "#2GV09VJJP": "LOUD|FireCrow",
-           "#CQLR0Y80": "ELV|Tufa",
-           "#L9PQUV0YC": "OS|BrabaoBs",
-           "#JQ8LLLY": "AL|FireMirillo",
-           "#202GJJR28": "Doritos",
-           "#PR0P8QVQ": "SKC| Kr ;)",
-           "#R2LR2QLG": "ETN|Mohtep",
-           "#80VLPJCCC": "Tilo",
-           "#GJPVYUQG": "ENO|Deykonn",
-           "#2P8RVJVUY": "OCX|Sterixx",
-           "#2QCCC29QV": "ODS|Magic"},
+    "SA": {
+
+    "BH":{
+        "players":[
+            {
+                "tag":"#PLLRJC2V",
+                "nick":"Wesley"
+            }
+        ]
+    },
+
+    "LOUD":{
+        "players":[
+            {
+                "tag":"#2GV09VJJP",
+                "nick":"FireCrow"
+            }
+        ]
+    "OS":{
+        "players":[
+            {
+                "tag":"#L9PQUV0YC",
+                "nick":"OS|BrabaoBs"
+            }
+        ]
+    },
 
     "NA": {"#LVRRYPV": "RLM|Bobby",
            "#82RCQCVG": "TRB|Lxffy",
@@ -156,6 +170,28 @@ def minerar_dados():
         df_stats = df_total.explode('regiao_list')
         
         os.makedirs('api/stats', exist_ok=True)
+
+                times_saida = []
+
+for nome_time, dados_time in REGIOES["SA"].items():
+
+    if isinstance(dados_time, dict):
+
+        times_saida.append({
+
+            "team": nome_time,
+
+            "players":[
+                p["nick"]
+                for p in dados_time["players"]
+            ]
+        })
+
+pd.DataFrame(times_saida).to_json(
+    "api/stats/sa_teams.json",
+    orient="records",
+    force_ascii=False
+)
 
         # 🌟 MODIFICAÇÃO: Incluídos 'ano' e 'mes' dentro do agrupamento (groupby)
         def gerar_json_consolidado(df_input, path):
