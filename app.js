@@ -404,3 +404,38 @@ function abrirBrawler(nome){
         <p>${melhorMapa}</p>
     `;
 }
+
+async function gerarTimes(){
+
+    const lista=
+        document.getElementById("lista-times");
+
+    try{
+        const res=
+            await fetch(
+                "api/stats/sa_teams.json"
+            );
+        const times=
+            await res.json();
+        lista.innerHTML="";
+        times.forEach(time=>{
+            lista.innerHTML+=`
+            <div class="time-card">
+                <h2>${time.team}</h2>
+                <br>
+                <h3>ROSTER</h3>
+                <ul>
+                    ${
+                        time.players
+                        .map(p=>`<li>${p}</li>`)
+                        .join("")
+                    }
+                </ul>
+            </div>
+            `;
+        });
+    }catch(e){
+        lista.innerHTML=
+        "Erro ao carregar times";
+    }
+}
