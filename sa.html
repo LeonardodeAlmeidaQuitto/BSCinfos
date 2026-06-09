@@ -12,8 +12,15 @@
     <!-- NAVBAR -->
     <nav>
         <a href="index.html" class="nav-link">MENU</a>
-        <div class="nav-links">
-            <a href="sa.html" class="nav-link">SA</a>
+            <div class="nav-links">
+                <div class="dropdown">
+                    <a href="#" class="nav-link">SA ▼</a>
+                    <div class="dropdown-content">
+                    <a href="#" onclick="mostrarTela('meta')">META</a>
+                    <a href="#" onclick="mostrarTela('brawlers')">BRAWLERS</a>
+                    <a href="#" onclick="mostrarTela('times')">TIMES - PLAYERS</a>
+                </div>
+            </div>
             <a href="na.html" class="nav-link">NA</a>
             <a href="emea.html" class="nav-link">EMEA</a>
             <a href="ea.html" class="nav-link">EA</a>
@@ -37,7 +44,9 @@
             </select>
         </div>
         
-        <div id="grid-modos"></div> 
+        <div id="tela-meta">
+
+        <div id="grid-modos"></div>
 
         <!-- SEÇÃO DE ANÁLISE -->
         <div class="modo-section">
@@ -61,7 +70,20 @@
                 </table>
             </div>
         </div>
-    </main>
+    </div>
+    <div id="tela-brawlers" style="display:none">
+        <div class="brawlers-layout">
+        <div id="lista-brawlers">
+            </div>
+        <div id="info-brawler">
+           <h2>Selecione um Brawler</h2>
+            </div>
+        </div>
+        </div>
+    <div id="tela-times" style="display:none">
+    <div id="lista-times">
+    </div>
+    </div>
 
     <script>
         // Inicia o carregamento dos dados específicos da região SA
