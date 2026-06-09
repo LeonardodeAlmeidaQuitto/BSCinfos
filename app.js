@@ -334,3 +334,73 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 });
+
+function gerarListaBrawlers(){
+
+    const lista=document.getElementById("lista-brawlers");
+
+    let brawlers=[
+        ...new Set(
+            dadosOriginaisRegiao.map(x=>x.pick)
+        )
+    ];
+
+    brawlers.sort();
+
+    lista.innerHTML="";
+
+    brawlers.forEach(nome=>{
+
+        lista.innerHTML+=`
+
+        <div class="brawler-card"
+             onclick="abrirBrawler('${nome}')">
+
+            <img src="${formatarNomeImagem(nome)}"
+                 onerror="this.src='brawlers/default.png'">
+
+            <span>${nome}</span>
+
+        </div>
+        `;
+    });
+}
+
+function abrirBrawler(nome){
+
+    const info=document.getElementById("info-brawler");
+
+    const partidas=
+        dadosOriginaisRegiao.filter(
+            x=>x.pick===nome
+        );
+
+    let picks=0;
+    let wins=0;
+    const mapas={};
+    partidas.forEach(p=>{
+        picks+=Number(p.picks||0);
+        wins+=Number(p.vitorias||0);
+        if(!mapas[p.mapa]){
+            mapas[p.mapa]=0;
+        }
+        mapas[p.mapa]+=Number(p.picks||0);
+    });
+    
+    const melhorMapa=
+        Object.keys(mapas)
+        .sort((a,b)=>mapas[b]-mapas[a])[0];
+    info.innerHTML=`
+        <h1>${nome}</h1>
+        <br>
+        <img
+            src="${formatarNomeImagem(nome)}"
+            width="180"
+            onerror="this.src='brawlers/default.png'">
+        <br><br>
+        <h3>Picks: ${picks}</h3>
+        <h3>Wins: ${wins}</h3>
+        <h3>Mapa Mais Usado:</h3>
+        <p>${melhorMapa}</p>
+    `;
+}
