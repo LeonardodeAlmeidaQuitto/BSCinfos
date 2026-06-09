@@ -240,3 +240,130 @@ font-size: 1.2rem; font-weight: 900; text-transform: uppercase; border: none;
     height: 28px !important;  /* Ajusta este valor (ex: 25px, 30px) para o tamanho que quiseres */
     width: auto !important;   /* Mantém a proporção correta para a imagem não ficar distorcida */
 }
+
+/* --- CONTROLE DE TELAS --- */
+.tela-oculta { display: none !important; }
+.tela-ativa { display: block; }
+
+/* --- TELA BRAWLERS & TIMES (LAYOUT) --- */
+.brawlers-container, .times-container {
+    display: flex;
+    gap: 20px;
+    height: calc(100vh - 120px);
+    margin-top: 20px;
+}
+
+.brawlers-sidebar, .times-sidebar {
+    width: 250px;
+    background-color: var(--bg-cards);
+    border: 1px solid var(--border-dark);
+    border-radius: 8px;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Itens da lista lateral */
+.sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background-color: #1a1a1a;
+    border: 1px solid var(--border-dark);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: bold;
+    color: var(--texto);
+}
+
+.sidebar-item img {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    object-fit: cover;
+}
+
+.sidebar-item:hover, .sidebar-item.active {
+    background-color: var(--border-dark);
+    border-color: var(--accent-purple);
+}
+
+/* Painel de Informações Principal */
+.brawler-info-panel, .time-info-panel {
+    flex: 1;
+    background-color: var(--bg-cards);
+    border: 1px solid var(--border-dark);
+    border-radius: 8px;
+    padding: 30px;
+}
+
+#brawler-nome-destaque {
+    font-size: 28px;
+    color: var(--accent-purple);
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    border-bottom: 2px solid var(--border-dark);
+    padding-bottom: 10px;
+}
+
+.info-box {
+    background-color: #1a1a1a;
+    border: 1px solid var(--border-dark);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.info-box h3 {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 15px;
+}
+
+.destaque-mapa {
+    font-size: 22px;
+    font-weight: bold;
+    color: var(--texto);
+}
+
+/* Sinergias (Brawlers juntos) */
+.sinergias-grid {
+    display: flex;
+    gap: 15px;
+}
+
+.sinergia-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #000;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border-dark);
+}
+
+.sinergia-card img {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+/* Lista de jogadores dentro do painel do Time */
+.roster-list {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+.player-card {
+    background: #000;
+    padding: 15px;
+    border: 1px solid var(--border-dark);
+    border-radius: 8px;
+    flex: 1;
+    text-align: center;
+}
