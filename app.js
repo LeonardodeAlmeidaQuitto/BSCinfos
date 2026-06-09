@@ -45,8 +45,7 @@ window.carregarRegiao = async function(regiao) {
         renderizarListaBrawlers();
     } catch (error) {
         console.error("Erro ao carregar dados estruturados dos brawlers:", error);
-        // Fallback seguro: se o JSON falhar, renderiza usando os brawlers da planilha de meta
-        renderizarListaBrawlers();
+        renderizarListaBrawlers(); // Fallback seguro
     }
 
     // 3. Carrega dados da Aba TIMES
@@ -70,7 +69,6 @@ window.ordenarTabela = function(th, tipo) {
     
     const isAsc = !th.classList.contains('asc');
     
-    // Remove as classes de ordenação de todos os cabeçalhos da tabela atual
     table.querySelectorAll('th').forEach(header => header.classList.remove('asc', 'desc'));
     th.classList.add(isAsc ? 'asc' : 'desc');
     
@@ -93,18 +91,25 @@ window.ordenarTabela = function(th, tipo) {
 };
 
 // ========================================================
-// LÓGICA DA ABA 1: META (TABELAS E PROCESSAMENTO)
+// LÓGICA DA ABA 1: META (TABELAS E PROCESSAMENTO COM CORREÇÃO DE DATA)
 // ========================================================
 window.filtrarEAplicarDados = function() {
     const ano = document.getElementById("select-ano").value;
     const mesSelec = document.getElementById("select-mes").value;
     
-    const mesesNomes = { "04": "APRIL", "05": "MAY" };
+    const mesesNomes = { "04": "APRIL", "05": "MAY", "4": "APRIL", "5": "MAY" };
     const mesFiltro = mesesNomes[mesSelec] || "TODOS";
 
     let dadosFiltrados = dadosOriginaisRegiao.filter(d => {
-        const matchAno = d.ano === ano;
-        const matchMes = mesFiltro === "TODOS" || d.mes === mesFiltro;
+        const matchAno = String(d.ano) === String(ano);
+        const mLog = String(d.mes).toUpperCase();
+        
+        // CORREÇÃO CRÍTICA: Valida múltiplos formatos de mês simultaneamente
+        const matchMes = mesSelec === "TODOS" || 
+                         mLog === String(mesSelec) || 
+                         mLog === String(mesFiltro) ||
+                         mLog === String(parseInt(mesSelec));
+                         
         return matchAno && matchMes;
     });
 
@@ -118,7 +123,7 @@ function renderizarGridModos(dados, ano, mes) {
     container.innerHTML = "";
 
     const chaveMes = `${ano}-${mes}`;
-    const configuracaoMapas = MAPAS_POR_MES[chaveMes] || {};
+    const configuracaoMapas = MAPAS_POR_MES[chaveMes] || MAPAS_POR_MES[`${ano}-0${parseInt(mes)}`] || {};
 
     Object.keys(configuracaoMapas).forEach(modo => {
         const mapasDoModo = configuracaoMapas[modo];
@@ -186,7 +191,7 @@ function renderizarAllMaps(dados) {
 
     let listaGeral = Object.keys(agrupadoGeral).map(brawler => {
         const item = agrupadoGeral[brawler];
-        const wr = ((item.vitorias / item.picks) * 100).toFixed(1) + "%";
+        const wr = item.picks > 0 ? ((item.vitorias / item.picks) * 100).toFixed(1) + "%" : "0.0%";
         return { brawler, picks: item.picks, vitorias: item.vitorias, win_rate: wr };
     });
 
@@ -216,24 +221,23 @@ window.toggleElemento = function(header) {
 };
 
 // ========================================================
-// LÓGICA DA ABA 2: BRAWLERS (IGUAL AO LAYOUT DO DRAFT)
+// LÓGICA DA ABA 2: BRAWLERS (SIDEBAR ESTILO DRAFT CARD COM FOTO)
 // ========================================================
 function renderizarListaBrawlers() {
     const listaContainer = document.getElementById("lista-brawlers-sidebar");
     if (!listaContainer) return;
 
-    // Obtém a lista mapeada do JSON ou extrai dinamicamente da meta caso esteja vazio
     let brawlersOrdenados = Object.keys(dadosBrawlers);
     if (brawlersOrdenados.length === 0 && dadosOriginaisRegiao.length > 0) {
         brawlersOrdenados = [...new Set(dadosOriginaisRegiao.map(d => d.pick))];
     }
     brawlersOrdenados.sort();
     
-    // Injeta os elementos usando a estrutura exata de imagem + classe para funcionar perfeitamente
+    // Renderiza com imagem lateral perfeitamente alinhada igual ao formato de listagem visual
     listaContainer.innerHTML = brawlersOrdenados.map(brawler => `
-        <div class="sidebar-item" onclick="exibirInfoBrawler('${brawler}')" style="display: flex; align-items: center; gap: 10px; padding: 8px; cursor: pointer;">
-            <img src="${formatarNomeImagem(brawler)}" style="width: 32px; height: 32px; object-fit: cover; border-radius: 4px;" onerror="this.src='brawlers/default.png'">
-            <span class="brawler-name">${brawler}</span>
+        <div class="sidebar-item" onclick="exibirInfoBrawler('${brawler}')" style="display: flex; align-items: center; gap: 12px; padding: 10px; cursor: pointer;">
+            <img src="${formatarNomeImagem(brawler)}" style="width: 35px; height: 35px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border-dark);" onerror="this.src='brawlers/default.png'">
+            <span class="brawler-name" style="font-weight: 600; font-size: 14px;">${brawler}</span>
         </div>
     `).join('');
 }
@@ -300,7 +304,7 @@ function renderizarListaTimes() {
     }
 
     listaContainer.innerHTML = dadosTimes.map(time => `
-        <div class="sidebar-item" onclick="exibirInfoTime('${time.nome_time}')" style="padding: 10px; cursor: pointer;">
+        <div class="sidebar-item" onclick="exibirInfoTime('${time.nome_time}')" style="padding: 12px; cursor: pointer; font-weight: 600;">
             <span>${time.nome_time}</span>
         </div>
     `).join('');
