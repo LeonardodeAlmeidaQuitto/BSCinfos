@@ -334,3 +334,24 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 });
+
+window.mudarTela = function(telaId) {
+    // Esconde todas as telas
+    document.getElementById('tela-meta').classList.replace('tela-ativa', 'tela-oculta');
+    document.getElementById('tela-brawlers').classList.replace('tela-ativa', 'tela-oculta');
+    document.getElementById('tela-times').classList.replace('tela-ativa', 'tela-oculta');
+    
+    // Mostra a tela selecionada
+    document.getElementById(`tela-${telaId}`).classList.replace('tela-oculta', 'tela-ativa');
+    
+    // Fecha o dropdown após o clique
+    document.querySelector('.dropdown').classList.remove('active');
+    
+    // Atualiza o texto da navbar para mostrar onde estamos
+    const titulos = {
+        'meta': 'SA ▼ (META)',
+        'brawlers': 'SA ▼ (BRAWLERS)',
+        'times': 'SA ▼ (TIMES)'
+    };
+    document.getElementById('sa-menu-btn').textContent = titulos[telaId];
+};
