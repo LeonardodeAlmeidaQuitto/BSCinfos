@@ -240,3 +240,59 @@ font-size: 1.2rem; font-weight: 900; text-transform: uppercase; border: none;
     height: 28px !important;  /* Ajusta este valor (ex: 25px, 30px) para o tamanho que quiseres */
     width: auto !important;   /* Mantém a proporção correta para a imagem não ficar distorcida */
 }
+
+/* ========================= */
+/* BRAWLERS */
+/* ========================= */
+
+.brawlers-layout{
+    width:95%;
+    margin:auto;
+    display:flex;
+    gap:20px;
+}
+
+#lista-brawlers{
+    width:320px;
+    background:#111;
+    border:1px solid #262626;
+    max-height:850px;
+    overflow-y:auto;
+}
+
+.brawler-card{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px;
+    cursor:pointer;
+}
+
+.brawler-card:hover{
+    background:#1a1a1a;
+}
+
+.brawler-card img{
+    width:48px;
+    height:48px;
+}
+
+#info-brawler{
+    flex:1;
+    background:#111;
+    border:1px solid #262626;
+    padding:20px;
+}
+
+/* ========================= */
+/* TIMES */
+/* ========================= */
+
+.time-card{
+    width:95%;
+    margin:auto;
+    margin-bottom:15px;
+    background:#111;
+    border:1px solid #262626;
+    padding:20px;
+}
