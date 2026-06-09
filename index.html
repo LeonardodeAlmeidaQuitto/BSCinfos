@@ -1,91 +1,30 @@
-<nav>
-        <a href="index.html" class="nav-link">MENU</a>
-        <div class="nav-links">
-            <div class="dropdown">
-                <a href="#" class="nav-link" id="sa-menu-btn">SA ▼</a>
+<html lang="pt-br"><head>
+    <meta charset="UTF-8">
+    <title>BSCInfos</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body> <nav class="navbar">
+        <a href="index.html" class="nav-link">MENU</a>    
+    <div class="nav-links">
+    <div class="dropdown">
+        <a href="#" class="nav-link">META ▾</a>
+        <div class="dropdown-content">
+        <a href="sa.html"><img src="element/sa.png" alt="SA">SA</a>
+        <a href="na.html"><img src="element/na.png" alt="NA">NA</a>
+        <a href="emea.html"><img src="element/emea.png" alt="EMEA">EMEA</a>
+        <a href="ea.html"><img src="element/ea.png" alt="EA">EA</a>
+        </div>
+    </div>
+
+            <a href="draft.html" class="nav-link">DRAFT</a>
+
+            <div class="dropdown"> <a href="#" class="nav-link">MY TEAMS ▾</a>
                 <div class="dropdown-content">
-                    <a href="#" onclick="mudarTela('meta')">Meta</a>
-                    <a href="#" onclick="mudarTela('brawlers')">Brawlers</a>
-                    <a href="#" onclick="mudarTela('times')">Times - Players</a>
-                </div>
-            </div>
-            <a href="na.html" class="nav-link">NA</a>
-            <a href="emea.html" class="nav-link">EMEA</a>
-            <a href="ea.html" class="nav-link">EA</a>
-            <a href="geral.html" class="nav-link">GERAL</a>
-        </div>
-    </nav>
+                    <a href="player.html">PLAYER</a>
+                    <a href="coach.html">COACH</a>
+                </div> </div> </div> </nav>
 
-    <main>
-        <div id="tela-meta" class="tela-ativa">
-            <header class="page-header">
-                <h1>SOUTH AMERICA INFOS <span class="accent">ANALYSIS</span></h1>
-                <p class="subtitle">Dados extraídos de Scrims e Torneios Oficiais</p>
-            </header>
-            
-            <div class="filter-container">
-                <select id="select-ano" class="filter-select" onchange="filtrarEAplicarDados()">
-                    <option value="2026">2026</option>
-                </select>
-                <select id="select-mes" class="filter-select" onchange="filtrarEAplicarDados()">
-                    <option value="todos">Todos os Meses</option>
-                    <option value="04">Abril</option>
-                    <option value="05" selected>Maio</option>
-                </select>
-            </div>
-            
-            <div id="grid-modos"></div> 
+    <script src="app.js"></script>
 
-            <div class="modo-section">
-                <button class="modo-header" onclick="toggleElemento(this)">
-                    ALL MAPS ANALYSIS <span>▶</span>
-                </button>
-                <div class="mapa-content" style="display:none">
-                    <table class="excel-table">
-                        <thead>
-                            <tr>
-                                <th class="col-img">IMG</th>
-                                <th class="col-brawler sortable" onclick="ordenarTabela(this, 'string')" style="text-align: left;">BRAWLER ↕</th>
-                                <th class="col-stats sortable" onclick="ordenarTabela(this, 'number')">PICKS ↕</th>
-                                <th class="col-stats sortable" onclick="ordenarTabela(this, 'number')">WINS ↕</th>
-                                <th class="col-stats sortable" onclick="ordenarTabela(this, 'percent')">WIN RATE ↕</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbody-all-maps">
-                            </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div id="tela-brawlers" class="tela-oculta">
-            <div class="brawlers-container">
-                <div class="brawlers-sidebar" id="lista-brawlers-sidebar">
-                    </div>
-                <div class="brawler-info-panel">
-                    <h2 id="brawler-nome-destaque">Selecione um Brawler</h2>
-                    
-                    <div class="info-box">
-                        <h3>MELHOR MAPA</h3>
-                        <p id="brawler-melhor-mapa" class="destaque-mapa">-</p>
-                    </div>
-
-                    <div class="info-box">
-                        <h3>TOP 5 SINERGIAS (Mais jogados juntos)</h3>
-                        <div class="sinergias-grid" id="brawler-sinergias">
-                            </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="tela-times" class="tela-oculta">
-            <div class="times-container">
-                <div class="times-sidebar" id="lista-times-sidebar">
-                    </div>
-                <div class="time-info-panel" id="time-info-painel">
-                    <h2>Selecione um Time</h2>
-                </div>
-            </div>
-        </div>
-    </main>
+</body>
+</html>
