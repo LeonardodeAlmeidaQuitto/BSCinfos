@@ -9,17 +9,11 @@
 </head>
 <body>
 
+    <!-- NAVBAR -->
     <nav>
         <a href="index.html" class="nav-link">MENU</a>
         <div class="nav-links">
-            <div class="dropdown">
-                <a href="#" class="nav-link" id="sa-menu-btn">SA ▼</a>
-                <div class="dropdown-content">
-                    <a href="#" onclick="mudarTela('meta'); return false;">Meta</a>
-                    <a href="#" onclick="mudarTela('brawlers'); return false;">Brawlers</a>
-                    <a href="#" onclick="mudarTela('times'); return false;">Times - Players</a>
-                </div>
-            </div>
+            <a href="sa.html" class="nav-link">SA</a>
             <a href="na.html" class="nav-link">NA</a>
             <a href="emea.html" class="nav-link">EMEA</a>
             <a href="ea.html" class="nav-link">EA</a>
@@ -28,108 +22,50 @@
     </nav>
 
     <main>
-        <div id="tela-meta" class="tela-secao tela-ativa">
-            <header class="page-header">
-                <h1>SOUTH AMERICA INFOS <span class="accent">ANALYSIS</span></h1>
-                <p class="subtitle">Dados extraídos de Scrims e Torneios Oficiais</p>
-            </header>
-            
-            <div class="filter-container">
-                <select id="select-ano" class="filter-select" onchange="filtrarEAplicarDados()">
-                    <option value="2026">2026</option>
-                </select>
-                <select id="select-mes" class="filter-select" onchange="filtrarEAplicarDados()">
-                    <option value="todos">Todos os Meses</option>
-                    <option value="04">Abril</option>
-                    <option value="05" selected>Maio</option>
-                </select>
-            </div>
-            
-            <div id="grid-modos"></div> 
-
-            <div class="modo-section">
-                <button class="modo-header" onclick="toggleElemento(this)">
-                    ALL MAPS ANALYSIS <span>▶</span>
-                </button>
-                <div class="mapa-content" style="display:none">
-                    <table class="excel-table">
-                        <thead>
-                            <tr>
-                                <th class="col-img">IMG</th>
-                                <th class="col-brawler sortable" onclick="ordenarTabela(this, 'string')" style="text-align: left;">BRAWLER ↕</th>
-                                <th class="col-stats sortable" onclick="ordenarTabela(this, 'number')">PICKS ↕</th>
-                                <th class="col-stats sortable" onclick="ordenarTabela(this, 'number')">WINS ↕</th>
-                                <th class="col-stats sortable" onclick="ordenarTabela(this, 'percent')">WIN RATE ↕</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbody-all-maps">
-                            </tbody>
-                    </table>
-                </div>
-            </div>
+        <header class="page-header">
+            <h1>SOUTH AMERICA INFOS <span class="accent">ANALYSIS</span></h1>
+            <p class="subtitle">Dados extraídos de Scrims e Torneios Oficiais</p>
+        </header>
+        
+        <!-- FILTROS CENTRALIZADOS -->
+        <div class="filter-container">
+            <select id="select-ano" class="filter-select" onchange="filtrarEAplicarDados()">
+                <option value="TODOS">ANO: TODOS</option>
+            </select>
+            <select id="select-mes" class="filter-select" onchange="filtrarEAplicarDados()">
+                <option value="TODOS">MÊS: TODOS</option>
+            </select>
         </div>
+        
+        <div id="grid-modos"></div> 
 
-        <div id="tela-brawlers" class="tela-secao tela-oculta">
-            <div class="brawlers-container">
-                <div class="brawlers-sidebar">
-                    <input type="text" id="search-brawler-sidebar" class="sidebar-search" placeholder="Buscar Brawler..." oninput="filtrarBrawlersSidebar()">
-                    <div class="sidebar-list" id="lista-brawlers-sidebar">
-                        </div>
-                </div>
-                
-                <div class="brawler-info-panel" id="painel-info-brawler">
-                    <div class="placeholder-text">Selecione um brawler na barra lateral para ver a análise de mapa e sinergias.</div>
-                </div>
-            </div>
-        </div>
-
-        <div id="tela-times" class="tela-secao tela-oculta">
-            <div class="times-container">
-                <div class="times-sidebar">
-                    <div class="sidebar-list" id="lista-times-sidebar">
-                        </div>
-                </div>
-                
-                <div class="time-info-panel" id="painel-info-time">
-                    <div class="placeholder-text">Selecione um time para gerenciar ou visualizar o Roster e histórico de picks dos jogadores.</div>
-                </div>
+        <!-- SEÇÃO DE ANÁLISE -->
+        <div class="modo-section">
+            <button class="modo-header" onclick="toggleElemento(this)">
+                ALL MAPS ANALYSIS <span>▶</span>
+            </button>
+            <div class="mapa-content" style="display:none">
+                <table class="excel-table">
+                    <thead>
+                        <tr>
+                            <th class="col-img">IMG</th>
+                            <th class="col-brawler sortable" onclick="ordenarTabela(this, 'string')" style="text-align: left;">BRAWLER ↕</th>
+                            <th class="col-stats sortable" onclick="ordenarTabela(this, 'number')">PICKS ↕</th>
+                            <th class="col-stats sortable" onclick="ordenarTabela(this, 'number')">WINS ↕</th>
+                            <th class="col-stats sortable" onclick="ordenarTabela(this, 'percent')">WIN RATE ↕</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-all-maps">
+                        <!-- Os dados são preenchidos dinamicamente pelo app.js -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </main>
 
     <script>
-        // Inicialização padrão da Região SA
-        document.addEventListener('DOMContentLoaded', () => {
-            carregarRegiao('sa');
-            
-            // Gerenciador local de abas/telas para o Dropdown funcionar perfeitamente
-            window.mudarTela = function(tela) {
-                // Esconde todas as seções
-                document.querySelectorAll('.tela-secao').forEach(sec => {
-                    sec.classList.remove('tela-ativa');
-                    sec.classList.add('tela-oculta');
-                });
-                
-                // Exibe a seção clicada
-                const telaAlvo = document.getElementById(`tela-${tela}`);
-                if (telaAlvo) {
-                    telaAlvo.classList.remove('tela-oculta');
-                    telaAlvo.classList.add('tela-ativa');
-                }
-                
-                // Altera o texto do botão principal na navbar para indicar onde você está
-                const titulos = {
-                    'meta': 'SA ▼ (META)',
-                    'brawlers': 'SA ▼ (BRAWLERS)',
-                    'times': 'SA ▼ (TIMES)'
-                };
-                document.getElementById('sa-menu-btn').textContent = titulos[tela];
-                
-                // Fecha a janela suspensa do dropdown após clicar
-                const dp = document.querySelector('.dropdown');
-                if (dp) dp.classList.remove('active');
-            };
-        });
+        // Inicia o carregamento dos dados específicos da região SA
+        document.addEventListener('DOMContentLoaded', () => carregarRegiao('sa'));
     </script>
 </body>
 </html>
