@@ -15,77 +15,93 @@ const MAPAS_POR_MES = {
         "knockout": ["Goldarm Gulch", "New Horizons", "Out in the Open"],
         "gemGrab": ["Hard Rock Mine", "Gem Fort", "Crystal Arcade"],
         "hotZone": ["Ring of Fire", "Dueling Beetles", "Open Business"]
+    },
+    "2026-06": {
+        "brawlBall": ["Triple Dribble", "Pinhole Punt", "Pinball Dreams"],
+        "bounty": ["Dry Season", "Hideout", "Layer Cake"],
+        "heist": ["Pit Stop", "Safe Zone", "Kaboom Canyon"],
+        "knockout": ["Goldarm Gulch", "New Horizons", "Out in the Open"],
+        "gemGrab": ["Hard Rock Mine", "Gem Fort", "Crystal Arcade"],
+        "hotZone": ["Ring of Fire", "Dueling Beetles", "Open Business"]
     }
 };
 
 let dadosOriginaisRegiao = [];
 let dadosTimesSA = [];
-let dadosDetalhesBrawlers = {}; // 🌟 Armazena sinergias e mapas detalhados do historico_bruto
+let dadosDetalhesBrawlers = {};
 
-// --- FUNÇÕES UTILITÁRIAS ---
 const formatarNomeImagem = (n) => `brawlers/${n.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
 const formatarNomeMapa = (m) => `element/${m.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
 
-function toggleElemento(header) {
+window.toggleElemento = function(header) {
     const content = header.nextElementSibling;
     const icon = header.querySelector('span');
     if (content.style.display === "none" || !content.style.display) {
-        content.style.display = "block";
+        content.style.display = "grid";
         if (icon) icon.textContent = "▼";
     } else {
         content.style.display = "none";
         if (icon) icon.textContent = "▶";
     }
-}
+};
 
-// --- CARREGAMENTO DE DADOS ---
-async function carregarRegiao(regiao) {
+// ========================================================
+// 2. CARREGAMENTO E TRATAMENTO DE DADOS (ANTIGA -> ABRIL)
+// ========================================================
+window.carregarRegiao = async function(regiao) {
+    console.log(`Carregando dados da região: ${regiao}`);
+    
     try {
         const urlStats = `api/stats/${regiao.toLowerCase()}.json`;
         const resStats = await fetch(urlStats);
         if (resStats.ok) {
-            dadosOriginaisRegiao = await resStats.json();
+            let dadosBrutos = await resStats.json();
+            
+            // Tratamento automático de Datas Antigas para ABRIL 2026
+            dadosOriginaisRegiao = dadosBrutos.map(d => {
+                if (d.mes && (d.mes.toUpperCase() === "ANTIGO" || d.mes.toUpperCase() === "ANTIGA")) {
+                    d.mes = "ABRIL";
+                    if (d.ano === "ANTIGO" || !d.ano) d.ano = "2026";
+                } else if (d.mes) {
+                    d.mes = d.mes.toUpperCase();
+                }
+                return d;
+            });
         }
 
         if (regiao.toLowerCase() === 'sa') {
             const resTimes = await fetch('api/stats/times_sa.json');
-            if (resTimes.ok) {
-                dadosTimesSA = await resTimes.json();
-            }
+            if (resTimes.ok) dadosTimesSA = await resTimes.json();
         }
 
-        // 🌟 Carrega o arquivo de detalhes (Sinergias e Mapas gerados a partir do histórico bruto)
         try {
             const resDetalhes = await fetch('api/stats/detalhes_brawlers.json');
-            if (resDetalhes.ok) {
-                dadosDetalhesBrawlers = await resDetalhes.json();
-            }
+            if (resDetalhes.ok) dadosDetalhesBrawlers = await resDetalhes.json();
         } catch (e) {
-            console.warn("Arquivo detalhes_brawlers.json não encontrado. Usando fallback local.");
+            console.warn("detalhes_brawlers.json ausente. Os modais usarão placeholders.");
         }
 
         popularFiltrosIniciais();
         filtrarEAplicarDados();
+        renderizarListaBrawlers();
+        renderizarListaTimes();
     } catch (error) {
         console.error("Erro ao carregar dados da região:", error);
     }
-}
+};
 
 function popularFiltrosIniciais() {
     const selectAno = document.getElementById('select-ano');
     const selectMes = document.getElementById('select-mes');
-    
     if (!selectAno || !selectMes) return;
 
-    const anos = [...new Set(dadosOriginaisRegiao.map(d => d.ano))].filter(a => a && a !== "ANTIGO" && a !== "OUTRO");
-    const meses = [...new Set(dadosOriginaisRegiao.map(d => d.mes))].filter(m => m && m !== "ANTIGO" && m !== "OUTRO");
+    const anos = [...new Set(dadosOriginaisRegiao.map(d => d.ano))].filter(a => a);
+    const meses = [...new Set(dadosOriginaisRegiao.map(d => d.mes))].filter(m => m);
 
-    selectAno.innerHTML = selectAno.querySelector('option[value=""]') ? '<option value="">ANO (TODOS)</option>' : '';
-    selectMes.innerHTML = selectMes.querySelector('option[value=""]') ? '<option value="">MÊS (TODOS)</option>' : '';
+    selectAno.innerHTML = '';
+    selectMes.innerHTML = '';
 
-    anos.sort().forEach(ano => {
-        selectAno.innerHTML += `<option value="${ano}">${ano}</option>`;
-    });
+    anos.sort().forEach(ano => selectAno.innerHTML += `<option value="${ano}">${ano}</option>`);
     
     const ordemMeses = ["JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"];
     meses.sort((a, b) => ordemMeses.indexOf(a) - ordemMeses.indexOf(b)).forEach(mes => {
@@ -96,7 +112,10 @@ function popularFiltrosIniciais() {
     if (meses.length > 0) selectMes.value = meses[meses.length - 1];
 }
 
-function filtrarEAplicarDados() {
+// ========================================================
+// 3. FILTRAGEM RESTRITA POR MAPAS VÁLIDOS
+// ========================================================
+window.filtrarEAplicarDados = function() {
     const anoSel = document.getElementById('select-ano')?.value;
     const mesSel = document.getElementById('select-mes')?.value;
 
@@ -105,47 +124,66 @@ function filtrarEAplicarDados() {
     if (anoSel) dadosFiltrados = dadosFiltrados.filter(d => d.ano === anoSel);
     if (mesSel) dadosFiltrados = dadosFiltrados.filter(d => d.mes === mesSel);
 
-    renderizarGridModos(dadosFiltrados);
-    renderizarTabelaGeral(dadosFiltrados);
-    
-    if (dadosTimesSA.length > 0) {
-        renderizarPainelTimesSA();
-    }
-}
+    const mesesParaNumero = {
+        "JANEIRO": "01", "FEVEREIRO": "02", "MARÇO": "03", "ABRIL": "04",
+        "MAIO": "05", "JUNHO": "06", "JULHO": "07", "AGOSTO": "08",
+        "SETEMBRO": "09", "OUTUBRO": "10", "NOVEMBRO": "11", "DEZEMBRO": "12"
+    };
 
-// --- RENDERIZAÇÃO DAS TABELAS COM EVENTO DE CLIQUE ---
-function renderizarGridModos(dados) {
+    if (anoSel && mesSel) {
+        const numMes = mesesParaNumero[mesSel.toUpperCase()];
+        const chaveMapa = `${anoSel}-${numMes}`;
+        const mapasDoMes = MAPAS_POR_MES[chaveMapa];
+
+        if (mapasDoMes) {
+            let mapasValidos = [];
+            Object.values(mapasDoMes).forEach(lista => {
+                lista.forEach(m => mapasValidos.push(m.toLowerCase()));
+            });
+            // Mantém APENAS mapas que estão no dicionário
+            dadosFiltrados = dadosFiltrados.filter(d => mapasValidos.includes(d.mapa.toLowerCase()));
+        } else {
+            // Se o mês não estiver configurado no MAPAS_POR_MES, limpa a tabela
+            dadosFiltrados = [];
+        }
+    }
+
+    renderizarGridModos(dadosFiltrados, anoSel, mesSel);
+    renderizarAllMaps(dadosFiltrados);
+};
+
+// ========================================================
+// 4. RENDERIZAÇÃO DA ABA META (TABELAS)
+// ========================================================
+function renderizarGridModos(dados, ano, mes) {
     const container = document.getElementById('grid-modos');
     if (!container) return;
     container.innerHTML = '';
 
-    const modosDisponiveis = [...new Set(dados.map(d => d.modo))];
+    const mesesParaNumero = { "JANEIRO": "01", "FEVEREIRO": "02", "MARÇO": "03", "ABRIL": "04", "MAIO": "05", "JUNHO": "06", "JULHO": "07", "AGOSTO": "08", "SETEMBRO": "09", "OUTUBRO": "10", "NOVEMBRO": "11", "DEZEMBRO": "12" };
+    const numMes = mes ? mesesParaNumero[mes.toUpperCase()] : "05";
+    const chaveMes = `${ano}-${numMes}`;
+    const configuracaoMapas = MAPAS_POR_MES[chaveMes] || {};
 
-    modosDisponiveis.forEach(modo => {
-        const dadosDoModo = dados.filter(d => d.modo === modo);
-        const mapasDoModo = [...new Set(dadosDoModo.map(d => d.mapa))];
+    Object.keys(configuracaoMapas).forEach(modo => {
+        const mapasDoModo = configuracaoMapas[modo];
+        let mapasHTML = "";
 
-        const section = document.createElement('div');
-        section.className = 'modo-section';
-
-        let mapasHTML = '';
         mapasDoModo.forEach(mapa => {
-            const dadosDoMapa = dadosDoModo.filter(d => d.mapa === mapa);
-            dadosDoMapa.sort((a, b) => b.picks - a.picks);
+            const dadosMapa = dados.filter(d => d.mapa.toLowerCase() === mapa.toLowerCase());
+            if (dadosMapa.length === 0) return;
 
-            let linhasBrawlers = '';
-            dadosDoMapa.forEach(row => {
-                // 🌟 Adicionado estilo de cursor de clique e gatilho onclick
-                linhasBrawlers += `
-                    <tr style="cursor: pointer;" onclick="abrirModalBrawler('${row.pick}')" title="Clique para ver análise detalhada de ${row.pick}">
-                        <td class="col-img"><img src="${formatarNomeImagem(row.pick)}" alt="${row.pick}" onerror="this.src='brawlers/default.png'"></td>
-                        <td style="text-align: left; font-weight: bold;">${row.pick.toUpperCase()}</td>
-                        <td>${row.picks}</td>
-                        <td>${row.vitorias}</td>
-                        <td class="winrate-cell">${row.win_rate}</td>
-                    </tr>
-                `;
-            });
+            dadosMapa.sort((a, b) => b.picks - a.picks);
+
+            let linhasBrawlers = dadosMapa.map(d => `
+                <tr style="cursor: pointer;" onclick="abrirModalBrawler('${d.pick}')" title="Análise detalhada de ${d.pick}">
+                    <td class="col-img"><img src="${formatarNomeImagem(d.pick)}" onerror="this.src='brawlers/default.png'"></td>
+                    <td style="text-align: left; font-weight: bold;">${d.pick.toUpperCase()}</td>
+                    <td>${d.picks}</td>
+                    <td>${d.vitorias}</td>
+                    <td class="winrate-cell">${d.win_rate}</td>
+                </tr>
+            `).join('');
 
             mapasHTML += `
                 <div class="mapa-container">
@@ -154,147 +192,162 @@ function renderizarGridModos(dados) {
                         <thead>
                             <tr>
                                 <th class="col-img">IMG</th>
-                                <th style="text-align: left;">BRAWLER</th>
-                                <th>PICKS</th>
-                                <th>WINS</th>
-                                <th>WIN RATE</th>
+                                <th style="text-align: left; cursor: pointer;" onclick="ordenarTabela(this, 'string')">BRAWLER ↕</th>
+                                <th class="col-stats sortable" style="cursor: pointer;" onclick="ordenarTabela(this, 'number')">P ↕</th>
+                                <th class="col-stats sortable" style="cursor: pointer;" onclick="ordenarTabela(this, 'number')">W ↕</th>
+                                <th class="col-stats sortable" style="cursor: pointer;" onclick="ordenarTabela(this, 'percent')">WR ↕</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            ${linhasBrawlers}
-                        </tbody>
+                        <tbody>${linhasBrawlers}</tbody>
                     </table>
                 </div>
             `;
         });
 
-        const nomeExibicaoModo = modo.replace(/([A-Z])/g, ' $1').trim().toUpperCase();
-        section.innerHTML = `
-            <div class="modo-header" onclick="toggleElemento(this)">${nomeExibicaoModo} <span>▶</span></div>
-            <div class="mapa-content" style="display:none">${mapasHTML}</div>
-        `;
-        container.appendChild(section);
+        if (mapasHTML) {
+            const section = document.createElement("div");
+            section.className = "modo-section";
+            const nomeExibicaoModo = modo.replace(/([A-Z])/g, ' $1').trim().toUpperCase();
+            section.innerHTML = `
+                <div class="modo-header" onclick="toggleElemento(this)">${nomeExibicaoModo} <span>▶</span></div>
+                <div class="mapa-content" style="display:none">${mapasHTML}</div>`;
+            container.appendChild(section);
+        }
     });
 }
 
-function renderizarTabelaGeral(dados) {
+function renderizarAllMaps(dados) {
     const tbody = document.getElementById('tbody-all-maps');
     if (!tbody) return;
-    tbody.innerHTML = '';
 
-    const consolidado = {};
-    dados.forEach(row => {
-        if (!consolidado[row.pick]) {
-            consolidado[row.pick] = { picks: 0, vitorias: 0 };
-        }
-        consolidado[row.pick].picks += row.picks;
-        consolidado[row.pick].vitorias += row.vitorias;
+    let agrupadoGeral = {};
+    dados.forEach(d => {
+        if (!agrupadoGeral[d.pick]) agrupadoGeral[d.pick] = { picks: 0, vitorias: 0 };
+        agrupadoGeral[d.pick].picks += d.picks;
+        agrupadoGeral[d.pick].vitorias += d.vitorias;
     });
 
-    const listaConsolidada = Object.keys(consolidado).map(brawler => {
-        const item = consolidado[brawler];
-        const wr = item.picks > 0 ? ((item.vitorias / item.picks) * 100).toFixed(1) + '%' : '0.0%';
-        return {
-            brawler: brawler,
-            picks: item.picks,
-            vitorias: item.vitorias,
-            win_rate: wr
-        };
+    let listaGeral = Object.keys(agrupadoGeral).map(brawler => {
+        const item = agrupadoGeral[brawler];
+        const wr = item.picks > 0 ? ((item.vitorias / item.picks) * 100).toFixed(1) + "%" : "0.0%";
+        return { brawler, picks: item.picks, vitorias: item.vitorias, win_rate: wr };
     });
 
-    listaConsolidada.sort((a, b) => b.picks - a.picks);
+    listaGeral.sort((a, b) => b.picks - a.picks);
 
-    listaConsolidada.forEach(row => {
-        // 🌟 Adicionado estilo de cursor de clique e gatilho onclick
-        tbody.innerHTML += `
-            <tr style="cursor: pointer;" onclick="abrirModalBrawler('${row.brawler}')" title="Clique para ver análise detalhada de ${row.brawler}">
-                <td class="col-img"><img src="${formatarNomeImagem(row.brawler)}" alt="${row.brawler}" onerror="this.src='brawlers/default.png'"></td>
-                <td style="text-align: left; font-weight: bold;">${row.brawler.toUpperCase()}</td>
-                <td>${row.picks}</td>
-                <td>${row.vitorias}</td>
-                <td class="winrate-cell">${row.win_rate}</td>
-            </tr>
-        `;
-    });
+    tbody.innerHTML = listaGeral.map(d => `
+        <tr style="cursor: pointer;" onclick="abrirModalBrawler('${d.brawler}')" title="Análise detalhada de ${d.brawler}">
+            <td class="col-img"><img src="${formatarNomeImagem(d.brawler)}" onerror="this.src='brawlers/default.png'"></td>
+            <td style="text-align: left; font-weight: bold;">${d.brawler.toUpperCase()}</td>
+            <td>${d.picks}</td>
+            <td>${d.vitorias}</td>
+            <td class="winrate-cell">${d.win_rate}</td>
+        </tr>
+    `).join('');
 }
 
-function renderizarPainelTimesSA() {
-    const containerTimes = document.getElementById('container-times-sa');
-    if (!containerTimes) return;
+// ========================================================
+// 5. ABA BRAWLERS E TIMES (SIDEBAR E INFO PANEL)
+// ========================================================
+function renderizarListaBrawlers() {
+    const container = document.getElementById("lista-brawlers-sidebar");
+    if (!container) return;
     
-    containerTimes.innerHTML = '';
+    let brawlers = Object.keys(dadosDetalhesBrawlers);
+    if (brawlers.length === 0 && dadosOriginaisRegiao.length > 0) {
+        brawlers = [...new Set(dadosOriginaisRegiao.map(d => d.pick.toLowerCase()))];
+    }
+    brawlers.sort();
+    
+    container.innerHTML = brawlers.map(b => `
+        <div class="sidebar-item" onclick="exibirInfoBrawler('${b}')" style="display: flex; align-items: center; gap: 12px; padding: 10px; cursor: pointer;">
+            <img src="${formatarNomeImagem(b)}" style="width: 35px; height: 35px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border-dark);" onerror="this.src='brawlers/default.png'">
+            <span class="brawler-name" style="font-weight: 600; font-size: 14px; text-transform: uppercase;">${b}</span>
+        </div>
+    `).join('');
+}
 
-    dadosTimesSA.forEach(time => {
-        const cardTime = document.createElement('div');
-        cardTime.className = 'team-card';
-        
-        let rosterHTML = '<div class="team-roster"><strong>Roster:</strong> ';
-        time.roster.forEach((jogador, idx) => {
-            rosterHTML += `<span class="player-tag-span" title="${jogador.tag}">${jogador.nome}</span>`;
-            if (idx < time.roster.length - 1) rosterHTML += ', ';
-        });
-        rosterHTML += '</div>';
+window.filtrarBrawlersSidebar = function() {
+    const termo = document.getElementById("search-brawler-sidebar").value.toLowerCase();
+    document.querySelectorAll("#lista-brawlers-sidebar .sidebar-item").forEach(item => {
+        const nome = item.querySelector(".brawler-name").textContent.toLowerCase();
+        item.style.display = nome.includes(termo) ? "flex" : "none";
+    });
+};
 
-        let historicoPicksHTML = '<div class="team-picks-history"><h4>BRAWLERS MAIS JOGADOS:</h4>';
-        
-        time.roster.forEach(jogador => {
-            const picksJogador = time.picks[jogador.tag] || [];
-            const topPicks = picksJogador.slice(0, 3);
-            
-            let brawlersLinha = '';
-            if (topPicks.length === 0) {
-                brawlersLinha = '<span class="no-data">Nenhuma partida registrada</span>';
-            } else {
-                topPicks.forEach(p => {
-                    // 🌟 Permite clicar também nas fotos pequenas de brawlers do roster
-                    brawlersLinha += `
-                        <div class="mini-pick-item" style="cursor: pointer;" onclick="abrirModalBrawler('${p.brawler}')" title="Ver detalhes de ${p.brawler}">
-                            <img src="${formatarNomeImagem(p.brawler)}" alt="${p.brawler}" onerror="this.src='brawlers/default.png'">
-                            <span class="pick-count">x${p.qtd}</span>
-                        </div>
-                    `;
-                });
-            }
+window.exibirInfoBrawler = function(nome) {
+    const painel = document.getElementById("painel-info-brawler");
+    if (!painel) return;
+    
+    document.querySelectorAll("#lista-brawlers-sidebar .sidebar-item").forEach(i => {
+        i.classList.toggle("active", i.querySelector(".brawler-name").textContent.toLowerCase() === nome.toLowerCase());
+    });
 
-            historicoPicksHTML += `
-                <div class="player-pick-row">
-                    <span class="player-name-mini">${jogador.nome}:</span>
-                    <div class="player-mini-images">${brawlersLinha}</div>
-                </div>
-            `;
-        });
-        historicoPicksHTML += '</div>';
+    const info = dadosDetalhesBrawlers[nome.toLowerCase()] || criarFallbackDetalhes();
+    painel.innerHTML = gerarHTMLDetalhesAvançados(nome, info);
+};
 
-        cardTime.innerHTML = `
-            <div class="team-header-info">
-                <span class="team-badge">${time.id_time}</span>
-                <h2 class="team-name-title">${time.nome_time}</h2>
+function renderizarListaTimes() {
+    const container = document.getElementById("lista-times-sidebar");
+    if (!container) return;
+    if (dadosTimesSA.length === 0) {
+        container.innerHTML = `<p style="padding: 10px; color: #666;">Sem dados de times.</p>`;
+        return;
+    }
+
+    container.innerHTML = dadosTimesSA.map(t => `
+        <div class="sidebar-item" data-teamid="${t.id_time}" onclick="exibirInfoTime('${t.id_time}')" style="padding: 12px; cursor: pointer; font-weight: 600;">
+            <span>${t.nome_time}</span>
+        </div>
+    `).join('');
+}
+
+window.exibirInfoTime = function(idTime) {
+    const time = dadosTimesSA.find(t => String(t.id_time) === String(idTime));
+    const painel = document.getElementById("painel-info-time");
+    if (!time || !painel) return;
+
+    document.querySelectorAll("#lista-times-sidebar .sidebar-item").forEach(i => {
+        i.classList.toggle("active", String(i.getAttribute("data-teamid")) === String(idTime));
+    });
+
+    let playersHTML = time.roster.map(player => {
+        const picks = (time.picks[player.tag] || []).slice(0, 5);
+        let picksHTML = picks.length ? picks.map(p => `
+            <div class="player-mini-pick" onclick="abrirModalBrawler('${p.brawler}')" style="cursor: pointer;" title="Detalhes de ${p.brawler}">
+                <img src="${formatarNomeImagem(p.brawler)}" onerror="this.src='brawlers/default.png'">
+                <span class="pick-count">x${p.qtd}</span>
             </div>
-            ${rosterHTML}
-            ${historicoPicksHTML}
+        `).join('') : '<span class="no-data-tag">Sem picks recentes</span>';
+
+        return `
+            <div class="player-roster-card">
+                <div class="player-info-top">
+                    <span class="p-nickname">${player.nome}</span>
+                    <span class="p-tag">${player.tag}</span>
+                </div>
+                <div class="player-history-box">
+                    <h5>Principais Escolhas:</h5>
+                    <div class="player-picks-row">${picksHTML}</div>
+                </div>
+            </div>
         `;
+    }).join('');
 
-        containerTimes.appendChild(cardTime);
-    });
-}
+    painel.innerHTML = `
+        <div class="team-profile-header">
+            <h2>EQUIPE: <span class="accent">${time.nome_time}</span></h2>
+        </div>
+        <div class="roster-container-grid">${playersHTML}</div>
+    `;
+};
 
-// --- 🌟 INTERATIVIDADE: SISTEMA DE POPUP / MODAL DE DETALHES ---
-function abrirModalBrawler(nomeBrawler) {
+// ========================================================
+// 6. MODAL DE ANÁLISE AVANÇADA (MAPAS E SINERGIA)
+// ========================================================
+window.abrirModalBrawler = function(nomeBrawler) {
     const key = nomeBrawler.toLowerCase();
-    
-    // Fallback caso o JSON de detalhes ainda esteja sendo gerado pelo python
-    const info = dadosDetalhesBrawlers[key] || {
-        mapa_mais_frequente: "Mapa Exemplo",
-        mapa_partidas: 0,
-        mapa_vitorias: 0,
-        mapa_pct_partidas: 0,
-        mapa_winrate: "0.0%",
-        sinergia_brawler: "Nenhum",
-        sinergia_partidas: 0,
-        sinergia_vitorias: 0,
-        sinergia_pct_partidas: 0,
-        sinergia_winrate: "0.0%"
-    };
+    const info = dadosDetalhesBrawlers[key] || criarFallbackDetalhes();
 
     let modal = document.getElementById('modal-analise-brawler');
     if (!modal) {
@@ -311,59 +364,72 @@ function abrirModalBrawler(nomeBrawler) {
                 <button class="brawler-modal-close" onclick="fecharModalBrawler()">&times;</button>
             </div>
             <div class="brawler-modal-body">
-                
-                <div class="brawler-modal-section">
-                    <h3>📌 MAPA MAIS FREQUENTE</h3>
-                    <div class="modal-map-flex">
-                        <div class="modal-map-img-box">
-                            <img src="${formatarNomeMapa(info.mapa_mais_frequente)}" alt="${info.mapa_mais_frequente}" onerror="this.src='element/default.png'">
-                        </div>
-                        <div class="modal-map-details">
-                            <h4>${info.mapa_mais_frequente.toUpperCase()}</h4>
-                            <p><strong>Total de Partidas:</strong> ${info.mapa_partidas}</p>
-                            <p><strong>Total de Vitórias:</strong> ${info.mapa_vitorias}</p>
-                            <p><strong>% do Uso Global:</strong> ${info.mapa_pct_partidas}</p>
-                            <p><strong>Taxa de Vitória (WR):</strong> <span class="winrate-cell">${info.mapa_winrate}</span></p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="brawler-modal-section">
-                    <h3>🤝 MELHOR SINERGIA DETECTADA</h3>
-                    <div class="modal-synergy-flex">
-                        <div class="synergy-display-images">
-                            <div class="synergy-unit">
-                                <img src="${formatarNomeImagem(nomeBrawler)}" onerror="this.src='brawlers/default.png'">
-                                <span>ATUAL</span>
-                            </div>
-                            <div class="synergy-plus">+</div>
-                            <div class="synergy-unit">
-                                <img src="${formatarNomeImagem(info.sinergia_brawler)}" onerror="this.src='brawlers/default.png'">
-                                <span>${info.sinergia_brawler.toUpperCase()}</span>
-                            </div>
-                        </div>
-                        <div class="modal-synergy-details">
-                            <p><strong>Partidas Juntos:</strong> ${info.sinergia_partidas}</p>
-                            <p><strong>Vitórias Juntos:</strong> ${info.sinergia_vitorias}</p>
-                            <p><strong>% de Presença:</strong> ${info.sinergia_pct_partidas}</p>
-                            <p><strong>Taxa de Vitória Dupla:</strong> <span class="winrate-cell">${info.sinergia_winrate}</span></p>
-                        </div>
-                    </div>
-                </div>
-
+                ${gerarHTMLDetalhesAvançados(nomeBrawler, info)}
             </div>
         </div>
     `;
     modal.style.display = 'flex';
-}
+};
 
-function fecharModalBrawler() {
+window.fecharModalBrawler = function() {
     const modal = document.getElementById('modal-analise-brawler');
     if (modal) modal.style.display = 'none';
+};
+
+// ========================================================
+// 7. FUNÇÕES AUXILIARES E CSS INJETADO (MODAL/DETALHES)
+// ========================================================
+function criarFallbackDetalhes() {
+    return {
+        mapa_mais_frequente: "Indisponível", mapa_partidas: 0, mapa_vitorias: 0, mapa_pct_partidas: "0%", mapa_winrate: "0.0%",
+        sinergia_brawler: "Nenhum", sinergia_partidas: 0, sinergia_vitorias: 0, sinergia_pct_partidas: "0%", sinergia_winrate: "0.0%"
+    };
 }
 
-// --- ORDENAÇÃO DE TABELAS DINÂMICAS ---
-function ordenarTabela(th, tipo) {
+function gerarHTMLDetalhesAvançados(nomeBrawler, info) {
+    return `
+        <div class="brawler-modal-section">
+            <h3>📌 MAPA MAIS FREQUENTE</h3>
+            <div class="modal-map-flex">
+                <div class="modal-map-img-box">
+                    <img src="${formatarNomeMapa(info.mapa_mais_frequente)}" alt="${info.mapa_mais_frequente}" onerror="this.src='element/default.png'">
+                </div>
+                <div class="modal-map-details">
+                    <h4>${info.mapa_mais_frequente.toUpperCase()}</h4>
+                    <p><strong>Total de Partidas:</strong> ${info.mapa_partidas}</p>
+                    <p><strong>Total de Vitórias:</strong> ${info.mapa_vitorias}</p>
+                    <p><strong>% de Escolha Global:</strong> ${info.mapa_pct_partidas}</p>
+                    <p><strong>Taxa de Vitória (WR):</strong> <span class="winrate-cell">${info.mapa_winrate}</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="brawler-modal-section">
+            <h3>🤝 MELHOR SINERGIA DETECTADA</h3>
+            <div class="modal-synergy-flex">
+                <div class="synergy-display-images">
+                    <div class="synergy-unit">
+                        <img src="${formatarNomeImagem(nomeBrawler)}" onerror="this.src='brawlers/default.png'">
+                        <span>${nomeBrawler.toUpperCase()}</span>
+                    </div>
+                    <div class="synergy-plus">+</div>
+                    <div class="synergy-unit">
+                        <img src="${formatarNomeImagem(info.sinergia_brawler)}" onerror="this.src='brawlers/default.png'">
+                        <span>${info.sinergia_brawler.toUpperCase()}</span>
+                    </div>
+                </div>
+                <div class="modal-synergy-details">
+                    <p><strong>Partidas Juntos:</strong> ${info.sinergia_partidas}</p>
+                    <p><strong>Vitórias Juntos:</strong> ${info.sinergia_vitorias}</p>
+                    <p><strong>% de Presença Dupla:</strong> ${info.sinergia_pct_partidas}</p>
+                    <p><strong>Taxa de Vitória Dupla:</strong> <span class="winrate-cell">${info.sinergia_winrate}</span></p>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+window.ordenarTabela = function(th, tipo) {
     const tabela = th.closest('table');
     const tbody = tabela.querySelector('tbody');
     const linhas = Array.from(tbody.querySelectorAll('tr'));
@@ -373,91 +439,66 @@ function ordenarTabela(th, tipo) {
     tabela.querySelectorAll('th').forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
     th.classList.add(ascendente ? 'sort-asc' : 'sort-desc');
 
-    linhas.sort((linhaA, SelfB) => {
+    linhas.sort((linhaA, linhaB) => {
         let celulaA = linhaA.children[colunaIndex].textContent.trim();
-        let celulaB = SelfB.children[colunaIndex].textContent.trim();
+        let celulaB = linhaB.children[colunaIndex].textContent.trim();
 
         if (tipo === 'number') {
             return ascendente ? parseFloat(celulaA) - parseFloat(celulaB) : parseFloat(celulaB) - parseFloat(celulaA);
         } else if (tipo === 'percent') {
-            let numA = parseFloat(celulaA.replace('%', ''));
-            let numB = parseFloat(celulaB.replace('%', ''));
-            return ascendente ? numA - numB : numB - numA;
+            return ascendente ? parseFloat(celulaA) - parseFloat(celulaB) : parseFloat(celulaB) - parseFloat(celulaA);
         } else {
             return ascendente ? celulaA.localeCompare(celulaB) : celulaB.localeCompare(celulaA);
         }
     });
 
     linhas.forEach(linha => tbody.appendChild(linha));
-}
+};
 
-// --- CONFIGURAÇÃO INICIAL E ESTILOS DINÂMICOS DO MODAL ---
 document.addEventListener("DOMContentLoaded", () => {
-    // Injeta automaticamente o estilo necessário para o modal no HTML
+    // Injeção limpa de CSS do Modal e Componentes de Detalhe
     const styleTag = document.createElement('style');
     styleTag.innerHTML = `
-        .brawler-modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85); display: none; align-items: center;
-            justify-content: center; z-index: 9999; padding: 20px;
-        }
-        .brawler-modal-card {
-            background: #111111; border: 2px solid rgb(204, 0, 255);
-            border-radius: 12px; width: 100%; max-width: 650px;
-            box-shadow: 0 0 25px rgba(204, 0, 255, 0.4); overflow: hidden;
-        }
-        .brawler-modal-header {
-            background: #1a1a1a; padding: 15px 20px; display: flex;
-            justify-content: space-between; align-items: center;
-            border-bottom: 1px solid #262626;
-        }
+        .brawler-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
+        .brawler-modal-card { background: #111111; border: 2px solid rgb(204, 0, 255); border-radius: 12px; width: 100%; max-width: 650px; box-shadow: 0 0 25px rgba(204, 0, 255, 0.4); overflow: hidden; }
+        .brawler-modal-header { background: #1a1a1a; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #262626; }
         .brawler-modal-header h2 { font-size: 18px; color: #ffffff; letter-spacing: 1px; }
-        .brawler-modal-close {
-            background: none; border: none; color: #888; font-size: 28px;
-            cursor: pointer; transition: color 0.2s;
-        }
+        .brawler-modal-close { background: none; border: none; color: #888; font-size: 28px; cursor: pointer; }
         .brawler-modal-close:hover { color: #ff3333; }
         .brawler-modal-body { padding: 25px; display: flex; flex-direction: column; gap: 25px; }
         .brawler-modal-section { background: #161616; padding: 15px; border-radius: 8px; border: 1px solid #222; }
         .brawler-modal-section h3 { font-size: 14px; color: rgb(204, 0, 255); margin-bottom: 15px; }
         
-        /* Layout do Mapa */
+        /* Map Layout */
         .modal-map-flex { display: flex; gap: 20px; align-items: center; }
-        .modal-map-img-box { width: 110px; height: 110px; background: #000; border-radius: 8px; overflow: hidden; border: 1px solid #333; }
+        .modal-map-img-box { width: 110px; height: 110px; background: #000; border-radius: 8px; overflow: hidden; border: 1px solid #333; flex-shrink: 0; }
         .modal-map-img-box img { width: 100%; height: 100%; object-fit: cover; }
         .modal-map-details h4 { font-size: 18px; margin-bottom: 8px; color: #fff; }
         .modal-map-details p { font-size: 13px; color: #ccc; margin: 3px 0; }
         
-        /* Layout da Sinergia */
+        /* Synergy Layout */
         .modal-synergy-flex { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
-        .sidebar-panel { display: flex; gap: 10px; }
-        .synergy-display-images { display: flex; align-items: center; gap: 12px; }
+        .synergy-display-images { display: flex; align-items: center; gap: 15px; background: #0b0c10; padding: 10px 20px; border-radius: 8px; border: 1px solid #222; }
         .synergy-unit { display: flex; flex-direction: column; align-items: center; gap: 5px; }
-        .synergy-unit img { width: 55px; height: 55px; border-radius: 6px; border: 1px solid rgb(204, 0, 255); }
-        .synergy-unit span { font-size: 10px; font-weight: bold; color: #888; }
-        .synergy-plus { font-size: 24px; color: rgb(204, 0, 255); font-weight: bold; }
+        .synergy-unit img { width: 60px; height: 60px; border-radius: 6px; border: 1px solid rgb(204, 0, 255); object-fit: cover;}
+        .synergy-unit span { font-size: 11px; font-weight: bold; color: #888; }
+        .synergy-plus { font-size: 26px; color: rgb(204, 0, 255); font-weight: bold; margin-bottom: 15px;}
         .modal-synergy-details { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #ccc; }
     `;
     document.head.appendChild(styleTag);
 
-    // Dropdowns da Navbar
+    // Configuração dos Menus Dropdown
     const dropdowns = document.querySelectorAll(".dropdown");
     dropdowns.forEach(dropdown => {
         const link = dropdown.querySelector(".nav-link");
         if (!link) return;
-
         link.addEventListener("click", (e) => {
             e.preventDefault();
-            dropdowns.forEach(other => {
-                if (other !== dropdown) other.classList.remove("active");
-            });
+            dropdowns.forEach(other => { if (other !== dropdown) other.classList.remove("active"); });
             dropdown.classList.toggle("active");
         });
     });
-
     document.addEventListener("click", (e) => {
-        if (!e.target.closest(".dropdown")) {
-            dropdowns.forEach(d => d.classList.remove("active"));
-        }
+        if (!e.target.closest(".dropdown")) dropdowns.forEach(d => d.classList.remove("active"));
     });
 });
