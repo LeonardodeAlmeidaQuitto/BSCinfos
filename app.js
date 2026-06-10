@@ -176,12 +176,12 @@ function renderizarGridModos(dados, ano, mes) {
             dadosMapa.sort((a, b) => b.picks - a.picks);
 
             let linhasBrawlers = dadosMapa.map(d => `
-                <tr style="cursor: pointer;" onclick="abrirModalBrawler('${d.pick}')" title="Análise detalhada de ${d.pick}">
-                    <td class="col-img"><img src="${formatarNomeImagem(d.pick)}" onerror="this.src='brawlers/default.png'"></td>
+                <tr>
+                    <td class="col-img"><img src="${formatarNomeImagem(d.pick)}" alt="${d.pick}"></td>
                     <td style="text-align: left; font-weight: bold;">${d.pick.toUpperCase()}</td>
                     <td>${d.picks}</td>
-                    <td>${d.vitorias}</td>
-                    <td class="winrate-cell">${d.win_rate}</td>
+                    <td>${d.pick_rate || '0.0%'}</td> <td>${d.vitorias}</td>
+                    <td class="winrate-cell" style="color: var(--winrate-color);">${d.win_rate}</td>
                 </tr>
             `).join('');
 
@@ -502,3 +502,77 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!e.target.closest(".dropdown")) dropdowns.forEach(d => d.classList.remove("active"));
     });
 });
+
+let detalhesBrawlersSA = {};
+
+// Carrega o arquivo detalhado gerado pelo Python
+async function carregarDetalhesBrawlers() {
+    try {
+        const response = await fetch('api/stats/sa_brawlers_detail.json');
+        detalhesBrawlersSA = await response.json();
+        renderizarAbaBrawlers();
+    } catch (error) {
+        console.error("Erro ao carregar detalhes dos brawlers:", error);
+    }
+}
+
+// Formata o nome do mapa igual ao padrão dos brawlers para buscar na pasta elements/
+const formatarNomeMapa = (nome) => `elements/${nome.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
+
+function renderizarAbaBrawlers() {
+    const container = document.getElementById('painel-lista-brawlers'); // Alvo do painel de brawlers
+    if (!container) return;
+
+    container.innerHTML = ""; // Limpa estrutura anterior
+
+    Object.keys(detalhesBrawlersSA).forEach(nomeBrawler => {
+        const dados = detalhesBrawlersSA[nomeBrawler];
+
+        // Monta o HTML do Top 3 Mapas buscando a imagem na pasta elements/
+        let mapasHTML = dados.top_mapas.map(m => `
+            <div class="map-card" style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <img src="${formatarNomeMapa(m.mapa)}" onerror="this.src='elements/default.png'" style="width: 50px; height: 50px; border-radius: 4px; object-fit: cover;">
+                <div>
+                    <div style="font-weight: bold; font-size: 14px;">${m.mapa.toUpperCase()}</div>
+                    <div style="color: #888; font-size: 11px;">${m.modo.toUpperCase()} - ${m.picks} Picks</div>
+                </div>
+            </div>
+        `).join('');
+
+        // Monta o HTML do Top 5 Sinergias
+        let sinergiasHTML = dados.sinergias.map(s => `
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #1f2026;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <img src="${formatarNomeImagem(s.com)}" style="width: 24px; height: 24px; border-radius: 2px;">
+                    <span style="font-size: 12px; font-weight: bold;">${s.com.toUpperCase()}</span>
+                </div>
+                <div style="font-size: 12px; color: #ccc;">
+                    <span>${s.picks} Partidas</span> | <span style="color: var(--winrate-color);">${s.win_rate} WR</span>
+                </div>
+            </div>
+        `).join('');
+
+        // Card consolidado do Brawler
+        const cardBrawler = document.createElement('div');
+        cardBrawler.className = 'brawler-analysis-card';
+        cardBrawler.style = "background: var(--bg-cards); border: 1px solid var(--borda-destaque); border-radius: 8px; padding: 15px; margin-bottom: 20px;";
+        
+        cardBrawler.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px; border-bottom: 1px solid var(--borda-suave); padding-bottom: 10px;">
+                <img src="${formatarNomeImagem(nomeBrawler)}" style="width: 45px; height: 45px; border-radius: 4px;">
+                <h3 style="font-size: 20px; color: var(--accent-purple);">${nomeBrawler}</h3>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div>
+                    <h4 style="font-size: 12px; color: #888; margin-bottom: 10px; text-transform: uppercase;">Top 3 Mapas mais Jogados</h4>
+                    ${mapasHTML || '<div style="font-size:12px; color:#555;">Sem dados de mapas.</div>'}
+                </div>
+                <div>
+                    <h4 style="font-size: 12px; color: #888; margin-bottom: 10px; text-transform: uppercase;">Top 5 Melhores Sinergias (Companheiros)</h4>
+                    ${sinergiasHTML || '<div style="font-size:12px; color:#555;">Sem dados de sinergia.</div>'}
+                </div>
+            </div>
+        `;
+        container.appendChild(cardBrawler);
+    });
+}
