@@ -14,34 +14,6 @@ ARQUIVO_BRUTO = "historico_bruto.csv"
 ARQUIVO_FINAL = "estatisticas_finais.csv"
 
 REGIOES = {
-
-#    "SA": {
-
-#    "BH":{
-#        "players":[
-#            {
-#                "tag":"#PLLRJC2V",
-#                "nick":"Wesley"
-#            }
-#        ]
-#    },
-
-#    "LOUD":{
-  #      "players":[
- #           {
-#                "tag":"#2GV09VJJP",
- #               "nick":"FireCrow"
-#            }
-#        ]
- #   "OS":{
-#        "players":[
-#            {
-#                "tag":"#L9PQUV0YC",
-#                "nick":"OS|BrabaoBs"
-#        }
-#     ]
-# },
-
     "SA": {"#PLLRJC2V": "BH|Wesley",
            "#2GV09VJJP": "LOUD|FireCrow", 
            "#CQLR0Y80": "ELV|Tufa", 
