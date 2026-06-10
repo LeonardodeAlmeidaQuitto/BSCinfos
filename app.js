@@ -1,4 +1,3 @@
-// --- CONFIGURAÇÃO DOS MAPAS POR MÊS ---
 const MAPAS_POR_MES = {
     "2026-04": {
         "brawlBall": ["Super Beach", "Pinhole Punt", "Sneaky Fields"],
@@ -28,10 +27,10 @@ const MAPAS_POR_MES = {
 
 let dadosOriginaisRegiao = [];
 let dadosTimesSA = [];
-let dadosDetalhesBrawlers = {};
+let detalhesBrawlersSA = {};
 
 const formatarNomeImagem = (n) => `brawlers/${n.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
-const formatarNomeMapa = (m) => `element/${m.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
+const formatarNomeMapa = (m) => `elements/${m.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
 
 window.toggleElemento = function(header) {
     const content = header.nextElementSibling;
@@ -45,19 +44,12 @@ window.toggleElemento = function(header) {
     }
 };
 
-// ========================================================
-// 2. CARREGAMENTO E TRATAMENTO DE DADOS (ANTIGA -> ABRIL)
-// ========================================================
 window.carregarRegiao = async function(regiao) {
-    console.log(`Carregando dados da região: ${regiao}`);
-    
     try {
         const urlStats = `api/stats/${regiao.toLowerCase()}.json`;
         const resStats = await fetch(urlStats);
         if (resStats.ok) {
             let dadosBrutos = await resStats.json();
-            
-            // Tratamento automático de Datas Antigas para ABRIL 2026
             dadosOriginaisRegiao = dadosBrutos.map(d => {
                 if (d.mes && (d.mes.toUpperCase() === "ANTIGO" || d.mes.toUpperCase() === "ANTIGA")) {
                     d.mes = "ABRIL";
@@ -72,13 +64,13 @@ window.carregarRegiao = async function(regiao) {
         if (regiao.toLowerCase() === 'sa') {
             const resTimes = await fetch('api/stats/times_sa.json');
             if (resTimes.ok) dadosTimesSA = await resTimes.json();
-        }
-
-        try {
-            const resDetalhes = await fetch('api/stats/detalhes_brawlers.json');
-            if (resDetalhes.ok) dadosDetalhesBrawlers = await resDetalhes.json();
-        } catch (e) {
-            console.warn("detalhes_brawlers.json ausente. Os modais usarão placeholders.");
+            
+            try {
+                const resDetalhes = await fetch('api/stats/sa_brawlers_detail.json');
+                if (resDetalhes.ok) detalhesBrawlersSA = await resDetalhes.json();
+            } catch (e) {
+                console.warn("sa_brawlers_detail.json ausente.");
+            }
         }
 
         popularFiltrosIniciais();
@@ -86,7 +78,7 @@ window.carregarRegiao = async function(regiao) {
         renderizarListaBrawlers();
         renderizarListaTimes();
     } catch (error) {
-        console.error("Erro ao carregar dados da região:", error);
+        console.error("Erro ao carregar dados:", error);
     }
 };
 
@@ -102,7 +94,6 @@ function popularFiltrosIniciais() {
     selectMes.innerHTML = '';
 
     anos.sort().forEach(ano => selectAno.innerHTML += `<option value="${ano}">${ano}</option>`);
-    
     const ordemMeses = ["JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"];
     meses.sort((a, b) => ordemMeses.indexOf(a) - ordemMeses.indexOf(b)).forEach(mes => {
         selectMes.innerHTML += `<option value="${mes}">${mes}</option>`;
@@ -112,9 +103,6 @@ function popularFiltrosIniciais() {
     if (meses.length > 0) selectMes.value = meses[meses.length - 1];
 }
 
-// ========================================================
-// 3. FILTRAGEM RESTRITA POR MAPAS VÁLIDOS
-// ========================================================
 window.filtrarEAplicarDados = function() {
     const anoSel = document.getElementById('select-ano')?.value;
     const mesSel = document.getElementById('select-mes')?.value;
@@ -137,13 +125,9 @@ window.filtrarEAplicarDados = function() {
 
         if (mapasDoMes) {
             let mapasValidos = [];
-            Object.values(mapasDoMes).forEach(lista => {
-                lista.forEach(m => mapasValidos.push(m.toLowerCase()));
-            });
-            // Mantém APENAS mapas que estão no dicionário
+            Object.values(mapasDoMes).forEach(lista => lista.forEach(m => mapasValidos.push(m.toLowerCase())));
             dadosFiltrados = dadosFiltrados.filter(d => mapasValidos.includes(d.mapa.toLowerCase()));
         } else {
-            // Se o mês não estiver configurado no MAPAS_POR_MES, limpa a tabela
             dadosFiltrados = [];
         }
     }
@@ -152,9 +136,6 @@ window.filtrarEAplicarDados = function() {
     renderizarAllMaps(dadosFiltrados);
 };
 
-// ========================================================
-// 4. RENDERIZAÇÃO DA ABA META (TABELAS)
-// ========================================================
 function renderizarGridModos(dados, ano, mes) {
     const container = document.getElementById('grid-modos');
     if (!container) return;
@@ -180,6 +161,7 @@ function renderizarGridModos(dados, ano, mes) {
                     <td class="col-img"><img src="${formatarNomeImagem(d.pick)}" onerror="this.src='brawlers/default.png'"></td>
                     <td style="text-align: left; font-weight: bold;">${d.pick.toUpperCase()}</td>
                     <td>${d.picks}</td>
+                    <td style="color: #aaa;">${d.pick_rate || '0.0%'}</td>
                     <td>${d.vitorias}</td>
                     <td class="winrate-cell">${d.win_rate}</td>
                 </tr>
@@ -194,8 +176,9 @@ function renderizarGridModos(dados, ano, mes) {
                                 <th class="col-img">IMG</th>
                                 <th style="text-align: left; cursor: pointer;" onclick="ordenarTabela(this, 'string')">BRAWLER ↕</th>
                                 <th class="col-stats sortable" style="cursor: pointer;" onclick="ordenarTabela(this, 'number')">P ↕</th>
+                                <th class="col-stats sortable" style="cursor: pointer;" onclick="ordenarTabela(this, 'percent')">PR% ↕</th>
                                 <th class="col-stats sortable" style="cursor: pointer;" onclick="ordenarTabela(this, 'number')">W ↕</th>
-                                <th class="col-stats sortable" style="cursor: pointer;" onclick="ordenarTabela(this, 'percent')">WR ↕</th>
+                                <th class="col-stats sortable" style="cursor: pointer;" onclick="ordenarTabela(this, 'percent')">WR% ↕</th>
                             </tr>
                         </thead>
                         <tbody>${linhasBrawlers}</tbody>
@@ -220,6 +203,17 @@ function renderizarAllMaps(dados) {
     const tbody = document.getElementById('tbody-all-maps');
     if (!tbody) return;
 
+    let mapasVistos = new Set();
+    let totalPartidasGerais = 0;
+    
+    dados.forEach(d => {
+        let key = d.mapa + d.ano + d.mes;
+        if(!mapasVistos.has(key)) {
+            mapasVistos.add(key);
+            totalPartidasGerais += (d.total_partidas_mapa || 0);
+        }
+    });
+
     let agrupadoGeral = {};
     dados.forEach(d => {
         if (!agrupadoGeral[d.pick]) agrupadoGeral[d.pick] = { picks: 0, vitorias: 0 };
@@ -230,7 +224,8 @@ function renderizarAllMaps(dados) {
     let listaGeral = Object.keys(agrupadoGeral).map(brawler => {
         const item = agrupadoGeral[brawler];
         const wr = item.picks > 0 ? ((item.vitorias / item.picks) * 100).toFixed(1) + "%" : "0.0%";
-        return { brawler, picks: item.picks, vitorias: item.vitorias, win_rate: wr };
+        const pr = totalPartidasGerais > 0 ? ((item.picks / totalPartidasGerais) * 100).toFixed(1) + "%" : "0.0%";
+        return { brawler, picks: item.picks, vitorias: item.vitorias, win_rate: wr, pick_rate: pr };
     });
 
     listaGeral.sort((a, b) => b.picks - a.picks);
@@ -240,20 +235,18 @@ function renderizarAllMaps(dados) {
             <td class="col-img"><img src="${formatarNomeImagem(d.brawler)}" onerror="this.src='brawlers/default.png'"></td>
             <td style="text-align: left; font-weight: bold;">${d.brawler.toUpperCase()}</td>
             <td>${d.picks}</td>
+            <td style="color: #aaa;">${d.pick_rate}</td>
             <td>${d.vitorias}</td>
             <td class="winrate-cell">${d.win_rate}</td>
         </tr>
     `).join('');
 }
 
-// ========================================================
-// 5. ABA BRAWLERS E TIMES (SIDEBAR E INFO PANEL)
-// ========================================================
 function renderizarListaBrawlers() {
     const container = document.getElementById("lista-brawlers-sidebar");
     if (!container) return;
     
-    let brawlers = Object.keys(dadosDetalhesBrawlers);
+    let brawlers = Object.keys(detalhesBrawlersSA);
     if (brawlers.length === 0 && dadosOriginaisRegiao.length > 0) {
         brawlers = [...new Set(dadosOriginaisRegiao.map(d => d.pick.toLowerCase()))];
     }
@@ -275,6 +268,48 @@ window.filtrarBrawlersSidebar = function() {
     });
 };
 
+function gerarHTMLDetalhes(nomeBrawler, info) {
+    let mapasHTML = info.top_mapas && info.top_mapas.length > 0 ? info.top_mapas.map(m => `
+        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 12px; background: #111; padding: 10px; border-radius: 8px; border: 1px solid var(--borda-destaque);">
+            <img src="${formatarNomeMapa(m.mapa)}" onerror="this.src='elements/default.png'" style="width: 70px; height: 50px; border-radius: 6px; object-fit: cover;">
+            <div>
+                <div style="font-weight: bold; font-size: 15px; color: #fff;">${m.mapa.toUpperCase()}</div>
+                <div style="color: #888; font-size: 12px; margin-top: 2px;">${m.modo.toUpperCase()}</div>
+                <div style="color: var(--accent-purple); font-weight: bold; font-size: 13px; margin-top: 4px;">${m.picks} Partidas</div>
+            </div>
+        </div>
+    `).join('') : '<div style="font-size:13px; color:#555;">Sem dados suficientes em SA.</div>';
+
+    let sinergiasHTML = info.sinergias && info.sinergias.length > 0 ? info.sinergias.map(s => `
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background: #111; border-radius: 8px; border: 1px solid var(--borda-destaque); margin-bottom: 10px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <img src="${formatarNomeImagem(nomeBrawler)}" style="width: 32px; height: 32px; border-radius: 4px;">
+                <span style="color: #666; font-size: 18px; font-weight: bold; margin: 0 4px;">+</span>
+                <img src="${formatarNomeImagem(s.com)}" style="width: 32px; height: 32px; border-radius: 4px; border: 2px solid var(--accent-purple);">
+                <span style="font-size: 14px; font-weight: bold; margin-left: 8px; color: #fff;">${s.com.toUpperCase()}</span>
+            </div>
+            <div style="font-size: 13px; color: #ccc; display: flex; gap: 15px;">
+                <span><strong>${s.picks}</strong> PICKS</span>
+                <span><strong>${s.vitorias}</strong> WINS</span>
+                <span style="color: var(--winrate-color); font-weight: bold;">${s.win_rate} WR</span>
+            </div>
+        </div>
+    `).join('') : '<div style="font-size:13px; color:#555;">Sem dados de companheiros de equipe na região SA.</div>';
+
+    return `
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+                <h4 style="font-size: 14px; color: #888; margin-bottom: 15px; text-transform: uppercase;">Top 3 Mapas & Modos</h4>
+                ${mapasHTML}
+            </div>
+            <div>
+                <h4 style="font-size: 14px; color: #888; margin-bottom: 15px; text-transform: uppercase;">Top 5 Sinergias (Mesmo Time)</h4>
+                ${sinergiasHTML}
+            </div>
+        </div>
+    `;
+}
+
 window.exibirInfoBrawler = function(nome) {
     const painel = document.getElementById("painel-info-brawler");
     if (!painel) return;
@@ -283,8 +318,46 @@ window.exibirInfoBrawler = function(nome) {
         i.classList.toggle("active", i.querySelector(".brawler-name").textContent.toLowerCase() === nome.toLowerCase());
     });
 
-    const info = dadosDetalhesBrawlers[nome.toLowerCase()] || criarFallbackDetalhes();
-    painel.innerHTML = gerarHTMLDetalhesAvançados(nome, info);
+    const info = detalhesBrawlersSA[nome.toUpperCase()] || {top_mapas: [], sinergias: []};
+    painel.innerHTML = `
+        <div class="brawler-profile-header">
+            <img src="${formatarNomeImagem(nome)}" class="brawler-large-avatar" onerror="this.src='brawlers/default.png'">
+            <h2>${nome} <span style="font-size: 14px; color: #888; font-weight: normal;">/ Região SA</span></h2>
+        </div>
+        ${gerarHTMLDetalhes(nome, info)}
+    `;
+};
+
+window.abrirModalBrawler = function(nomeBrawler) {
+    const info = detalhesBrawlersSA[nomeBrawler.toUpperCase()] || {top_mapas: [], sinergias: []};
+    let modal = document.getElementById('modal-analise-brawler');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'modal-analise-brawler';
+        modal.className = 'brawler-modal-overlay';
+        document.body.appendChild(modal);
+    }
+
+    modal.innerHTML = `
+        <div class="brawler-modal-card">
+            <div class="brawler-modal-header">
+                <div style="display:flex; align-items:center; gap: 15px;">
+                    <img src="${formatarNomeImagem(nomeBrawler)}" style="width: 40px; height: 40px; border-radius: 6px; border: 1px solid var(--accent-purple);">
+                    <h2>ANÁLISE AVANÇADA: ${nomeBrawler.toUpperCase()} <span style="color:#666; font-size:12px;">(SA)</span></h2>
+                </div>
+                <button class="brawler-modal-close" onclick="fecharModalBrawler()">&times;</button>
+            </div>
+            <div class="brawler-modal-body">
+                ${gerarHTMLDetalhes(nomeBrawler, info)}
+            </div>
+        </div>
+    `;
+    modal.style.display = 'flex';
+};
+
+window.fecharModalBrawler = function() {
+    const modal = document.getElementById('modal-analise-brawler');
+    if (modal) modal.style.display = 'none';
 };
 
 function renderizarListaTimes() {
@@ -342,93 +415,6 @@ window.exibirInfoTime = function(idTime) {
     `;
 };
 
-// ========================================================
-// 6. MODAL DE ANÁLISE AVANÇADA (MAPAS E SINERGIA)
-// ========================================================
-window.abrirModalBrawler = function(nomeBrawler) {
-    const key = nomeBrawler.toLowerCase();
-    const info = dadosDetalhesBrawlers[key] || criarFallbackDetalhes();
-
-    let modal = document.getElementById('modal-analise-brawler');
-    if (!modal) {
-        modal = document.createElement('div');
-        modal.id = 'modal-analise-brawler';
-        modal.className = 'brawler-modal-overlay';
-        document.body.appendChild(modal);
-    }
-
-    modal.innerHTML = `
-        <div class="brawler-modal-card">
-            <div class="brawler-modal-header">
-                <h2>ANÁLISE AVANÇADA: ${nomeBrawler.toUpperCase()}</h2>
-                <button class="brawler-modal-close" onclick="fecharModalBrawler()">&times;</button>
-            </div>
-            <div class="brawler-modal-body">
-                ${gerarHTMLDetalhesAvançados(nomeBrawler, info)}
-            </div>
-        </div>
-    `;
-    modal.style.display = 'flex';
-};
-
-window.fecharModalBrawler = function() {
-    const modal = document.getElementById('modal-analise-brawler');
-    if (modal) modal.style.display = 'none';
-};
-
-// ========================================================
-// 7. FUNÇÕES AUXILIARES E CSS INJETADO (MODAL/DETALHES)
-// ========================================================
-function criarFallbackDetalhes() {
-    return {
-        mapa_mais_frequente: "Indisponível", mapa_partidas: 0, mapa_vitorias: 0, mapa_pct_partidas: "0%", mapa_winrate: "0.0%",
-        sinergia_brawler: "Nenhum", sinergia_partidas: 0, sinergia_vitorias: 0, sinergia_pct_partidas: "0%", sinergia_winrate: "0.0%"
-    };
-}
-
-function gerarHTMLDetalhesAvançados(nomeBrawler, info) {
-    return `
-        <div class="brawler-modal-section">
-            <h3>📌 MAPA MAIS FREQUENTE</h3>
-            <div class="modal-map-flex">
-                <div class="modal-map-img-box">
-                    <img src="${formatarNomeMapa(info.mapa_mais_frequente)}" alt="${info.mapa_mais_frequente}" onerror="this.src='element/default.png'">
-                </div>
-                <div class="modal-map-details">
-                    <h4>${info.mapa_mais_frequente.toUpperCase()}</h4>
-                    <p><strong>Total de Partidas:</strong> ${info.mapa_partidas}</p>
-                    <p><strong>Total de Vitórias:</strong> ${info.mapa_vitorias}</p>
-                    <p><strong>% de Escolha Global:</strong> ${info.mapa_pct_partidas}</p>
-                    <p><strong>Taxa de Vitória (WR):</strong> <span class="winrate-cell">${info.mapa_winrate}</span></p>
-                </div>
-            </div>
-        </div>
-
-        <div class="brawler-modal-section">
-            <h3>🤝 MELHOR SINERGIA DETECTADA</h3>
-            <div class="modal-synergy-flex">
-                <div class="synergy-display-images">
-                    <div class="synergy-unit">
-                        <img src="${formatarNomeImagem(nomeBrawler)}" onerror="this.src='brawlers/default.png'">
-                        <span>${nomeBrawler.toUpperCase()}</span>
-                    </div>
-                    <div class="synergy-plus">+</div>
-                    <div class="synergy-unit">
-                        <img src="${formatarNomeImagem(info.sinergia_brawler)}" onerror="this.src='brawlers/default.png'">
-                        <span>${info.sinergia_brawler.toUpperCase()}</span>
-                    </div>
-                </div>
-                <div class="modal-synergy-details">
-                    <p><strong>Partidas Juntos:</strong> ${info.sinergia_partidas}</p>
-                    <p><strong>Vitórias Juntos:</strong> ${info.sinergia_vitorias}</p>
-                    <p><strong>% de Presença Dupla:</strong> ${info.sinergia_pct_partidas}</p>
-                    <p><strong>Taxa de Vitória Dupla:</strong> <span class="winrate-cell">${info.sinergia_winrate}</span></p>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
 window.ordenarTabela = function(th, tipo) {
     const tabela = th.closest('table');
     const tbody = tabela.querySelector('tbody');
@@ -443,10 +429,10 @@ window.ordenarTabela = function(th, tipo) {
         let celulaA = linhaA.children[colunaIndex].textContent.trim();
         let celulaB = linhaB.children[colunaIndex].textContent.trim();
 
-        if (tipo === 'number') {
-            return ascendente ? parseFloat(celulaA) - parseFloat(celulaB) : parseFloat(celulaB) - parseFloat(celulaA);
-        } else if (tipo === 'percent') {
-            return ascendente ? parseFloat(celulaA) - parseFloat(celulaB) : parseFloat(celulaB) - parseFloat(celulaA);
+        if (tipo === 'number' || tipo === 'percent') {
+            let numA = parseFloat(celulaA.replace('%', ''));
+            let numB = parseFloat(celulaB.replace('%', ''));
+            return ascendente ? numA - numB : numB - numA;
         } else {
             return ascendente ? celulaA.localeCompare(celulaB) : celulaB.localeCompare(celulaA);
         }
@@ -456,38 +442,7 @@ window.ordenarTabela = function(th, tipo) {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Injeção limpa de CSS do Modal e Componentes de Detalhe
-    const styleTag = document.createElement('style');
-    styleTag.innerHTML = `
-        .brawler-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
-        .brawler-modal-card { background: #111111; border: 2px solid rgb(204, 0, 255); border-radius: 12px; width: 100%; max-width: 650px; box-shadow: 0 0 25px rgba(204, 0, 255, 0.4); overflow: hidden; }
-        .brawler-modal-header { background: #1a1a1a; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #262626; }
-        .brawler-modal-header h2 { font-size: 18px; color: #ffffff; letter-spacing: 1px; }
-        .brawler-modal-close { background: none; border: none; color: #888; font-size: 28px; cursor: pointer; }
-        .brawler-modal-close:hover { color: #ff3333; }
-        .brawler-modal-body { padding: 25px; display: flex; flex-direction: column; gap: 25px; }
-        .brawler-modal-section { background: #161616; padding: 15px; border-radius: 8px; border: 1px solid #222; }
-        .brawler-modal-section h3 { font-size: 14px; color: rgb(204, 0, 255); margin-bottom: 15px; }
-        
-        /* Map Layout */
-        .modal-map-flex { display: flex; gap: 20px; align-items: center; }
-        .modal-map-img-box { width: 110px; height: 110px; background: #000; border-radius: 8px; overflow: hidden; border: 1px solid #333; flex-shrink: 0; }
-        .modal-map-img-box img { width: 100%; height: 100%; object-fit: cover; }
-        .modal-map-details h4 { font-size: 18px; margin-bottom: 8px; color: #fff; }
-        .modal-map-details p { font-size: 13px; color: #ccc; margin: 3px 0; }
-        
-        /* Synergy Layout */
-        .modal-synergy-flex { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
-        .synergy-display-images { display: flex; align-items: center; gap: 15px; background: #0b0c10; padding: 10px 20px; border-radius: 8px; border: 1px solid #222; }
-        .synergy-unit { display: flex; flex-direction: column; align-items: center; gap: 5px; }
-        .synergy-unit img { width: 60px; height: 60px; border-radius: 6px; border: 1px solid rgb(204, 0, 255); object-fit: cover;}
-        .synergy-unit span { font-size: 11px; font-weight: bold; color: #888; }
-        .synergy-plus { font-size: 26px; color: rgb(204, 0, 255); font-weight: bold; margin-bottom: 15px;}
-        .modal-synergy-details { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #ccc; }
-    `;
-    document.head.appendChild(styleTag);
-
-    // Configuração dos Menus Dropdown
+    // Dropdowns
     const dropdowns = document.querySelectorAll(".dropdown");
     dropdowns.forEach(dropdown => {
         const link = dropdown.querySelector(".nav-link");
@@ -501,4 +456,17 @@ document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener("click", (e) => {
         if (!e.target.closest(".dropdown")) dropdowns.forEach(d => d.classList.remove("active"));
     });
+
+    // Injeção de CSS extra para o modal (mantém a página limpa)
+    const styleTag = document.createElement('style');
+    styleTag.innerHTML = `
+        .brawler-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
+        .brawler-modal-card { background: var(--bg-paineis); border: 2px solid var(--accent-purple); border-radius: 12px; width: 100%; max-width: 800px; box-shadow: 0 0 25px rgba(204, 0, 255, 0.4); overflow: hidden; }
+        .brawler-modal-header { background: #000; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--borda-suave); }
+        .brawler-modal-header h2 { font-size: 18px; color: #ffffff; letter-spacing: 1px; }
+        .brawler-modal-close { background: none; border: none; color: #888; font-size: 28px; cursor: pointer; }
+        .brawler-modal-close:hover { color: #ff3333; }
+        .brawler-modal-body { padding: 25px; max-height: 80vh; overflow-y: auto; }
+    `;
+    document.head.appendChild(styleTag);
 });
