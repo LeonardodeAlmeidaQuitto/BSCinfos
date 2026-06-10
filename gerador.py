@@ -2,8 +2,6 @@ import brawlstats
 import pandas as pd
 import os
 from datetime import datetime, timedelta, timezone
-import itertools
-from collections import defaultdict
 
 # --- CONFIGURAÇÃO ---
 # Substitua pela sua NOVA CHAVE gerada com o IP 45.79.218.79
@@ -16,19 +14,20 @@ ARQUIVO_BRUTO = "historico_bruto.csv"
 ARQUIVO_FINAL = "estatisticas_finais.csv"
 
 REGIOES = {
+
     "SA": {"#PLLRJC2V": "BH|Wesley",
-           "#2GV09VJJP": "LOUD|FireCrow", 
-           "#CQLR0Y80": "ELV|Tufa", 
-           "#L9PQUV0YC": "OS|BrabaoBs", 
-           "#JQ8LLLY": "AL|FireMirillo", 
-           "#202GJJR28": "Doritos", 
-           "#PR0P8QVQ": "SKC| Kr ;)", 
-           "#R2LR2QLG": "ETN|Mohtep", 
-           "#80VLPJCCC": "Tilo", 
-           "#GJPVYUQG": "ENO|Deykonn", 
-           "#2P8RVJVUY": "OCX|Sterixx", 
+           "#2GV09VJJP": "LOUD|FireCrow",
+           "#CQLR0Y80": "ELV|Tufa",
+           "#L9PQUV0YC": "OS|BrabaoBs",
+           "#JQ8LLLY": "AL|FireMirillo",
+           "#202GJJR28": "Doritos",
+           "#PR0P8QVQ": "SKC| Kr ;)",
+           "#R2LR2QLG": "ETN|Mohtep",
+           "#80VLPJCCC": "Tilo",
+           "#GJPVYUQG": "ENO|Deykonn",
+           "#2P8RVJVUY": "OCX|Sterixx",
            "#2QCCC29QV": "ODS|Magic"},
-    
+
     "NA": {"#LVRRYPV": "RLM|Bobby",
            "#82RCQCVG": "TRB|Lxffy",
            "#YUJ8PJ0LR": "TE|Snoiy",
@@ -72,12 +71,15 @@ REGIOES = {
 TAG_PARA_REGIAO = {tag: reg for reg, lista in REGIOES.items() for tag in lista}
 
 def minerar_dados():
+    # Ajuste de Horário Brasília
     fuso_brasilia = timezone(timedelta(hours=-3))
     momento_revisao = datetime.now(fuso_brasilia).strftime('%d/%m/%Y %H:%M:%S')
     
     print(f"🚀 Iniciando varredura via Proxy... Horário: {momento_revisao}")
+    
     colunas = ['id_partida', 'regiao', 'id_players', 'name_players', 'pick', 'win', 'win_rate', 'modo', 'mapa', 'data_adicao']
     
+    # Verifica ou cria o arquivo bruto
     if os.path.exists(ARQUIVO_BRUTO):
         try:
             df_existente = pd.read_csv(ARQUIVO_BRUTO, sep=',', dtype=str, keep_default_na=False)
@@ -133,21 +135,20 @@ def minerar_dados():
     if os.path.exists(ARQUIVO_BRUTO):
         df_total = pd.read_csv(ARQUIVO_BRUTO, keep_default_na=False)
         df_total['win'] = pd.to_numeric(df_total['win'], errors='coerce').fillna(0)
-
-        # 🌟 NOVO: Tratamento dinâmico da coluna data_adicao para gerar Ano e Mês estruturados
+        
+        # 🌟 MODIFICAÇÃO: Função para extrair Ano e Mês por extenso da coluna data_adicao
         def tratar_datas(data_str):
             try:
                 if not data_str or "antig" in str(data_str).lower():
                     return "ANTIGO", "ANTIGO"
-                # Converte o padrão do CSV "28/05/2026 11:22:39"
+                # Converte o formato padronizado "28/05/2026 11:22:39"
                 dt = datetime.strptime(str(data_str).strip(), '%d/%m/%Y %H:%M:%S')
-                # Mapeia números de meses para nomes legíveis em português se desejar, ou mantém número
-                meses_nome = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
-                return str(dt.year), meses_nome[dt.month - 1].upper()
+                meses_nome = ["JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"]
+                return str(dt.year), meses_nome[dt.month - 1]
             except:
                 return "OUTRO", "OUTRO"
 
-        # Cria as colunas separadas antes de agrupar
+        # Criação das colunas temporárias para agrupamento no JSON
         df_total['ano'] = df_total['data_adicao'].apply(lambda x: tratar_datas(x)[0])
         df_total['mes'] = df_total['data_adicao'].apply(lambda x: tratar_datas(x)[1])
 
@@ -156,13 +157,14 @@ def minerar_dados():
         
         os.makedirs('api/stats', exist_ok=True)
 
-        # Atualizado para incluir 'ano' e 'mes' no groupby
+        # 🌟 MODIFICAÇÃO: Incluídos 'ano' e 'mes' dentro do agrupamento (groupby)
         def gerar_json_consolidado(df_input, path):
             consolidado = df_input.groupby(['modo', 'mapa', 'pick', 'ano', 'mes']).agg(
                 picks=('win', 'count'),
                 vitorias=('win', 'sum')
             ).reset_index()
             consolidado['win_rate'] = (consolidado['vitorias'] / consolidado['picks'] * 100).round(1).astype(str) + '%'
+            # force_ascii=False garante a codificação correta de caracteres especiais (ex: Março)
             consolidado.to_json(path, orient='records', force_ascii=False)
 
         gerar_json_consolidado(df_stats, 'api/stats/geral.json')
@@ -171,109 +173,6 @@ def minerar_dados():
             if reg:
                 df_reg = df_stats[df_stats['regiao_list'] == reg]
                 gerar_json_consolidado(df_reg, f"api/stats/{str(reg).lower()}.json")
-
-# --- [ADICIONE OU SUBSTITUA ESTA FUNÇÃO DENTRO DO SEU GERADOR.PY] ---
-
-def gerar_dados_com_pick_rate_e_detalhes_sa(csv_path):
-    # Carrega o histórico bruto
-    df = pd.read_csv(csv_path)
-    
-    # Tratamento de datas simplificado para agrupamento
-    def obter_ano_mes(data_str):
-        if str(data_str).strip().lower() == 'antiga' or pd.isna(data_str):
-            return "2026", "ABRIL"
-        try:
-            dt = pd.to_datetime(data_str, format='%d/%m/%m %H:%M:%S', errors='coerce')
-            if pd.isna(dt):
-                dt = pd.to_datetime(data_str, errors='coerce')
-            meses_pt = {1: "JANEIRO", 2: "FEVEREIRO", 3: "MARÇO", 4: "ABRIL", 5: "MAIO", 6: "JUNHO",
-                        7: "JULHO", 8: "AGOSTO", 9: "SETEMBRO", 10: "OUTUBRO", 11: "NOVEMBRO", 12: "DEZEMBRO"}
-            return str(dt.year), meses_pt.get(dt.month, "ABRIL")
-        except:
-            return "2026", "ABRIL"
-
-    df['ano'] = df['data_adicao'].apply(lambda x: obter_ano_mes(x)[0])
-    df['mes'] = df['data_adicao'].apply(lambda x: obter_ano_mes(x)[1])
-    
-    # --- 1. CÁLCULO DO PICK RATE PARA O META GERAL ---
-    df['regiao_list'] = df['regiao'].str.split('/')
-    df_stats = df.explode('regiao_list')
-    
-    # Total de partidas únicas por mapa/modo/mês/região (com base no id_partida único)
-    partidas_totais = df_stats.groupby(['regiao_list', 'modo', 'mapa', 'ano', 'mes'])['id_partida'].nunique().reset_index(name='total_partidas')
-    
-    # Agrupamento por Brawler
-    consolidado = df_stats.groupby(['regiao_list', 'modo', 'mapa', 'pick', 'ano', 'mes']).agg(
-        picks=('win', 'count'),
-        vitorias=('win', 'sum')
-    ).reset_index()
-    
-    # Merge com totais para obter o Pick Rate exato
-    consolidado = consolidado.merge(partidas_totais, on=['regiao_list', 'modo', 'mapa', 'ano', 'mes'])
-    consolidado['win_rate'] = (consolidado['vitorias'] / consolidado['picks'] * 100).round(1).astype(str) + '%'
-    consolidado['pick_rate'] = (consolidado['picks'] / consolidado['total_partidas'] * 100).round(1).astype(str) + '%'
-    
-    # Salva os arquivos regionais atualizados com a nova coluna pick_rate
-    os.makedirs('api/stats', exist_ok=True)
-    for reg, group in consolidado.groupby('regiao_list'):
-        group.drop(columns=['regiao_list']).to_json(f'api/stats/{reg.lower()}.json', orient='records', force_ascii=False)
-
-    # --- 2. GERAÇÃO DOS DETALHES DE BRAWLERS EXCLUSIVOS DA REGIAO SA ---
-    df_sa = df[df['regiao'].str.contains('SA', na=False)].copy()
-    brawlers_sa = df_sa['pick'].unique()
-    
-    detalhes_brawlers = {}
-    
-    # A. Top 3 Mapas e Modos
-    mapas_brawler = df_sa.groupby(['pick', 'modo', 'mapa']).size().reset_index(name='picks')
-    
-    # B. Sinergias (Top 5 companheiros de equipe mais usados juntos)
-    # Agrupa brawlers que jogaram no MESMO time (mesmo id_partida e mesmo resultado de vitória/derrota)
-    times = df_sa.groupby(['id_partida', 'win'])['pick'].apply(list).reset_index()
-    par_stats = defaultdict(lambda: {'picks': 0, 'vitorias': 0})
-    
-    for _, row in times.iterrows():
-        lista_brawlers = sorted(list(set(row['pick'])))
-        venceu = int(row['win'])
-        if len(lista_brawlers) > 1:
-            for b1, b2 in itertools.combinations(lista_brawlers, 2):
-                par_stats[(b1, b2)]['picks'] += 1
-                if venceu == 1:
-                    par_stats[(b1, b2)]['vitorias'] += 1
-
-    sinergias_por_brawler = defaultdict(list)
-    for (b1, b2), stats in par_stats.items():
-        wr = round((stats['vitorias'] / stats['picks']) * 100, 1) if stats['picks'] > 0 else 0.0
-        sinergias_por_brawler[b1].append({'com': b2, 'picks': stats['picks'], 'vitorias': stats['vitorias'], 'win_rate': f"{wr}%"})
-        sinergias_por_brawler[b2].append({'com': b1, 'picks': stats['picks'], 'vitorias': stats['vitorias'], 'win_rate': f"{wr}%"})
-
-    # Compila tudo no dicionário final
-    for brawler in brawlers_sa:
-        # Filtra top 3 mapas
-        top_mapas = mapas_brawler[mapas_brawler['pick'] == brawler].sort_values(by='picks', ascending=False).head(3)
-        lista_mapas = []
-        for _, r_mapa in top_mapas.iterrows():
-            lista_mapas.append({
-                'modo': r_mapa['modo'],
-                'mapa': r_mapa['mapa'],
-                'picks': int(r_mapa['picks'])
-            })
-            
-        # Filtra top 5 sinergias
-        top_sinergias = sorted(sinergias_por_brawler[brawler], key=lambda x: x['picks'], reverse=True)[:5]
-        
-        detalhes_brawlers[brawler.upper()] = {
-            'top_mapas': lista_mapas,
-            'sinergias': top_sinergias
-        }
-        
-    # Salva o arquivo final de detalhes dos brawlers
-    import json
-    with open('api/stats/sa_brawlers_detail.json', 'w', encoding='utf-8') as f:
-        json.dump(detalhes_brawlers, f, ensure_ascii=False, indent=4)
-
-# Executa a função
-gerar_dados_com_pick_rate_e_detalhes_sa('historico_bruto.csv')
 
     print(f"\n✅ Concluído! Total de novas partidas: {total_novas}")
 
