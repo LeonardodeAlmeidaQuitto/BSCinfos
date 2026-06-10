@@ -177,16 +177,17 @@ def minerar_dados():
         
         os.makedirs('api/stats', exist_ok=True)
 
-        # 🌟 GERAÇÃO DE JSONS COM PICK RATE INCLUSO
+        # 🌟 GERAÇÃO DE JSONS COM PICK RATE AJUSTADO E SEGURO (INCLUINDO MODO NO MERGE)
         def gerar_json_consolidado(df_input, path):
             consolidado = df_input.groupby(['modo', 'mapa', 'pick', 'ano', 'mes']).agg(
                 picks=('win', 'count'),
                 vitorias=('win', 'sum')
             ).reset_index()
             
-            # Conta total de partidas por mapa para calcular o Pick Rate exato
-            totais_por_mapa = df_input.groupby(['mapa', 'ano', 'mes'])['id_partida'].nunique().reset_index(name='total_partidas_mapa')
-            consolidado = consolidado.merge(totais_por_mapa, on=['mapa', 'ano', 'mes'])
+            # Conta total de partidas por modo e mapa de forma exata
+            totais_por_mapa = df_input.groupby(['modo', 'mapa', 'ano', 'mes'])['id_partida'].nunique().reset_index(name='total_partidas_mapa')
+            consolidado = consolidado.merge(totais_por_mapa, on=['modo', 'mapa', 'ano', 'mes'], how='left')
+            consolidado['total_partidas_mapa'] = consolidado['total_partidas_mapa'].fillna(1).astype(int)
             
             consolidado['win_rate'] = (consolidado['vitorias'] / consolidado['picks'] * 100).round(1).astype(str) + '%'
             consolidado['pick_rate'] = (consolidado['picks'] / consolidado['total_partidas_mapa'] * 100).round(1).astype(str) + '%'
@@ -199,9 +200,9 @@ def minerar_dados():
                 df_reg = df_stats[df_stats['regiao_list'] == reg]
                 gerar_json_consolidado(df_reg, f"api/stats/{str(reg).lower()}.json")
 
-        # 🌟 GERAÇÃO DE DETALHES EXCLUSIVOS DOS BRAWLERS SA (MAPAS E SINERGIAS)
+        # 🌟 GERAÇÃO DE DETALHES EXCLUSIVOS DOS BRAWLERS SA (MAPAS E SINERGIAS ALINHADOS COM EXPANDIDO)
         print("Processando detalhes específicos da região SA (Mapas e Sinergias)...")
-        df_sa = df_total[df_total['regiao'].str.contains('SA', na=False)].copy()
+        df_sa = df_stats[df_stats['regiao_list'] == 'SA'].copy()
 
         # Top 3 Mapas
         mapas_brawler = df_sa.groupby(['pick', 'modo', 'mapa']).size().reset_index(name='picks')
@@ -240,21 +241,19 @@ def minerar_dados():
         with open('api/stats/sa_brawlers_detail.json', 'w', encoding='utf-8') as f:
             json.dump(detalhes_brawlers, f, ensure_ascii=False, indent=4)
 
-        # 🌟 GERAÇÃO DE TIMES SA (ROSTER)
-        df_times_validos = df_total[(df_total['id_time'] != "") & (~df_total['id_time'].str.contains('OPONENTE', na=True))]
+        # 🌟 GERAÇÃO DE TIMES SA COM FILTRO DE REGIÃO UNIFICADO (ROSTER)
+        df_times_validos = df_stats[(df_stats['regiao_list'] == 'SA') & (df_stats['id_time'] != "") & (~df_stats['id_time'].str.contains('OPONENTE', na=True))]
         times_sa_data = []
         if not df_times_validos.empty:
             for t_id, df_time in df_times_validos.groupby('id_time'):
                 t_nome = str(df_time['nome_time'].iloc[0]).upper()
                 roster = []
                 picks_history = {}
-                jogadores_grupo = df_time.groupby(['player_tag', 'player_name']).size().reset_index()
-                for _, r_jog in jogadores_grupo.iterrows():
-                    tag_j = r_jog['player_tag']
-                    nome_j = r_jog['player_name']
+                
+                for tag_j, df_p in df_time.groupby('player_tag'):
+                    nome_j = df_p['player_name'].iloc[-1]
                     roster.append({"nome": nome_j, "tag": tag_j})
 
-                    df_p = df_time[df_time['player_tag'] == tag_j]
                     p_counts = df_p['pick'].value_counts().reset_index()
                     p_counts.columns = ['brawler', 'qtd']
                     picks_history[tag_j] = [{"brawler": str(row_p['brawler']).upper(), "qtd": int(row_p['qtd'])} for _, row_p in p_counts.iterrows()]
