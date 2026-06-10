@@ -35,12 +35,8 @@
             </header>
             
             <div class="filter-container">
-                <select id="select-ano" class="filter-select" onchange="filtrarEAplicarDados()">
-                    <option value="">Aguardando...</option>
-                </select>
-                <select id="select-mes" class="filter-select" onchange="filtrarEAplicarDados()">
-                    <option value="">Aguardando...</option>
-                </select>
+                <select id="select-ano" class="filter-select" onchange="filtrarEAplicarDados()"></select>
+                <select id="select-mes" class="filter-select" onchange="filtrarEAplicarDados()"></select>
             </div>
             
             <div id="grid-modos"></div> 
@@ -50,19 +46,16 @@
                     ALL MAPS ANALYSIS <span>▶</span>
                 </div>
                 <div class="mapa-content" style="display:none">
-                <table class="excel-table">
-                    <thead>
-                        <tr>
+                    <table class="excel-table">
+                        <thead>
+                            <tr>
                                 <th class="col-img">IMG</th>
-                                <th class="col-brawler sortable" onclick="ordenarTabela(this, 'string')" style="text-align: left;">BRAWLER ↕</th>
+                                <th class="sortable" onclick="ordenarTabela(this, 'string')" style="text-align: left;">BRAWLER ↕</th>
                                 <th class="col-stats sortable" onclick="ordenarTabela(this, 'number')">PICKS ↕</th>
-                                <th class="col-stats sortable" onclick="ordenarTabela(this, 'number')">PR% ↕</th> <th class="col-stats sortable" onclick="ordenarTabela(this, 'number')">WINS ↕</th>
-                                <th class="col-stats sortable" onclick="ordenarTabela(this, 'percent')">WIN RATE ↕</th>
-                                </tr>
-                    </thead>
-                    <tbody id="tbody-all-maps">
-                    </tbody>
-                </table>
+                                <th class="col-stats sortable" onclick="ordenarTabela(this, 'percent')">PR% ↕</th>
+                                <th class="col-stats sortable" onclick="ordenarTabela(this, 'number')">WINS ↕</th>
+                                <th class="col-stats sortable" onclick="ordenarTabela(this, 'percent')">WR% ↕</th>
+                            </tr>
                         </thead>
                         <tbody id="tbody-all-maps">
                             </tbody>
@@ -75,10 +68,8 @@
             <div class="brawlers-container">
                 <div class="sidebar">
                     <input type="text" id="search-brawler-sidebar" class="sidebar-search" placeholder="Buscar Brawler..." oninput="filtrarBrawlersSidebar()">
-                    <div class="sidebar-list" id="lista-brawlers-sidebar">
-                        </div>
+                    <div class="sidebar-list" id="lista-brawlers-sidebar"></div>
                 </div>
-                
                 <div class="info-panel" id="painel-info-brawler">
                     <div class="placeholder-text">Selecione um brawler na barra lateral para ver a análise de mapa e sinergias.</div>
                 </div>
@@ -89,12 +80,10 @@
             <div class="times-container">
                 <div class="sidebar">
                     <div class="sidebar-header">EQUIPES REGISTRADAS</div>
-                    <div class="sidebar-list" id="lista-times-sidebar">
-                        </div>
+                    <div class="sidebar-list" id="lista-times-sidebar"></div>
                 </div>
-                
                 <div class="info-panel" id="painel-info-time">
-                    <div class="placeholder-text">Selecione um time na lateral para visualizar o Roster e o histórico de picks dos jogadores.</div>
+                    <div class="placeholder-text">Selecione um time na lateral para visualizar o Roster e o histórico de picks.</div>
                 </div>
             </div>
         </div>
@@ -103,26 +92,18 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             carregarRegiao('sa');
-            
             window.mudarTela = function(tela) {
                 document.querySelectorAll('.tela-secao').forEach(sec => {
                     sec.classList.remove('tela-ativa');
                     sec.classList.add('tela-oculta');
                 });
-                
                 const telaAlvo = document.getElementById(`tela-${tela}`);
                 if (telaAlvo) {
                     telaAlvo.classList.remove('tela-oculta');
                     telaAlvo.classList.add('tela-ativa');
                 }
-                
-                const titulos = {
-                    'meta': 'SA ▼ (META)',
-                    'brawlers': 'SA ▼ (BRAWLERS)',
-                    'times': 'SA ▼ (TIMES)'
-                };
+                const titulos = {'meta': 'SA ▼ (META)', 'brawlers': 'SA ▼ (BRAWLERS)', 'times': 'SA ▼ (TIMES)'};
                 document.getElementById('sa-menu-btn').textContent = titulos[tela];
-                
                 const dp = document.querySelector('.dropdown');
                 if (dp) dp.classList.remove('active');
             };
