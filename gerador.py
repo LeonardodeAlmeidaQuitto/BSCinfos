@@ -1,88 +1,96 @@
 import brawlstats
 import pandas as pd
 import os
+import json
+import itertools
+from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
 # --- CONFIGURAÇÃO ---
-# Substitua pela sua NOVA CHAVE gerada com o IP 45.79.218.79
 API_KEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjU0ODZlOGQxLTRkNWQtNDJmYy1iOWE3LWU5ODYyMWJhOWI0NSIsImlhdCI6MTc3ODUwODgwOCwic3ViIjoiZGV2ZWxvcGVyLzc0NjFhNGJkLThhZDctNjg2Mi0wOGVkLTJiYmEzMzAxMWE3NiIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiNDUuNzkuMjE4Ljc5Il0sInR5cGUiOiJjbGllbnQifV19.yvcSQalBqNz6Q6DjZWU5IL1XvBjn5DGckYvy2bgl5tjVeRJ2GMhY_I2JP1zdEeLAfEG2hGVJT7OMZro4kkegFA"
 
 client = brawlstats.Client(API_KEY, base_url="https://bsproxy.royaleapi.dev/v1")
 
-# --- DEFINIÇÃO DOS ARQUIVOS ---
 ARQUIVO_BRUTO = "historico_bruto.csv"
-ARQUIVO_FINAL = "estatisticas_finais.csv"
 
 REGIOES = {
-
-    "SA": {"#PLLRJC2V": "BH|Wesley",
-           "#2GV09VJJP": "LOUD|FireCrow",
-           "#CQLR0Y80": "ELV|Tufa",
-           "#L9PQUV0YC": "OS|BrabaoBs",
-           "#JQ8LLLY": "AL|FireMirillo",
-           "#202GJJR28": "Doritos",
-           "#PR0P8QVQ": "SKC| Kr ;)",
-           "#R2LR2QLG": "ETN|Mohtep",
-           "#80VLPJCCC": "Tilo",
-           "#GJPVYUQG": "ENO|Deykonn",
-           "#2P8RVJVUY": "OCX|Sterixx",
-           "#2QCCC29QV": "ODS|Magic"},
-
-    "NA": {"#LVRRYPV": "RLM|Bobby",
-           "#82RCQCVG": "TRB|Lxffy",
-           "#YUJ8PJ0LR": "TE|Snoiy",
-           "#VPVLG2": "ZOOS|Tyrant",
-           "#P8GVQ28": "Math",
-           "#QURVLPG": "VTC|Ezlivi",
-           "#R9CCLP8Q": "LGCY|Rafiki",
-           "#28LUY98": "OG",
-           "#82J2VLRQ": "Zhar",
-           "#9PP0G2CG": "VIC|SecondBest",
-           "#GCJCRVQ8": "STMN|Tacos",
-           "#2G82CGU": "NAME|Zee"},
-
-    "EMEA": {"#9PCV9L982": "FUT|AngelBoy",
-             "#2208QGGGL": "BGT|Dompe",
-             "#80PVPCC29": "NAVI|Enraged",
-             "#9JRGJ0RY9": "MAD|Rup",
-             "#YQUCCJ2": "HMB|Symantec",
-             "#9LVUC2PY": "SK| Ope",
-             "#PCPRPJV": "TH|IKaoss",
-             "#CJ9YRGGC": "HK|Natrix",
-             "#2Q892QVU": "TTM|Maru",
-             "#9PQQ8GQQ": "NOVO|Filippo",
-             "#2Y822YJYJC": "Decaii",  
-             "#PLV89CGP": "BIG|Salty"},
-
-    "EA": {"#9ULYPV8": "CR|Tensai",
-           "#P0Y8JGL0U": "ZETA|Battoman",
-           "#J99YU9QY": "SKCEA|Kuru",
-           "#2RQQ9PGC": "FG|Shigemyon",
-           "#GJ9V99VJG": "DF|Clarx",
-           "#82CJYJPG2": "RVL|Yutapin",
-           "#8J9GUJJVY": "RC|Melty",
-           "#28PU0P9L0": "FL|Achapi",
-           "#28VP0G808": "INS|Koga",
-           "#89UUQLJCC": "FZ|Toridesu",
-           "#2LJVR0RQ8G": "TL|Engine"} 
-
+    "SA": {
+        "#PLLRJC2V": {"nome": "Wesley", "id_time": "BH", "nome_time": "BH ESPORTS"},
+        "#2GV09VJJP": {"nome": "FireCrow", "id_time": "LOUD", "nome_time": "LOUD"},
+        "#CQLR0Y80": {"nome": "Tufa", "id_time": "ELV", "nome_time": "ELEVATE"},
+        "#L9PQUV0YC": {"nome": "BrabaoBs", "id_time": "OS", "nome_time": "OUTPLAYING SMART"},
+        "#JQ8LLLY": {"nome": "FireMirillo", "id_time": "AL", "nome_time": "ALLIANCE"},
+        "#202GJJR28": {"nome": "Doritos", "id_time": "DOR", "nome_time": "DORITOS"},
+        "#PR0P8QVQ": {"nome": "Kr ;)", "id_time": "SKC", "nome_time": "SKC CHRONOS"},
+        "#R2LR2QLG": {"nome": "Mohtep", "id_time": "ETN", "nome_time": "ETERNITY"},
+        "#80VLPJCCC": {"nome": "Tilo", "id_time": "TILO", "nome_time": "TILO TEAM"},
+        "#GJPVYUQG": {"nome": "Deykonn", "id_time": "ENO", "nome_time": "ENOUGH"},
+        "#2P8RVJVUY": {"nome": "Sterixx", "id_time": "OCX", "nome_time": "OCEANX"},
+        "#2QCCC29QV": {"nome": "Magic", "id_time": "ODS", "nome_time": "ODYSSEY"}
+    },
+    "NA": {
+        "#LVRRYPV": {"nome": "Bobby", "id_time": "RLM", "nome_time": "RELIANCE MEDIA"},
+        "#82RCQCVG": {"nome": "Lxffy", "id_time": "TRB", "nome_time": "TRIBE GAMING"},
+        "#YUJ8PJ0LR": {"nome": "Snoiy", "id_time": "TE", "nome_time": "TEAM REVENGE"},
+        "#VPVLG2": {"nome": "Tyrant", "id_time": "ZOOS", "nome_time": "ZOOS"},
+        "#P8GVQ28": {"nome": "Math", "id_time": "MATH", "nome_time": "MATH ESPORTS"},
+        "#QURVLPG": {"nome": "Ezlivi", "id_time": "VTC", "nome_time": "VORTEX"},
+        "#R9CCLP8Q": {"nome": "Rafiki", "id_time": "LGCY", "nome_time": "LEGACY"},
+        "#28LUY98": {"nome": "OG", "id_time": "OG", "nome_time": "OG TEAM"},
+        "#82J2VLRQ": {"nome": "Zhar", "id_time": "ZHAR", "nome_time": "ZHAR"},
+        "#9PP0G2CG": {"nome": "SecondBest", "id_time": "VIC", "nome_time": "VICTORY"},
+        "#GCJCRVQ8": {"nome": "Tacos", "id_time": "STMN", "nome_time": "STMN ESPORTS"},
+        "#2G82CGU": {"nome": "Zee", "id_time": "NAME", "nome_time": "NO NAME"}
+    },
+    "EMEA": {
+        "#9PCV9L982": {"nome": "AngelBoy", "id_time": "FUT", "nome_time": "FUT ESPORTS"},
+        "#2208QGGGL": {"nome": "Dompe", "id_time": "BGT", "nome_time": "BIG TIME"},
+        "#80PVPCC29": {"nome": "Enraged", "id_time": "NAVI", "nome_time": "NAVATION"},
+        "#9JRGJ0RY9": {"nome": "Rup", "id_time": "MAD", "nome_time": "MAD ESPORTS"},
+        "#YQUCCJ2": {"nome": "Symantec", "id_time": "HMB", "nome_time": "HMBLE"},
+        "#9LVUC2PY": {"nome": "Ope", "id_time": "SK", "nome_time": "SK GAMING"},
+        "#PCPRPJV": {"nome": "IKaoss", "id_time": "TH", "nome_time": "TEAM HERETICS"},
+        "#CJ9YRGGC": {"nome": "Natrix", "id_time": "HK", "nome_time": "HONG KONG"},
+        "#2Q892QVU": {"nome": "Maru", "id_time": "TTM", "nome_time": "TOTAL MATCH"},
+        "#9PQQ8GQQ": {"nome": "Filippo", "id_time": "NOVO", "nome_time": "NOVO ESPORTS"},
+        "#2Y822YJYJC": {"nome": "Decaii", "id_time": "DEC", "nome_time": "DECAII"},
+        "#PLV89CGP": {"nome": "Salty", "id_time": "BIG", "nome_time": "BIG CLAN"}
+    },
+    "EA": {
+        "#9ULYPV8": {"nome": "Tensai", "id_time": "CR", "nome_time": "CRAZY RACCOON"},
+        "#P0Y8JGL0U": {"nome": "Battoman", "id_time": "ZETA", "nome_time": "ZETA DIVISION"},
+        "#J99YU9QY": {"nome": "Kuru", "id_time": "SKCEA", "nome_time": "SKC EA"},
+        "#2RQQ9PGC": {"nome": "Shigemyon", "id_time": "FG", "nome_time": "FEARLESS GAMING"},
+        "#GJ9V99VJG": {"nome": "Clarx", "id_time": "DF", "nome_time": "DRAFT FOOLS"},
+        "#82CJYJPG2": {"nome": "Yutapin", "id_time": "RVL", "nome_time": "RIVAL"},
+        "#8J9GUJJVY": {"nome": "Melty", "id_time": "RC", "nome_time": "REJECT"},
+        "#28PU0P9L0": {"nome": "Achapi", "id_time": "FL", "nome_time": "FENNEL"},
+        "#28VP0G808": {"nome": "Koga", "id_time": "INS", "nome_time": "INSOMNIA"},
+        "#89UUQLJCC": {"nome": "Toridesu", "id_time": "FZ", "nome_time": "FREEZE"},
+        "#2LJVR0RQ8G": {"nome": "Engine", "id_time": "TL", "nome_time": "TEAM LIQUID"}
+    }
 }
 
 TAG_PARA_REGIAO = {tag: reg for reg, lista in REGIOES.items() for tag in lista}
+MAPA_JOGADORES = {tag: info for reg, lista in REGIOES.items() for tag, info in lista.items()}
 
 def minerar_dados():
-    # Ajuste de Horário Brasília
     fuso_brasilia = timezone(timedelta(hours=-3))
     momento_revisao = datetime.now(fuso_brasilia).strftime('%d/%m/%Y %H:%M:%S')
     
     print(f"🚀 Iniciando varredura via Proxy... Horário: {momento_revisao}")
     
-    colunas = ['id_partida', 'regiao', 'id_players', 'name_players', 'pick', 'win', 'win_rate', 'modo', 'mapa', 'data_adicao']
+    colunas = [
+        'id_partida', 'regiao', 'id_players', 'name_players', 'pick', 'win', 'win_rate', 
+        'modo', 'mapa', 'data_adicao', 'player_tag', 'player_name', 'id_time', 'nome_time'
+    ]
     
-    # Verifica ou cria o arquivo bruto
     if os.path.exists(ARQUIVO_BRUTO):
         try:
             df_existente = pd.read_csv(ARQUIVO_BRUTO, sep=',', dtype=str, keep_default_na=False)
+            for col in colunas:
+                if col not in df_existente.columns:
+                    df_existente[col] = ""
             ids_registrados = set(df_existente['id_partida'].unique())
         except:
             ids_registrados = set()
@@ -94,7 +102,7 @@ def minerar_dados():
     total_novas = 0
 
     for sigla_busca, jogadores in REGIOES.items():
-        for tag_busca, nome_player in jogadores.items():
+        for tag_busca, info_busca in jogadores.items():
             try:
                 logs = client.get_battle_logs(tag_busca)
                 for entry in logs:
@@ -102,6 +110,15 @@ def minerar_dados():
                     if 'ranked' in battle.get('type', '').lower(): continue
                     teams = battle.get('teams')
                     if not teams or len(teams) < 2: continue
+                    
+                    t0_tracked = [MAPA_JOGADORES[p['tag']] for p in teams[0] if p['tag'] in MAPA_JOGADORES]
+                    t1_tracked = [MAPA_JOGADORES[p['tag']] for p in teams[1] if p['tag'] in MAPA_JOGADORES]
+                    
+                    t0_id = t0_tracked[0]['id_time'] if t0_tracked else "OPONENTE_T0"
+                    t0_nome = t0_tracked[0]['nome_time'] if t0_tracked else "DESCONHECIDO T0"
+                    
+                    t1_id = t1_tracked[0]['id_time'] if t1_tracked else "OPONENTE_T1"
+                    t1_nome = t1_tracked[0]['nome_time'] if t1_tracked else "DESCONHECIDO T1"
                     
                     all_players = teams[0] + teams[1]
                     tags_list = [p['tag'] for p in all_players]
@@ -118,10 +135,16 @@ def minerar_dados():
 
                     for i in range(6):
                         venceu = 1 if (i < 3 and res == 'victory') or (i >= 3 and res == 'defeat') else 0
+                        p_tag = tags_list[i]
+                        p_name = nicks_list[i]
+                        id_time_linha = t0_id if i < 3 else t1_id
+                        nome_time_linha = t0_nome if i < 3 else t1_nome
+
                         novas_linhas.append([
                             m_id, reg_final, ";".join(tags_list), ";".join(nicks_list),
                             brawlers_list[i], venceu, f"{venceu*100}.0%", 
-                            battle.get('mode', 'Unknown'), mapa, momento_revisao
+                            battle.get('mode', 'Unknown'), mapa, momento_revisao,
+                            p_tag, p_name, id_time_linha, nome_time_linha
                         ])
                     
                     ids_registrados.add(m_id)
@@ -136,19 +159,16 @@ def minerar_dados():
         df_total = pd.read_csv(ARQUIVO_BRUTO, keep_default_na=False)
         df_total['win'] = pd.to_numeric(df_total['win'], errors='coerce').fillna(0)
         
-        # 🌟 MODIFICAÇÃO: Função para extrair Ano e Mês por extenso da coluna data_adicao
         def tratar_datas(data_str):
             try:
                 if not data_str or "antig" in str(data_str).lower():
-                    return "ANTIGO", "ANTIGO"
-                # Converte o formato padronizado "28/05/2026 11:22:39"
+                    return "2026", "ABRIL"
                 dt = datetime.strptime(str(data_str).strip(), '%d/%m/%Y %H:%M:%S')
                 meses_nome = ["JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"]
                 return str(dt.year), meses_nome[dt.month - 1]
             except:
-                return "OUTRO", "OUTRO"
+                return "2026", "ABRIL"
 
-        # Criação das colunas temporárias para agrupamento no JSON
         df_total['ano'] = df_total['data_adicao'].apply(lambda x: tratar_datas(x)[0])
         df_total['mes'] = df_total['data_adicao'].apply(lambda x: tratar_datas(x)[1])
 
@@ -157,22 +177,92 @@ def minerar_dados():
         
         os.makedirs('api/stats', exist_ok=True)
 
-        # 🌟 MODIFICAÇÃO: Incluídos 'ano' e 'mes' dentro do agrupamento (groupby)
+        # 🌟 GERAÇÃO DE JSONS COM PICK RATE INCLUSO
         def gerar_json_consolidado(df_input, path):
             consolidado = df_input.groupby(['modo', 'mapa', 'pick', 'ano', 'mes']).agg(
                 picks=('win', 'count'),
                 vitorias=('win', 'sum')
             ).reset_index()
+            
+            # Conta total de partidas por mapa para calcular o Pick Rate exato
+            totais_por_mapa = df_input.groupby(['mapa', 'ano', 'mes'])['id_partida'].nunique().reset_index(name='total_partidas_mapa')
+            consolidado = consolidado.merge(totais_por_mapa, on=['mapa', 'ano', 'mes'])
+            
             consolidado['win_rate'] = (consolidado['vitorias'] / consolidado['picks'] * 100).round(1).astype(str) + '%'
-            # force_ascii=False garante a codificação correta de caracteres especiais (ex: Março)
+            consolidado['pick_rate'] = (consolidado['picks'] / consolidado['total_partidas_mapa'] * 100).round(1).astype(str) + '%'
+            
             consolidado.to_json(path, orient='records', force_ascii=False)
 
         gerar_json_consolidado(df_stats, 'api/stats/geral.json')
-
         for reg in df_stats['regiao_list'].unique():
             if reg:
                 df_reg = df_stats[df_stats['regiao_list'] == reg]
                 gerar_json_consolidado(df_reg, f"api/stats/{str(reg).lower()}.json")
+
+        # 🌟 GERAÇÃO DE DETALHES EXCLUSIVOS DOS BRAWLERS SA (MAPAS E SINERGIAS)
+        print("Processando detalhes específicos da região SA (Mapas e Sinergias)...")
+        df_sa = df_total[df_total['regiao'].str.contains('SA', na=False)].copy()
+
+        # Top 3 Mapas
+        mapas_brawler = df_sa.groupby(['pick', 'modo', 'mapa']).size().reset_index(name='picks')
+
+        # Sinergias (Brawlers no mesmo time)
+        df_sa['equipe_partida'] = df_sa['id_partida'] + "_" + df_sa['id_time']
+        times_sa = df_sa.groupby(['equipe_partida', 'win'])['pick'].apply(list).reset_index()
+
+        par_stats = defaultdict(lambda: {'picks': 0, 'vitorias': 0})
+        for _, row in times_sa.iterrows():
+            lista_brawlers = sorted(list(set(row['pick'])))
+            venceu = int(row['win'])
+            if len(lista_brawlers) > 1:
+                for b1, b2 in itertools.combinations(lista_brawlers, 2):
+                    par_stats[(b1, b2)]['picks'] += 1
+                    if venceu == 1:
+                        par_stats[(b1, b2)]['vitorias'] += 1
+
+        sinergias_por_brawler = defaultdict(list)
+        for (b1, b2), stats in par_stats.items():
+            wr = round((stats['vitorias'] / stats['picks']) * 100, 1) if stats['picks'] > 0 else 0.0
+            sinergias_por_brawler[b1].append({'com': b2, 'picks': stats['picks'], 'vitorias': stats['vitorias'], 'win_rate': f"{wr}%"})
+            sinergias_por_brawler[b2].append({'com': b1, 'picks': stats['picks'], 'vitorias': stats['vitorias'], 'win_rate': f"{wr}%"})
+
+        detalhes_brawlers = {}
+        brawlers_sa = df_sa['pick'].unique()
+        for brawler in brawlers_sa:
+            top_mapas = mapas_brawler[mapas_brawler['pick'] == brawler].sort_values(by='picks', ascending=False).head(3)
+            lista_mapas = []
+            for _, r_mapa in top_mapas.iterrows():
+                lista_mapas.append({'modo': r_mapa['modo'], 'mapa': r_mapa['mapa'], 'picks': int(r_mapa['picks'])})
+                
+            top_sinergias = sorted(sinergias_por_brawler[brawler], key=lambda x: x['picks'], reverse=True)[:5]
+            detalhes_brawlers[brawler.upper()] = {'top_mapas': lista_mapas, 'sinergias': top_sinergias}
+
+        with open('api/stats/sa_brawlers_detail.json', 'w', encoding='utf-8') as f:
+            json.dump(detalhes_brawlers, f, ensure_ascii=False, indent=4)
+
+        # 🌟 GERAÇÃO DE TIMES SA (ROSTER)
+        df_times_validos = df_total[(df_total['id_time'] != "") & (~df_total['id_time'].str.contains('OPONENTE', na=True))]
+        times_sa_data = []
+        if not df_times_validos.empty:
+            for t_id, df_time in df_times_validos.groupby('id_time'):
+                t_nome = str(df_time['nome_time'].iloc[0]).upper()
+                roster = []
+                picks_history = {}
+                jogadores_grupo = df_time.groupby(['player_tag', 'player_name']).size().reset_index()
+                for _, r_jog in jogadores_grupo.iterrows():
+                    tag_j = r_jog['player_tag']
+                    nome_j = r_jog['player_name']
+                    roster.append({"nome": nome_j, "tag": tag_j})
+
+                    df_p = df_time[df_time['player_tag'] == tag_j]
+                    p_counts = df_p['pick'].value_counts().reset_index()
+                    p_counts.columns = ['brawler', 'qtd']
+                    picks_history[tag_j] = [{"brawler": str(row_p['brawler']).upper(), "qtd": int(row_p['qtd'])} for _, row_p in p_counts.iterrows()]
+
+                times_sa_data.append({"id_time": str(t_id), "nome_time": t_nome, "roster": roster, "picks": picks_history})
+
+            with open('api/stats/times_sa.json', 'w', encoding='utf-8') as f:
+                json.dump(times_sa_data, f, ensure_ascii=False, indent=4)
 
     print(f"\n✅ Concluído! Total de novas partidas: {total_novas}")
 
