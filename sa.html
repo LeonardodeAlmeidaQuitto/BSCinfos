@@ -50,15 +50,19 @@
                     ALL MAPS ANALYSIS <span>▶</span>
                 </div>
                 <div class="mapa-content" style="display:none">
-                    <table class="excel-table">
-                        <thead>
-                            <tr>
+                <table class="excel-table">
+                    <thead>
+                        <tr>
                                 <th class="col-img">IMG</th>
-                                <th class="sortable" onclick="ordenarTabela(this, 'string')" style="text-align: left;">BRAWLER ↕</th>
+                                <th class="col-brawler sortable" onclick="ordenarTabela(this, 'string')" style="text-align: left;">BRAWLER ↕</th>
                                 <th class="col-stats sortable" onclick="ordenarTabela(this, 'number')">PICKS ↕</th>
-                                <th class="col-stats sortable" onclick="ordenarTabela(this, 'number')">WINS ↕</th>
+                                <th class="col-stats sortable" onclick="ordenarTabela(this, 'number')">PR% ↕</th> <th class="col-stats sortable" onclick="ordenarTabela(this, 'number')">WINS ↕</th>
                                 <th class="col-stats sortable" onclick="ordenarTabela(this, 'percent')">WIN RATE ↕</th>
-                            </tr>
+                                </tr>
+                    </thead>
+                    <tbody id="tbody-all-maps">
+                    </tbody>
+                </table>
                         </thead>
                         <tbody id="tbody-all-maps">
                             </tbody>
