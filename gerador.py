@@ -15,33 +15,46 @@ ARQUIVO_FINAL = "estatisticas_finais.csv"
 
 REGIOES = {
 
-    "SA": {
+#    "SA": {
 
-    "BH":{
-        "players":[
-            {
-                "tag":"#PLLRJC2V",
-                "nick":"Wesley"
-            }
-        ]
-    },
+#    "BH":{
+#        "players":[
+#            {
+#                "tag":"#PLLRJC2V",
+#                "nick":"Wesley"
+#            }
+#        ]
+#    },
 
-    "LOUD":{
-        "players":[
-            {
-                "tag":"#2GV09VJJP",
-                "nick":"FireCrow"
-            }
-        ]
-    "OS":{
-        "players":[
-            {
-                "tag":"#L9PQUV0YC",
-                "nick":"OS|BrabaoBs"
-            }
-        ]
-    },
+#    "LOUD":{
+  #      "players":[
+ #           {
+#                "tag":"#2GV09VJJP",
+ #               "nick":"FireCrow"
+#            }
+#        ]
+ #   "OS":{
+#        "players":[
+#            {
+#                "tag":"#L9PQUV0YC",
+#                "nick":"OS|BrabaoBs"
+#        }
+#     ]
+# },
 
+    "SA": {"#PLLRJC2V": "BH|Wesley",
+           "#2GV09VJJP": "LOUD|FireCrow", 
+           "#CQLR0Y80": "ELV|Tufa", 
+           "#L9PQUV0YC": "OS|BrabaoBs", 
+           "#JQ8LLLY": "AL|FireMirillo", 
+           "#202GJJR28": "Doritos", 
+           "#PR0P8QVQ": "SKC| Kr ;)", 
+           "#R2LR2QLG": "ETN|Mohtep", 
+           "#80VLPJCCC": "Tilo", 
+           "#GJPVYUQG": "ENO|Deykonn", 
+           "#2P8RVJVUY": "OCX|Sterixx", 
+           "#2QCCC29QV": "ODS|Magic"},
+    
     "NA": {"#LVRRYPV": "RLM|Bobby",
            "#82RCQCVG": "TRB|Lxffy",
            "#YUJ8PJ0LR": "TE|Snoiy",
