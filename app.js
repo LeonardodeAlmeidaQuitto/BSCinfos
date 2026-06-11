@@ -56,8 +56,8 @@ const CONFIGURACAO_MANUAL_TIMES = {
                 id_time: "SKC SA",
                 nome_time: "SKCalalas SA",
                 jogadores: [
-                    { nick: "SKC|Kr ;)", tag: "#PR0P8QVQ" }
-                    { nick: "SKC|Rhz", tag: "#89PVJG9R0" }
+                    { nick: "SKC|Kr ;)", tag: "#PR0P8QVQ" },
+                    { nick: "SKC|Rhz", tag: "#89PVJG9R0" },
                     { nick: "SKC|Juan Carlos", tag: "#PR9U2JL" }
                 ]
             },
@@ -65,8 +65,8 @@ const CONFIGURACAO_MANUAL_TIMES = {
                 id_time: "ODS",
                 nome_time: "Odyssey",
                 jogadores: [
-                    { nick: "ODS|Magic🎩", tag: "#2QCCC29QV" }
-                    { nick: "ODS|REI DO FUT", tag: "#RVL0RPR9" }
+                    { nick: "ODS|Magic🎩", tag: "#2QCCC29QV" },
+                    { nick: "ODS|REI DO FUT", tag: "#RVL0RPR9" },
                     { nick: "ODS|Fantas🌖", tag: "#PU20LUCQG" }
                 ]
             }
@@ -76,8 +76,8 @@ const CONFIGURACAO_MANUAL_TIMES = {
                 id_time: "CB",
                 nome_time: "Creche Brawl",
                 jogadores: [
-                    { nick: "CB|Tilo", tag: "#80VLPJCCC" }
-                    { nick: "CB|Bielz", tag: "#9Q22C88V8" }
+                    { nick: "CB|Tilo", tag: "#80VLPJCCC" },
+                    { nick: "CB|Bielz", tag: "#9Q22C88V8" },
                     { nick: "CB|Yichy", tag: "#2LVGCJ2UQR" }
                 ]
             }
@@ -89,8 +89,8 @@ const CONFIGURACAO_MANUAL_TIMES = {
                 id_time: "",
                 nome_time: "",
                 jogadores: [
-                    { nick: "", tag: "#" }
-                    { nick: "", tag: "#" }
+                    { nick: "", tag: "#" },
+                    { nick: "", tag: "#" },
                     { nick: "", tag: "#" }
                 ]
             }
