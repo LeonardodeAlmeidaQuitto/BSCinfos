@@ -35,27 +35,65 @@ const CONFIGURACAO_MANUAL_TIMES = {
                 ]
             },
             {
-                id_time: "ELV",
-                nome_time: "Elevate",
+                id_time: "OS",
+                nome_time: "Olimpo Squad",
                 jogadores: [
-                    { nick: "ELV|Tufa", tag: "#CQLR0Y80" }
-                    // Adicione os outros membros aqui...
+                    { nick: "OS|Golden", tag: "#9QCJPL20" },
+                    { nick: "OS|Brabao", tag: "#L9PQUV0YC" },
+                    { nick: "OS|Pekka", tag: "#QJULVGU" }
+                ]
+            },
+            {
+                id_time: "TTPD",
+                nome_time: "Topa Tudo Por Dinheiro",
+                jogadores: [
+                    { nick: "TTPD|Doritos🐉", tag: "#202GJJR28" },
+                    { nick: "TTPD|Derpp🐰ᩚ", tag: "#2QG9LQQC8Y" },
+                    { nick: "TTPD|IceCrow エレン", tag: "#9CPYUCGQC" }
+                ]
+            },
+            {
+                id_time: "SKC SA",
+                nome_time: "SKCalalas SA",
+                jogadores: [
+                    { nick: "SKC|Kr ;)", tag: "#PR0P8QVQ" }
+                    { nick: "SKC|Rhz", tag: "#89PVJG9R0" }
+                    { nick: "SKC|Juan Carlos", tag: "#PR9U2JL" }
+                ]
+            },
+            {
+                id_time: "ODS",
+                nome_time: "Odyssey",
+                jogadores: [
+                    { nick: "ODS|Magic🎩", tag: "#2QCCC29QV" }
+                    { nick: "ODS|REI DO FUT", tag: "#RVL0RPR9" }
+                    { nick: "ODS|Fantas🌖", tag: "#PU20LUCQG" }
                 ]
             }
         ],
         "TIER B": [
             {
-                id_time: "OS",
-                nome_time: "Olimpo Squad",
+                id_time: "CB",
+                nome_time: "Creche Brawl",
                 jogadores: [
-                    { nick: "OS|BrabaoBs", tag: "#L9PQUV0YC" }
+                    { nick: "CB|Tilo", tag: "#80VLPJCCC" }
+                    { nick: "CB|Bielz", tag: "#9Q22C88V8" }
+                    { nick: "CB|Yichy", tag: "#2LVGCJ2UQR" }
                 ]
             }
         ]
     },
     "NA": {
         "TIER S": [
-            // Exemplo de como você adicionaria para NA depois
+            {
+                id_time: "",
+                nome_time: "",
+                jogadores: [
+                    { nick: "", tag: "#" }
+                    { nick: "", tag: "#" }
+                    { nick: "", tag: "#" }
+                ]
+            }
         ]
     }
 };
