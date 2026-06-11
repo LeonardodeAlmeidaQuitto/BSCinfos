@@ -487,8 +487,12 @@ function renderizarListaTimes(regiaoAtual = "SA") {
         let timesHTML = "";
 
         timesDoTier.forEach(timeConfig => {
+            // Pega o id_time, converte pra minúsculo e pega a primeira palavra (ex: "SKC SA" vira "skc")
+            const siglaImg = timeConfig.id_time.toLowerCase().split(' ')[0];
+
             timesHTML += `
-                <div class="sidebar-item" data-teamid="${timeConfig.id_time}" onclick="exibirInfoTime('${timeConfig.id_time}', '${regiaoAtual}')" style="padding: 12px; cursor: pointer; font-weight: 600; margin-left: 10px; border-left: 2px solid transparent;">
+                <div class="sidebar-item" data-teamid="${timeConfig.id_time}" onclick="exibirInfoTime('${timeConfig.id_time}', '${regiaoAtual}')" style="padding: 12px; cursor: pointer; font-weight: 600; margin-left: 10px; border-left: 2px solid transparent; display: flex; align-items: center; gap: 10px;">
+                    <img src="elements/teams/${siglaImg}.png" style="width: 24px; height: 24px; object-fit: contain; border-radius: 4px;" onerror="this.style.display='none'">
                     <span>${timeConfig.nome_time}</span>
                 </div>
             `;
@@ -588,11 +592,16 @@ window.exibirInfoTime = function(idTime, regiaoAtual = "SA") {
         `;
     }).join('');
 
-    // 3. RENDERIZAÇÃO FINAL NA TELA
+    // 3. RENDERIZAÇÃO FINAL NA TELA (com imagem do time no header)
+    const siglaImgPainel = timeConfig.id_time.toLowerCase().split(' ')[0];
+
     painel.innerHTML = `
-        <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid var(--borda-destaque);">
-            <div style="font-size: 12px; color: var(--accent-purple); font-weight: bold; letter-spacing: 2px; margin-bottom: 5px;">${tierTime}</div>
-            <h2 style="font-size: 32px; font-weight: 900; text-transform: uppercase;">${timeConfig.nome_time}</h2>
+        <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid var(--borda-destaque); display: flex; flex-direction: column; align-items: center;">
+            <div style="font-size: 12px; color: var(--accent-purple); font-weight: bold; letter-spacing: 2px; margin-bottom: 10px;">${tierTime}</div>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+                <img src="elements/teams/${siglaImgPainel}.png" style="width: 60px; height: 60px; object-fit: contain;" onerror="this.style.display='none'">
+                <h2 style="font-size: 32px; font-weight: 900; text-transform: uppercase; margin: 0;">${timeConfig.nome_time}</h2>
+            </div>
         </div>
         
         <div style="background: var(--bg-cards); border: 1px solid var(--borda-destaque); border-radius: 10px; padding: 20px; margin-bottom: 30px;">
