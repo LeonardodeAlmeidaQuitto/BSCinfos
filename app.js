@@ -1,3 +1,68 @@
+// ========================================================
+// 1. CONFIGURAÇÃO MANUAL DE TIMES, TIERS E ROSTERS
+// ========================================================
+// É AQUI que você decreta exatamente quem aparece na aba de Times!
+const CONFIGURACAO_MANUAL_TIMES = {
+    "SA": {
+        "TIER S": [
+            {
+                id_time: "BH",
+                nome_time: "Bounty Hunters",
+                jogadores: [
+                    { nick: "BH|Wesley", tag: "#PLLRJC2V" },
+                    { nick: "BH|Prozy", tag: "#GYCYCLRJL" },
+                    { nick: "BH|Portox", tag: "#YGQYGCR" }
+                ]
+            },
+            {
+                id_time: "PIZZA",
+                nome_time: "Pizza Congelado F/A",
+                jogadores: [
+                    { nick: "ETN|Jubileubr", tag: "#GVYLVUGR" },
+                    { nick: "ETN|CAUEBR", tag: "#JQ8L0YYL" },
+                    { nick: "ETN|Mohtep", tag: "#R2LR2QLG" }
+                ]
+            }
+        ],
+        "TIER A": [
+            {
+                id_time: "LOUD",
+                nome_time: "LOUD",
+                jogadores: [
+                    { nick: "LOUD|KaioDog", tag: "#GGUQCG0G" },
+                    { nick: "LOUD|FireCrow", tag: "#JQ8LLLY" },
+                    { nick: "LOUD|Edinho", tag: "#QJULVGU" }
+                ]
+            },
+            {
+                id_time: "ELV",
+                nome_time: "Elevate",
+                jogadores: [
+                    { nick: "ELV|Tufa", tag: "#CQLR0Y80" }
+                    // Adicione os outros membros aqui...
+                ]
+            }
+        ],
+        "TIER B": [
+            {
+                id_time: "OS",
+                nome_time: "Olimpo Squad",
+                jogadores: [
+                    { nick: "OS|BrabaoBs", tag: "#L9PQUV0YC" }
+                ]
+            }
+        ]
+    },
+    "NA": {
+        "TIER S": [
+            // Exemplo de como você adicionaria para NA depois
+        ]
+    }
+};
+
+// ========================================================
+// 2. CONFIGURAÇÕES E VARIÁVEIS GLOBAIS DE MAPAS
+// ========================================================
 const MAPAS_POR_MES = {
     "2026-04": {
         "brawlBall": ["Super Beach", "Pinhole Punt", "Sneaky Fields"],
@@ -76,7 +141,9 @@ window.carregarRegiao = async function(regiao) {
         popularFiltrosIniciais();
         filtrarEAplicarDados();
         renderizarListaBrawlers();
-        renderizarListaTimes();
+        
+        // Passa a região atual para desenhar a barra de times correta
+        renderizarListaTimes(regiao.toUpperCase());
     } catch (error) {
         console.error("Erro ao carregar dados:", error);
     }
@@ -360,60 +427,150 @@ window.fecharModalBrawler = function() {
     if (modal) modal.style.display = 'none';
 };
 
-function renderizarListaTimes() {
+
+// ========================================================
+// RENDERIZAÇÃO DE TIMES (TOP 15 TEAM / TOP 5 PLAYERS)
+// ========================================================
+function renderizarListaTimes(regiaoAtual = "SA") {
     const container = document.getElementById("lista-times-sidebar");
     if (!container) return;
-    if (dadosTimesSA.length === 0) {
-        container.innerHTML = `<p style="padding: 10px; color: #666;">Sem dados de times.</p>`;
+
+    const configRegiao = CONFIGURACAO_MANUAL_TIMES[regiaoAtual.toUpperCase()];
+    if (!configRegiao) {
+        container.innerHTML = `<p style="padding: 10px; color: #666;">Região não configurada.</p>`;
         return;
     }
 
-    container.innerHTML = dadosTimesSA.map(t => `
-        <div class="sidebar-item" data-teamid="${t.id_time}" onclick="exibirInfoTime('${t.id_time}')" style="padding: 12px; cursor: pointer; font-weight: 600;">
-            <span>${t.nome_time}</span>
-        </div>
-    `).join('');
-}
+    let htmlFinal = "";
 
-window.exibirInfoTime = function(idTime) {
-    const time = dadosTimesSA.find(t => String(t.id_time) === String(idTime));
-    const painel = document.getElementById("painel-info-time");
-    if (!time || !painel) return;
+    // Renderiza cada Tier (S, A, B...)
+    Object.keys(configRegiao).forEach(tier => {
+        const timesDoTier = configRegiao[tier];
+        let timesHTML = "";
 
-    document.querySelectorAll("#lista-times-sidebar .sidebar-item").forEach(i => {
-        i.classList.toggle("active", String(i.getAttribute("data-teamid")) === String(idTime));
+        timesDoTier.forEach(timeConfig => {
+            timesHTML += `
+                <div class="sidebar-item" data-teamid="${timeConfig.id_time}" onclick="exibirInfoTime('${timeConfig.id_time}', '${regiaoAtual}')" style="padding: 12px; cursor: pointer; font-weight: 600; margin-left: 10px; border-left: 2px solid transparent;">
+                    <span>${timeConfig.nome_time}</span>
+                </div>
+            `;
+        });
+
+        if (timesHTML !== "") {
+            htmlFinal += `
+                <div style="margin-top: 15px;">
+                    <div style="font-size: 12px; color: var(--accent-purple); font-weight: 900; letter-spacing: 1px; padding: 5px 10px; text-transform: uppercase;">
+                        ${tier}
+                    </div>
+                    ${timesHTML}
+                </div>
+            `;
+        }
     });
 
-    let playersHTML = time.roster.map(player => {
-        const picks = (time.picks[player.tag] || []).slice(0, 5);
-        let picksHTML = picks.length ? picks.map(p => `
-            <div class="player-mini-pick" onclick="abrirModalBrawler('${p.brawler}')" style="cursor: pointer;" title="Detalhes de ${p.brawler}">
-                <img src="${formatarNomeImagem(p.brawler)}" onerror="this.src='brawlers/default.png'">
-                <span class="pick-count">x${p.qtd}</span>
+    container.innerHTML = htmlFinal;
+}
+
+window.exibirInfoTime = function(idTime, regiaoAtual = "SA") {
+    const painel = document.getElementById("painel-info-time");
+    if (!painel) return;
+
+    // Destaca na Sidebar
+    document.querySelectorAll("#lista-times-sidebar .sidebar-item").forEach(i => {
+        i.style.borderLeftColor = String(i.getAttribute("data-teamid")) === String(idTime) ? "var(--accent-purple)" : "transparent";
+        i.style.backgroundColor = String(i.getAttribute("data-teamid")) === String(idTime) ? "var(--bg-cards)" : "transparent";
+    });
+
+    // Encontra a configuração do time decretada no topo do arquivo
+    let timeConfig = null;
+    let tierTime = "";
+    const configRegiao = CONFIGURACAO_MANUAL_TIMES[regiaoAtual.toUpperCase()];
+    
+    if (configRegiao) {
+        for (const [tier, times] of Object.entries(configRegiao)) {
+            const achou = times.find(t => t.id_time === idTime);
+            if (achou) {
+                timeConfig = achou;
+                tierTime = tier;
+                break;
+            }
+        }
+    }
+
+    if (!timeConfig) return;
+
+    // Busca as estatísticas brutas da API
+    const dadosTimePython = dadosTimesSA.find(t => String(t.id_time) === String(idTime)) || { picks: {} };
+
+    // 1. SOMA DO TOP 15 DO TIME INTEIRO (apenas dos jogadores configurados manualmente)
+    let picksSomadosTime = {};
+    timeConfig.jogadores.forEach(jogador => {
+        const picksDoJogador = dadosTimePython.picks[jogador.tag] || [];
+        picksDoJogador.forEach(p => {
+            if (!picksSomadosTime[p.brawler]) picksSomadosTime[p.brawler] = 0;
+            picksSomadosTime[p.brawler] += p.qtd;
+        });
+    });
+
+    let top15Time = Object.keys(picksSomadosTime)
+        .map(b => ({ brawler: b, qtd: picksSomadosTime[b] }))
+        .sort((a, b) => b.qtd - a.qtd)
+        .slice(0, 15);
+
+    let top15TimeHTML = top15Time.map(p => `
+        <div class="player-mini-pick" onclick="abrirModalBrawler('${p.brawler}')" style="cursor: pointer; display: flex; flex-direction: column; align-items: center;" title="${p.brawler}">
+            <img src="${formatarNomeImagem(p.brawler)}" onerror="this.src='brawlers/default.png'" style="width: 50px; height: 50px; border-radius: 8px; border: 2px solid var(--accent-purple); object-fit: cover;">
+            <span class="pick-count" style="margin-top: -10px; z-index: 2; font-size: 11px; background: #000; padding: 2px 8px; border-radius: 10px; color: var(--winrate-color); font-weight: bold;">x${p.qtd}</span>
+        </div>
+    `).join('');
+
+    // 2. MONTAGEM DOS ROSTERS (TOP 5 DE CADA JOGADOR)
+    let playersHTML = timeConfig.jogadores.map(player => {
+        // Pega só os 5 Brawlers mais jogados por essa TAG específica
+        const picksPlayer = (dadosTimePython.picks[player.tag] || []).slice(0, 5);
+        
+        let picksHTML = picksPlayer.length ? picksPlayer.map(p => `
+            <div class="player-mini-pick" onclick="abrirModalBrawler('${p.brawler}')" style="cursor: pointer; display: flex; flex-direction: column; align-items: center;">
+                <img src="${formatarNomeImagem(p.brawler)}" onerror="this.src='brawlers/default.png'" style="width: 40px; height: 40px; border-radius: 4px; border: 1px solid #333; object-fit: cover;">
+                <span style="margin-top: 4px; font-size: 10px; background: #111; padding: 2px 4px; border-radius: 4px; color: #ccc;">x${p.qtd}</span>
             </div>
-        `).join('') : '<span class="no-data-tag">Sem picks recentes</span>';
+        `).join('') : '<span style="color:#666; font-size:12px;">Sem partidas registradas.</span>';
 
         return `
-            <div class="player-roster-card">
-                <div class="player-info-top">
-                    <span class="p-nickname">${player.nome}</span>
-                    <span class="p-tag">${player.tag}</span>
+            <div class="player-roster-card" style="background: var(--bg-cards); border: 1px solid var(--borda-destaque); border-radius: 10px; padding: 15px;">
+                <div class="player-info-top" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 10px; margin-bottom: 15px;">
+                    <span class="p-nickname" style="font-size: 16px; font-weight: 900; color: #fff;">${player.nick}</span>
+                    <span class="p-tag" style="font-size: 11px; color: #888; background: #000; padding: 4px 8px; border-radius: 4px;">${player.tag}</span>
                 </div>
                 <div class="player-history-box">
-                    <h5>Principais Escolhas:</h5>
-                    <div class="player-picks-row">${picksHTML}</div>
+                    <h5 style="color: #888; margin-bottom: 10px; font-size: 12px; text-transform: uppercase;">Top 5 Brawlers</h5>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">${picksHTML}</div>
                 </div>
             </div>
         `;
     }).join('');
 
+    // 3. RENDERIZAÇÃO FINAL NA TELA
     painel.innerHTML = `
-        <div class="team-profile-header">
-            <h2>EQUIPE: <span class="accent">${time.nome_time}</span></h2>
+        <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid var(--borda-destaque);">
+            <div style="font-size: 12px; color: var(--accent-purple); font-weight: bold; letter-spacing: 2px; margin-bottom: 5px;">${tierTime}</div>
+            <h2 style="font-size: 32px; font-weight: 900; text-transform: uppercase;">${timeConfig.nome_time}</h2>
         </div>
-        <div class="roster-container-grid">${playersHTML}</div>
+        
+        <div style="background: var(--bg-cards); border: 1px solid var(--borda-destaque); border-radius: 10px; padding: 20px; margin-bottom: 30px;">
+            <h3 style="margin-bottom: 15px; font-size: 14px; color: #888; text-transform: uppercase;">🔥 TOP 15 Picks Globais da Equipe</h3>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                ${top15TimeHTML || '<span style="color:#666;">Sem dados coletados ainda.</span>'}
+            </div>
+        </div>
+
+        <h3 style="margin-bottom: 15px; font-size: 14px; color: #888; text-transform: uppercase;">👥 Roster Principal & Picks Individuais</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+            ${playersHTML}
+        </div>
     `;
 };
+
 
 window.ordenarTabela = function(th, tipo) {
     const tabela = th.closest('table');
@@ -463,7 +620,7 @@ document.addEventListener("DOMContentLoaded", () => {
         .brawler-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
         .brawler-modal-card { background: var(--bg-paineis); border: 2px solid var(--accent-purple); border-radius: 12px; width: 100%; max-width: 800px; box-shadow: 0 0 25px rgba(204, 0, 255, 0.4); overflow: hidden; }
         .brawler-modal-header { background: #000; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--borda-suave); }
-        .brawler-modal-header h2 { font-size: 18px; color: #ffffff; letter-spacing: 1px; }
+        .brawler-modal-header h2 { font-size: 18px; color: #ffffff; letter-spacing: 1px; margin: 0; }
         .brawler-modal-close { background: none; border: none; color: #888; font-size: 28px; cursor: pointer; }
         .brawler-modal-close:hover { color: #ff3333; }
         .brawler-modal-body { padding: 25px; max-height: 80vh; overflow-y: auto; }
