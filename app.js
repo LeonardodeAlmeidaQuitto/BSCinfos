@@ -129,7 +129,7 @@ const MAPAS_POR_MES = {
 };
 
 let dadosOriginaisRegiao = [];
-let dadosTimesSA = [];
+let dadosTimesSA = {}; // Agora inicializado como objeto vazio
 let detalhesBrawlersSA = {};
 
 const formatarNomeImagem = (n) => `brawlers/${n.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
@@ -166,7 +166,7 @@ window.carregarRegiao = async function(regiao) {
 
         if (regiao.toLowerCase() === 'sa') {
             const resTimes = await fetch('api/stats/times_sa.json');
-            if (resTimes.ok) dadosTimesSA = await resTimes.json();
+            if (resTimes.ok) dadosTimesSA = await resTimes.json(); // Agora retornará o dicionário
             
             try {
                 const resDetalhes = await fetch('api/stats/sa_brawlers_detail.json');
@@ -465,7 +465,6 @@ window.fecharModalBrawler = function() {
     if (modal) modal.style.display = 'none';
 };
 
-
 // ========================================================
 // RENDERIZAÇÃO DE TIMES (TOP 15 TEAM / TOP 5 PLAYERS)
 // ========================================================
@@ -513,6 +512,7 @@ function renderizarListaTimes(regiaoAtual = "SA") {
     container.innerHTML = htmlFinal;
 }
 
+// ==== FUNÇÃO ATUALIZADA ====
 window.exibirInfoTime = function(idTime, regiaoAtual = "SA") {
     const painel = document.getElementById("painel-info-time");
     if (!painel) return;
@@ -541,13 +541,11 @@ window.exibirInfoTime = function(idTime, regiaoAtual = "SA") {
 
     if (!timeConfig) return;
 
-    // Busca as estatísticas brutas da API
-    const dadosTimePython = dadosTimesSA.find(t => String(t.id_time) === String(idTime)) || { picks: {} };
-
-    // 1. SOMA DO TOP 15 DO TIME INTEIRO (apenas dos jogadores configurados manualmente)
+    // 1. SOMA DO TOP 15 DO TIME INTEIRO (consumindo direto do dicionário)
     let picksSomadosTime = {};
     timeConfig.jogadores.forEach(jogador => {
-        const picksDoJogador = dadosTimePython.picks[jogador.tag] || [];
+        // Busca a array de picks diretamente pela chave (TAG) do jogador no dicionário
+        const picksDoJogador = dadosTimesSA[jogador.tag] || [];
         picksDoJogador.forEach(p => {
             if (!picksSomadosTime[p.brawler]) picksSomadosTime[p.brawler] = 0;
             picksSomadosTime[p.brawler] += p.qtd;
@@ -566,10 +564,10 @@ window.exibirInfoTime = function(idTime, regiaoAtual = "SA") {
         </div>
     `).join('');
 
-    // 2. MONTAGEM DOS ROSTERS (TOP 5 DE CADA JOGADOR)
+    // 2. MONTAGEM DOS ROSTERS (TOP 5 DE CADA JOGADOR consumindo direto do dicionário)
     let playersHTML = timeConfig.jogadores.map(player => {
-        // Pega só os 5 Brawlers mais jogados por essa TAG específica
-        const picksPlayer = (dadosTimePython.picks[player.tag] || []).slice(0, 5);
+        // Busca a array de picks pela TAG e corta apenas os top 5
+        const picksPlayer = (dadosTimesSA[player.tag] || []).slice(0, 5);
         
         let picksHTML = picksPlayer.length ? picksPlayer.map(p => `
             <div class="player-mini-pick" onclick="abrirModalBrawler('${p.brawler}')" style="cursor: pointer; display: flex; flex-direction: column; align-items: center;">
