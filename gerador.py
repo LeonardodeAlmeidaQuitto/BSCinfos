@@ -170,16 +170,16 @@ def minerar_dados():
                 df_reg = df_stats[df_stats['regiao_list'] == reg]
                 gerar_json_consolidado(df_reg, f"api/stats/{str(reg).lower()}.json")
 
-        # --- NOVO: GERAR times_sa.json EM FORMATO DE DICIONÁRIO ---
+        # --- GERAÇÃO DE times_sa.json (DICIONÁRIO BLINDADO) ---
         df_sa = df_stats[df_stats['regiao_list'] == 'SA']
         times_dict = {}
         for tag in df_sa['player_tag'].unique():
-            if not tag: continue
+            # Evita chaves vazias ou "nan"
+            if pd.isna(tag) or not tag or str(tag).lower() == 'nan': continue
+            
             df_player = df_sa[df_sa['player_tag'] == tag]
-            # Conta os picks de cada brawler
             picks_counts = df_player['pick'].value_counts()
-            # Monta um array com a estrutura necessária
-            times_dict[tag] = [{"brawler": b, "qtd": int(q)} for b, q in picks_counts.items()]
+            times_dict[str(tag)] = [{"brawler": str(b), "qtd": int(q)} for b, q in picks_counts.items()]
             
         with open('api/stats/times_sa.json', 'w', encoding='utf-8') as f:
             json.dump(times_dict, f, ensure_ascii=False)
