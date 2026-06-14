@@ -37,17 +37,19 @@ body {
 /* ======================================================== */
 .navbar {
     display: flex;
-    justify-content: space-between;
-    background-color: #000000;
-    padding: 15px 30px;
-    border-bottom: 2px solid var(--borda-suave);
-    align-items: center;
+    justify-content: center; /* Centraliza horizontalmente tudo dentro da navbar */
+    align-items: center;     /* Centraliza verticalmente */
+    gap: 20px;               /* Define um espaço padrão entre os botões */
+    width: 100%;
+    padding: 10px 0;         /* Ajuste o preenchimento como preferir */
+    background-color: var(--bg-paineis); /* Mantém o fundo padrão */
 }
 
 .nav-links {
     display: flex;
-    gap: 30px;
+    justify-content: center;
     align-items: center;
+    gap: 20px; 
 }
 
 .nav-link {
