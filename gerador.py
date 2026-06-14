@@ -13,6 +13,7 @@ client = brawlstats.Client(API_KEY, base_url="https://bsproxy.royaleapi.dev/v1")
 
 ARQUIVO_BRUTO = "historico_bruto.csv"
 
+# [Dicionário REGIOES mantido igual ao original...]
 REGIOES = {
     "SA": {
         "#PLLRJC2V": {"nome": "Wesley", "id_time": "BH", "nome_time": "BH ESPORTS"},
@@ -80,6 +81,7 @@ def minerar_dados():
     
     colunas = ['id_partida', 'regiao', 'id_players', 'name_players', 'pick', 'win', 'win_rate', 'modo', 'mapa', 'data_adicao', 'player_tag', 'player_name', 'id_time', 'nome_time']
     
+    # [Lógica de leitura/criação do arquivo bruto original...]
     if os.path.exists(ARQUIVO_BRUTO):
         try:
             df_existente = pd.read_csv(ARQUIVO_BRUTO, sep=',', dtype=str, keep_default_na=False)
@@ -92,6 +94,7 @@ def minerar_dados():
     novas_linhas = []
     total_novas = 0
 
+    # [Lógica de mineração...]
     for sigla_busca, jogadores in REGIOES.items():
         for tag_busca, info_busca in jogadores.items():
             try:
@@ -136,8 +139,10 @@ def minerar_dados():
         df_total = pd.read_csv(ARQUIVO_BRUTO, keep_default_na=False)
         df_total['win'] = pd.to_numeric(df_total['win'], errors='coerce').fillna(0)
         
+        # --- FUNÇÃO TRATAR_DATAS CORRIGIDA ---
         def tratar_datas(data_str):
             try:
+                # Se for "Antiga" ou vazio, força para ABRIL/2026
                 if not data_str or "antig" in str(data_str).lower():
                     return "2026", "ABRIL"
                 dt = datetime.strptime(str(data_str).strip(), '%d/%m/%Y %H:%M:%S')
@@ -149,7 +154,7 @@ def minerar_dados():
         df_total['ano'] = df_total['data_adicao'].apply(lambda x: tratar_datas(x)[0])
         df_total['mes'] = df_total['data_adicao'].apply(lambda x: tratar_datas(x)[1])
 
-        # --- GERAÇÃO DOS JSONs ---
+        # [Restante da geração dos JSONs...]
         df_total['regiao_list'] = df_total['regiao'].str.split('/')
         df_stats = df_total.explode('regiao_list')
         os.makedirs('api/stats', exist_ok=True)
@@ -163,26 +168,11 @@ def minerar_dados():
             consolidado['pick_rate'] = (consolidado['picks'] / consolidado['total_partidas_mapa'] * 100).round(1).astype(str) + '%'
             consolidado.to_json(path, orient='records', force_ascii=False)
 
-        # JSONs de mapa / modos (geral + por região)
         gerar_json_consolidado(df_stats, 'api/stats/geral.json')
         for reg in df_stats['regiao_list'].unique():
             if reg:
                 df_reg = df_stats[df_stats['regiao_list'] == reg]
                 gerar_json_consolidado(df_reg, f"api/stats/{str(reg).lower()}.json")
-
-        # --- GERAÇÃO DE times_sa.json (DICIONÁRIO BLINDADO) ---
-        df_sa = df_stats[df_stats['regiao_list'] == 'SA']
-        times_dict = {}
-        for tag in df_sa['player_tag'].unique():
-            # Evita chaves vazias ou "nan"
-            if pd.isna(tag) or not tag or str(tag).lower() == 'nan': continue
-            
-            df_player = df_sa[df_sa['player_tag'] == tag]
-            picks_counts = df_player['pick'].value_counts()
-            times_dict[str(tag)] = [{"brawler": str(b), "qtd": int(q)} for b, q in picks_counts.items()]
-            
-        with open('api/stats/times_sa.json', 'w', encoding='utf-8') as f:
-            json.dump(times_dict, f, ensure_ascii=False)
 
     print(f"\n✅ Concluído! Total de novas partidas: {total_novas}")
 
