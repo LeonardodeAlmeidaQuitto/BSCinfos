@@ -93,17 +93,27 @@
 
         <!-- TELA BRAWLERS GLOBAL -->
         <div id="tela-brawlers" class="tela-secao tela-oculta">
-            <div style="padding: 40px; text-align: center; color: #888;">
-                <h2 style="color: #fff; margin-bottom: 10px;">ALL Brawlers</h2>
-                <p>Exibição consolidada dos brawlers de todas as regiões.</p>
+            <div class="brawlers-container">
+                <div class="sidebar">
+                    <input type="text" id="search-brawler-sidebar" class="sidebar-search" placeholder="Buscar Brawler..." oninput="filtrarBrawlersSidebar()">
+                    <div class="sidebar-list" id="lista-brawlers-sidebar"></div>
+                </div>
+                <div class="info-panel" id="painel-info-brawler">
+                    <div class="placeholder-text">Selecione um brawler na barra lateral para ver a análise de mapa e sinergias globais.</div>
+                </div>
             </div>
         </div>
 
         <!-- TELA TIMES GLOBAL -->
         <div id="tela-times" class="tela-secao tela-oculta">
-            <div style="padding: 40px; text-align: center; color: #888;">
-                <h2 style="color: #fff; margin-bottom: 10px;">ALL Teams</h2>
-                <p>Lista integrada de equipes registradas internacionalmente.</p>
+            <div class="times-container">
+                <div class="sidebar">
+                    <div class="sidebar-header">EQUIPES REGISTRADAS (MUNDIAL)</div>
+                    <div class="sidebar-list" id="lista-times-sidebar"></div>
+                </div>
+                <div class="info-panel" id="painel-info-time">
+                    <div class="placeholder-text">Selecione um time na lateral para visualizar o Roster e o histórico de picks.</div>
+                </div>
             </div>
         </div>
 
