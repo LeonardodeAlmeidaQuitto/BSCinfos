@@ -4,93 +4,77 @@
 const CONFIGURACAO_MANUAL_TIMES = {
     "SA": {
         "TIER S": [
-            {
-                id_time: "BH",
-                nome_time: "Bounty Hunters",
-                jogadores: [
-                    { nick: "BH|Wesley", tag: "#PLLRJC2V" },
-                    { nick: "BH|Prozy", tag: "#GYCYCLRJL" },
-                    { nick: "BH|Portox", tag: "#YGQYGCR" }
-                ]
-            },
-            {
-                id_time: "PIZZA",
-                nome_time: "Pizza Congelado F/A",
-                jogadores: [
-                    { nick: "ETN|Jubileubr", tag: "#GVYLVUGR" },
-                    { nick: "ETN|CAUEBR", tag: "#JQ8L0YYL" },
-                    { nick: "ETN|Mohtep", tag: "#R2LR2QLG" }
-                ]
-            }
+            { id_time: "BH", nome_time: "Bounty Hunters", jogadores: [ { nick: "Wesley", tag: "#PLLRJC2V" }, { nick: "Prozy", tag: "#GYCYCLRJL" }, { nick: "Portox", tag: "#YGQYGCR" } ] },
+            { id_time: "PIZZA", nome_time: "Pizza Congelado F/A", jogadores: [ { nick: "Jubileubr", tag: "#GVYLVUGR" }, { nick: "CAUEBR", tag: "#JQ8L0YYL" }, { nick: "Mohtep", tag: "#R2LR2QLG" } ] }
         ],
         "TIER A": [
-            {
-                id_time: "LOUD",
-                nome_time: "LOUD",
-                jogadores: [
-                    { nick: "LOUD|KaioDog", tag: "#GGUQCG0G" },
-                    { nick: "LOUD|FireCrow", tag: "#JQ8LLLY" },
-                    { nick: "LOUD|Edinho", tag: "#QJULVGU" }
-                ]
-            },
-            {
-                id_time: "OS",
-                nome_time: "Olimpo Squad",
-                jogadores: [
-                    { nick: "OS|Golden", tag: "#9QCJPL20" },
-                    { nick: "OS|Brabao", tag: "#L9PQUV0YC" },
-                    { nick: "OS|Pekka", tag: "#QJULVGU" }
-                ]
-            },
-            {
-                id_time: "TTPD",
-                nome_time: "Topa Tudo Por Dinheiro",
-                jogadores: [
-                    { nick: "TTPD|Doritos🐉", tag: "#202GJJR28" },
-                    { nick: "TTPD|Derpp🐰ᩚ", tag: "#2QG9LQQC8Y" },
-                    { nick: "TTPD|IceCrow エレン", tag: "#9CPYUCGQC" }
-                ]
-            },
-            {
-                id_time: "SKC SA",
-                nome_time: "SKCalalas SA",
-                jogadores: [
-                    { nick: "SKC|Kr ;)", tag: "#PR0P8QVQ" },
-                    { nick: "SKC|Rhz", tag: "#89PVJG9R0" },
-                    { nick: "SKC|Juan Carlos", tag: "#PR9U2JL" }
-                ]
-            },
-            {
-                id_time: "ODS",
-                nome_time: "Odyssey",
-                jogadores: [
-                    { nick: "ODS|Magic🎩", tag: "#2QCCC29QV" },
-                    { nick: "ODS|REI DO FUT", tag: "#RVL0RPR9" },
-                    { nick: "ODS|Fantas🌖", tag: "#PU20LUCQG" }
-                ]
-            }
+            { id_time: "LOUD", nome_time: "LOUD", jogadores: [ { nick: "KaioDog", tag: "#GGUQCG0G" }, { nick: "FireCrow", tag: "#2GV09VJJP" }, { nick: "Edinho", tag: "#QJULVGU" } ] },
+            { id_time: "OS", nome_time: "Olimpo Squad", jogadores: [ { nick: "Golden", tag: "#9QCJPL20" }, { nick: "Brabao", tag: "#L9PQUV0YC" }, { nick: "Pekka", tag: "#QJULVGU" } ] },
+            { id_time: "TTPD", nome_time: "Topa Tudo Por Dinheiro", jogadores: [ { nick: "Doritos🐉", tag: "#202GJJR28" }, { nick: "Derpp🐰ᩚ", tag: "#2QG9LQQC8Y" }, { nick: "IceCrow", tag: "#9CPYUCGQC" } ] },
+            { id_time: "SKC", nome_time: "SKCalalas SA", jogadores: [ { nick: "Kr ;)", tag: "#PR0P8QVQ" }, { nick: "Rhz", tag: "#89PVJG9R0" }, { nick: "Juan Carlos", tag: "#PR9U2JL" } ] },
+            { id_time: "ODS", nome_time: "Odyssey", jogadores: [ { nick: "Magic🎩", tag: "#2QCCC29QV" }, { nick: "REI DO FUT", tag: "#RVL0RPR9" }, { nick: "Fantas🌖", tag: "#PU20LUCQG" } ] },
+            { id_time: "ELV", nome_time: "ELEVATE", jogadores: [ { nick: "Tufa", tag: "#CQLR0Y80" } ] },
+            { id_time: "AL", nome_time: "ACRE LOVERS", jogadores: [ { nick: "FireMirillo", tag: "#JQ8LLLY" } ] },
+            { id_time: "ENO", nome_time: "ENOSIS", jogadores: [ { nick: "Deykonn", tag: "#GJPVYUQG" } ] }
         ],
         "TIER B": [
-            {
-                id_time: "CB",
-                nome_time: "Creche Brawl",
-                jogadores: [
-                    { nick: "CB|Tilo", tag: "#80VLPJCCC" },
-                    { nick: "CB|Bielz", tag: "#9Q22C88V8" },
-                    { nick: "CB|Yichy", tag: "#2LVGCJ2UQR" }
-                ]
-            }
+            { id_time: "CB", nome_time: "Creche Brawl", jogadores: [ { nick: "Tilo", tag: "#80VLPJCCC" }, { nick: "Bielz", tag: "#9Q22C88V8" }, { nick: "Yichy", tag: "#2LVGCJ2UQR" } ] },
+            { id_time: "OCX", nome_time: "OCX", jogadores: [ { nick: "Sterixx", tag: "#2P8RVJVUY" } ] }
+
         ]
     },
     "NA": {
         "TIER S": [
-            {
-                id_time: "RLM",
-                nome_time: "ONLY REALM",
-                jogadores: [
-                    { nick: "Bobby", tag: "#LVRRYPV" }
-                ]
-            }
+            { id_time: "RLM", nome_time: "ONLY REALM", jogadores: [ { nick: "Bobby", tag: "#LVRRYPV" } ] },
+            { id_time: "TRB", nome_time: "TRIBE GAMING", jogadores: [ { nick: "Lxffy", tag: "#82RCQCVG" } ] },
+        ],
+        "TIER A": [
+            { id_time: "TE", nome_time: "TEAM ELEKTROS", jogadores: [ { nick: "Snoiy", tag: "#YUJ8PJ0LR" } ] },
+            { id_time: "ZOOS", nome_time: "ZOOS", jogadores: [ { nick: "Tyrant", tag: "#VPVLG2" } ] },
+            { id_time: "MATH", nome_time: "MATH TEAM", jogadores: [ { nick: "Math", tag: "#P8GVQ28" } ] },
+            { id_time: "VTC", nome_time: "VATIC", jogadores: [ { nick: "Ezlivi", tag: "#QURVLPG" } ] },
+            { id_time: "LGCY", nome_time: "LEGACY", jogadores: [ { nick: "Rafiki", tag: "#R9CCLP8Q" } ] },
+            { id_time: "OG", nome_time: "OG TEAM", jogadores: [ { nick: "OG", tag: "#28LUY98" } ] },
+            { id_time: "ZHAR", nome_time: "ZHAR TEAM", jogadores: [ { nick: "Zhar", tag: "#82J2VLRQ" } ] },
+            { id_time: "VIC", nome_time: "VIC", jogadores: [ { nick: "SecondBest", tag: "#9PP0G2CG" } ] },
+            { id_time: "STMN", nome_time: "STMN ESPORTS", jogadores: [ { nick: "Tacos", tag: "#GCJCRVQ8" } ] },
+            { id_time: "NAME", nome_time: "NAME", jogadores: [ { nick: "Zee", tag: "#2G82CGU" } ] }
+        ]
+    },
+    "EMEA": {
+        "TIER S": [
+            { id_time: "FUT", nome_time: "FUT ESPORTS", jogadores: [ { nick: "AngelBoy", tag: "#9PCV9L982" } ] },
+            { id_time: "HMB", nome_time: "HMBLE", jogadores: [ { nick: "Symantec", tag: "#YQUCCJ2" } ] }
+
+        ],
+    "TIER A": [
+            { id_time: "BGT", nome_time: "BIG TALENTS", jogadores: [ { nick: "Dompe", tag: "#2208QGGGL" } ] },
+            { id_time: "NAVI", nome_time: "NAVI", jogadores: [ { nick: "Enraged", tag: "#80PVPCC29" } ] },
+            { id_time: "MAD", nome_time: "MADRID ESPORTS", jogadores: [ { nick: "Rup", tag: "#9JRGJ0RY9" } ] },     
+            { id_time: "SK", nome_time: "SK GAMING", jogadores: [ { nick: "Ope", tag: "#9LVUC2PY" } ] },
+            { id_time: "TH", nome_time: "TEAM HERETICS", jogadores: [ { nick: "IKaoss", tag: "#PCPRPJV" } ] },
+            { id_time: "HK", nome_time: "HK", jogadores: [ { nick: "Natrix", tag: "#CJ9YRGGC" } ] },
+            { id_time: "TTM", nome_time: "REPLY TOTEM", jogadores: [ { nick: "Maru", tag: "#2Q892QVU" } ] },
+            { id_time: "NOVO", nome_time: "NOVO ESPORTS", jogadores: [ { nick: "Filippo", tag: "#9PQQ8GQQ" } ] },
+            { id_time: "DEC", nome_time: "DECAII TEAM", jogadores: [ { nick: "Decaii", tag: "#2Y822YJYJC" } ] },
+            { id_time: "BIG", nome_time: "BIG", jogadores: [ { nick: "Salty", tag: "#PLV89CGP" } ] }
+        ]
+    },
+    "EA": {
+        "TIER S": [
+            { id_time: "CR", nome_time: "CRAZY RACCOON", jogadores: [ { nick: "Tensai", tag: "#9ULYPV8" } ] },
+            { id_time: "ZETA", nome_time: "ZETA DIVISION", jogadores: [ { nick: "Battoman", tag: "#P0Y8JGL0U" } ] }
+        ],
+    "TIER A": [
+            { id_time: "SKCEA", nome_time: "SKC EA", jogadores: [ { nick: "Kuru", tag: "#J99YU9QY" } ] },
+            { id_time: "FG", nome_time: "FG", jogadores: [ { nick: "Shigemyon", tag: "#2RQQ9PGC" } ] },
+            { id_time: "DF", nome_time: "DF", jogadores: [ { nick: "Clarx", tag: "#GJ9V99VJG" } ] },
+            { id_time: "RVL", nome_time: "RIVAL", jogadores: [ { nick: "Yutapin", tag: "#82CJYJPG2" } ] },
+            { id_time: "RC", nome_time: "REJECT", jogadores: [ { nick: "Melty", tag: "#8J9GUJJVY" } ] },
+            { id_time: "FL", nome_time: "FENNEL", jogadores: [ { nick: "Achapi", tag: "#28PU0P9L0" } ] },
+            { id_time: "INS", nome_time: "INSOMNIA", jogadores: [ { nick: "Koga", tag: "#28VP0G808" } ] },
+            { id_time: "FZ", nome_time: "FZ", jogadores: [ { nick: "Toridesu", tag: "#89UUQLJCC" } ] },
+            { id_time: "TL", nome_time: "TOXIC LOTUS", jogadores: [ { nick: "Engine", tag: "#2LJVR0RQ8G" } ] }
         ]
     }
 };
@@ -128,7 +112,7 @@ const MAPAS_POR_MES = {
 let dadosOriginaisRegiao = [];
 let dadosTimes = {};
 let detalhesBrawlers = {};
-let regiaoAtiva = "SA"; // Variável que armazena a região atual da tela
+let regiaoAtiva = "SA";
 
 const formatarNomeImagem = (n) => `brawlers/${n.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
 const formatarNomeMapa = (m) => `elements/${m.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
@@ -146,12 +130,11 @@ window.toggleElemento = function(header) {
 };
 
 // ========================================================
-// 3. CARREGAMENTO DINÂMICO DE ARQUIVOS
+// 3. CARREGAMENTO DINÂMICO
 // ========================================================
 window.carregarRegiao = async function(regiao) {
     regiaoAtiva = regiao.toUpperCase();
     
-    // Zera os dados pra evitar conflito entre regiões
     dadosTimes = {};
     detalhesBrawlers = {};
 
@@ -172,7 +155,6 @@ window.carregarRegiao = async function(regiao) {
         }
     } catch (e) { console.warn("Erro ao carregar dados da região.", e); }
 
-    // Busca os dados adicionais de Times e Brawlers de forma dinâmica pela Sigla
     try {
         const resTimes = await fetch(`api/stats/times_${regiao.toLowerCase()}.json`);
         if (resTimes.ok) dadosTimes = await resTimes.json();
@@ -186,7 +168,7 @@ window.carregarRegiao = async function(regiao) {
     try { popularFiltrosIniciais(); } catch(e) {}
     try { filtrarEAplicarDados(); } catch(e) {}
     try { renderizarListaBrawlers(); } catch(e) {}
-    try { renderizarListaTimes(regiaoAtiva); } catch(e) { console.error("Erro na barra de times:", e); }
+    try { renderizarListaTimes(regiaoAtiva); } catch(e) { console.error(e); }
 };
 
 function popularFiltrosIniciais() {
@@ -350,9 +332,6 @@ function renderizarAllMaps(dados) {
     `).join('');
 }
 
-// ========================================================
-// 4. BRAWLERS DETAIL (COM NOME DA REGIÃO DINÂMICA)
-// ========================================================
 function renderizarListaBrawlers() {
     const container = document.getElementById("lista-brawlers-sidebar");
     if (!container) return;
@@ -472,7 +451,7 @@ window.fecharModalBrawler = function() {
 };
 
 // ========================================================
-// 5. RENDERIZAÇÃO DE TIMES (RENDERIZA TODAS NO GERAL)
+// 5. RENDERIZAÇÃO DE TIMES
 // ========================================================
 function renderizarListaTimes(regiaoAtual) {
     const container = document.getElementById("lista-times-sidebar");
@@ -480,7 +459,6 @@ function renderizarListaTimes(regiaoAtual) {
 
     let htmlFinal = "";
 
-    // Se estiver na tela GERAL, mostra de TODAS as regiões!
     if (regiaoAtual === "GERAL") {
         Object.keys(CONFIGURACAO_MANUAL_TIMES).forEach(reg => {
              htmlFinal += `
@@ -502,7 +480,6 @@ function renderizarListaTimes(regiaoAtual) {
     container.innerHTML = htmlFinal;
 }
 
-// Função auxiliar para gerar HTML dos Tiers
 function gerarHTMLTierTimes(configRegiao, regiaoDoTime) {
     let html = "";
     Object.keys(configRegiao).forEach(tier => {
