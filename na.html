@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SOUTH AMERICA Infos</title>
+    <title>NORTH AMERICA Infos</title>
     <link rel="stylesheet" href="style.css">
     <script src="app.js"></script>
 </head>
@@ -11,19 +11,36 @@
 
     <nav class="navbar">
         <a href="index.html" class="nav-link">MENU</a>
-        <a href="sa.html" class="nav-link">SA</a>
         <div class="nav-links">
+            
             <div class="dropdown">
-                <a href="#" class="nav-link" id="na-menu-btn">NA ▼ (META)</a>
+                <a href="#" class="nav-link" id="sa-menu-btn">NA ▼ (META)</a>
                 <div class="dropdown-content">
                     <a href="#" onclick="mudarTela('meta'); return false;">Meta</a>
                     <a href="#" onclick="mudarTela('brawlers'); return false;">Brawlers</a>
-                    <a href="#" onclick="mudarTela('times'); return false;">Times - Players</a>
+                    <a href="#" onclick="mudarTela('times'); return false;">Times</a>
+                    <a href="#" onclick="mudarTela('players'); return false;">Players</a>
                 </div>
             </div>
-            
-            <a href="emea.html" class="nav-link">EMEA</a>
-            <a href="ea.html" class="nav-link">EA</a>
+
+            <div class="dropdown">
+                <a href="#" class="nav-link">OUTROS ▼</a>
+                <div class="dropdown-content">
+                    <a href="na.html" style="display: flex; align-items: center; gap: 8px;">
+                        <img src="elements/na.png" style="width: 20px; height: 20px; object-fit: contain; border-radius: 2px;" onerror="this.style.display='none'"> 
+                        SA
+                    </a>
+                    <a href="emea.html" style="display: flex; align-items: center; gap: 8px;">
+                        <img src="elements/emea.png" style="width: 20px; height: 20px; object-fit: contain; border-radius: 2px;" onerror="this.style.display='none'"> 
+                        EMEA
+                    </a>
+                    <a href="ea.html" style="display: flex; align-items: center; gap: 8px;">
+                        <img src="elements/ea.png" style="width: 20px; height: 20px; object-fit: contain; border-radius: 2px;" onerror="this.style.display='none'"> 
+                        EA
+                    </a>
+                </div>
+            </div>
+
             <a href="geral.html" class="nav-link">GERAL</a>
         </div>
     </nav>
@@ -31,7 +48,7 @@
     <main class="main-container">
         <div id="tela-meta" class="tela-secao tela-ativa">
             <header class="page-header">
-                <h1>SOUTH AMERICA INFOS <span class="accent">ANALYSIS</span></h1>
+                <h1>NORTH AMERICA INFOS <span class="accent">ANALYSIS</span></h1>
                 <p class="subtitle">Dados extraídos de Scrims e Torneios Oficiais</p>
             </header>
             
@@ -59,7 +76,7 @@
                             </tr>
                         </thead>
                         <tbody id="tbody-all-maps">
-                            </tbody>
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -88,25 +105,45 @@
                 </div>
             </div>
         </div>
+
+        <div id="tela-players" class="tela-secao tela-oculta">
+            <div style="padding: 40px; text-align: center; color: #888;">
+                <h2 style="color: #fff; margin-bottom: 10px;">Área de Players</h2>
+                <p>Aqui você pode montar o conteúdo focado apenas em jogadores.</p>
+            </div>
+        </div>
+
     </main>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             carregarRegiao('na');
             window.mudarTela = function(tela) {
+                // Oculta todas as telas
                 document.querySelectorAll('.tela-secao').forEach(sec => {
                     sec.classList.remove('tela-ativa');
                     sec.classList.add('tela-oculta');
                 });
+                
+                // Mostra a tela clicada
                 const telaAlvo = document.getElementById(`tela-${tela}`);
                 if (telaAlvo) {
                     telaAlvo.classList.remove('tela-oculta');
                     telaAlvo.classList.add('tela-ativa');
                 }
-                const titulos = {'meta': 'SA ▼ (META)', 'brawlers': 'NA ▼ (BRAWLERS)', 'times': 'NA ▼ (TIMES)'};
+
+                // Atualiza o texto do botão principal do menu dropdown SA
+                const titulos = {
+                    'meta': 'NA ▼ (META)', 
+                    'brawlers': 'NA ▼ (BRAWLERS)', 
+                    'times': 'NA ▼ (TIMES)',
+                    'players': 'NA ▼ (PLAYERS)'
+                };
                 document.getElementById('sa-menu-btn').textContent = titulos[tela];
-                const dp = document.querySelector('.dropdown');
-                if (dp) dp.classList.remove('active');
+
+                // Fecha o dropdown após o clique
+                const dp = document.querySelectorAll('.dropdown');
+                dp.forEach(d => d.classList.remove('active'));
             };
         });
     </script>
