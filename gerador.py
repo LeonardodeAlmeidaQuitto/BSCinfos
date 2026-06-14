@@ -2,8 +2,6 @@ import brawlstats
 import pandas as pd
 import os
 import json
-import itertools
-from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
 # --- CONFIGURAÇÃO ---
@@ -170,19 +168,25 @@ def minerar_dados():
                 df_reg = df_stats[df_stats['regiao_list'] == reg]
                 gerar_json_consolidado(df_reg, f"api/stats/{str(reg).lower()}.json")
 
-        # --- GERAÇÃO DE times_sa.json (DICIONÁRIO BLINDADO) ---
-        df_sa = df_stats[df_stats['regiao_list'] == 'SA']
-        times_dict = {}
-        for tag in df_sa['player_tag'].unique():
-            # Evita chaves vazias ou "nan"
-            if pd.isna(tag) or not tag or str(tag).lower() == 'nan': continue
+        # --- GERAÇÃO DINÂMICA DOS ARQUIVOS DE TIMES PARA TODAS AS REGIÕES ---
+        for regiao in df_stats['regiao_list'].unique():
+            if pd.isna(regiao) or not regiao: 
+                continue
             
-            df_player = df_sa[df_sa['player_tag'] == tag]
-            picks_counts = df_player['pick'].value_counts()
-            times_dict[str(tag)] = [{"brawler": str(b), "qtd": int(q)} for b, q in picks_counts.items()]
+            df_regiao = df_stats[df_stats['regiao_list'] == regiao]
+            times_dict = {}
             
-        with open('api/stats/times_sa.json', 'w', encoding='utf-8') as f:
-            json.dump(times_dict, f, ensure_ascii=False)
+            for tag in df_regiao['player_tag'].unique():
+                if pd.isna(tag) or not tag or str(tag).lower() == 'nan': 
+                    continue
+                
+                df_player = df_regiao[df_regiao['player_tag'] == tag]
+                picks_counts = df_player['pick'].value_counts()
+                times_dict[str(tag)] = [{"brawler": str(b), "qtd": int(q)} for b, q in picks_counts.items()]
+                
+            nome_arquivo = f"api/stats/times_{str(regiao).lower()}.json"
+            with open(nome_arquivo, 'w', encoding='utf-8') as f:
+                json.dump(times_dict, f, ensure_ascii=False)
 
     print(f"\n✅ Concluído! Total de novas partidas: {total_novas}")
 
