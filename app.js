@@ -85,12 +85,10 @@ const CONFIGURACAO_MANUAL_TIMES = {
     "NA": {
         "TIER S": [
             {
-                id_time: "",
-                nome_time: "",
+                id_time: "RLM",
+                nome_time: "ONLY REALM",
                 jogadores: [
-                    { nick: "", tag: "#" },
-                    { nick: "", tag: "#" },
-                    { nick: "", tag: "#" }
+                    { nick: "Bobby", tag: "#LVRRYPV" }
                 ]
             }
         ]
@@ -98,7 +96,7 @@ const CONFIGURACAO_MANUAL_TIMES = {
 };
 
 // ========================================================
-// 2. CONFIGURAÇÕES E VARIÁVEIS GLOBAIS DE MAPAS
+// 2. CONFIGURAÇÕES GLOBAIS
 // ========================================================
 const MAPAS_POR_MES = {
     "2026-04": {
@@ -128,8 +126,9 @@ const MAPAS_POR_MES = {
 };
 
 let dadosOriginaisRegiao = [];
-let dadosTimesSA = {};
-let detalhesBrawlersSA = {};
+let dadosTimes = {};
+let detalhesBrawlers = {};
+let regiaoAtiva = "SA"; // Variável que armazena a região atual da tela
 
 const formatarNomeImagem = (n) => `brawlers/${n.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
 const formatarNomeMapa = (m) => `elements/${m.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
@@ -146,8 +145,16 @@ window.toggleElemento = function(header) {
     }
 };
 
-// Carregamento blindado contra erros de JSON
+// ========================================================
+// 3. CARREGAMENTO DINÂMICO DE ARQUIVOS
+// ========================================================
 window.carregarRegiao = async function(regiao) {
+    regiaoAtiva = regiao.toUpperCase();
+    
+    // Zera os dados pra evitar conflito entre regiões
+    dadosTimes = {};
+    detalhesBrawlers = {};
+
     try {
         const urlStats = `api/stats/${regiao.toLowerCase()}.json`;
         const resStats = await fetch(urlStats);
@@ -165,23 +172,21 @@ window.carregarRegiao = async function(regiao) {
         }
     } catch (e) { console.warn("Erro ao carregar dados da região.", e); }
 
-    if (regiao.toLowerCase() === 'sa') {
-        try {
-            const resTimes = await fetch('api/stats/times_sa.json');
-            if (resTimes.ok) dadosTimesSA = await resTimes.json();
-        } catch (e) { console.warn("times_sa.json ausente ou quebrado.", e); }
-        
-        try {
-            const resDetalhes = await fetch('api/stats/sa_brawlers_detail.json');
-            if (resDetalhes.ok) detalhesBrawlersSA = await resDetalhes.json();
-        } catch (e) { console.warn("sa_brawlers_detail.json ausente.", e); }
-    }
+    // Busca os dados adicionais de Times e Brawlers de forma dinâmica pela Sigla
+    try {
+        const resTimes = await fetch(`api/stats/times_${regiao.toLowerCase()}.json`);
+        if (resTimes.ok) dadosTimes = await resTimes.json();
+    } catch (e) {}
+    
+    try {
+        const resDetalhes = await fetch(`api/stats/${regiao.toLowerCase()}_brawlers_detail.json`);
+        if (resDetalhes.ok) detalhesBrawlers = await resDetalhes.json();
+    } catch (e) {}
 
-    // Tenta renderizar em blocos separados para que um erro não quebre o outro
-    try { popularFiltrosIniciais(); } catch(e) { console.error(e); }
-    try { filtrarEAplicarDados(); } catch(e) { console.error(e); }
-    try { renderizarListaBrawlers(); } catch(e) { console.error(e); }
-    try { renderizarListaTimes(regiao.toUpperCase()); } catch(e) { console.error("Erro na barra de times:", e); }
+    try { popularFiltrosIniciais(); } catch(e) {}
+    try { filtrarEAplicarDados(); } catch(e) {}
+    try { renderizarListaBrawlers(); } catch(e) {}
+    try { renderizarListaTimes(regiaoAtiva); } catch(e) { console.error("Erro na barra de times:", e); }
 };
 
 function popularFiltrosIniciais() {
@@ -211,8 +216,8 @@ window.filtrarEAplicarDados = function() {
 
     let dadosFiltrados = dadosOriginaisRegiao;
 
-    if (anoSel) dadosFiltrados = dadosFiltrados.filter(d => d.ano === anoSel);
-    if (mesSel) dadosFiltrados = dadosFiltrados.filter(d => d.mes === mesSel);
+    if (anoSel && anoSel !== "TODOS") dadosFiltrados = dadosFiltrados.filter(d => d.ano === anoSel);
+    if (mesSel && mesSel !== "TODOS") dadosFiltrados = dadosFiltrados.filter(d => d.mes === mesSel);
 
     const mesesParaNumero = {
         "JANEIRO": "01", "FEVEREIRO": "02", "MARÇO": "03", "ABRIL": "04",
@@ -220,7 +225,7 @@ window.filtrarEAplicarDados = function() {
         "SETEMBRO": "09", "OUTUBRO": "10", "NOVEMBRO": "11", "DEZEMBRO": "12"
     };
 
-    if (anoSel && mesSel) {
+    if (anoSel && mesSel && anoSel !== "TODOS" && mesSel !== "TODOS") {
         const numMes = mesesParaNumero[mesSel.toUpperCase()];
         const chaveMapa = `${anoSel}-${numMes}`;
         const mapasDoMes = MAPAS_POR_MES[chaveMapa];
@@ -244,8 +249,9 @@ function renderizarGridModos(dados, ano, mes) {
     container.innerHTML = '';
 
     const mesesParaNumero = { "JANEIRO": "01", "FEVEREIRO": "02", "MARÇO": "03", "ABRIL": "04", "MAIO": "05", "JUNHO": "06", "JULHO": "07", "AGOSTO": "08", "SETEMBRO": "09", "OUTUBRO": "10", "NOVEMBRO": "11", "DEZEMBRO": "12" };
-    const numMes = mes ? mesesParaNumero[mes.toUpperCase()] : "05";
-    const chaveMes = `${ano}-${numMes}`;
+    const numMes = (mes && mes !== "TODOS") ? mesesParaNumero[mes.toUpperCase()] : "05";
+    const anoAtual = (ano && ano !== "TODOS") ? ano : "2026";
+    const chaveMes = `${anoAtual}-${numMes}`;
     const configuracaoMapas = MAPAS_POR_MES[chaveMes] || {};
 
     Object.keys(configuracaoMapas).forEach(modo => {
@@ -344,11 +350,14 @@ function renderizarAllMaps(dados) {
     `).join('');
 }
 
+// ========================================================
+// 4. BRAWLERS DETAIL (COM NOME DA REGIÃO DINÂMICA)
+// ========================================================
 function renderizarListaBrawlers() {
     const container = document.getElementById("lista-brawlers-sidebar");
     if (!container) return;
     
-    let brawlers = Object.keys(detalhesBrawlersSA);
+    let brawlers = Object.keys(detalhesBrawlers);
     if (brawlers.length === 0 && dadosOriginaisRegiao.length > 0) {
         brawlers = [...new Set(dadosOriginaisRegiao.map(d => d.pick.toLowerCase()))];
     }
@@ -380,7 +389,7 @@ function gerarHTMLDetalhes(nomeBrawler, info) {
                 <div style="color: var(--accent-purple); font-weight: bold; font-size: 13px; margin-top: 4px;">${m.picks} Partidas</div>
             </div>
         </div>
-    `).join('') : '<div style="font-size:13px; color:#555;">Sem dados suficientes em SA.</div>';
+    `).join('') : `<div style="font-size:13px; color:#555;">Sem dados suficientes em ${regiaoAtiva}.</div>`;
 
     let sinergiasHTML = info.sinergias && info.sinergias.length > 0 ? info.sinergias.map(s => `
         <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background: #111; border-radius: 8px; border: 1px solid var(--borda-destaque); margin-bottom: 10px;">
@@ -396,7 +405,7 @@ function gerarHTMLDetalhes(nomeBrawler, info) {
                 <span style="color: var(--winrate-color); font-weight: bold;">${s.win_rate} WR</span>
             </div>
         </div>
-    `).join('') : '<div style="font-size:13px; color:#555;">Sem dados de companheiros de equipe na região SA.</div>';
+    `).join('') : `<div style="font-size:13px; color:#555;">Sem dados de companheiros de equipe na região ${regiaoAtiva}.</div>`;
 
     return `
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -420,18 +429,18 @@ window.exibirInfoBrawler = function(nome) {
         i.classList.toggle("active", i.querySelector(".brawler-name").textContent.toLowerCase() === nome.toLowerCase());
     });
 
-    const info = detalhesBrawlersSA[nome.toUpperCase()] || {top_mapas: [], sinergias: []};
+    const info = detalhesBrawlers[nome.toUpperCase()] || {top_mapas: [], sinergias: []};
     painel.innerHTML = `
         <div class="brawler-profile-header">
             <img src="${formatarNomeImagem(nome)}" class="brawler-large-avatar" onerror="this.src='brawlers/default.png'">
-            <h2>${nome} <span style="font-size: 14px; color: #888; font-weight: normal;">/ Região SA</span></h2>
+            <h2>${nome} <span style="font-size: 14px; color: #888; font-weight: normal;">/ REGIÃO ${regiaoAtiva}</span></h2>
         </div>
         ${gerarHTMLDetalhes(nome, info)}
     `;
 };
 
 window.abrirModalBrawler = function(nomeBrawler) {
-    const info = detalhesBrawlersSA[nomeBrawler.toUpperCase()] || {top_mapas: [], sinergias: []};
+    const info = detalhesBrawlers[nomeBrawler.toUpperCase()] || {top_mapas: [], sinergias: []};
     let modal = document.getElementById('modal-analise-brawler');
     if (!modal) {
         modal = document.createElement('div');
@@ -445,7 +454,7 @@ window.abrirModalBrawler = function(nomeBrawler) {
             <div class="brawler-modal-header">
                 <div style="display:flex; align-items:center; gap: 15px;">
                     <img src="${formatarNomeImagem(nomeBrawler)}" style="width: 40px; height: 40px; border-radius: 6px; border: 1px solid var(--accent-purple);">
-                    <h2>ANÁLISE AVANÇADA: ${nomeBrawler.toUpperCase()} <span style="color:#666; font-size:12px;">(SA)</span></h2>
+                    <h2>ANÁLISE AVANÇADA: ${nomeBrawler.toUpperCase()} <span style="color:#666; font-size:12px;">(${regiaoAtiva})</span></h2>
                 </div>
                 <button class="brawler-modal-close" onclick="fecharModalBrawler()">&times;</button>
             </div>
@@ -463,30 +472,47 @@ window.fecharModalBrawler = function() {
 };
 
 // ========================================================
-// RENDERIZAÇÃO DE TIMES (TOP 15 TEAM / TOP 5 PLAYERS)
+// 5. RENDERIZAÇÃO DE TIMES (RENDERIZA TODAS NO GERAL)
 // ========================================================
-function renderizarListaTimes(regiaoAtual = "SA") {
+function renderizarListaTimes(regiaoAtual) {
     const container = document.getElementById("lista-times-sidebar");
     if (!container) return;
 
-    const configRegiao = CONFIGURACAO_MANUAL_TIMES[regiaoAtual.toUpperCase()];
-    if (!configRegiao) {
-        container.innerHTML = `<p style="padding: 10px; color: #666;">Região não configurada.</p>`;
-        return;
-    }
-
     let htmlFinal = "";
 
+    // Se estiver na tela GERAL, mostra de TODAS as regiões!
+    if (regiaoAtual === "GERAL") {
+        Object.keys(CONFIGURACAO_MANUAL_TIMES).forEach(reg => {
+             htmlFinal += `
+                <div class="sidebar-header" style="margin-top:20px; color:#fff; background: var(--bg-paineis); padding: 5px; text-align: center; border-radius: 4px;">
+                    🌍 REGIÃO: ${reg}
+                </div>
+             `;
+             htmlFinal += gerarHTMLTierTimes(CONFIGURACAO_MANUAL_TIMES[reg], reg);
+        });
+    } else {
+        const configRegiao = CONFIGURACAO_MANUAL_TIMES[regiaoAtual];
+        if (!configRegiao) {
+            container.innerHTML = `<p style="padding: 10px; color: #666;">Região não configurada.</p>`;
+            return;
+        }
+        htmlFinal = gerarHTMLTierTimes(configRegiao, regiaoAtual);
+    }
+
+    container.innerHTML = htmlFinal;
+}
+
+// Função auxiliar para gerar HTML dos Tiers
+function gerarHTMLTierTimes(configRegiao, regiaoDoTime) {
+    let html = "";
     Object.keys(configRegiao).forEach(tier => {
         const timesDoTier = configRegiao[tier];
         let timesHTML = "";
 
         timesDoTier.forEach(timeConfig => {
-            // Tratamento de segurança caso o id_time venha vazio
             const siglaImg = (timeConfig.id_time || "default").toLowerCase().split(' ')[0];
-
             timesHTML += `
-                <div class="sidebar-item" data-teamid="${timeConfig.id_time}" onclick="exibirInfoTime('${timeConfig.id_time}', '${regiaoAtual}')" style="padding: 12px; cursor: pointer; font-weight: 600; margin-left: 10px; border-left: 2px solid transparent; display: flex; align-items: center; gap: 10px;">
+                <div class="sidebar-item" data-teamid="${timeConfig.id_time}" onclick="exibirInfoTime('${timeConfig.id_time}', '${regiaoDoTime}')" style="padding: 12px; cursor: pointer; font-weight: 600; margin-left: 10px; border-left: 2px solid transparent; display: flex; align-items: center; gap: 10px;">
                     <img src="elements/teams/${siglaImg}.png" style="width: 24px; height: 24px; object-fit: contain; border-radius: 4px;" onerror="this.style.display='none'">
                     <span>${timeConfig.nome_time}</span>
                 </div>
@@ -494,7 +520,7 @@ function renderizarListaTimes(regiaoAtual = "SA") {
         });
 
         if (timesHTML !== "") {
-            htmlFinal += `
+            html += `
                 <div style="margin-top: 15px;">
                     <div style="font-size: 12px; color: var(--accent-purple); font-weight: 900; letter-spacing: 1px; padding: 5px 10px; text-transform: uppercase;">
                         ${tier}
@@ -504,11 +530,10 @@ function renderizarListaTimes(regiaoAtual = "SA") {
             `;
         }
     });
-
-    container.innerHTML = htmlFinal;
+    return html;
 }
 
-window.exibirInfoTime = function(idTime, regiaoAtual = "SA") {
+window.exibirInfoTime = function(idTime, regiaoDoTime) {
     const painel = document.getElementById("painel-info-time");
     if (!painel) return;
 
@@ -519,7 +544,7 @@ window.exibirInfoTime = function(idTime, regiaoAtual = "SA") {
 
     let timeConfig = null;
     let tierTime = "";
-    const configRegiao = CONFIGURACAO_MANUAL_TIMES[regiaoAtual.toUpperCase()];
+    const configRegiao = CONFIGURACAO_MANUAL_TIMES[regiaoDoTime];
     
     if (configRegiao) {
         for (const [tier, times] of Object.entries(configRegiao)) {
@@ -536,8 +561,7 @@ window.exibirInfoTime = function(idTime, regiaoAtual = "SA") {
 
     let picksSomadosTime = {};
     timeConfig.jogadores.forEach(jogador => {
-        // Agora busca no dicionário formatado de forma blindada
-        const picksDoJogador = dadosTimesSA[jogador.tag] || [];
+        const picksDoJogador = dadosTimes[jogador.tag] || [];
         picksDoJogador.forEach(p => {
             if (!picksSomadosTime[p.brawler]) picksSomadosTime[p.brawler] = 0;
             picksSomadosTime[p.brawler] += p.qtd;
@@ -557,7 +581,7 @@ window.exibirInfoTime = function(idTime, regiaoAtual = "SA") {
     `).join('');
 
     let playersHTML = timeConfig.jogadores.map(player => {
-        const picksPlayer = (dadosTimesSA[player.tag] || []).slice(0, 5);
+        const picksPlayer = (dadosTimes[player.tag] || []).slice(0, 5);
         
         let picksHTML = picksPlayer.length ? picksPlayer.map(p => `
             <div class="player-mini-pick" onclick="abrirModalBrawler('${p.brawler}')" style="cursor: pointer; display: flex; flex-direction: column; align-items: center;">
@@ -584,7 +608,7 @@ window.exibirInfoTime = function(idTime, regiaoAtual = "SA") {
 
     painel.innerHTML = `
         <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid var(--borda-destaque); display: flex; flex-direction: column; align-items: center;">
-            <div style="font-size: 12px; color: var(--accent-purple); font-weight: bold; letter-spacing: 2px; margin-bottom: 10px;">${tierTime}</div>
+            <div style="font-size: 12px; color: var(--accent-purple); font-weight: bold; letter-spacing: 2px; margin-bottom: 10px;">${tierTime} (${regiaoDoTime})</div>
             <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
                 <img src="elements/teams/${siglaImgPainel}.png" style="width: 60px; height: 60px; object-fit: contain;" onerror="this.style.display='none'">
                 <h2 style="font-size: 32px; font-weight: 900; text-transform: uppercase; margin: 0;">${timeConfig.nome_time}</h2>
@@ -606,6 +630,9 @@ window.exibirInfoTime = function(idTime, regiaoAtual = "SA") {
 };
 
 
+// ========================================================
+// 6. FUNÇÕES DE ORDENAÇÃO E EVENTOS DE UI
+// ========================================================
 window.ordenarTabela = function(th, tipo) {
     const tabela = th.closest('table');
     const tbody = tabela.querySelector('tbody');
