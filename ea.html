@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NORTH AMERICA Infos</title>
+    <title>EAST ÁSIA Infos</title>
     <link rel="stylesheet" href="style.css">
     <script src="app.js"></script>
 </head>
@@ -14,7 +14,7 @@
         <div class="nav-links">
             
             <div class="dropdown">
-                <a href="#" class="nav-link" id="sa-menu-btn">NA ▼ (META)</a>
+                <a href="#" class="nav-link" id="sa-menu-btn">EA ▼ (META)</a>
                 <div class="dropdown-content">
                     <a href="#" onclick="mudarTela('meta'); return false;">Meta</a>
                     <a href="#" onclick="mudarTela('brawlers'); return false;">Brawlers</a>
@@ -28,15 +28,15 @@
                 <div class="dropdown-content">
                     <a href="na.html" style="display: flex; align-items: center; gap: 8px;">
                         <img src="elements/na.png" style="width: 20px; height: 20px; object-fit: contain; border-radius: 2px;" onerror="this.style.display='none'"> 
-                        SA
+                        NA
                     </a>
                     <a href="emea.html" style="display: flex; align-items: center; gap: 8px;">
                         <img src="elements/emea.png" style="width: 20px; height: 20px; object-fit: contain; border-radius: 2px;" onerror="this.style.display='none'"> 
                         EMEA
                     </a>
                     <a href="ea.html" style="display: flex; align-items: center; gap: 8px;">
-                        <img src="elements/ea.png" style="width: 20px; height: 20px; object-fit: contain; border-radius: 2px;" onerror="this.style.display='none'"> 
-                        EA
+                        <img src="elements/sa.png" style="width: 20px; height: 20px; object-fit: contain; border-radius: 2px;" onerror="this.style.display='none'"> 
+                        SA
                     </a>
                 </div>
             </div>
@@ -48,7 +48,7 @@
     <main class="main-container">
         <div id="tela-meta" class="tela-secao tela-ativa">
             <header class="page-header">
-                <h1>NORTH AMERICA INFOS <span class="accent">ANALYSIS</span></h1>
+                <h1>EAST ÁSIA INFOS <span class="accent">ANALYSIS</span></h1>
                 <p class="subtitle">Dados extraídos de Scrims e Torneios Oficiais</p>
             </header>
             
@@ -117,7 +117,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            carregarRegiao('na');
+            carregarRegiao('ea');
             window.mudarTela = function(tela) {
                 // Oculta todas as telas
                 document.querySelectorAll('.tela-secao').forEach(sec => {
@@ -134,10 +134,10 @@
 
                 // Atualiza o texto do botão principal do menu dropdown SA
                 const titulos = {
-                    'meta': 'NA ▼ (META)', 
-                    'brawlers': 'NA ▼ (BRAWLERS)', 
-                    'times': 'NA ▼ (TIMES)',
-                    'players': 'NA ▼ (PLAYERS)'
+                    'meta': 'EA ▼ (META)', 
+                    'brawlers': 'EA ▼ (BRAWLERS)', 
+                    'times': 'EA ▼ (TIMES)',
+                    'players': 'EA ▼ (PLAYERS)'
                 };
                 document.getElementById('sa-menu-btn').textContent = titulos[tela];
 
