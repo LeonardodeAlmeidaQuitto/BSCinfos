@@ -1,6 +1,7 @@
 // ========================================================
 // 1. CONFIGURAÇÃO MANUAL DE TIMES, TIERS E ROSTERS
 // ========================================================
+// É AQUI que você decreta exatamente quem aparece na aba de Times!
 const CONFIGURACAO_MANUAL_TIMES = {
     "SA": {
         "TIER S": [
@@ -128,7 +129,7 @@ const MAPAS_POR_MES = {
 };
 
 let dadosOriginaisRegiao = [];
-let dadosTimesSA = {};
+let dadosTimesSA = [];
 let detalhesBrawlersSA = {};
 
 const formatarNomeImagem = (n) => `brawlers/${n.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
@@ -146,7 +147,6 @@ window.toggleElemento = function(header) {
     }
 };
 
-// Carregamento blindado contra erros de JSON
 window.carregarRegiao = async function(regiao) {
     try {
         const urlStats = `api/stats/${regiao.toLowerCase()}.json`;
@@ -163,25 +163,28 @@ window.carregarRegiao = async function(regiao) {
                 return d;
             });
         }
-    } catch (e) { console.warn("Erro ao carregar dados da região.", e); }
 
-    if (regiao.toLowerCase() === 'sa') {
-        try {
+        if (regiao.toLowerCase() === 'sa') {
             const resTimes = await fetch('api/stats/times_sa.json');
             if (resTimes.ok) dadosTimesSA = await resTimes.json();
-        } catch (e) { console.warn("times_sa.json ausente ou quebrado.", e); }
-        
-        try {
-            const resDetalhes = await fetch('api/stats/sa_brawlers_detail.json');
-            if (resDetalhes.ok) detalhesBrawlersSA = await resDetalhes.json();
-        } catch (e) { console.warn("sa_brawlers_detail.json ausente.", e); }
-    }
+            
+            try {
+                const resDetalhes = await fetch('api/stats/sa_brawlers_detail.json');
+                if (resDetalhes.ok) detalhesBrawlersSA = await resDetalhes.json();
+            } catch (e) {
+                console.warn("sa_brawlers_detail.json ausente.");
+            }
+        }
 
-    // Tenta renderizar em blocos separados para que um erro não quebre o outro
-    try { popularFiltrosIniciais(); } catch(e) { console.error(e); }
-    try { filtrarEAplicarDados(); } catch(e) { console.error(e); }
-    try { renderizarListaBrawlers(); } catch(e) { console.error(e); }
-    try { renderizarListaTimes(regiao.toUpperCase()); } catch(e) { console.error("Erro na barra de times:", e); }
+        popularFiltrosIniciais();
+        filtrarEAplicarDados();
+        renderizarListaBrawlers();
+        
+        // Passa a região atual para desenhar a barra de times correta
+        renderizarListaTimes(regiao.toUpperCase());
+    } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+    }
 };
 
 function popularFiltrosIniciais() {
@@ -462,6 +465,7 @@ window.fecharModalBrawler = function() {
     if (modal) modal.style.display = 'none';
 };
 
+
 // ========================================================
 // RENDERIZAÇÃO DE TIMES (TOP 15 TEAM / TOP 5 PLAYERS)
 // ========================================================
@@ -477,13 +481,14 @@ function renderizarListaTimes(regiaoAtual = "SA") {
 
     let htmlFinal = "";
 
+    // Renderiza cada Tier (S, A, B...)
     Object.keys(configRegiao).forEach(tier => {
         const timesDoTier = configRegiao[tier];
         let timesHTML = "";
 
         timesDoTier.forEach(timeConfig => {
-            // Tratamento de segurança caso o id_time venha vazio
-            const siglaImg = (timeConfig.id_time || "default").toLowerCase().split(' ')[0];
+            // Pega o id_time, converte pra minúsculo e pega a primeira palavra (ex: "SKC SA" vira "skc")
+            const siglaImg = timeConfig.id_time.toLowerCase().split(' ')[0];
 
             timesHTML += `
                 <div class="sidebar-item" data-teamid="${timeConfig.id_time}" onclick="exibirInfoTime('${timeConfig.id_time}', '${regiaoAtual}')" style="padding: 12px; cursor: pointer; font-weight: 600; margin-left: 10px; border-left: 2px solid transparent; display: flex; align-items: center; gap: 10px;">
@@ -512,11 +517,13 @@ window.exibirInfoTime = function(idTime, regiaoAtual = "SA") {
     const painel = document.getElementById("painel-info-time");
     if (!painel) return;
 
+    // Destaca na Sidebar
     document.querySelectorAll("#lista-times-sidebar .sidebar-item").forEach(i => {
         i.style.borderLeftColor = String(i.getAttribute("data-teamid")) === String(idTime) ? "var(--accent-purple)" : "transparent";
         i.style.backgroundColor = String(i.getAttribute("data-teamid")) === String(idTime) ? "var(--bg-cards)" : "transparent";
     });
 
+    // Encontra a configuração do time decretada no topo do arquivo
     let timeConfig = null;
     let tierTime = "";
     const configRegiao = CONFIGURACAO_MANUAL_TIMES[regiaoAtual.toUpperCase()];
@@ -534,10 +541,13 @@ window.exibirInfoTime = function(idTime, regiaoAtual = "SA") {
 
     if (!timeConfig) return;
 
+    // Busca as estatísticas brutas da API
+    const dadosTimePython = dadosTimesSA.find(t => String(t.id_time) === String(idTime)) || { picks: {} };
+
+    // 1. SOMA DO TOP 15 DO TIME INTEIRO (apenas dos jogadores configurados manualmente)
     let picksSomadosTime = {};
     timeConfig.jogadores.forEach(jogador => {
-        // Agora busca no dicionário formatado de forma blindada
-        const picksDoJogador = dadosTimesSA[jogador.tag] || [];
+        const picksDoJogador = dadosTimePython.picks[jogador.tag] || [];
         picksDoJogador.forEach(p => {
             if (!picksSomadosTime[p.brawler]) picksSomadosTime[p.brawler] = 0;
             picksSomadosTime[p.brawler] += p.qtd;
@@ -556,8 +566,10 @@ window.exibirInfoTime = function(idTime, regiaoAtual = "SA") {
         </div>
     `).join('');
 
+    // 2. MONTAGEM DOS ROSTERS (TOP 5 DE CADA JOGADOR)
     let playersHTML = timeConfig.jogadores.map(player => {
-        const picksPlayer = (dadosTimesSA[player.tag] || []).slice(0, 5);
+        // Pega só os 5 Brawlers mais jogados por essa TAG específica
+        const picksPlayer = (dadosTimePython.picks[player.tag] || []).slice(0, 5);
         
         let picksHTML = picksPlayer.length ? picksPlayer.map(p => `
             <div class="player-mini-pick" onclick="abrirModalBrawler('${p.brawler}')" style="cursor: pointer; display: flex; flex-direction: column; align-items: center;">
@@ -580,7 +592,8 @@ window.exibirInfoTime = function(idTime, regiaoAtual = "SA") {
         `;
     }).join('');
 
-    const siglaImgPainel = (timeConfig.id_time || "default").toLowerCase().split(' ')[0];
+    // 3. RENDERIZAÇÃO FINAL NA TELA (com imagem do time no header)
+    const siglaImgPainel = timeConfig.id_time.toLowerCase().split(' ')[0];
 
     painel.innerHTML = `
         <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid var(--borda-destaque); display: flex; flex-direction: column; align-items: center;">
@@ -633,6 +646,7 @@ window.ordenarTabela = function(th, tipo) {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
+    // Dropdowns
     const dropdowns = document.querySelectorAll(".dropdown");
     dropdowns.forEach(dropdown => {
         const link = dropdown.querySelector(".nav-link");
@@ -647,6 +661,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!e.target.closest(".dropdown")) dropdowns.forEach(d => d.classList.remove("active"));
     });
 
+    // Injeção de CSS extra para o modal (mantém a página limpa)
     const styleTag = document.createElement('style');
     styleTag.innerHTML = `
         .brawler-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
