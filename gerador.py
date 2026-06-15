@@ -169,30 +169,51 @@ def minerar_dados():
             df_reg = df_stats[df_stats['regiao_list'] == reg]
             gerar_json_consolidado(df_reg, f"api/stats/{str(reg).lower()}.json")
 
-        # 2. FUNÇÃO PARA GERAR OS DETALHES DE CADA BRAWLER (MAPAS E SINERGIAS)
+        # 2. DETALHES DE CADA BRAWLER (MAPAS E SINERGIAS) - VERSÃO BLINDADA CONTRA ERROS
         def gerar_detalhes_brawlers(df_input, path_json):
             detalhes = {}
             brawlers = df_input['pick'].unique()
             
             for brawler in brawlers:
+                if pd.isna(brawler) or not brawler:
+                    continue
+                    
                 df_brawler = df_input[df_input['pick'] == brawler]
                 
                 # Top 3 Mapas & Modos
                 top_mapas_df = df_brawler.groupby(['mapa', 'modo']).size().reset_index(name='picks')
                 top_mapas = top_mapas_df.sort_values(by='picks', ascending=False).head(3).to_dict(orient='records')
                 
-                # Top 5 Sinergias (Companheiros do mesmo time na mesma id_partida)
-                df_aliados = df_input[df_input['id_partida'].isin(df_brawler['id_partida'])]
-                df_sinergia = df_aliados.merge(df_brawler[['id_partida', 'win', 'player_tag']], on='id_partida', suffixes=('_aliado', '_brawler'))
-                df_sinergia = df_sinergia[(df_sinergia['player_tag_aliado'] != df_sinergia['player_tag_brawler']) & 
-                                         (df_sinergia['win_aliado'] == df_sinergia['win_brawler'])]
+                # Coleta estruturada de parceiros aliados (mesma id_partida)
+                df_aliados = df_input[df_input['id_partida'].isin(df_brawler['id_partida'])].copy()
+                
+                # Merge blindando sufixos e filtrando apenas colunas estritamente necessárias
+                df_sinergia = df_aliados.merge(
+                    df_brawler[['id_partida', 'win', 'player_tag', 'pick']], 
+                    on='id_partida', 
+                    suffixes=('', '_alvo')
+                )
+                
+                # Critérios de validação da sinergia:
+                # Mesmo resultado do time (win == win_alvo)
+                # Jogadores com tags distintas (player_tag != player_tag_alvo)
+                # Brawlers parceiros distintos do brawler analisado (pick != pick_alvo)
+                df_sinergia = df_sinergia[
+                    (df_sinergia['win'] == df_sinergia['win_alvo']) & 
+                    (df_sinergia['player_tag'] != df_sinergia['player_tag_alvo']) &
+                    (df_sinergia['pick'] != df_sinergia['pick_alvo'])
+                ]
                 
                 sinergias = []
                 if not df_sinergia.empty:
-                    sinergias_df = df_sinergia.groupby('pick_aliado').agg(picks=('win_aliado', 'count'), vitorias=('win_aliado', 'sum')).reset_index()
+                    sinergias_df = df_sinergia.groupby('pick').agg(
+                        picks=('win', 'count'), 
+                        vitorias=('win', 'sum')
+                    ).reset_index()
+                    
                     sinergias_df['win_rate'] = (sinergias_df['vitorias'] / sinergias_df['picks'] * 100).round(1).astype(str) + '%'
                     sinergias_df = sinergias_df.sort_values(by='picks', ascending=False).head(5)
-                    sinergias_df = sinergias_df.rename(columns={'pick_aliado': 'com'})
+                    sinergias_df = sinergias_df.rename(columns={'pick': 'com'})
                     sinergias = sinergias_df.to_dict(orient='records')
                 
                 detalhes[str(brawler).upper()] = {
