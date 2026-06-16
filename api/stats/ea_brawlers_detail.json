@@ -3688,7 +3688,7 @@
                 "picks": 2
             },
             {
-                "mapa": "Goldarm Gulch",
+                "mapa": "",
                 "modo": "knockout",
                 "picks": 1
             }
@@ -3701,22 +3701,22 @@
                 "win_rate": "50.0%"
             },
             {
-                "com": "LEON",
-                "picks": 2,
-                "vitorias": 1,
-                "win_rate": "50.0%"
-            },
-            {
                 "com": "JAE-YONG",
                 "picks": 2,
                 "vitorias": 2,
                 "win_rate": "100.0%"
             },
             {
-                "com": "AMBER",
-                "picks": 1,
+                "com": "LEON",
+                "picks": 2,
                 "vitorias": 1,
-                "win_rate": "100.0%"
+                "win_rate": "50.0%"
+            },
+            {
+                "com": "BROCK",
+                "picks": 1,
+                "vitorias": 0,
+                "win_rate": "0.0%"
             },
             {
                 "com": "BELLE",
@@ -4466,6 +4466,11 @@
     "PIPER": {
         "top_mapas": [
             {
+                "mapa": "",
+                "modo": "knockout",
+                "picks": 1
+            },
+            {
                 "mapa": "Goldarm Gulch",
                 "modo": "knockout",
                 "picks": 1
@@ -4477,6 +4482,12 @@
                 "picks": 1,
                 "vitorias": 0,
                 "win_rate": "0.0%"
+            },
+            {
+                "com": "NANI",
+                "picks": 1,
+                "vitorias": 1,
+                "win_rate": "100.0%"
             },
             {
                 "com": "OLLIE",
