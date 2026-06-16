@@ -118,8 +118,8 @@ let dadosTimes = {};
 let detalhesBrawlers = {};
 let regiaoAtiva = "SA";
 
-const formatarNomeImagem = (n) => `brawlers/${n.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
-const formatarNomeMapa = (m) => `elements/${m.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
+const formatarNomeImagem = (n) => `brawler/${n.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
+const formatarNomeMapa = (m) => `element/${m.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
 
 window.toggleElemento = function(header) {
     const content = header.nextElementSibling;
@@ -365,7 +365,7 @@ window.filtrarBrawlersSidebar = function() {
 function gerarHTMLDetalhes(nomeBrawler, info) {
     let mapasHTML = info.top_mapas && info.top_mapas.length > 0 ? info.top_mapas.map(m => `
         <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 12px; background: #111; padding: 10px; border-radius: 8px; border: 1px solid var(--borda-destaque);">
-            <img src="${formatarNomeMapa(m.mapa)}" onerror="this.src='elements/default.png'" style="width: 70px; height: 50px; border-radius: 6px; object-fit: cover;">
+            <img src="${formatarNomeMapa(m.mapa)}" onerror="this.src='element/default.png'" style="width: 70px; height: 50px; border-radius: 6px; object-fit: cover;">
             <div>
                 <div style="font-weight: bold; font-size: 15px; color: #fff;">${m.mapa.toUpperCase()}</div>
                 <div style="color: #888; font-size: 12px; margin-top: 2px;">${m.modo.toUpperCase()}</div>
@@ -494,7 +494,7 @@ function gerarHTMLTierTimes(configRegiao, regiaoDoTime) {
             const siglaImg = (timeConfig.id_time || "default").toLowerCase().split(' ')[0];
             timesHTML += `
                 <div class="sidebar-item" data-teamid="${timeConfig.id_time}" onclick="exibirInfoTime('${timeConfig.id_time}', '${regiaoDoTime}')" style="padding: 12px; cursor: pointer; font-weight: 600; margin-left: 10px; border-left: 2px solid transparent; display: flex; align-items: center; gap: 10px;">
-                    <img src="elements/teams/${siglaImg}.png" style="width: 24px; height: 24px; object-fit: contain; border-radius: 4px;" onerror="this.style.display='none'">
+                    <img src="element/teams/${siglaImg}.png" style="width: 24px; height: 24px; object-fit: contain; border-radius: 4px;" onerror="this.style.display='none'">
                     <span>${timeConfig.nome_time}</span>
                 </div>
             `;
@@ -591,7 +591,7 @@ window.exibirInfoTime = function(idTime, regiaoDoTime) {
         <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid var(--borda-destaque); display: flex; flex-direction: column; align-items: center;">
             <div style="font-size: 12px; color: var(--accent-purple); font-weight: bold; letter-spacing: 2px; margin-bottom: 10px;">${tierTime} (${regiaoDoTime})</div>
             <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
-                <img src="elements/teams/${siglaImgPainel}.png" style="width: 60px; height: 60px; object-fit: contain;" onerror="this.style.display='none'">
+                <img src="element/teams/${siglaImgPainel}.png" style="width: 60px; height: 60px; object-fit: contain;" onerror="this.style.display='none'">
                 <h2 style="font-size: 32px; font-weight: 900; text-transform: uppercase; margin: 0;">${timeConfig.nome_time}</h2>
             </div>
         </div>
