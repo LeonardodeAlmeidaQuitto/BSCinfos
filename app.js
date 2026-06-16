@@ -118,8 +118,8 @@ let dadosTimes = {};
 let detalhesBrawlers = {};
 let regiaoAtiva = "SA";
 
-const formatarNomeImagem = (n) => `brawler/${n.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
-const formatarNomeMapa = (m) => `element/${m.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
+const formatarNomeImagem = (n) => `brawlers/${n.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
+const formatarNomeMapa = (m) => `elements/${m.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
 
 window.toggleElemento = function(header) {
     const content = header.nextElementSibling;
@@ -252,7 +252,7 @@ function renderizarGridModos(dados, ano, mes) {
 
             let linhasBrawlers = dadosMapa.map(d => `
                 <tr style="cursor: pointer;" onclick="abrirModalBrawler('${d.pick}')" title="Análise detalhada de ${d.pick}">
-                    <td class="col-img"><img src="${formatarNomeImagem(d.pick)}" onerror="this.style.display='none'"></td>
+                    <td class="col-img"><img src="${formatarNomeImagem(d.pick)}" onerror="this.src='brawlers/default.png'"></td>
                     <td style="text-align: left; font-weight: bold;">${d.pick.toUpperCase()}</td>
                     <td>${d.picks}</td>
                     <td style="color: #aaa;">${d.pick_rate || '0.0%'}</td>
@@ -326,7 +326,7 @@ function renderizarAllMaps(dados) {
 
     tbody.innerHTML = listaGeral.map(d => `
         <tr style="cursor: pointer;" onclick="abrirModalBrawler('${d.brawler}')" title="Análise detalhada de ${d.brawler}">
-            <td class="col-img"><img src="${formatarNomeImagem(d.brawler)}" onerror="this.style.display='none'"></td>
+            <td class="col-img"><img src="${formatarNomeImagem(d.brawler)}" onerror="this.src='brawlers/default.png'"></td>
             <td style="text-align: left; font-weight: bold;">${d.brawler.toUpperCase()}</td>
             <td>${d.picks}</td>
             <td style="color: #aaa;">${d.pick_rate}</td>
@@ -348,7 +348,7 @@ function renderizarListaBrawlers() {
     
     container.innerHTML = brawlers.map(b => `
         <div class="sidebar-item" onclick="exibirInfoBrawler('${b}')" style="display: flex; align-items: center; gap: 12px; padding: 10px; cursor: pointer;">
-            <img src="${formatarNomeImagem(b)}" style="width: 35px; height: 35px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border-dark);" onerror="this.style.display='none'">
+            <img src="${formatarNomeImagem(b)}" style="width: 35px; height: 35px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border-dark);" onerror="this.src='brawlers/default.png'">
             <span class="brawler-name" style="font-weight: 600; font-size: 14px; text-transform: uppercase;">${b}</span>
         </div>
     `).join('');
@@ -365,7 +365,7 @@ window.filtrarBrawlersSidebar = function() {
 function gerarHTMLDetalhes(nomeBrawler, info) {
     let mapasHTML = info.top_mapas && info.top_mapas.length > 0 ? info.top_mapas.map(m => `
         <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 12px; background: #111; padding: 10px; border-radius: 8px; border: 1px solid var(--borda-destaque);">
-            <img src="${formatarNomeMapa(m.mapa)}" onerror="this.src='element/default.png'" style="width: 70px; height: 50px; border-radius: 6px; object-fit: cover;">
+            <img src="${formatarNomeMapa(m.mapa)}" onerror="this.src='elements/default.png'" style="width: 70px; height: 50px; border-radius: 6px; object-fit: cover;">
             <div>
                 <div style="font-weight: bold; font-size: 15px; color: #fff;">${m.mapa.toUpperCase()}</div>
                 <div style="color: #888; font-size: 12px; margin-top: 2px;">${m.modo.toUpperCase()}</div>
@@ -415,7 +415,7 @@ window.exibirInfoBrawler = function(nome) {
     const info = detalhesBrawlers[nome.toUpperCase()] || {top_mapas: [], sinergias: []};
     painel.innerHTML = `
         <div class="brawler-profile-header">
-            <img src="${formatarNomeImagem(nome)}" class="brawler-large-avatar" onerror="this.style.display='none'">
+            <img src="${formatarNomeImagem(nome)}" class="brawler-large-avatar" onerror="this.src='brawlers/default.png'">
             <h2>${nome} <span style="font-size: 14px; color: #888; font-weight: normal;">/ REGIÃO ${regiaoAtiva}</span></h2>
         </div>
         ${gerarHTMLDetalhes(nome, info)}
@@ -494,7 +494,7 @@ function gerarHTMLTierTimes(configRegiao, regiaoDoTime) {
             const siglaImg = (timeConfig.id_time || "default").toLowerCase().split(' ')[0];
             timesHTML += `
                 <div class="sidebar-item" data-teamid="${timeConfig.id_time}" onclick="exibirInfoTime('${timeConfig.id_time}', '${regiaoDoTime}')" style="padding: 12px; cursor: pointer; font-weight: 600; margin-left: 10px; border-left: 2px solid transparent; display: flex; align-items: center; gap: 10px;">
-                    <img src="element/teams/${siglaImg}.png" style="width: 24px; height: 24px; object-fit: contain; border-radius: 4px;" onerror="this.style.display='none'">
+                    <img src="elements/teams/${siglaImg}.png" style="width: 24px; height: 24px; object-fit: contain; border-radius: 4px;" onerror="this.style.display='none'">
                     <span>${timeConfig.nome_time}</span>
                 </div>
             `;
@@ -556,7 +556,7 @@ window.exibirInfoTime = function(idTime, regiaoDoTime) {
 
     let top15TimeHTML = top15Time.map(p => `
         <div class="player-mini-pick" onclick="abrirModalBrawler('${p.brawler}')" style="cursor: pointer; display: flex; flex-direction: column; align-items: center;" title="${p.brawler}">
-            <img src="${formatarNomeImagem(p.brawler)}" onerror="this.style.display='none'" style="width: 50px; height: 50px; border-radius: 8px; border: 2px solid var(--accent-purple); object-fit: cover;">
+            <img src="${formatarNomeImagem(p.brawler)}" onerror="this.src='brawlers/default.png'" style="width: 50px; height: 50px; border-radius: 8px; border: 2px solid var(--accent-purple); object-fit: cover;">
             <span class="pick-count" style="margin-top: -10px; z-index: 2; font-size: 11px; background: #000; padding: 2px 8px; border-radius: 10px; color: var(--winrate-color); font-weight: bold;">x${p.qtd}</span>
         </div>
     `).join('');
@@ -566,7 +566,7 @@ window.exibirInfoTime = function(idTime, regiaoDoTime) {
         
         let picksHTML = picksPlayer.length ? picksPlayer.map(p => `
             <div class="player-mini-pick" onclick="abrirModalBrawler('${p.brawler}')" style="cursor: pointer; display: flex; flex-direction: column; align-items: center;">
-                <img src="${formatarNomeImagem(p.brawler)}" onerror="this.style.display='none'" style="width: 40px; height: 40px; border-radius: 4px; border: 1px solid #333; object-fit: cover;">
+                <img src="${formatarNomeImagem(p.brawler)}" onerror="this.src='brawlers/default.png'" style="width: 40px; height: 40px; border-radius: 4px; border: 1px solid #333; object-fit: cover;">
                 <span style="margin-top: 4px; font-size: 10px; background: #111; padding: 2px 4px; border-radius: 4px; color: #ccc;">x${p.qtd}</span>
             </div>
         `).join('') : '<span style="color:#666; font-size:12px;">Sem partidas registradas.</span>';
@@ -591,7 +591,7 @@ window.exibirInfoTime = function(idTime, regiaoDoTime) {
         <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid var(--borda-destaque); display: flex; flex-direction: column; align-items: center;">
             <div style="font-size: 12px; color: var(--accent-purple); font-weight: bold; letter-spacing: 2px; margin-bottom: 10px;">${tierTime} (${regiaoDoTime})</div>
             <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
-                <img src="element/teams/${siglaImgPainel}.png" style="width: 60px; height: 60px; object-fit: contain;" onerror="this.style.display='none'">
+                <img src="elements/teams/${siglaImgPainel}.png" style="width: 60px; height: 60px; object-fit: contain;" onerror="this.style.display='none'">
                 <h2 style="font-size: 32px; font-weight: 900; text-transform: uppercase; margin: 0;">${timeConfig.nome_time}</h2>
             </div>
         </div>
