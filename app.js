@@ -252,7 +252,7 @@ function renderizarGridModos(dados, ano, mes) {
 
             let linhasBrawlers = dadosMapa.map(d => `
                 <tr style="cursor: pointer;" onclick="abrirModalBrawler('${d.pick}')" title="Análise detalhada de ${d.pick}">
-                    <td class="col-img"><img src="${formatarNomeImagem(d.pick)}" onerror="this.src='brawlers/default.png'"></td>
+                    <td class="col-img"><img src="${formatarNomeImagem(d.pick)}" onerror="this.src='brawler/default.png'"></td>
                     <td style="text-align: left; font-weight: bold;">${d.pick.toUpperCase()}</td>
                     <td>${d.picks}</td>
                     <td style="color: #aaa;">${d.pick_rate || '0.0%'}</td>
@@ -326,7 +326,7 @@ function renderizarAllMaps(dados) {
 
     tbody.innerHTML = listaGeral.map(d => `
         <tr style="cursor: pointer;" onclick="abrirModalBrawler('${d.brawler}')" title="Análise detalhada de ${d.brawler}">
-            <td class="col-img"><img src="${formatarNomeImagem(d.brawler)}" onerror="this.src='brawlers/default.png'"></td>
+            <td class="col-img"><img src="${formatarNomeImagem(d.brawler)}" onerror="this.src='brawler/default.png'"></td>
             <td style="text-align: left; font-weight: bold;">${d.brawler.toUpperCase()}</td>
             <td>${d.picks}</td>
             <td style="color: #aaa;">${d.pick_rate}</td>
@@ -348,7 +348,7 @@ function renderizarListaBrawlers() {
     
     container.innerHTML = brawlers.map(b => `
         <div class="sidebar-item" onclick="exibirInfoBrawler('${b}')" style="display: flex; align-items: center; gap: 12px; padding: 10px; cursor: pointer;">
-            <img src="${formatarNomeImagem(b)}" style="width: 35px; height: 35px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border-dark);" onerror="this.src='brawlers/default.png'">
+            <img src="${formatarNomeImagem(b)}" style="width: 35px; height: 35px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border-dark);" onerror="this.src='brawler/default.png'">
             <span class="brawler-name" style="font-weight: 600; font-size: 14px; text-transform: uppercase;">${b}</span>
         </div>
     `).join('');
@@ -415,7 +415,7 @@ window.exibirInfoBrawler = function(nome) {
     const info = detalhesBrawlers[nome.toUpperCase()] || {top_mapas: [], sinergias: []};
     painel.innerHTML = `
         <div class="brawler-profile-header">
-            <img src="${formatarNomeImagem(nome)}" class="brawler-large-avatar" onerror="this.src='brawlers/default.png'">
+            <img src="${formatarNomeImagem(nome)}" class="brawler-large-avatar" onerror="this.src='brawler/default.png'">
             <h2>${nome} <span style="font-size: 14px; color: #888; font-weight: normal;">/ REGIÃO ${regiaoAtiva}</span></h2>
         </div>
         ${gerarHTMLDetalhes(nome, info)}
@@ -556,7 +556,7 @@ window.exibirInfoTime = function(idTime, regiaoDoTime) {
 
     let top15TimeHTML = top15Time.map(p => `
         <div class="player-mini-pick" onclick="abrirModalBrawler('${p.brawler}')" style="cursor: pointer; display: flex; flex-direction: column; align-items: center;" title="${p.brawler}">
-            <img src="${formatarNomeImagem(p.brawler)}" onerror="this.src='brawlers/default.png'" style="width: 50px; height: 50px; border-radius: 8px; border: 2px solid var(--accent-purple); object-fit: cover;">
+            <img src="${formatarNomeImagem(p.brawler)}" onerror="this.src='brawler/default.png'" style="width: 50px; height: 50px; border-radius: 8px; border: 2px solid var(--accent-purple); object-fit: cover;">
             <span class="pick-count" style="margin-top: -10px; z-index: 2; font-size: 11px; background: #000; padding: 2px 8px; border-radius: 10px; color: var(--winrate-color); font-weight: bold;">x${p.qtd}</span>
         </div>
     `).join('');
@@ -566,7 +566,7 @@ window.exibirInfoTime = function(idTime, regiaoDoTime) {
         
         let picksHTML = picksPlayer.length ? picksPlayer.map(p => `
             <div class="player-mini-pick" onclick="abrirModalBrawler('${p.brawler}')" style="cursor: pointer; display: flex; flex-direction: column; align-items: center;">
-                <img src="${formatarNomeImagem(p.brawler)}" onerror="this.src='brawlers/default.png'" style="width: 40px; height: 40px; border-radius: 4px; border: 1px solid #333; object-fit: cover;">
+                <img src="${formatarNomeImagem(p.brawler)}" onerror="this.src='brawler/default.png'" style="width: 40px; height: 40px; border-radius: 4px; border: 1px solid #333; object-fit: cover;">
                 <span style="margin-top: 4px; font-size: 10px; background: #111; padding: 2px 4px; border-radius: 4px; color: #ccc;">x${p.qtd}</span>
             </div>
         `).join('') : '<span style="color:#666; font-size:12px;">Sem partidas registradas.</span>';
