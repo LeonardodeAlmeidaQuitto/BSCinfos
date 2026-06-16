@@ -18,7 +18,7 @@ REGIOES = {
         "#CQLR0Y80": {"nome": "Tufa", "id_time": "OCX", "nome_time": "OCX Division"},
         "#L9PQUV0YC": {"nome": "BrabaoBs", "id_time": "OS", "nome_time": "OLIMPO SQUAD"},
         "#JQ8LLLY": {"nome": "FireMirillo", "id_time": "AL", "nome_time": "ACRE LOVERS"},
-        "#202GJJR28": {"nome": "Doritos", "id_time": "TTPD", "nome_time": "TOPA TUDO POR DINHEIRO"},
+        "#202GJJR28": {"nome": "Doritos", "id_time": "GLXY", "nome_time": "GALAXY"},
         "#PR0P8QVQ": {"nome": "Kr ;)", "id_time": "SKC", "nome_time": "SKCALALAS SA"},
         "#R2LR2QLG": {"nome": "Mohtep", "id_time": "PCNG", "nome_time": "PIZZA CONGELADA F/A"},
         "#80VLPJCCC": {"nome": "Tilo", "id_time": "CB", "nome_time": "CRECHE BRAWL"},
