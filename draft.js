@@ -177,47 +177,74 @@ function gerarRoster() {
 }
 
 window.atualizarMapaVisual = function() {
-    const mapSelect = document.getElementById('map-select');
-    const mapImg = document.getElementById('map-image') || document.getElementById('mapa-visual');
-    if (!mapSelect || !mapImg) return;
+    const select = document.getElementById('map-select');
+    const mapImg = document.getElementById('center-map-img');
+    const placeholder = document.getElementById('map-placeholder');
     
-    const mapa = mapSelect.value;
-    const nomeFormatado = mapa.toLowerCase().replace(/[^a-z0-9]/g, "");
-    
-    mapImg.src = mapa ? `elements/maps/${nomeFormatado}.png` : `elements/maps/unknown.png`;
-};
-
-window.resetDraft = function() {
-    currentStep = 0; selected = []; picksVermelhos = []; picksAzuis = []; preSelected = null;
-    document.querySelectorAll('.slot').forEach(s => s.innerHTML = '');
-    document.querySelectorAll('.brawler-icon').forEach(b => b.classList.remove('disabled'));
-    buildOrder(); atualizarFoco(); window.atualizarMeta(); calcularCounters(); calcularPodeTomar();
-};
- 
-window.filtrar = function() {
-    const searchInput = document.getElementById('search') || document.querySelector('.search-bar');
-    if(!searchInput) return;
-    const t = searchInput.value.toLowerCase();
-    document.querySelectorAll('.brawler-icon').forEach(div => {
-        const n = div.querySelector('.brawler-name').textContent.toLowerCase();
-        div.style.display = n.includes(t) ? 'flex' : 'none';
-    });
-};
- 
-function inicializarSistema() {
-    popularMapas(); gerarRoster(); resetDraft();
-    const mapSelect = document.getElementById('map-select');
-    if (mapSelect) {
-        mapSelect.addEventListener('change', () => { window.atualizarMeta(); window.atualizarMapaVisual(); });
+    if (select && select.value && mapImg) {
+        mapImg.style.display = 'block';
+        if (placeholder) placeholder.style.display = 'none';
+        mapImg.src = `mapas/${select.value}.png`; 
+        mapImg.onerror = function() {
+            this.style.display = 'none';
+            if (placeholder) { placeholder.style.display = 'block'; placeholder.innerHTML = 'IMAGEM<br>NÃO<br>ENCONTRADA'; }
+        };
     }
-    const searchInput = document.getElementById('search');
-    if (searchInput) { searchInput.removeAttribute('oninput'); searchInput.addEventListener('input', window.filtrar); }
+};
+ 
+window.atualizarMeta = function() {
+    const select = document.getElementById('map-select');
+    const mapaSelecionado = select ? select.value : '';
+    const container = obterContainerMeta();
+    if (!container) return;
+    container.innerHTML = "";
+    
+    const metaBrawlers = DADOS_META[mapaSelecionado];
+    if (metaBrawlers && metaBrawlers.length > 0) {
+        metaBrawlers.forEach(nome => {
+            const id = limparNome(nome);
+            container.innerHTML += `<div class="mini-brawler" title="Top Pick: ${nome}"><img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="fallback-initials">${nome.substring(0,2).toUpperCase()}</div></div>`;
+        });
+    } else {
+        container.innerHTML = '<p style="color:#555; font-size:11px; width: 100%; text-align:center;">Selecione um mapa.</p>';
+    }
+};
+ 
+function contarCounters(listaBrawlers) {
+    let contagem = {};
+    listaBrawlers.forEach(brawler => {
+        let brawlerKey = Object.keys(DADOS_COUNTERS).find(k => limparNome(k) === limparNome(brawler));
+        if (brawlerKey && Array.isArray(DADOS_COUNTERS[brawlerKey])) {
+            DADOS_COUNTERS[brawlerKey].filter(counter => counter && counter.trim() !== "").forEach(counter => { contagem[counter] = (contagem[counter] || 0) + 1; });
+        }
+    });
+    return contagem;
 }
  
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', inicializarSistema);
-} else {
-    inicializarSistema();
+function calcularCounters() {
+    let container = obterContainerInimigo();
+    if (!container) return;
+    container.innerHTML = "";
+    if (picksVermelhos.length === 0) { container.innerHTML = '<p style="color:#555; font-size:11px; width: 100%; text-align:center;">Aguardando adversário</p>'; return; }
+    let contagemCounters = contarCounters(picksVermelhos);
+    let brawlersValidos = Object.keys(contagemCounters).filter(nome => {
+        const idNome = limparNome(nome);
+        if (selected.includes(idNome)) return false;
+        if (preSelected && limparNome(preSelected.nome) === idNome) return false;
+        return true;
+    });
+ 
+    if (brawlersValidos.length > 0) {
+        brawlersValidos.sort((a, b) => contagemCounters[b] - contagemCounters[a]);
+        brawlersValidos.forEach(nome => {
+            const id = limparNome(nome); let qtd = contagemCounters[nome];
+            let destaqueClass = qtd >= 2 ? 'highlight-good' : '';
+            let badge = qtd >= 2 ? `<div class="badge-multi">x${qtd}</div>` : '';
+            container.innerHTML += `<div class="mini-brawler ${destaqueClass}" title="${nome} (Counter x${qtd})"><img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="fallback-initials">${nome.substring(0,2).toUpperCase()}</div>${badge}</div>`;
+        });
+    } else {
+        container.innerHTML = '<p style="color:#555; font-size:11px; width: 100%; text-align:center;">Sem recomendações.</p>';
+    }
 }
  
 function calcularPodeTomar() {
