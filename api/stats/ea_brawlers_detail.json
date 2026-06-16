@@ -3683,14 +3683,14 @@
                 "picks": 4
             },
             {
-                "mapa": "Out in the Open",
+                "mapa": "",
                 "modo": "knockout",
                 "picks": 2
             },
             {
-                "mapa": "",
+                "mapa": "Out in the Open",
                 "modo": "knockout",
-                "picks": 1
+                "picks": 2
             }
         ],
         "sinergias": [
@@ -3713,10 +3713,10 @@
                 "win_rate": "50.0%"
             },
             {
-                "com": "BROCK",
-                "picks": 1,
-                "vitorias": 0,
-                "win_rate": "0.0%"
+                "com": "PIPER",
+                "picks": 2,
+                "vitorias": 2,
+                "win_rate": "100.0%"
             },
             {
                 "com": "BELLE",
@@ -4468,7 +4468,7 @@
             {
                 "mapa": "",
                 "modo": "knockout",
-                "picks": 1
+                "picks": 2
             },
             {
                 "mapa": "Goldarm Gulch",
@@ -4478,16 +4478,16 @@
         ],
         "sinergias": [
             {
+                "com": "NANI",
+                "picks": 2,
+                "vitorias": 2,
+                "win_rate": "100.0%"
+            },
+            {
                 "com": "BYRON",
                 "picks": 1,
                 "vitorias": 0,
                 "win_rate": "0.0%"
-            },
-            {
-                "com": "NANI",
-                "picks": 1,
-                "vitorias": 1,
-                "win_rate": "100.0%"
             },
             {
                 "com": "OLLIE",
