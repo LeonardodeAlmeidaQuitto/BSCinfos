@@ -119,7 +119,7 @@ let detalhesBrawlers = {};
 let regiaoAtiva = "SA";
 
 const formatarNomeImagem = (n) => `brawlers/${n.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
-const formatarNomeMapa = (m) => `elements/${m.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
+const formatarNomeMapa = (m) => `element/maps/${m.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
 
 window.toggleElemento = function(header) {
     const content = header.nextElementSibling;
