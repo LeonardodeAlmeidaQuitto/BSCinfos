@@ -59,14 +59,14 @@ REGIOES = {
         "#9ULYPV8": {"nome": "Tensai", "id_time": "CR", "nome_time": "CRAZY RACCOON"},
         "#P0Y8JGL0U": {"nome": "Battoman", "id_time": "ZETA", "nome_time": "ZETA DIVISION"},
         "#J99YU9QY": {"nome": "Kuru", "id_time": "SKCEA", "nome_time": "SKC EA"},
-        "#2RQQ9PGC": {"nome": "Shigemyon", "id_time": "FG", "nome_time": "FG"},
-        "#GJ9V99VJG": {"nome": "Clarx", "id_time": "DF", "nome_time": "DF"},
+        "#2RQQ9PGC": {"nome": "Shigemyon", "id_time": "IGM", "nome_time": "IGNUM"},
+        "#LJ0288PRG": {"nome": "Terry", "id_time": "AXIS", "nome_time": "AXIS"},
         "#82CJYJPG2": {"nome": "Yutapin", "id_time": "RVL", "nome_time": "RIVAL"},
         "#8J9GUJJVY": {"nome": "Melty", "id_time": "RC", "nome_time": "REJECT"},
         "#28PU0P9L0": {"nome": "Achapi", "id_time": "FL", "nome_time": "FENNEL"},
         "#28VP0G808": {"nome": "Koga", "id_time": "INS", "nome_time": "INSOMNIA"},
-        "#89UUQLJCC": {"nome": "Toridesu", "id_time": "FZ", "nome_time": "FZ"},
-        "#2LJVR0RQ8G": {"nome": "Engine", "id_time": "TL", "nome_time": "TOXIC LOTUS"}
+        "#89UUQLJCC": {"nome": "Toridesu", "id_time": "FZ", "nome_time": "FRENZY"},
+        "#8R0JY2UJ2": {"nome": "Rennosuke", "id_time": "F0", "nome_time": "FAZE ZERO"}
     }
 }
 
