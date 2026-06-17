@@ -1075,7 +1075,7 @@
             {
                 "mapa": "",
                 "modo": "bounty",
-                "picks": 1
+                "picks": 2
             },
             {
                 "mapa": "New Horizons",
@@ -1084,6 +1084,12 @@
             }
         ],
         "sinergias": [
+            {
+                "com": "SHADE",
+                "picks": 2,
+                "vitorias": 1,
+                "win_rate": "50.0%"
+            },
             {
                 "com": "BELLE",
                 "picks": 1,
@@ -1097,19 +1103,13 @@
                 "win_rate": "0.0%"
             },
             {
-                "com": "BROCK",
-                "picks": 1,
-                "vitorias": 1,
-                "win_rate": "100.0%"
-            },
-            {
                 "com": "CHARLIE",
                 "picks": 1,
                 "vitorias": 1,
                 "win_rate": "100.0%"
             },
             {
-                "com": "COLETTE",
+                "com": "BROCK",
                 "picks": 1,
                 "vitorias": 1,
                 "win_rate": "100.0%"

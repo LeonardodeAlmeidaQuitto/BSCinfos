@@ -1078,22 +1078,22 @@
                 "picks": 3
             },
             {
-                "mapa": "Belle's Rock",
-                "modo": "knockout",
+                "mapa": "",
+                "modo": "bounty",
                 "picks": 2
             },
             {
-                "mapa": "",
-                "modo": "bounty",
-                "picks": 1
+                "mapa": "Belle's Rock",
+                "modo": "knockout",
+                "picks": 2
             }
         ],
         "sinergias": [
             {
-                "com": "EDGAR",
+                "com": "SHADE",
                 "picks": 2,
-                "vitorias": 2,
-                "win_rate": "100.0%"
+                "vitorias": 1,
+                "win_rate": "50.0%"
             },
             {
                 "com": "MORTIS",
@@ -1114,10 +1114,10 @@
                 "win_rate": "50.0%"
             },
             {
-                "com": "BELLE",
-                "picks": 1,
-                "vitorias": 0,
-                "win_rate": "0.0%"
+                "com": "EDGAR",
+                "picks": 2,
+                "vitorias": 2,
+                "win_rate": "100.0%"
             }
         ]
     },
