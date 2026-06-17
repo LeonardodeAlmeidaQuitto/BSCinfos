@@ -71,9 +71,9 @@
             <div id="grid-modos"></div> 
 
             <div class="modo-section">
-                <button class="modo-header" onclick="toggleElemento(this)">
+                <div class="modo-header" onclick="toggleElemento(this)">
                     ALL MAPS ANALYSIS <span>▶</span>
-                </button>
+                </div>
                 <div class="mapa-content" style="display:none">
                     <table class="excel-table">
                         <thead>
@@ -81,9 +81,9 @@
                                 <th class="col-img">IMG</th>
                                 <th class="col-brawler sortable" onclick="ordenarTabela(this, 'string')" style="text-align: left;">BRAWLER ↕</th>
                                 <th class="col-stats sortable" onclick="ordenarTabela(this, 'number')">PICKS ↕</th>
-                                <th class="col-stats sortable" onclick="ordenarTabela(this, 'number')">WR% ↕</th>
-                                <th class="col-stats sortable" onclick="ordenarTabela(this, 'number')">WINS ↕</th>
                                 <th class="col-stats sortable" onclick="ordenarTabela(this, 'percent')">PR% ↕</th>
+                                <th class="col-stats sortable" onclick="ordenarTabela(this, 'number')">WINS ↕</th>
+                                <th class="col-stats sortable" onclick="ordenarTabela(this, 'percent')">WR% ↕</th>
                             </tr>
                         </thead>
                         <tbody id="tbody-all-maps"></tbody>
