@@ -145,7 +145,9 @@ function obterContainerMeta() { return document.getElementById('meta-list'); }
 function criarConteudoSlot(nome, id) {
     return `<div class="slot-assets"><img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="slot-fallback-text">${nome}</div></div>`;
 }
- 
+
+const formatarNomeMapa = (m) => `element/maps/${m.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
+
 function popularMapas() {
     const select = document.getElementById('map-select');
     if (!select) return;
