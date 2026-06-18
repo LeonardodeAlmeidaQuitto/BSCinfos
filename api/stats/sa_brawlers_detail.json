@@ -1435,8 +1435,8 @@
                 "picks": 16
             },
             {
-                "mapa": "Hard Rock Mine",
-                "modo": "gemGrab",
+                "mapa": "Dueling Beetles",
+                "modo": "hotZone",
                 "picks": 14
             }
         ],
@@ -2552,13 +2552,13 @@
                 "picks": 4
             },
             {
-                "mapa": "Open Business",
-                "modo": "hotZone",
+                "mapa": "Triple Dribble",
+                "modo": "brawlBall",
                 "picks": 3
             },
             {
-                "mapa": "Triple Dribble",
-                "modo": "brawlBall",
+                "mapa": "Open Business",
+                "modo": "hotZone",
                 "picks": 3
             }
         ],
@@ -2568,6 +2568,12 @@
                 "picks": 3,
                 "vitorias": 0,
                 "win_rate": "0.0%"
+            },
+            {
+                "com": "DRACO",
+                "picks": 2,
+                "vitorias": 1,
+                "win_rate": "50.0%"
             },
             {
                 "com": "BYRON",
@@ -2582,13 +2588,7 @@
                 "win_rate": "100.0%"
             },
             {
-                "com": "DRACO",
-                "picks": 2,
-                "vitorias": 1,
-                "win_rate": "50.0%"
-            },
-            {
-                "com": "JACKY",
+                "com": "POCO",
                 "picks": 2,
                 "vitorias": 1,
                 "win_rate": "50.0%"
