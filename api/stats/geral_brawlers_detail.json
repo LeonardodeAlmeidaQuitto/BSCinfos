@@ -55,12 +55,12 @@
             {
                 "mapa": "Hideout",
                 "modo": "bounty",
-                "picks": 58
+                "picks": 59
             },
             {
                 "mapa": "Out in the Open",
                 "modo": "knockout",
-                "picks": 53
+                "picks": 57
             },
             {
                 "mapa": "Goldarm Gulch",
@@ -71,27 +71,27 @@
         "sinergias": [
             {
                 "com": "MINA",
-                "picks": 55,
-                "vitorias": 28,
-                "win_rate": "50.9%"
+                "picks": 60,
+                "vitorias": 32,
+                "win_rate": "53.3%"
             },
             {
                 "com": "LEON",
-                "picks": 46,
-                "vitorias": 27,
-                "win_rate": "58.7%"
+                "picks": 48,
+                "vitorias": 29,
+                "win_rate": "60.4%"
+            },
+            {
+                "com": "RUFFS",
+                "picks": 45,
+                "vitorias": 25,
+                "win_rate": "55.6%"
             },
             {
                 "com": "KAZE",
                 "picks": 42,
                 "vitorias": 16,
                 "win_rate": "38.1%"
-            },
-            {
-                "com": "RUFFS",
-                "picks": 41,
-                "vitorias": 22,
-                "win_rate": "53.7%"
             },
             {
                 "com": "PENNY",
@@ -106,12 +106,12 @@
             {
                 "mapa": "Kaboom Canyon",
                 "modo": "heist",
-                "picks": 51
+                "picks": 53
             },
             {
                 "mapa": "Ring of Fire",
                 "modo": "hotZone",
-                "picks": 42
+                "picks": 43
             },
             {
                 "mapa": "Dueling Beetles",
@@ -133,22 +133,22 @@
                 "win_rate": "71.4%"
             },
             {
+                "com": "LUMI",
+                "picks": 20,
+                "vitorias": 8,
+                "win_rate": "40.0%"
+            },
+            {
                 "com": "MORTIS",
                 "picks": 20,
                 "vitorias": 9,
                 "win_rate": "45.0%"
             },
             {
-                "com": "LUMI",
-                "picks": 18,
-                "vitorias": 7,
-                "win_rate": "38.9%"
-            },
-            {
-                "com": "EDGAR",
-                "picks": 17,
-                "vitorias": 6,
-                "win_rate": "35.3%"
+                "com": "KAZE",
+                "picks": 19,
+                "vitorias": 9,
+                "win_rate": "47.4%"
             }
         ]
     },
@@ -157,12 +157,12 @@
             {
                 "mapa": "Out in the Open",
                 "modo": "knockout",
-                "picks": 60
+                "picks": 62
             },
             {
                 "mapa": "Goldarm Gulch",
                 "modo": "knockout",
-                "picks": 21
+                "picks": 23
             },
             {
                 "mapa": "Kaboom Canyon",
@@ -173,15 +173,9 @@
         "sinergias": [
             {
                 "com": "JAE-YONG",
-                "picks": 17,
+                "picks": 19,
                 "vitorias": 7,
-                "win_rate": "41.2%"
-            },
-            {
-                "com": "GENE",
-                "picks": 16,
-                "vitorias": 12,
-                "win_rate": "75.0%"
+                "win_rate": "36.8%"
             },
             {
                 "com": "BYRON",
@@ -191,9 +185,15 @@
             },
             {
                 "com": "KAZE",
-                "picks": 15,
-                "vitorias": 8,
-                "win_rate": "53.3%"
+                "picks": 16,
+                "vitorias": 9,
+                "win_rate": "56.2%"
+            },
+            {
+                "com": "GENE",
+                "picks": 16,
+                "vitorias": 12,
+                "win_rate": "75.0%"
             },
             {
                 "com": "MINA",
@@ -208,7 +208,7 @@
             {
                 "mapa": "Pit Stop",
                 "modo": "heist",
-                "picks": 36
+                "picks": 38
             },
             {
                 "mapa": "Dry Season",
@@ -216,17 +216,17 @@
                 "picks": 27
             },
             {
-                "mapa": "Pinhole Punt",
-                "modo": "brawlBall",
-                "picks": 25
+                "mapa": "Crystal Arcade",
+                "modo": "gemGrab",
+                "picks": 26
             }
         ],
         "sinergias": [
             {
                 "com": "CHESTER",
-                "picks": 36,
+                "picks": 37,
                 "vitorias": 23,
-                "win_rate": "63.9%"
+                "win_rate": "62.2%"
             },
             {
                 "com": "LUMI",
@@ -236,21 +236,21 @@
             },
             {
                 "com": "PIERCE",
-                "picks": 25,
-                "vitorias": 12,
-                "win_rate": "48.0%"
-            },
-            {
-                "com": "CROW",
-                "picks": 24,
+                "picks": 26,
                 "vitorias": 13,
-                "win_rate": "54.2%"
+                "win_rate": "50.0%"
             },
             {
-                "com": "OTIS",
-                "picks": 24,
-                "vitorias": 7,
-                "win_rate": "29.2%"
+                "com": "MEEPLE",
+                "picks": 25,
+                "vitorias": 14,
+                "win_rate": "56.0%"
+            },
+            {
+                "com": "RUFFS",
+                "picks": 25,
+                "vitorias": 13,
+                "win_rate": "52.0%"
             }
         ]
     },
@@ -259,7 +259,7 @@
             {
                 "mapa": "Pinhole Punt",
                 "modo": "brawlBall",
-                "picks": 40
+                "picks": 41
             },
             {
                 "mapa": "Hard Rock Mine",
@@ -281,27 +281,27 @@
             },
             {
                 "com": "KENJI",
-                "picks": 29,
-                "vitorias": 18,
-                "win_rate": "62.1%"
+                "picks": 30,
+                "vitorias": 19,
+                "win_rate": "63.3%"
             },
             {
                 "com": "RUFFS",
-                "picks": 28,
+                "picks": 29,
                 "vitorias": 13,
-                "win_rate": "46.4%"
+                "win_rate": "44.8%"
             },
             {
                 "com": "MORTIS",
-                "picks": 27,
+                "picks": 28,
                 "vitorias": 21,
-                "win_rate": "77.8%"
+                "win_rate": "75.0%"
             },
             {
                 "com": "KAZE",
-                "picks": 25,
-                "vitorias": 17,
-                "win_rate": "68.0%"
+                "picks": 26,
+                "vitorias": 18,
+                "win_rate": "69.2%"
             }
         ]
     },
@@ -364,19 +364,25 @@
                 "picks": 55
             },
             {
+                "mapa": "Dueling Beetles",
+                "modo": "hotZone",
+                "picks": 38
+            },
+            {
                 "mapa": "Pinhole Punt",
                 "modo": "brawlBall",
                 "picks": 37
-            },
-            {
-                "mapa": "Dueling Beetles",
-                "modo": "hotZone",
-                "picks": 36
             }
         ],
         "sinergias": [
             {
                 "com": "CHESTER",
+                "picks": 43,
+                "vitorias": 21,
+                "win_rate": "48.8%"
+            },
+            {
+                "com": "MINA",
                 "picks": 43,
                 "vitorias": 21,
                 "win_rate": "48.8%"
@@ -388,16 +394,10 @@
                 "win_rate": "39.5%"
             },
             {
-                "com": "MINA",
-                "picks": 42,
-                "vitorias": 20,
-                "win_rate": "47.6%"
-            },
-            {
                 "com": "MORTIS",
-                "picks": 36,
-                "vitorias": 21,
-                "win_rate": "58.3%"
+                "picks": 38,
+                "vitorias": 22,
+                "win_rate": "57.9%"
             },
             {
                 "com": "STU",
@@ -412,12 +412,12 @@
             {
                 "mapa": "Kaboom Canyon",
                 "modo": "heist",
-                "picks": 55
+                "picks": 56
             },
             {
                 "mapa": "Pit Stop",
                 "modo": "heist",
-                "picks": 51
+                "picks": 53
             },
             {
                 "mapa": "Safe Zone",
@@ -434,21 +434,21 @@
             },
             {
                 "com": "PIERCE",
-                "picks": 25,
-                "vitorias": 9,
-                "win_rate": "36.0%"
+                "picks": 26,
+                "vitorias": 10,
+                "win_rate": "38.5%"
             },
             {
                 "com": "GLOWY",
-                "picks": 21,
+                "picks": 22,
                 "vitorias": 13,
-                "win_rate": "61.9%"
+                "win_rate": "59.1%"
             },
             {
                 "com": "EDGAR",
-                "picks": 19,
-                "vitorias": 9,
-                "win_rate": "47.4%"
+                "picks": 20,
+                "vitorias": 10,
+                "win_rate": "50.0%"
             },
             {
                 "com": "LUMI",
@@ -468,12 +468,12 @@
             {
                 "mapa": "Kaboom Canyon",
                 "modo": "heist",
-                "picks": 56
+                "picks": 59
             },
             {
                 "mapa": "Hideout",
                 "modo": "bounty",
-                "picks": 52
+                "picks": 54
             }
         ],
         "sinergias": [
@@ -497,15 +497,15 @@
             },
             {
                 "com": "CROW",
-                "picks": 25,
-                "vitorias": 17,
-                "win_rate": "68.0%"
+                "picks": 26,
+                "vitorias": 18,
+                "win_rate": "69.2%"
             },
             {
-                "com": "BYRON",
+                "com": "LUMI",
                 "picks": 24,
-                "vitorias": 11,
-                "win_rate": "45.8%"
+                "vitorias": 13,
+                "win_rate": "54.2%"
             }
         ]
     },
@@ -514,12 +514,12 @@
             {
                 "mapa": "Pinhole Punt",
                 "modo": "brawlBall",
-                "picks": 60
+                "picks": 61
             },
             {
                 "mapa": "Crystal Arcade",
                 "modo": "gemGrab",
-                "picks": 46
+                "picks": 47
             },
             {
                 "mapa": "Hard Rock Mine",
@@ -530,15 +530,15 @@
         "sinergias": [
             {
                 "com": "CHESTER",
-                "picks": 47,
+                "picks": 49,
                 "vitorias": 22,
-                "win_rate": "46.8%"
+                "win_rate": "44.9%"
             },
             {
                 "com": "OTIS",
-                "picks": 37,
-                "vitorias": 19,
-                "win_rate": "51.4%"
+                "picks": 40,
+                "vitorias": 22,
+                "win_rate": "55.0%"
             },
             {
                 "com": "EMZ",
@@ -553,10 +553,10 @@
                 "win_rate": "51.4%"
             },
             {
-                "com": "MINA",
+                "com": "MORTIS",
                 "picks": 32,
-                "vitorias": 18,
-                "win_rate": "56.2%"
+                "vitorias": 16,
+                "win_rate": "50.0%"
             }
         ]
     },
@@ -616,37 +616,37 @@
             {
                 "mapa": "Out in the Open",
                 "modo": "knockout",
-                "picks": 64
+                "picks": 65
             },
             {
                 "mapa": "Hideout",
                 "modo": "bounty",
-                "picks": 57
+                "picks": 59
             },
             {
                 "mapa": "Dry Season",
                 "modo": "bounty",
-                "picks": 46
+                "picks": 47
             }
         ],
         "sinergias": [
             {
                 "com": "PIERCE",
-                "picks": 55,
-                "vitorias": 28,
-                "win_rate": "50.9%"
+                "picks": 60,
+                "vitorias": 32,
+                "win_rate": "53.3%"
+            },
+            {
+                "com": "RUFFS",
+                "picks": 57,
+                "vitorias": 26,
+                "win_rate": "45.6%"
             },
             {
                 "com": "BYRON",
                 "picks": 53,
                 "vitorias": 28,
                 "win_rate": "52.8%"
-            },
-            {
-                "com": "RUFFS",
-                "picks": 53,
-                "vitorias": 24,
-                "win_rate": "45.3%"
             },
             {
                 "com": "CROW",
@@ -667,7 +667,7 @@
             {
                 "mapa": "Pit Stop",
                 "modo": "heist",
-                "picks": 23
+                "picks": 24
             },
             {
                 "mapa": "Hard Rock Mine",
@@ -707,9 +707,9 @@
             },
             {
                 "com": "COLT",
-                "picks": 8,
+                "picks": 9,
                 "vitorias": 4,
-                "win_rate": "50.0%"
+                "win_rate": "44.4%"
             }
         ]
     },
@@ -718,7 +718,7 @@
             {
                 "mapa": "Pinball Dreams",
                 "modo": "brawlBall",
-                "picks": 34
+                "picks": 36
             },
             {
                 "mapa": "Pit Stop",
@@ -745,6 +745,12 @@
                 "win_rate": "50.0%"
             },
             {
+                "com": "NAJIA",
+                "picks": 16,
+                "vitorias": 5,
+                "win_rate": "31.2%"
+            },
+            {
                 "com": "COLT",
                 "picks": 15,
                 "vitorias": 6,
@@ -755,12 +761,6 @@
                 "picks": 15,
                 "vitorias": 8,
                 "win_rate": "53.3%"
-            },
-            {
-                "com": "EDGAR",
-                "picks": 15,
-                "vitorias": 7,
-                "win_rate": "46.7%"
             }
         ]
     },
@@ -769,7 +769,7 @@
             {
                 "mapa": "Goldarm Gulch",
                 "modo": "knockout",
-                "picks": 13
+                "picks": 14
             },
             {
                 "mapa": "Dry Season",
@@ -790,6 +790,12 @@
                 "win_rate": "37.5%"
             },
             {
+                "com": "OLLIE",
+                "picks": 7,
+                "vitorias": 5,
+                "win_rate": "71.4%"
+            },
+            {
                 "com": "LEON",
                 "picks": 7,
                 "vitorias": 2,
@@ -802,13 +808,7 @@
                 "win_rate": "28.6%"
             },
             {
-                "com": "GENE",
-                "picks": 6,
-                "vitorias": 2,
-                "win_rate": "33.3%"
-            },
-            {
-                "com": "OLLIE",
+                "com": "MORTIS",
                 "picks": 6,
                 "vitorias": 4,
                 "win_rate": "66.7%"
@@ -820,31 +820,31 @@
             {
                 "mapa": "Hideout",
                 "modo": "bounty",
-                "picks": 33
+                "picks": 36
             },
             {
                 "mapa": "Dry Season",
                 "modo": "bounty",
-                "picks": 27
+                "picks": 29
             },
             {
                 "mapa": "Out in the Open",
                 "modo": "knockout",
-                "picks": 27
+                "picks": 28
             }
         ],
         "sinergias": [
             {
                 "com": "MINA",
-                "picks": 31,
-                "vitorias": 12,
-                "win_rate": "38.7%"
+                "picks": 32,
+                "vitorias": 13,
+                "win_rate": "40.6%"
             },
             {
                 "com": "MORTIS",
-                "picks": 29,
-                "vitorias": 17,
-                "win_rate": "58.6%"
+                "picks": 30,
+                "vitorias": 18,
+                "win_rate": "60.0%"
             },
             {
                 "com": "EDGAR",
@@ -860,9 +860,9 @@
             },
             {
                 "com": "PIERCE",
-                "picks": 20,
-                "vitorias": 6,
-                "win_rate": "30.0%"
+                "picks": 21,
+                "vitorias": 7,
+                "win_rate": "33.3%"
             }
         ]
     },
@@ -922,12 +922,12 @@
             {
                 "mapa": "Out in the Open",
                 "modo": "knockout",
-                "picks": 67
+                "picks": 72
             },
             {
                 "mapa": "Hideout",
                 "modo": "bounty",
-                "picks": 46
+                "picks": 49
             },
             {
                 "mapa": "Dry Season",
@@ -944,27 +944,27 @@
             },
             {
                 "com": "LEON",
-                "picks": 27,
+                "picks": 28,
                 "vitorias": 16,
-                "win_rate": "59.3%"
+                "win_rate": "57.1%"
             },
             {
                 "com": "PEARL",
-                "picks": 24,
+                "picks": 27,
                 "vitorias": 12,
-                "win_rate": "50.0%"
+                "win_rate": "44.4%"
             },
             {
                 "com": "GENE",
-                "picks": 20,
+                "picks": 21,
                 "vitorias": 8,
-                "win_rate": "40.0%"
+                "win_rate": "38.1%"
             },
             {
-                "com": "RUFFS",
-                "picks": 19,
-                "vitorias": 7,
-                "win_rate": "36.8%"
+                "com": "MEEPLE",
+                "picks": 20,
+                "vitorias": 10,
+                "win_rate": "50.0%"
             }
         ]
     },
@@ -978,7 +978,7 @@
             {
                 "mapa": "Dry Season",
                 "modo": "bounty",
-                "picks": 40
+                "picks": 42
             },
             {
                 "mapa": "Out in the Open",
@@ -1024,31 +1024,31 @@
             {
                 "mapa": "Out in the Open",
                 "modo": "knockout",
-                "picks": 63
+                "picks": 66
             },
             {
                 "mapa": "Pinhole Punt",
                 "modo": "brawlBall",
-                "picks": 49
+                "picks": 50
             },
             {
                 "mapa": "Hideout",
                 "modo": "bounty",
-                "picks": 47
+                "picks": 49
             }
         ],
         "sinergias": [
             {
                 "com": "PIERCE",
-                "picks": 46,
-                "vitorias": 27,
-                "win_rate": "58.7%"
+                "picks": 48,
+                "vitorias": 29,
+                "win_rate": "60.4%"
             },
             {
                 "com": "EMZ",
-                "picks": 43,
-                "vitorias": 22,
-                "win_rate": "51.2%"
+                "picks": 44,
+                "vitorias": 23,
+                "win_rate": "52.3%"
             },
             {
                 "com": "BYRON",
@@ -1064,9 +1064,9 @@
             },
             {
                 "com": "JAE-YONG",
-                "picks": 27,
+                "picks": 28,
                 "vitorias": 16,
-                "win_rate": "59.3%"
+                "win_rate": "57.1%"
             }
         ]
     },
@@ -1078,22 +1078,22 @@
                 "picks": 6
             },
             {
-                "mapa": "Belle's Rock",
-                "modo": "knockout",
+                "mapa": "",
+                "modo": "bounty",
                 "picks": 2
             },
             {
-                "mapa": "",
-                "modo": "bounty",
+                "mapa": "Belle's Rock",
+                "modo": "knockout",
                 "picks": 2
             }
         ],
         "sinergias": [
             {
                 "com": "LEON",
-                "picks": 3,
+                "picks": 4,
                 "vitorias": 2,
-                "win_rate": "66.7%"
+                "win_rate": "50.0%"
             },
             {
                 "com": "BELLE",
@@ -1108,16 +1108,16 @@
                 "win_rate": "100.0%"
             },
             {
-                "com": "GENE",
+                "com": "COLETTE",
                 "picks": 2,
                 "vitorias": 1,
                 "win_rate": "50.0%"
             },
             {
-                "com": "MORTIS",
+                "com": "GENE",
                 "picks": 2,
-                "vitorias": 2,
-                "win_rate": "100.0%"
+                "vitorias": 1,
+                "win_rate": "50.0%"
             }
         ]
     },
@@ -1177,82 +1177,82 @@
             {
                 "mapa": "Out in the Open",
                 "modo": "knockout",
-                "picks": 60
+                "picks": 64
             },
             {
                 "mapa": "Goldarm Gulch",
                 "modo": "knockout",
-                "picks": 30
+                "picks": 31
             },
             {
                 "mapa": "New Horizons",
                 "modo": "knockout",
-                "picks": 17
+                "picks": 19
             }
         ],
         "sinergias": [
             {
                 "com": "GENE",
-                "picks": 26,
-                "vitorias": 15,
-                "win_rate": "57.7%"
-            },
-            {
-                "com": "LEON",
-                "picks": 23,
+                "picks": 28,
                 "vitorias": 16,
-                "win_rate": "69.6%"
-            },
-            {
-                "com": "MINA",
-                "picks": 22,
-                "vitorias": 12,
-                "win_rate": "54.5%"
+                "win_rate": "57.1%"
             },
             {
                 "com": "PIERCE",
-                "picks": 22,
-                "vitorias": 11,
-                "win_rate": "50.0%"
+                "picks": 25,
+                "vitorias": 14,
+                "win_rate": "56.0%"
+            },
+            {
+                "com": "LEON",
+                "picks": 24,
+                "vitorias": 17,
+                "win_rate": "70.8%"
+            },
+            {
+                "com": "MINA",
+                "picks": 23,
+                "vitorias": 13,
+                "win_rate": "56.5%"
             },
             {
                 "com": "JAE-YONG",
-                "picks": 17,
+                "picks": 18,
                 "vitorias": 10,
-                "win_rate": "58.8%"
+                "win_rate": "55.6%"
             }
         ]
     },
     "GENE": {
         "top_mapas": [
             {
-                "mapa": "Hideout",
-                "modo": "bounty",
-                "picks": 56
-            },
-            {
                 "mapa": "Out in the Open",
                 "modo": "knockout",
-                "picks": 56
+                "picks": 58
+            },
+            {
+                "mapa": "Hideout",
+                "modo": "bounty",
+                "picks": 57
             },
             {
                 "mapa": "Dry Season",
                 "modo": "bounty",
-                "picks": 42
+                "picks": 43
             }
         ],
         "sinergias": [
             {
                 "com": "MINA",
-                "picks": 29,
+                "picks": 30,
                 "vitorias": 17,
-                "win_rate": "58.6%"
+                "win_rate": "56.7%"
             },
             {
                 "com": "BROCK",
-                "picks": 26,
-                "vitorias": 15,
-                "win_rate": "57.7%"
+                "picks": 28,
+                "vitorias": 16,
+                "win_rate": "57.1%"
             },
             {
                 "com": "PIERCE",
@@ -1284,26 +1284,26 @@
             {
                 "mapa": "Hard Rock Mine",
                 "modo": "gemGrab",
-                "picks": 60
+                "picks": 61
             },
             {
                 "mapa": "Crystal Arcade",
                 "modo": "gemGrab",
-                "picks": 39
+                "picks": 42
             }
         ],
         "sinergias": [
             {
                 "com": "MORTIS",
-                "picks": 48,
-                "vitorias": 21,
-                "win_rate": "43.8%"
+                "picks": 50,
+                "vitorias": 23,
+                "win_rate": "46.0%"
             },
             {
                 "com": "KENJI",
-                "picks": 44,
-                "vitorias": 15,
-                "win_rate": "34.1%"
+                "picks": 46,
+                "vitorias": 17,
+                "win_rate": "37.0%"
             },
             {
                 "com": "CHESTER",
@@ -1313,15 +1313,15 @@
             },
             {
                 "com": "STU",
-                "picks": 37,
-                "vitorias": 19,
-                "win_rate": "51.4%"
+                "picks": 40,
+                "vitorias": 22,
+                "win_rate": "55.0%"
             },
             {
                 "com": "KIT",
-                "picks": 32,
-                "vitorias": 19,
-                "win_rate": "59.4%"
+                "picks": 33,
+                "vitorias": 20,
+                "win_rate": "60.6%"
             }
         ]
     },
@@ -1330,7 +1330,7 @@
             {
                 "mapa": "Pinball Dreams",
                 "modo": "brawlBall",
-                "picks": 21
+                "picks": 22
             },
             {
                 "mapa": "Dueling Beetles",
@@ -1352,9 +1352,9 @@
             },
             {
                 "com": "CHESTER",
-                "picks": 19,
+                "picks": 20,
                 "vitorias": 10,
-                "win_rate": "52.6%"
+                "win_rate": "50.0%"
             },
             {
                 "com": "CROW",
@@ -1379,51 +1379,51 @@
     "MORTIS": {
         "top_mapas": [
             {
+                "mapa": "Crystal Arcade",
+                "modo": "gemGrab",
+                "picks": 42
+            },
+            {
                 "mapa": "Hard Rock Mine",
                 "modo": "gemGrab",
-                "picks": 40
+                "picks": 41
             },
             {
                 "mapa": "Layer Cake",
                 "modo": "bounty",
-                "picks": 39
-            },
-            {
-                "mapa": "Crystal Arcade",
-                "modo": "gemGrab",
-                "picks": 38
+                "picks": 40
             }
         ],
         "sinergias": [
             {
                 "com": "CHESTER",
-                "picks": 53,
+                "picks": 54,
                 "vitorias": 25,
-                "win_rate": "47.2%"
+                "win_rate": "46.3%"
             },
             {
                 "com": "OTIS",
-                "picks": 48,
-                "vitorias": 21,
-                "win_rate": "43.8%"
+                "picks": 50,
+                "vitorias": 23,
+                "win_rate": "46.0%"
             },
             {
                 "com": "LUMI",
-                "picks": 36,
-                "vitorias": 21,
-                "win_rate": "58.3%"
+                "picks": 38,
+                "vitorias": 22,
+                "win_rate": "57.9%"
             },
             {
                 "com": "STU",
-                "picks": 31,
-                "vitorias": 15,
-                "win_rate": "48.4%"
+                "picks": 32,
+                "vitorias": 16,
+                "win_rate": "50.0%"
             },
             {
                 "com": "CHARLIE",
-                "picks": 29,
-                "vitorias": 17,
-                "win_rate": "58.6%"
+                "picks": 30,
+                "vitorias": 18,
+                "win_rate": "60.0%"
             }
         ]
     },
@@ -1432,37 +1432,37 @@
             {
                 "mapa": "Pinhole Punt",
                 "modo": "brawlBall",
-                "picks": 107
+                "picks": 108
             },
             {
                 "mapa": "Hard Rock Mine",
                 "modo": "gemGrab",
-                "picks": 75
+                "picks": 77
             },
             {
                 "mapa": "Crystal Arcade",
                 "modo": "gemGrab",
-                "picks": 53
+                "picks": 54
             }
         ],
         "sinergias": [
             {
                 "com": "MORTIS",
-                "picks": 53,
+                "picks": 54,
                 "vitorias": 25,
-                "win_rate": "47.2%"
+                "win_rate": "46.3%"
+            },
+            {
+                "com": "STU",
+                "picks": 49,
+                "vitorias": 22,
+                "win_rate": "44.9%"
             },
             {
                 "com": "RUFFS",
                 "picks": 48,
                 "vitorias": 25,
                 "win_rate": "52.1%"
-            },
-            {
-                "com": "STU",
-                "picks": 47,
-                "vitorias": 22,
-                "win_rate": "46.8%"
             },
             {
                 "com": "LUMI",
@@ -1483,7 +1483,7 @@
             {
                 "mapa": "Pinhole Punt",
                 "modo": "brawlBall",
-                "picks": 53
+                "picks": 55
             },
             {
                 "mapa": "Dueling Beetles",
@@ -1493,15 +1493,15 @@
             {
                 "mapa": "Open Business",
                 "modo": "hotZone",
-                "picks": 25
+                "picks": 26
             }
         ],
         "sinergias": [
             {
                 "com": "LEON",
-                "picks": 43,
-                "vitorias": 22,
-                "win_rate": "51.2%"
+                "picks": 44,
+                "vitorias": 23,
+                "win_rate": "52.3%"
             },
             {
                 "com": "STU",
@@ -1511,21 +1511,21 @@
             },
             {
                 "com": "OTIS",
-                "picks": 23,
-                "vitorias": 12,
-                "win_rate": "52.2%"
+                "picks": 24,
+                "vitorias": 13,
+                "win_rate": "54.2%"
             },
             {
                 "com": "MEEPLE",
-                "picks": 21,
-                "vitorias": 13,
-                "win_rate": "61.9%"
+                "picks": 22,
+                "vitorias": 14,
+                "win_rate": "63.6%"
             },
             {
                 "com": "CROW",
-                "picks": 19,
+                "picks": 20,
                 "vitorias": 8,
-                "win_rate": "42.1%"
+                "win_rate": "40.0%"
             }
         ]
     },
@@ -1534,17 +1534,17 @@
             {
                 "mapa": "Hard Rock Mine",
                 "modo": "gemGrab",
-                "picks": 53
+                "picks": 55
+            },
+            {
+                "mapa": "Goldarm Gulch",
+                "modo": "knockout",
+                "picks": 28
             },
             {
                 "mapa": "Dry Season",
                 "modo": "bounty",
                 "picks": 28
-            },
-            {
-                "mapa": "Goldarm Gulch",
-                "modo": "knockout",
-                "picks": 26
             }
         ],
         "sinergias": [
@@ -1556,27 +1556,27 @@
             },
             {
                 "com": "OTIS",
-                "picks": 32,
-                "vitorias": 19,
-                "win_rate": "59.4%"
-            },
-            {
-                "com": "NITA",
-                "picks": 28,
-                "vitorias": 15,
-                "win_rate": "53.6%"
-            },
-            {
-                "com": "CHESTER",
-                "picks": 27,
-                "vitorias": 13,
-                "win_rate": "48.1%"
+                "picks": 33,
+                "vitorias": 20,
+                "win_rate": "60.6%"
             },
             {
                 "com": "RUFFS",
-                "picks": 27,
+                "picks": 30,
+                "vitorias": 17,
+                "win_rate": "56.7%"
+            },
+            {
+                "com": "NITA",
+                "picks": 29,
                 "vitorias": 16,
-                "win_rate": "59.3%"
+                "win_rate": "55.2%"
+            },
+            {
+                "com": "CHESTER",
+                "picks": 28,
+                "vitorias": 14,
+                "win_rate": "50.0%"
             }
         ]
     },
@@ -1624,10 +1624,10 @@
                 "win_rate": "25.0%"
             },
             {
-                "com": "MINA",
+                "com": "CHESTER",
                 "picks": 7,
-                "vitorias": 6,
-                "win_rate": "85.7%"
+                "vitorias": 4,
+                "win_rate": "57.1%"
             }
         ]
     },
@@ -1641,7 +1641,7 @@
             {
                 "mapa": "Crystal Arcade",
                 "modo": "gemGrab",
-                "picks": 39
+                "picks": 40
             },
             {
                 "mapa": "Gem Fort",
@@ -1652,9 +1652,9 @@
         "sinergias": [
             {
                 "com": "MINA",
-                "picks": 53,
-                "vitorias": 24,
-                "win_rate": "45.3%"
+                "picks": 57,
+                "vitorias": 26,
+                "win_rate": "45.6%"
             },
             {
                 "com": "CHESTER",
@@ -1664,15 +1664,15 @@
             },
             {
                 "com": "PIERCE",
-                "picks": 41,
-                "vitorias": 22,
-                "win_rate": "53.7%"
+                "picks": 45,
+                "vitorias": 25,
+                "win_rate": "55.6%"
             },
             {
                 "com": "MEEPLE",
-                "picks": 33,
-                "vitorias": 15,
-                "win_rate": "45.5%"
+                "picks": 34,
+                "vitorias": 16,
+                "win_rate": "47.1%"
             },
             {
                 "com": "OTIS",
@@ -1687,31 +1687,37 @@
             {
                 "mapa": "Ring of Fire",
                 "modo": "hotZone",
-                "picks": 37
+                "picks": 39
             },
             {
                 "mapa": "Open Business",
                 "modo": "hotZone",
-                "picks": 31
+                "picks": 32
             },
             {
                 "mapa": "Dueling Beetles",
                 "modo": "hotZone",
-                "picks": 27
+                "picks": 28
             }
         ],
         "sinergias": [
             {
                 "com": "MINA",
-                "picks": 18,
-                "vitorias": 10,
-                "win_rate": "55.6%"
+                "picks": 19,
+                "vitorias": 11,
+                "win_rate": "57.9%"
             },
             {
                 "com": "KENJI",
-                "picks": 13,
+                "picks": 14,
                 "vitorias": 9,
-                "win_rate": "69.2%"
+                "win_rate": "64.3%"
+            },
+            {
+                "com": "POCO",
+                "picks": 13,
+                "vitorias": 4,
+                "win_rate": "30.8%"
             },
             {
                 "com": "KAZE",
@@ -1724,12 +1730,6 @@
                 "picks": 12,
                 "vitorias": 5,
                 "win_rate": "41.7%"
-            },
-            {
-                "com": "POCO",
-                "picks": 12,
-                "vitorias": 4,
-                "win_rate": "33.3%"
             }
         ]
     },
@@ -1738,12 +1738,12 @@
             {
                 "mapa": "Pinhole Punt",
                 "modo": "brawlBall",
-                "picks": 54
+                "picks": 55
             },
             {
                 "mapa": "Dueling Beetles",
                 "modo": "hotZone",
-                "picks": 34
+                "picks": 36
             },
             {
                 "mapa": "Triple Dribble",
@@ -1754,9 +1754,9 @@
         "sinergias": [
             {
                 "com": "OTIS",
-                "picks": 44,
-                "vitorias": 15,
-                "win_rate": "34.1%"
+                "picks": 46,
+                "vitorias": 17,
+                "win_rate": "37.0%"
             },
             {
                 "com": "LUMI",
@@ -1766,21 +1766,21 @@
             },
             {
                 "com": "CHESTER",
-                "picks": 39,
+                "picks": 40,
                 "vitorias": 25,
-                "win_rate": "64.1%"
+                "win_rate": "62.5%"
             },
             {
                 "com": "CROW",
-                "picks": 29,
-                "vitorias": 18,
-                "win_rate": "62.1%"
+                "picks": 30,
+                "vitorias": 19,
+                "win_rate": "63.3%"
             },
             {
                 "com": "STU",
-                "picks": 25,
-                "vitorias": 13,
-                "win_rate": "52.0%"
+                "picks": 28,
+                "vitorias": 15,
+                "win_rate": "53.6%"
             }
         ]
     },
@@ -1840,7 +1840,7 @@
             {
                 "mapa": "Kaboom Canyon",
                 "modo": "heist",
-                "picks": 31
+                "picks": 32
             },
             {
                 "mapa": "Safe Zone",
@@ -1868,15 +1868,15 @@
             },
             {
                 "com": "OTIS",
-                "picks": 11,
-                "vitorias": 6,
-                "win_rate": "54.5%"
+                "picks": 12,
+                "vitorias": 7,
+                "win_rate": "58.3%"
             },
             {
                 "com": "CROW",
-                "picks": 9,
+                "picks": 10,
                 "vitorias": 4,
-                "win_rate": "44.4%"
+                "win_rate": "40.0%"
             },
             {
                 "com": "PIERCE",
@@ -1919,9 +1919,9 @@
             },
             {
                 "com": "OTIS",
-                "picks": 18,
+                "picks": 19,
                 "vitorias": 12,
-                "win_rate": "66.7%"
+                "win_rate": "63.2%"
             },
             {
                 "com": "KENJI",
@@ -1930,10 +1930,10 @@
                 "win_rate": "38.9%"
             },
             {
-                "com": "MORTIS",
+                "com": "MEEPLE",
                 "picks": 17,
-                "vitorias": 7,
-                "win_rate": "41.2%"
+                "vitorias": 10,
+                "win_rate": "58.8%"
             }
         ]
     },
@@ -1942,7 +1942,7 @@
             {
                 "mapa": "Hard Rock Mine",
                 "modo": "gemGrab",
-                "picks": 56
+                "picks": 58
             },
             {
                 "mapa": "Crystal Arcade",
@@ -1958,27 +1958,27 @@
         "sinergias": [
             {
                 "com": "KIT",
-                "picks": 28,
-                "vitorias": 15,
-                "win_rate": "53.6%"
+                "picks": 29,
+                "vitorias": 16,
+                "win_rate": "55.2%"
             },
             {
                 "com": "CHESTER",
-                "picks": 26,
-                "vitorias": 15,
-                "win_rate": "57.7%"
+                "picks": 28,
+                "vitorias": 16,
+                "win_rate": "57.1%"
+            },
+            {
+                "com": "MINA",
+                "picks": 23,
+                "vitorias": 10,
+                "win_rate": "43.5%"
             },
             {
                 "com": "OTIS",
                 "picks": 23,
                 "vitorias": 8,
                 "win_rate": "34.8%"
-            },
-            {
-                "com": "MINA",
-                "picks": 22,
-                "vitorias": 9,
-                "win_rate": "40.9%"
             },
             {
                 "com": "CROW",
@@ -1998,7 +1998,7 @@
             {
                 "mapa": "Pinball Dreams",
                 "modo": "brawlBall",
-                "picks": 28
+                "picks": 29
             },
             {
                 "mapa": "Triple Dribble",
@@ -2009,9 +2009,9 @@
         "sinergias": [
             {
                 "com": "LUMI",
-                "picks": 30,
+                "picks": 31,
                 "vitorias": 18,
-                "win_rate": "60.0%"
+                "win_rate": "58.1%"
             },
             {
                 "com": "CHESTER",
@@ -2027,9 +2027,9 @@
             },
             {
                 "com": "OTIS",
-                "picks": 19,
-                "vitorias": 12,
-                "win_rate": "63.2%"
+                "picks": 21,
+                "vitorias": 14,
+                "win_rate": "66.7%"
             },
             {
                 "com": "MEEPLE",
@@ -2044,16 +2044,16 @@
             {
                 "mapa": "Pinhole Punt",
                 "modo": "brawlBall",
-                "picks": 40
-            },
-            {
-                "mapa": "Crystal Arcade",
-                "modo": "gemGrab",
-                "picks": 6
+                "picks": 41
             },
             {
                 "mapa": "Kaboom Canyon",
                 "modo": "heist",
+                "picks": 7
+            },
+            {
+                "mapa": "Crystal Arcade",
+                "modo": "gemGrab",
                 "picks": 6
             }
         ],
@@ -2084,9 +2084,9 @@
             },
             {
                 "com": "LEON",
-                "picks": 7,
-                "vitorias": 5,
-                "win_rate": "71.4%"
+                "picks": 8,
+                "vitorias": 6,
+                "win_rate": "75.0%"
             }
         ]
     },
@@ -2095,7 +2095,7 @@
             {
                 "mapa": "Dueling Beetles",
                 "modo": "hotZone",
-                "picks": 10
+                "picks": 12
             },
             {
                 "mapa": "Open Business",
@@ -2128,13 +2128,13 @@
                 "win_rate": "50.0%"
             },
             {
-                "com": "MINA",
+                "com": "FANG",
                 "picks": 5,
-                "vitorias": 3,
-                "win_rate": "60.0%"
+                "vitorias": 2,
+                "win_rate": "40.0%"
             },
             {
-                "com": "DAMIAN",
+                "com": "LUMI",
                 "picks": 5,
                 "vitorias": 2,
                 "win_rate": "40.0%"
@@ -2151,12 +2151,12 @@
             {
                 "mapa": "Crystal Arcade",
                 "modo": "gemGrab",
-                "picks": 23
+                "picks": 24
             },
             {
                 "mapa": "Triple Dribble",
                 "modo": "brawlBall",
-                "picks": 16
+                "picks": 17
             }
         ],
         "sinergias": [
@@ -2174,9 +2174,9 @@
             },
             {
                 "com": "MEEPLE",
-                "picks": 13,
+                "picks": 14,
                 "vitorias": 6,
-                "win_rate": "46.2%"
+                "win_rate": "42.9%"
             },
             {
                 "com": "STU",
@@ -2202,12 +2202,12 @@
             {
                 "mapa": "Dry Season",
                 "modo": "bounty",
-                "picks": 38
+                "picks": 39
             },
             {
                 "mapa": "Out in the Open",
                 "modo": "knockout",
-                "picks": 34
+                "picks": 37
             }
         ],
         "sinergias": [
@@ -2219,27 +2219,27 @@
             },
             {
                 "com": "RUFFS",
-                "picks": 33,
-                "vitorias": 15,
-                "win_rate": "45.5%"
+                "picks": 34,
+                "vitorias": 16,
+                "win_rate": "47.1%"
             },
             {
                 "com": "MINA",
-                "picks": 32,
+                "picks": 34,
+                "vitorias": 14,
+                "win_rate": "41.2%"
+            },
+            {
+                "com": "MORTIS",
+                "picks": 28,
                 "vitorias": 13,
-                "win_rate": "40.6%"
+                "win_rate": "46.4%"
             },
             {
                 "com": "OTIS",
-                "picks": 27,
-                "vitorias": 17,
-                "win_rate": "63.0%"
-            },
-            {
-                "com": "LEON",
-                "picks": 27,
-                "vitorias": 16,
-                "win_rate": "59.3%"
+                "picks": 28,
+                "vitorias": 18,
+                "win_rate": "64.3%"
             }
         ]
     },
@@ -2258,15 +2258,15 @@
             {
                 "mapa": "Kaboom Canyon",
                 "modo": "heist",
-                "picks": 5
+                "picks": 6
             }
         ],
         "sinergias": [
             {
-                "com": "OTIS",
+                "com": "KAZE",
                 "picks": 7,
-                "vitorias": 1,
-                "win_rate": "14.3%"
+                "vitorias": 3,
+                "win_rate": "42.9%"
             },
             {
                 "com": "COLETTE",
@@ -2275,10 +2275,10 @@
                 "win_rate": "85.7%"
             },
             {
-                "com": "KAZE",
-                "picks": 6,
-                "vitorias": 3,
-                "win_rate": "50.0%"
+                "com": "OTIS",
+                "picks": 7,
+                "vitorias": 1,
+                "win_rate": "14.3%"
             },
             {
                 "com": "MINA",
@@ -2315,9 +2315,9 @@
         "sinergias": [
             {
                 "com": "MINA",
-                "picks": 8,
-                "vitorias": 2,
-                "win_rate": "25.0%"
+                "picks": 9,
+                "vitorias": 3,
+                "win_rate": "33.3%"
             },
             {
                 "com": "OTIS",
@@ -2326,16 +2326,16 @@
                 "win_rate": "71.4%"
             },
             {
-                "com": "MORTIS",
-                "picks": 5,
-                "vitorias": 4,
-                "win_rate": "80.0%"
-            },
-            {
                 "com": "NITA",
                 "picks": 5,
                 "vitorias": 2,
                 "win_rate": "40.0%"
+            },
+            {
+                "com": "MORTIS",
+                "picks": 5,
+                "vitorias": 4,
+                "win_rate": "80.0%"
             },
             {
                 "com": "SHADE",
@@ -2350,7 +2350,7 @@
             {
                 "mapa": "Pit Stop",
                 "modo": "heist",
-                "picks": 36
+                "picks": 38
             },
             {
                 "mapa": "Pinhole Punt",
@@ -2383,16 +2383,16 @@
                 "win_rate": "50.0%"
             },
             {
-                "com": "RUFFS",
-                "picks": 8,
-                "vitorias": 4,
-                "win_rate": "50.0%"
-            },
-            {
                 "com": "EDGAR",
                 "picks": 8,
                 "vitorias": 3,
                 "win_rate": "37.5%"
+            },
+            {
+                "com": "RUFFS",
+                "picks": 8,
+                "vitorias": 4,
+                "win_rate": "50.0%"
             }
         ]
     },
@@ -2468,9 +2468,9 @@
         "sinergias": [
             {
                 "com": "PIERCE",
-                "picks": 14,
+                "picks": 15,
                 "vitorias": 7,
-                "win_rate": "50.0%"
+                "win_rate": "46.7%"
             },
             {
                 "com": "GLOWY",
@@ -2491,10 +2491,10 @@
                 "win_rate": "30.0%"
             },
             {
-                "com": "CROW",
+                "com": "MEEPLE",
                 "picks": 9,
-                "vitorias": 5,
-                "win_rate": "55.6%"
+                "vitorias": 4,
+                "win_rate": "44.4%"
             }
         ]
     },
@@ -2503,7 +2503,7 @@
             {
                 "mapa": "Ring of Fire",
                 "modo": "hotZone",
-                "picks": 13
+                "picks": 14
             },
             {
                 "mapa": "Dueling Beetles",
@@ -2519,9 +2519,9 @@
         "sinergias": [
             {
                 "com": "LUMI",
-                "picks": 12,
-                "vitorias": 7,
-                "win_rate": "58.3%"
+                "picks": 13,
+                "vitorias": 8,
+                "win_rate": "61.5%"
             },
             {
                 "com": "MORTIS",
@@ -2536,16 +2536,16 @@
                 "win_rate": "80.0%"
             },
             {
+                "com": "MINA",
+                "picks": 5,
+                "vitorias": 4,
+                "win_rate": "80.0%"
+            },
+            {
                 "com": "KENJI",
                 "picks": 5,
                 "vitorias": 2,
                 "win_rate": "40.0%"
-            },
-            {
-                "com": "MINA",
-                "picks": 4,
-                "vitorias": 3,
-                "win_rate": "75.0%"
             }
         ]
     },
@@ -2554,12 +2554,12 @@
             {
                 "mapa": "Triple Dribble",
                 "modo": "brawlBall",
-                "picks": 11
+                "picks": 12
             },
             {
                 "mapa": "Pinball Dreams",
                 "modo": "brawlBall",
-                "picks": 10
+                "picks": 11
             },
             {
                 "mapa": "Open Business",
@@ -2568,6 +2568,12 @@
             }
         ],
         "sinergias": [
+            {
+                "com": "POCO",
+                "picks": 9,
+                "vitorias": 5,
+                "win_rate": "55.6%"
+            },
             {
                 "com": "CHESTER",
                 "picks": 8,
@@ -2581,16 +2587,10 @@
                 "win_rate": "25.0%"
             },
             {
-                "com": "POCO",
-                "picks": 8,
-                "vitorias": 5,
-                "win_rate": "62.5%"
-            },
-            {
                 "com": "OTIS",
-                "picks": 7,
+                "picks": 8,
                 "vitorias": 3,
-                "win_rate": "42.9%"
+                "win_rate": "37.5%"
             },
             {
                 "com": "MORTIS",
@@ -2610,7 +2610,7 @@
             {
                 "mapa": "Ring of Fire",
                 "modo": "hotZone",
-                "picks": 37
+                "picks": 38
             },
             {
                 "mapa": "Out in the Open",
@@ -2627,9 +2627,9 @@
             },
             {
                 "com": "COLT",
-                "picks": 21,
+                "picks": 22,
                 "vitorias": 13,
-                "win_rate": "61.9%"
+                "win_rate": "59.1%"
             },
             {
                 "com": "PIERCE",
@@ -2654,14 +2654,14 @@
     "SANDY": {
         "top_mapas": [
             {
-                "mapa": "Hard Rock Mine",
+                "mapa": "Crystal Arcade",
                 "modo": "gemGrab",
                 "picks": 25
             },
             {
-                "mapa": "Crystal Arcade",
+                "mapa": "Hard Rock Mine",
                 "modo": "gemGrab",
-                "picks": 24
+                "picks": 25
             },
             {
                 "mapa": "Gem Fort",
@@ -2761,13 +2761,13 @@
                 "picks": 5
             },
             {
-                "mapa": "Crystal Arcade",
-                "modo": "gemGrab",
-                "picks": 3
-            },
-            {
                 "mapa": "Pinhole Punt",
                 "modo": "brawlBall",
+                "picks": 4
+            },
+            {
+                "mapa": "Crystal Arcade",
+                "modo": "gemGrab",
                 "picks": 3
             }
         ],
@@ -2797,10 +2797,10 @@
                 "win_rate": "33.3%"
             },
             {
-                "com": "CROW",
+                "com": "GLOWY",
                 "picks": 2,
-                "vitorias": 2,
-                "win_rate": "100.0%"
+                "vitorias": 1,
+                "win_rate": "50.0%"
             }
         ]
     },
@@ -2814,20 +2814,20 @@
             {
                 "mapa": "Pit Stop",
                 "modo": "heist",
-                "picks": 16
+                "picks": 17
             },
             {
                 "mapa": "Hideout",
                 "modo": "bounty",
-                "picks": 15
+                "picks": 16
             }
         ],
         "sinergias": [
             {
                 "com": "EDGAR",
-                "picks": 13,
-                "vitorias": 5,
-                "win_rate": "38.5%"
+                "picks": 14,
+                "vitorias": 6,
+                "win_rate": "42.9%"
             },
             {
                 "com": "RUFFS",
@@ -2836,22 +2836,22 @@
                 "win_rate": "58.3%"
             },
             {
-                "com": "POCO",
+                "com": "LEON",
                 "picks": 11,
                 "vitorias": 5,
                 "win_rate": "45.5%"
             },
             {
-                "com": "BYRON",
-                "picks": 10,
-                "vitorias": 6,
-                "win_rate": "60.0%"
+                "com": "DAMIAN",
+                "picks": 11,
+                "vitorias": 5,
+                "win_rate": "45.5%"
             },
             {
-                "com": "NAJIA",
-                "picks": 10,
-                "vitorias": 6,
-                "win_rate": "60.0%"
+                "com": "POCO",
+                "picks": 11,
+                "vitorias": 5,
+                "win_rate": "45.5%"
             }
         ]
     },
@@ -2860,7 +2860,7 @@
             {
                 "mapa": "Triple Dribble",
                 "modo": "brawlBall",
-                "picks": 25
+                "picks": 26
             },
             {
                 "mapa": "Pit Stop",
@@ -2876,9 +2876,9 @@
         "sinergias": [
             {
                 "com": "CROW",
-                "picks": 14,
-                "vitorias": 4,
-                "win_rate": "28.6%"
+                "picks": 15,
+                "vitorias": 5,
+                "win_rate": "33.3%"
             },
             {
                 "com": "LUMI",
@@ -2888,9 +2888,9 @@
             },
             {
                 "com": "EMZ",
-                "picks": 12,
+                "picks": 13,
                 "vitorias": 6,
-                "win_rate": "50.0%"
+                "win_rate": "46.2%"
             },
             {
                 "com": "OTIS",
@@ -2962,7 +2962,7 @@
             {
                 "mapa": "Layer Cake",
                 "modo": "bounty",
-                "picks": 24
+                "picks": 25
             },
             {
                 "mapa": "Kaboom Canyon",
@@ -2984,9 +2984,9 @@
             },
             {
                 "com": "LUMI",
-                "picks": 16,
-                "vitorias": 10,
-                "win_rate": "62.5%"
+                "picks": 17,
+                "vitorias": 11,
+                "win_rate": "64.7%"
             },
             {
                 "com": "OTIS",
@@ -3002,9 +3002,9 @@
             },
             {
                 "com": "CROW",
-                "picks": 11,
+                "picks": 12,
                 "vitorias": 7,
-                "win_rate": "63.6%"
+                "win_rate": "58.3%"
             }
         ]
     },
@@ -3085,6 +3085,12 @@
                 "win_rate": "50.0%"
             },
             {
+                "com": "LUMI",
+                "picks": 24,
+                "vitorias": 15,
+                "win_rate": "62.5%"
+            },
+            {
                 "com": "NAJIA",
                 "picks": 24,
                 "vitorias": 14,
@@ -3095,12 +3101,6 @@
                 "picks": 23,
                 "vitorias": 11,
                 "win_rate": "47.8%"
-            },
-            {
-                "com": "LUMI",
-                "picks": 22,
-                "vitorias": 15,
-                "win_rate": "68.2%"
             },
             {
                 "com": "PIERCE",
@@ -3115,12 +3115,12 @@
             {
                 "mapa": "Layer Cake",
                 "modo": "bounty",
-                "picks": 25
+                "picks": 27
             },
             {
                 "mapa": "Pinball Dreams",
                 "modo": "brawlBall",
-                "picks": 24
+                "picks": 26
             },
             {
                 "mapa": "Triple Dribble",
@@ -3131,9 +3131,9 @@
         "sinergias": [
             {
                 "com": "OTIS",
-                "picks": 13,
+                "picks": 14,
                 "vitorias": 3,
-                "win_rate": "23.1%"
+                "win_rate": "21.4%"
             },
             {
                 "com": "KENJI",
@@ -3142,10 +3142,10 @@
                 "win_rate": "36.4%"
             },
             {
-                "com": "MORTIS",
+                "com": "LUMI",
                 "picks": 10,
-                "vitorias": 5,
-                "win_rate": "50.0%"
+                "vitorias": 6,
+                "win_rate": "60.0%"
             },
             {
                 "com": "MEEPLE",
@@ -3154,10 +3154,10 @@
                 "win_rate": "40.0%"
             },
             {
-                "com": "LUMI",
-                "picks": 9,
-                "vitorias": 6,
-                "win_rate": "66.7%"
+                "com": "MORTIS",
+                "picks": 10,
+                "vitorias": 5,
+                "win_rate": "50.0%"
             }
         ]
     },
@@ -3370,7 +3370,7 @@
             {
                 "mapa": "Goldarm Gulch",
                 "modo": "knockout",
-                "picks": 18
+                "picks": 19
             },
             {
                 "mapa": "New Horizons",
@@ -3386,9 +3386,9 @@
         "sinergias": [
             {
                 "com": "BYRON",
-                "picks": 15,
-                "vitorias": 6,
-                "win_rate": "40.0%"
+                "picks": 17,
+                "vitorias": 7,
+                "win_rate": "41.2%"
             },
             {
                 "com": "RUFFS",
@@ -3421,7 +3421,7 @@
             {
                 "mapa": "Out in the Open",
                 "modo": "knockout",
-                "picks": 24
+                "picks": 25
             },
             {
                 "mapa": "Safe Zone",
@@ -3436,16 +3436,22 @@
         ],
         "sinergias": [
             {
+                "com": "PIERCE",
+                "picks": 7,
+                "vitorias": 2,
+                "win_rate": "28.6%"
+            },
+            {
                 "com": "PEARL",
                 "picks": 7,
                 "vitorias": 4,
                 "win_rate": "57.1%"
             },
             {
-                "com": "PIERCE",
-                "picks": 7,
-                "vitorias": 2,
-                "win_rate": "28.6%"
+                "com": "FINX",
+                "picks": 6,
+                "vitorias": 1,
+                "win_rate": "16.7%"
             },
             {
                 "com": "BYRON",
@@ -3458,12 +3464,6 @@
                 "picks": 6,
                 "vitorias": 2,
                 "win_rate": "33.3%"
-            },
-            {
-                "com": "FINX",
-                "picks": 6,
-                "vitorias": 1,
-                "win_rate": "16.7%"
             }
         ]
     },
@@ -3472,17 +3472,17 @@
             {
                 "mapa": "Out in the Open",
                 "modo": "knockout",
-                "picks": 53
+                "picks": 54
             },
             {
                 "mapa": "Hideout",
                 "modo": "bounty",
-                "picks": 47
+                "picks": 49
             },
             {
                 "mapa": "Goldarm Gulch",
                 "modo": "knockout",
-                "picks": 40
+                "picks": 41
             }
         ],
         "sinergias": [
@@ -3505,16 +3505,16 @@
                 "win_rate": "53.8%"
             },
             {
+                "com": "MORTIS",
+                "picks": 25,
+                "vitorias": 12,
+                "win_rate": "48.0%"
+            },
+            {
                 "com": "KAZE",
                 "picks": 24,
                 "vitorias": 11,
                 "win_rate": "45.8%"
-            },
-            {
-                "com": "MORTIS",
-                "picks": 24,
-                "vitorias": 12,
-                "win_rate": "50.0%"
             }
         ]
     },
@@ -3523,7 +3523,7 @@
             {
                 "mapa": "Out in the Open",
                 "modo": "knockout",
-                "picks": 87
+                "picks": 90
             },
             {
                 "mapa": "Goldarm Gulch",
@@ -3533,15 +3533,15 @@
             {
                 "mapa": "Hideout",
                 "modo": "bounty",
-                "picks": 4
+                "picks": 6
             }
         ],
         "sinergias": [
             {
                 "com": "JAE-YONG",
-                "picks": 24,
+                "picks": 27,
                 "vitorias": 12,
-                "win_rate": "50.0%"
+                "win_rate": "44.4%"
             },
             {
                 "com": "BYRON",
@@ -3551,15 +3551,15 @@
             },
             {
                 "com": "LEON",
-                "picks": 16,
-                "vitorias": 9,
-                "win_rate": "56.2%"
+                "picks": 18,
+                "vitorias": 10,
+                "win_rate": "55.6%"
             },
             {
                 "com": "BROCK",
-                "picks": 12,
+                "picks": 13,
                 "vitorias": 9,
-                "win_rate": "75.0%"
+                "win_rate": "69.2%"
             },
             {
                 "com": "GENE",
@@ -3630,7 +3630,7 @@
             {
                 "mapa": "Crystal Arcade",
                 "modo": "gemGrab",
-                "picks": 21
+                "picks": 22
             },
             {
                 "mapa": "Gem Fort",
@@ -3640,16 +3640,16 @@
         ],
         "sinergias": [
             {
+                "com": "CROW",
+                "picks": 22,
+                "vitorias": 13,
+                "win_rate": "59.1%"
+            },
+            {
                 "com": "OTIS",
                 "picks": 22,
                 "vitorias": 11,
                 "win_rate": "50.0%"
-            },
-            {
-                "com": "CROW",
-                "picks": 21,
-                "vitorias": 13,
-                "win_rate": "61.9%"
             },
             {
                 "com": "LUMI",
@@ -3658,16 +3658,16 @@
                 "win_rate": "52.9%"
             },
             {
+                "com": "RUFFS",
+                "picks": 16,
+                "vitorias": 8,
+                "win_rate": "50.0%"
+            },
+            {
                 "com": "CHESTER",
                 "picks": 16,
                 "vitorias": 11,
                 "win_rate": "68.8%"
-            },
-            {
-                "com": "RUFFS",
-                "picks": 15,
-                "vitorias": 8,
-                "win_rate": "53.3%"
             }
         ]
     },
@@ -3679,28 +3679,28 @@
                 "picks": 13
             },
             {
-                "mapa": "Pinball Dreams",
+                "mapa": "Triple Dribble",
                 "modo": "brawlBall",
-                "picks": 7
+                "picks": 8
             },
             {
                 "mapa": "Open Business",
                 "modo": "hotZone",
-                "picks": 7
+                "picks": 8
             }
         ],
         "sinergias": [
             {
                 "com": "CHESTER",
-                "picks": 11,
+                "picks": 12,
                 "vitorias": 6,
-                "win_rate": "54.5%"
+                "win_rate": "50.0%"
             },
             {
                 "com": "OTIS",
-                "picks": 6,
-                "vitorias": 4,
-                "win_rate": "66.7%"
+                "picks": 7,
+                "vitorias": 5,
+                "win_rate": "71.4%"
             },
             {
                 "com": "PAM",
@@ -3778,7 +3778,7 @@
             {
                 "mapa": "Triple Dribble",
                 "modo": "brawlBall",
-                "picks": 10
+                "picks": 12
             },
             {
                 "mapa": "Pinball Dreams",
@@ -3799,28 +3799,28 @@
                 "win_rate": "100.0%"
             },
             {
+                "com": "LUMI",
+                "picks": 5,
+                "vitorias": 2,
+                "win_rate": "40.0%"
+            },
+            {
                 "com": "LOU",
                 "picks": 5,
                 "vitorias": 3,
                 "win_rate": "60.0%"
             },
             {
-                "com": "CHESTER",
+                "com": "EMZ",
                 "picks": 4,
                 "vitorias": 2,
                 "win_rate": "50.0%"
             },
             {
-                "com": "LUMI",
+                "com": "CHESTER",
                 "picks": 4,
-                "vitorias": 1,
-                "win_rate": "25.0%"
-            },
-            {
-                "com": "RUFFS",
-                "picks": 4,
-                "vitorias": 0,
-                "win_rate": "0.0%"
+                "vitorias": 2,
+                "win_rate": "50.0%"
             }
         ]
     },
@@ -3931,7 +3931,7 @@
             {
                 "mapa": "Pit Stop",
                 "modo": "heist",
-                "picks": 13
+                "picks": 16
             },
             {
                 "mapa": "Triple Dribble",
@@ -3946,22 +3946,22 @@
         ],
         "sinergias": [
             {
+                "com": "KAZE",
+                "picks": 8,
+                "vitorias": 6,
+                "win_rate": "75.0%"
+            },
+            {
                 "com": "BUZZ",
                 "picks": 7,
                 "vitorias": 5,
                 "win_rate": "71.4%"
             },
             {
-                "com": "KAZE",
-                "picks": 7,
-                "vitorias": 5,
-                "win_rate": "71.4%"
-            },
-            {
                 "com": "CHESTER",
-                "picks": 5,
-                "vitorias": 3,
-                "win_rate": "60.0%"
+                "picks": 6,
+                "vitorias": 4,
+                "win_rate": "66.7%"
             },
             {
                 "com": "BERRY",
@@ -4140,12 +4140,12 @@
             {
                 "mapa": "Dueling Beetles",
                 "modo": "hotZone",
-                "picks": 39
+                "picks": 40
             },
             {
                 "mapa": "Ring of Fire",
                 "modo": "hotZone",
-                "picks": 33
+                "picks": 34
             }
         ],
         "sinergias": [
@@ -4237,7 +4237,7 @@
             {
                 "mapa": "Out in the Open",
                 "modo": "knockout",
-                "picks": 11
+                "picks": 12
             },
             {
                 "mapa": "Hard Rock Mine",
@@ -4245,9 +4245,9 @@
                 "picks": 11
             },
             {
-                "mapa": "Crystal Arcade",
-                "modo": "gemGrab",
-                "picks": 9
+                "mapa": "New Horizons",
+                "modo": "knockout",
+                "picks": 11
             }
         ],
         "sinergias": [
@@ -4264,6 +4264,12 @@
                 "win_rate": "57.1%"
             },
             {
+                "com": "ANGELO",
+                "picks": 8,
+                "vitorias": 4,
+                "win_rate": "50.0%"
+            },
+            {
                 "com": "MORTIS",
                 "picks": 7,
                 "vitorias": 2,
@@ -4274,12 +4280,6 @@
                 "picks": 6,
                 "vitorias": 2,
                 "win_rate": "33.3%"
-            },
-            {
-                "com": "TRUNK",
-                "picks": 6,
-                "vitorias": 3,
-                "win_rate": "50.0%"
             }
         ]
     },
@@ -4347,8 +4347,8 @@
                 "picks": 3
             },
             {
-                "mapa": "Belle's Rock",
-                "modo": "knockout",
+                "mapa": "Kaboom Canyon",
+                "modo": "heist",
                 "picks": 2
             }
         ],
@@ -4372,16 +4372,16 @@
                 "win_rate": "25.0%"
             },
             {
-                "com": "GENE",
+                "com": "CHARLIE",
                 "picks": 3,
                 "vitorias": 1,
                 "win_rate": "33.3%"
             },
             {
-                "com": "ANGELO",
-                "picks": 2,
+                "com": "GENE",
+                "picks": 3,
                 "vitorias": 1,
-                "win_rate": "50.0%"
+                "win_rate": "33.3%"
             }
         ]
     },
@@ -4423,13 +4423,13 @@
                 "win_rate": "40.0%"
             },
             {
-                "com": "DRACO",
+                "com": "DAMIAN",
                 "picks": 4,
                 "vitorias": 1,
                 "win_rate": "25.0%"
             },
             {
-                "com": "DAMIAN",
+                "com": "DRACO",
                 "picks": 4,
                 "vitorias": 1,
                 "win_rate": "25.0%"
@@ -4449,7 +4449,7 @@
                 "picks": 4
             },
             {
-                "mapa": "Crystal Arcade",
+                "mapa": "Gem Fort",
                 "modo": "gemGrab",
                 "picks": 3
             }
@@ -4462,6 +4462,12 @@
                 "win_rate": "37.5%"
             },
             {
+                "com": "STU",
+                "picks": 6,
+                "vitorias": 2,
+                "win_rate": "33.3%"
+            },
+            {
                 "com": "CHESTER",
                 "picks": 5,
                 "vitorias": 2,
@@ -4469,15 +4475,9 @@
             },
             {
                 "com": "OTIS",
-                "picks": 4,
-                "vitorias": 2,
-                "win_rate": "50.0%"
-            },
-            {
-                "com": "STU",
-                "picks": 4,
-                "vitorias": 1,
-                "win_rate": "25.0%"
+                "picks": 5,
+                "vitorias": 3,
+                "win_rate": "60.0%"
             },
             {
                 "com": "KIT",
@@ -4500,8 +4500,8 @@
                 "picks": 2
             },
             {
-                "mapa": "Goldarm Gulch",
-                "modo": "knockout",
+                "mapa": "Dry Season",
+                "modo": "bounty",
                 "picks": 1
             }
         ],
@@ -4513,16 +4513,16 @@
                 "win_rate": "25.0%"
             },
             {
-                "com": "KIT",
+                "com": "MINA",
+                "picks": 3,
+                "vitorias": 2,
+                "win_rate": "66.7%"
+            },
+            {
+                "com": "WILLOW",
                 "picks": 2,
                 "vitorias": 1,
                 "win_rate": "50.0%"
-            },
-            {
-                "com": "MINA",
-                "picks": 2,
-                "vitorias": 2,
-                "win_rate": "100.0%"
             },
             {
                 "com": "STU",
@@ -4531,7 +4531,7 @@
                 "win_rate": "50.0%"
             },
             {
-                "com": "WILLOW",
+                "com": "KIT",
                 "picks": 2,
                 "vitorias": 1,
                 "win_rate": "50.0%"
@@ -4566,12 +4566,12 @@
             {
                 "mapa": "Layer Cake",
                 "modo": "bounty",
-                "picks": 11
+                "picks": 12
             },
             {
                 "mapa": "Ring of Fire",
                 "modo": "hotZone",
-                "picks": 3
+                "picks": 4
             },
             {
                 "mapa": "Open Zone",
@@ -4599,16 +4599,16 @@
                 "win_rate": "66.7%"
             },
             {
-                "com": "ANGELO",
+                "com": "8-BIT",
                 "picks": 2,
                 "vitorias": 1,
                 "win_rate": "50.0%"
             },
             {
-                "com": "EDGAR",
+                "com": "ANGELO",
                 "picks": 2,
-                "vitorias": 0,
-                "win_rate": "0.0%"
+                "vitorias": 1,
+                "win_rate": "50.0%"
             }
         ]
     },
@@ -4826,12 +4826,6 @@
                 "win_rate": "75.0%"
             },
             {
-                "com": "EDGAR",
-                "picks": 4,
-                "vitorias": 2,
-                "win_rate": "50.0%"
-            },
-            {
                 "com": "CHESTER",
                 "picks": 4,
                 "vitorias": 1,
@@ -4844,10 +4838,16 @@
                 "win_rate": "25.0%"
             },
             {
-                "com": "JAE-YONG",
-                "picks": 3,
-                "vitorias": 1,
-                "win_rate": "33.3%"
+                "com": "EDGAR",
+                "picks": 4,
+                "vitorias": 2,
+                "win_rate": "50.0%"
+            },
+            {
+                "com": "EMZ",
+                "picks": 4,
+                "vitorias": 0,
+                "win_rate": "0.0%"
             }
         ]
     },
@@ -4864,23 +4864,29 @@
                 "picks": 4
             },
             {
-                "mapa": "Hard Rock Mine",
-                "modo": "gemGrab",
+                "mapa": "Triple Dribble",
+                "modo": "brawlBall",
                 "picks": 4
             }
         ],
         "sinergias": [
             {
                 "com": "MORTIS",
-                "picks": 7,
+                "picks": 8,
                 "vitorias": 2,
-                "win_rate": "28.6%"
+                "win_rate": "25.0%"
             },
             {
                 "com": "STU",
-                "picks": 6,
+                "picks": 7,
                 "vitorias": 3,
-                "win_rate": "50.0%"
+                "win_rate": "42.9%"
+            },
+            {
+                "com": "PIERCE",
+                "picks": 5,
+                "vitorias": 3,
+                "win_rate": "60.0%"
             },
             {
                 "com": "BELLE",
@@ -4893,12 +4899,6 @@
                 "picks": 5,
                 "vitorias": 4,
                 "win_rate": "80.0%"
-            },
-            {
-                "com": "PIERCE",
-                "picks": 4,
-                "vitorias": 2,
-                "win_rate": "50.0%"
             }
         ]
     },
@@ -4915,7 +4915,7 @@
                 "picks": 4
             },
             {
-                "mapa": "Gem Fort",
+                "mapa": "Hard Rock Mine",
                 "modo": "gemGrab",
                 "picks": 3
             }
@@ -4940,10 +4940,10 @@
                 "win_rate": "75.0%"
             },
             {
-                "com": "NITA",
+                "com": "BERRY",
                 "picks": 3,
-                "vitorias": 2,
-                "win_rate": "66.7%"
+                "vitorias": 3,
+                "win_rate": "100.0%"
             },
             {
                 "com": "LUMI",
@@ -5009,7 +5009,7 @@
             {
                 "mapa": "Out in the Open",
                 "modo": "knockout",
-                "picks": 14
+                "picks": 15
             },
             {
                 "mapa": "",
