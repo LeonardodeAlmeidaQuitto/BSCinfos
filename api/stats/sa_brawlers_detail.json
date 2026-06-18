@@ -2552,8 +2552,8 @@
                 "picks": 4
             },
             {
-                "mapa": "Triple Dribble",
-                "modo": "brawlBall",
+                "mapa": "",
+                "modo": "bounty",
                 "picks": 3
             },
             {
@@ -2570,13 +2570,19 @@
                 "win_rate": "25.0%"
             },
             {
+                "com": "BYRON",
+                "picks": 2,
+                "vitorias": 1,
+                "win_rate": "50.0%"
+            },
+            {
                 "com": "DRACO",
                 "picks": 2,
                 "vitorias": 1,
                 "win_rate": "50.0%"
             },
             {
-                "com": "BYRON",
+                "com": "JACKY",
                 "picks": 2,
                 "vitorias": 1,
                 "win_rate": "50.0%"
@@ -2586,12 +2592,6 @@
                 "picks": 2,
                 "vitorias": 2,
                 "win_rate": "100.0%"
-            },
-            {
-                "com": "POCO",
-                "picks": 2,
-                "vitorias": 1,
-                "win_rate": "50.0%"
             }
         ]
     },
@@ -2802,13 +2802,13 @@
     "COLETTE": {
         "top_mapas": [
             {
-                "mapa": "Dry Season",
-                "modo": "bounty",
+                "mapa": "Kaboom Canyon",
+                "modo": "heist",
                 "picks": 11
             },
             {
-                "mapa": "Kaboom Canyon",
-                "modo": "heist",
+                "mapa": "Dry Season",
+                "modo": "bounty",
                 "picks": 11
             },
             {
@@ -2837,16 +2837,16 @@
                 "win_rate": "100.0%"
             },
             {
-                "com": "RUFFS",
-                "picks": 6,
-                "vitorias": 4,
-                "win_rate": "66.7%"
-            },
-            {
                 "com": "MICO",
                 "picks": 6,
                 "vitorias": 3,
                 "win_rate": "50.0%"
+            },
+            {
+                "com": "RUFFS",
+                "picks": 6,
+                "vitorias": 4,
+                "win_rate": "66.7%"
             }
         ]
     },
