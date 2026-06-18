@@ -536,10 +536,10 @@
                 "win_rate": "50.0%"
             },
             {
-                "com": "BIBI",
+                "com": "LILY",
                 "picks": 3,
-                "vitorias": 0,
-                "win_rate": "0.0%"
+                "vitorias": 2,
+                "win_rate": "66.7%"
             },
             {
                 "com": "KAZE",
@@ -4614,6 +4614,23 @@
                 "picks": 1,
                 "vitorias": 0,
                 "win_rate": "0.0%"
+            }
+        ]
+    },
+    "MR. P": {
+        "top_mapas": [
+            {
+                "mapa": "",
+                "modo": "knockout",
+                "picks": 2
+            }
+        ],
+        "sinergias": [
+            {
+                "com": "COLT",
+                "picks": 2,
+                "vitorias": 2,
+                "win_rate": "100.0%"
             }
         ]
     }
