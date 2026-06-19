@@ -116,7 +116,7 @@
             {
                 "mapa": "Dry Season",
                 "modo": "bounty",
-                "picks": 15
+                "picks": 16
             }
         ],
         "sinergias": [
@@ -512,14 +512,14 @@
     "GENE": {
         "top_mapas": [
             {
-                "mapa": "Hideout",
+                "mapa": "Dry Season",
                 "modo": "bounty",
                 "picks": 19
             },
             {
-                "mapa": "Dry Season",
+                "mapa": "Hideout",
                 "modo": "bounty",
-                "picks": 18
+                "picks": 19
             },
             {
                 "mapa": "Out in the Open",
@@ -665,14 +665,14 @@
     "MEEPLE": {
         "top_mapas": [
             {
-                "mapa": "Pinhole Punt",
-                "modo": "brawlBall",
+                "mapa": "Dry Season",
+                "modo": "bounty",
                 "picks": 19
             },
             {
-                "mapa": "Dry Season",
-                "modo": "bounty",
-                "picks": 18
+                "mapa": "Pinhole Punt",
+                "modo": "brawlBall",
+                "picks": 19
             },
             {
                 "mapa": "Layer Cake",
@@ -683,9 +683,9 @@
         "sinergias": [
             {
                 "com": "LEON",
-                "picks": 25,
-                "vitorias": 15,
-                "win_rate": "60.0%"
+                "picks": 26,
+                "vitorias": 16,
+                "win_rate": "61.5%"
             },
             {
                 "com": "CHESTER",
@@ -836,9 +836,9 @@
         "sinergias": [
             {
                 "com": "MEEPLE",
-                "picks": 25,
-                "vitorias": 15,
-                "win_rate": "60.0%"
+                "picks": 26,
+                "vitorias": 16,
+                "win_rate": "61.5%"
             },
             {
                 "com": "PIERCE",
@@ -910,10 +910,10 @@
                 "win_rate": "66.7%"
             },
             {
-                "com": "PIERCE",
+                "com": "ANGELO",
                 "picks": 5,
-                "vitorias": 2,
-                "win_rate": "40.0%"
+                "vitorias": 3,
+                "win_rate": "60.0%"
             }
         ]
     },
@@ -949,6 +949,12 @@
                 "win_rate": "27.3%"
             },
             {
+                "com": "PIERCE",
+                "picks": 9,
+                "vitorias": 5,
+                "win_rate": "55.6%"
+            },
+            {
                 "com": "MEEPLE",
                 "picks": 9,
                 "vitorias": 5,
@@ -959,12 +965,6 @@
                 "picks": 8,
                 "vitorias": 3,
                 "win_rate": "37.5%"
-            },
-            {
-                "com": "PIERCE",
-                "picks": 8,
-                "vitorias": 4,
-                "win_rate": "50.0%"
             }
         ]
     },
@@ -1063,10 +1063,10 @@
                 "win_rate": "53.8%"
             },
             {
-                "com": "STU",
-                "picks": 12,
-                "vitorias": 5,
-                "win_rate": "41.7%"
+                "com": "MEEPLE",
+                "picks": 13,
+                "vitorias": 4,
+                "win_rate": "30.8%"
             }
         ]
     },
@@ -1690,12 +1690,12 @@
                 "picks": 19
             },
             {
-                "mapa": "Dueling Beetles",
-                "modo": "hotZone",
-                "picks": 6
+                "mapa": "Kaboom Canyon",
+                "modo": "heist",
+                "picks": 7
             },
             {
-                "mapa": "Open Business",
+                "mapa": "Dueling Beetles",
                 "modo": "hotZone",
                 "picks": 6
             }
@@ -1720,13 +1720,13 @@
                 "win_rate": "50.0%"
             },
             {
-                "com": "PIERCE",
+                "com": "KENJI",
                 "picks": 6,
                 "vitorias": 4,
                 "win_rate": "66.7%"
             },
             {
-                "com": "KENJI",
+                "com": "PIERCE",
                 "picks": 6,
                 "vitorias": 4,
                 "win_rate": "66.7%"
@@ -1901,7 +1901,7 @@
             {
                 "mapa": "Dry Season",
                 "modo": "bounty",
-                "picks": 12
+                "picks": 13
             }
         ],
         "sinergias": [
@@ -1925,9 +1925,9 @@
             },
             {
                 "com": "PIERCE",
-                "picks": 7,
-                "vitorias": 4,
-                "win_rate": "57.1%"
+                "picks": 8,
+                "vitorias": 5,
+                "win_rate": "62.5%"
             },
             {
                 "com": "GENE",
