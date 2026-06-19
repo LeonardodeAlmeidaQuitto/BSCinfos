@@ -542,10 +542,10 @@
                 "win_rate": "66.7%"
             },
             {
-                "com": "KAZE",
+                "com": "LEON",
                 "picks": 3,
-                "vitorias": 0,
-                "win_rate": "0.0%"
+                "vitorias": 3,
+                "win_rate": "100.0%"
             }
         ]
     },
@@ -4656,6 +4656,23 @@
                 "mapa": "",
                 "modo": "knockout",
                 "picks": 2
+            }
+        ],
+        "sinergias": [
+            {
+                "com": "COLT",
+                "picks": 2,
+                "vitorias": 2,
+                "win_rate": "100.0%"
+            }
+        ]
+    },
+    "BOLT": {
+        "top_mapas": [
+            {
+                "mapa": "",
+                "modo": "knockout",
+                "picks": 1
             }
         ],
         "sinergias": [
