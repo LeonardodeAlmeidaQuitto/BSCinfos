@@ -264,7 +264,7 @@
             {
                 "mapa": "Hard Rock Mine",
                 "modo": "gemGrab",
-                "picks": 38
+                "picks": 39
             },
             {
                 "mapa": "Dueling Beetles",
@@ -361,7 +361,7 @@
             {
                 "mapa": "Hard Rock Mine",
                 "modo": "gemGrab",
-                "picks": 55
+                "picks": 56
             },
             {
                 "mapa": "Dueling Beetles",
@@ -718,7 +718,7 @@
             {
                 "mapa": "Pinball Dreams",
                 "modo": "brawlBall",
-                "picks": 36
+                "picks": 37
             },
             {
                 "mapa": "Pit Stop",
@@ -1338,7 +1338,7 @@
                 "picks": 20
             },
             {
-                "mapa": "Triple Dribble",
+                "mapa": "Pinhole Punt",
                 "modo": "brawlBall",
                 "picks": 19
             }
@@ -1352,9 +1352,9 @@
             },
             {
                 "com": "CHESTER",
-                "picks": 21,
-                "vitorias": 10,
-                "win_rate": "47.6%"
+                "picks": 22,
+                "vitorias": 11,
+                "win_rate": "50.0%"
             },
             {
                 "com": "CROW",
@@ -1381,7 +1381,7 @@
             {
                 "mapa": "Hard Rock Mine",
                 "modo": "gemGrab",
-                "picks": 47
+                "picks": 48
             },
             {
                 "mapa": "Crystal Arcade",
@@ -1432,7 +1432,7 @@
             {
                 "mapa": "Pinhole Punt",
                 "modo": "brawlBall",
-                "picks": 118
+                "picks": 119
             },
             {
                 "mapa": "Hard Rock Mine",
@@ -1483,7 +1483,7 @@
             {
                 "mapa": "Pinhole Punt",
                 "modo": "brawlBall",
-                "picks": 61
+                "picks": 62
             },
             {
                 "mapa": "Dueling Beetles",
@@ -1534,7 +1534,7 @@
             {
                 "mapa": "Hard Rock Mine",
                 "modo": "gemGrab",
-                "picks": 56
+                "picks": 57
             },
             {
                 "mapa": "Dry Season",
@@ -1590,7 +1590,7 @@
             {
                 "mapa": "Hard Rock Mine",
                 "modo": "gemGrab",
-                "picks": 20
+                "picks": 21
             },
             {
                 "mapa": "Gem Fort",
@@ -1618,16 +1618,16 @@
                 "win_rate": "70.0%"
             },
             {
+                "com": "CHESTER",
+                "picks": 9,
+                "vitorias": 6,
+                "win_rate": "66.7%"
+            },
+            {
                 "com": "MINA",
                 "picks": 9,
                 "vitorias": 8,
                 "win_rate": "88.9%"
-            },
-            {
-                "com": "RUFFS",
-                "picks": 9,
-                "vitorias": 2,
-                "win_rate": "22.2%"
             }
         ]
     },
@@ -1874,9 +1874,9 @@
             },
             {
                 "com": "CROW",
-                "picks": 10,
+                "picks": 11,
                 "vitorias": 4,
-                "win_rate": "40.0%"
+                "win_rate": "36.4%"
             },
             {
                 "com": "PIERCE",
@@ -1891,7 +1891,7 @@
             {
                 "mapa": "Pinhole Punt",
                 "modo": "brawlBall",
-                "picks": 29
+                "picks": 30
             },
             {
                 "mapa": "Dry Season",
@@ -1957,13 +1957,13 @@
         ],
         "sinergias": [
             {
-                "com": "KIT",
-                "picks": 29,
+                "com": "CHESTER",
+                "picks": 30,
                 "vitorias": 16,
-                "win_rate": "55.2%"
+                "win_rate": "53.3%"
             },
             {
-                "com": "CHESTER",
+                "com": "KIT",
                 "picks": 29,
                 "vitorias": 16,
                 "win_rate": "55.2%"
@@ -1993,12 +1993,12 @@
             {
                 "mapa": "Hard Rock Mine",
                 "modo": "gemGrab",
-                "picks": 31
+                "picks": 32
             },
             {
                 "mapa": "Pinball Dreams",
                 "modo": "brawlBall",
-                "picks": 29
+                "picks": 30
             },
             {
                 "mapa": "Triple Dribble",
@@ -2009,9 +2009,9 @@
         "sinergias": [
             {
                 "com": "LUMI",
-                "picks": 31,
+                "picks": 32,
                 "vitorias": 18,
-                "win_rate": "58.1%"
+                "win_rate": "56.2%"
             },
             {
                 "com": "CHESTER",
@@ -2656,7 +2656,7 @@
             {
                 "mapa": "Hard Rock Mine",
                 "modo": "gemGrab",
-                "picks": 30
+                "picks": 32
             },
             {
                 "mapa": "Crystal Arcade",
@@ -2684,9 +2684,9 @@
             },
             {
                 "com": "MORTIS",
-                "picks": 13,
-                "vitorias": 6,
-                "win_rate": "46.2%"
+                "picks": 14,
+                "vitorias": 7,
+                "win_rate": "50.0%"
             },
             {
                 "com": "EDGAR",
@@ -3625,7 +3625,7 @@
             {
                 "mapa": "Hard Rock Mine",
                 "modo": "gemGrab",
-                "picks": 35
+                "picks": 36
             },
             {
                 "mapa": "Crystal Arcade",
@@ -4235,6 +4235,11 @@
     "MAX": {
         "top_mapas": [
             {
+                "mapa": "Hard Rock Mine",
+                "modo": "gemGrab",
+                "picks": 12
+            },
+            {
                 "mapa": "Out in the Open",
                 "modo": "knockout",
                 "picks": 12
@@ -4242,11 +4247,6 @@
             {
                 "mapa": "New Horizons",
                 "modo": "knockout",
-                "picks": 11
-            },
-            {
-                "mapa": "Crystal Arcade",
-                "modo": "gemGrab",
                 "picks": 11
             }
         ],
@@ -4271,15 +4271,15 @@
             },
             {
                 "com": "MORTIS",
-                "picks": 7,
-                "vitorias": 2,
-                "win_rate": "28.6%"
+                "picks": 8,
+                "vitorias": 3,
+                "win_rate": "37.5%"
             },
             {
-                "com": "SHADE",
-                "picks": 6,
-                "vitorias": 3,
-                "win_rate": "50.0%"
+                "com": "SANDY",
+                "picks": 7,
+                "vitorias": 4,
+                "win_rate": "57.1%"
             }
         ]
     },
