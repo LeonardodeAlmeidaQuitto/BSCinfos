@@ -83,9 +83,9 @@
             },
             {
                 "com": "MINA",
-                "picks": 15,
+                "picks": 16,
                 "vitorias": 11,
-                "win_rate": "73.3%"
+                "win_rate": "68.8%"
             },
             {
                 "com": "RUFFS",
@@ -111,7 +111,7 @@
             {
                 "mapa": "Open Business",
                 "modo": "hotZone",
-                "picks": 11
+                "picks": 12
             },
             {
                 "mapa": "Ring of Fire",
@@ -519,7 +519,7 @@
             {
                 "mapa": "Open Business",
                 "modo": "hotZone",
-                "picks": 11
+                "picks": 12
             }
         ],
         "sinergias": [
@@ -651,9 +651,9 @@
             },
             {
                 "com": "PIERCE",
-                "picks": 15,
+                "picks": 16,
                 "vitorias": 11,
-                "win_rate": "73.3%"
+                "win_rate": "68.8%"
             }
         ]
     },
@@ -869,13 +869,13 @@
                 "picks": 12
             },
             {
-                "mapa": "New Horizons",
-                "modo": "knockout",
-                "picks": 10
-            },
-            {
                 "mapa": "Open Business",
                 "modo": "hotZone",
+                "picks": 12
+            },
+            {
+                "mapa": "New Horizons",
+                "modo": "knockout",
                 "picks": 10
             }
         ],
@@ -899,13 +899,13 @@
                 "win_rate": "60.0%"
             },
             {
-                "com": "KIT",
+                "com": "MINA",
                 "picks": 8,
                 "vitorias": 5,
                 "win_rate": "62.5%"
             },
             {
-                "com": "EMZ",
+                "com": "KIT",
                 "picks": 8,
                 "vitorias": 5,
                 "win_rate": "62.5%"
@@ -1295,10 +1295,10 @@
                 "win_rate": "50.0%"
             },
             {
-                "com": "KIT",
+                "com": "EMZ",
                 "picks": 13,
-                "vitorias": 8,
-                "win_rate": "61.5%"
+                "vitorias": 7,
+                "win_rate": "53.8%"
             },
             {
                 "com": "CHESTER",
@@ -1307,10 +1307,10 @@
                 "win_rate": "38.5%"
             },
             {
-                "com": "EMZ",
-                "picks": 12,
-                "vitorias": 6,
-                "win_rate": "50.0%"
+                "com": "KIT",
+                "picks": 13,
+                "vitorias": 8,
+                "win_rate": "61.5%"
             },
             {
                 "com": "STU",
@@ -1379,14 +1379,14 @@
                 "picks": 13
             },
             {
-                "mapa": "Layer Cake",
-                "modo": "bounty",
+                "mapa": "Open Business",
+                "modo": "hotZone",
                 "picks": 13
             },
             {
-                "mapa": "Open Business",
-                "modo": "hotZone",
-                "picks": 12
+                "mapa": "Layer Cake",
+                "modo": "bounty",
+                "picks": 13
             }
         ],
         "sinergias": [
@@ -1481,14 +1481,14 @@
                 "picks": 18
             },
             {
+                "mapa": "Open Business",
+                "modo": "hotZone",
+                "picks": 13
+            },
+            {
                 "mapa": "Gem Fort",
                 "modo": "gemGrab",
                 "picks": 12
-            },
-            {
-                "mapa": "Open Business",
-                "modo": "hotZone",
-                "picks": 11
             }
         ],
         "sinergias": [
@@ -1500,9 +1500,9 @@
             },
             {
                 "com": "OTIS",
-                "picks": 12,
-                "vitorias": 6,
-                "win_rate": "50.0%"
+                "picks": 13,
+                "vitorias": 7,
+                "win_rate": "53.8%"
             },
             {
                 "com": "CROW",
@@ -2022,9 +2022,9 @@
             },
             {
                 "com": "MEEPLE",
-                "picks": 7,
-                "vitorias": 4,
-                "win_rate": "57.1%"
+                "picks": 8,
+                "vitorias": 5,
+                "win_rate": "62.5%"
             },
             {
                 "com": "NITA",
@@ -3814,7 +3814,7 @@
             {
                 "mapa": "Open Business",
                 "modo": "hotZone",
-                "picks": 10
+                "picks": 12
             },
             {
                 "mapa": "Dueling Beetles",
@@ -3835,13 +3835,19 @@
                 "win_rate": "75.0%"
             },
             {
+                "com": "DAMIAN",
+                "picks": 6,
+                "vitorias": 3,
+                "win_rate": "50.0%"
+            },
+            {
                 "com": "MINA",
                 "picks": 6,
                 "vitorias": 4,
                 "win_rate": "66.7%"
             },
             {
-                "com": "DAMIAN",
+                "com": "EDGAR",
                 "picks": 5,
                 "vitorias": 3,
                 "win_rate": "60.0%"
@@ -3851,12 +3857,6 @@
                 "picks": 5,
                 "vitorias": 3,
                 "win_rate": "60.0%"
-            },
-            {
-                "com": "LUMI",
-                "picks": 4,
-                "vitorias": 4,
-                "win_rate": "100.0%"
             }
         ]
     },
