@@ -1714,6 +1714,11 @@
     "SQUEAK": {
         "top_mapas": [
             {
+                "mapa": "",
+                "modo": "knockout",
+                "picks": 4
+            },
+            {
                 "mapa": "Goldarm Gulch",
                 "modo": "knockout",
                 "picks": 3
@@ -1722,11 +1727,6 @@
                 "mapa": "Layer Cake",
                 "modo": "bounty",
                 "picks": 2
-            },
-            {
-                "mapa": "Dry Season",
-                "modo": "bounty",
-                "picks": 1
             }
         ],
         "sinergias": [

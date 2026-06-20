@@ -507,16 +507,16 @@
             "qtd": 28
         },
         {
+            "brawler": "BELLE",
+            "qtd": 13
+        },
+        {
             "brawler": "NITA",
             "qtd": 13
         },
         {
             "brawler": "ANGELO",
             "qtd": 12
-        },
-        {
-            "brawler": "BELLE",
-            "qtd": 11
         },
         {
             "brawler": "CHESTER",
@@ -876,7 +876,7 @@
     "#82RCQCVG": [
         {
             "brawler": "KAZE",
-            "qtd": 45
+            "qtd": 47
         },
         {
             "brawler": "EDGAR",
@@ -884,7 +884,7 @@
         },
         {
             "brawler": "MORTIS",
-            "qtd": 20
+            "qtd": 22
         },
         {
             "brawler": "MINA",
@@ -907,12 +907,24 @@
             "qtd": 7
         },
         {
+            "brawler": "SHADE",
+            "qtd": 6
+        },
+        {
             "brawler": "MAISIE",
             "qtd": 6
         },
         {
+            "brawler": "FANG",
+            "qtd": 5
+        },
+        {
             "brawler": "OTIS",
             "qtd": 5
+        },
+        {
+            "brawler": "KENJI",
+            "qtd": 4
         },
         {
             "brawler": "FINX",
@@ -920,18 +932,6 @@
         },
         {
             "brawler": "MELODIE",
-            "qtd": 4
-        },
-        {
-            "brawler": "KENJI",
-            "qtd": 4
-        },
-        {
-            "brawler": "FANG",
-            "qtd": 4
-        },
-        {
-            "brawler": "SHADE",
             "qtd": 4
         },
         {
@@ -1053,12 +1053,12 @@
             "qtd": 13
         },
         {
-            "brawler": "NAJIA",
+            "brawler": "BELLE",
             "qtd": 12
         },
         {
-            "brawler": "BELLE",
-            "qtd": 10
+            "brawler": "NAJIA",
+            "qtd": 12
         },
         {
             "brawler": "JAE-YONG",
@@ -1635,7 +1635,7 @@
             "qtd": 8
         },
         {
-            "brawler": "GENE",
+            "brawler": "RUFFS",
             "qtd": 8
         },
         {
@@ -1643,11 +1643,11 @@
             "qtd": 8
         },
         {
-            "brawler": "FINX",
-            "qtd": 7
+            "brawler": "GENE",
+            "qtd": 8
         },
         {
-            "brawler": "RUFFS",
+            "brawler": "FINX",
             "qtd": 7
         },
         {
@@ -1707,15 +1707,15 @@
             "qtd": 4
         },
         {
-            "brawler": "CROW",
-            "qtd": 3
+            "brawler": "EDGAR",
+            "qtd": 4
         },
         {
             "brawler": "CORDELIUS",
             "qtd": 3
         },
         {
-            "brawler": "EDGAR",
+            "brawler": "ASH",
             "qtd": 3
         },
         {
@@ -1723,11 +1723,11 @@
             "qtd": 3
         },
         {
-            "brawler": "BROCK",
+            "brawler": "CROW",
             "qtd": 3
         },
         {
-            "brawler": "ASH",
+            "brawler": "BROCK",
             "qtd": 3
         },
         {
@@ -1809,11 +1809,11 @@
             "qtd": 15
         },
         {
-            "brawler": "GRIFF",
+            "brawler": "KIT",
             "qtd": 12
         },
         {
-            "brawler": "KIT",
+            "brawler": "GRIFF",
             "qtd": 12
         },
         {
@@ -1822,7 +1822,7 @@
         },
         {
             "brawler": "KAZE",
-            "qtd": 10
+            "qtd": 11
         },
         {
             "brawler": "MOE",
@@ -1841,27 +1841,27 @@
             "qtd": 6
         },
         {
-            "brawler": "MINA",
-            "qtd": 6
-        },
-        {
             "brawler": "STU",
             "qtd": 6
         },
         {
-            "brawler": "MEEPLE",
-            "qtd": 5
+            "brawler": "MINA",
+            "qtd": 6
         },
         {
             "brawler": "GALE",
             "qtd": 5
         },
         {
-            "brawler": "BROCK",
-            "qtd": 4
+            "brawler": "MEEPLE",
+            "qtd": 5
         },
         {
             "brawler": "BYRON",
+            "qtd": 4
+        },
+        {
+            "brawler": "BROCK",
             "qtd": 4
         },
         {
@@ -1873,11 +1873,15 @@
             "qtd": 3
         },
         {
-            "brawler": "NITA",
+            "brawler": "LOU",
             "qtd": 3
         },
         {
             "brawler": "GUS",
+            "qtd": 3
+        },
+        {
+            "brawler": "NITA",
             "qtd": 3
         },
         {
@@ -1889,10 +1893,6 @@
             "qtd": 3
         },
         {
-            "brawler": "LOU",
-            "qtd": 3
-        },
-        {
             "brawler": "MICO",
             "qtd": 3
         },
@@ -1901,23 +1901,11 @@
             "qtd": 2
         },
         {
-            "brawler": "BUSTER",
-            "qtd": 2
-        },
-        {
-            "brawler": "HANK",
-            "qtd": 2
-        },
-        {
             "brawler": "CROW",
             "qtd": 2
         },
         {
-            "brawler": "MELODIE",
-            "qtd": 2
-        },
-        {
-            "brawler": "WILLOW",
+            "brawler": "BUSTER",
             "qtd": 2
         },
         {
@@ -1925,7 +1913,7 @@
             "qtd": 2
         },
         {
-            "brawler": "LUMI",
+            "brawler": "HANK",
             "qtd": 2
         },
         {
@@ -1933,11 +1921,23 @@
             "qtd": 2
         },
         {
-            "brawler": "COLT",
+            "brawler": "WILLOW",
+            "qtd": 2
+        },
+        {
+            "brawler": "LUMI",
+            "qtd": 2
+        },
+        {
+            "brawler": "MELODIE",
+            "qtd": 2
+        },
+        {
+            "brawler": "CORDELIUS",
             "qtd": 1
         },
         {
-            "brawler": "CHUCK",
+            "brawler": "COLT",
             "qtd": 1
         },
         {
@@ -1945,15 +1945,15 @@
             "qtd": 1
         },
         {
-            "brawler": "CORDELIUS",
-            "qtd": 1
-        },
-        {
-            "brawler": "JUJU",
+            "brawler": "CHUCK",
             "qtd": 1
         },
         {
             "brawler": "RUFFS",
+            "qtd": 1
+        },
+        {
+            "brawler": "JUJU",
             "qtd": 1
         },
         {
@@ -1998,6 +1998,10 @@
         },
         {
             "brawler": "EVE",
+            "qtd": 1
+        },
+        {
+            "brawler": "FRANK",
             "qtd": 1
         }
     ],
@@ -2170,7 +2174,7 @@
         },
         {
             "brawler": "BERRY",
-            "qtd": 5
+            "qtd": 6
         },
         {
             "brawler": "GLOWY",
@@ -2181,11 +2185,7 @@
             "qtd": 5
         },
         {
-            "brawler": "LOU",
-            "qtd": 4
-        },
-        {
-            "brawler": "SPIKE",
+            "brawler": "OTIS",
             "qtd": 4
         },
         {
@@ -2197,11 +2197,23 @@
             "qtd": 4
         },
         {
+            "brawler": "SPIKE",
+            "qtd": 4
+        },
+        {
+            "brawler": "LOU",
+            "qtd": 4
+        },
+        {
+            "brawler": "CHARLIE",
+            "qtd": 4
+        },
+        {
             "brawler": "KIT",
             "qtd": 4
         },
         {
-            "brawler": "ANGELO",
+            "brawler": "NAJIA",
             "qtd": 3
         },
         {
@@ -2209,31 +2221,23 @@
             "qtd": 3
         },
         {
-            "brawler": "NAJIA",
-            "qtd": 3
-        },
-        {
-            "brawler": "CHARLIE",
-            "qtd": 3
-        },
-        {
-            "brawler": "OTIS",
-            "qtd": 3
-        },
-        {
             "brawler": "MEEPLE",
             "qtd": 3
+        },
+        {
+            "brawler": "ANGELO",
+            "qtd": 3
+        },
+        {
+            "brawler": "GENE",
+            "qtd": 2
         },
         {
             "brawler": "EMZ",
             "qtd": 2
         },
         {
-            "brawler": "WILLOW",
-            "qtd": 2
-        },
-        {
-            "brawler": "BROCK",
+            "brawler": "ASH",
             "qtd": 2
         },
         {
@@ -2241,7 +2245,11 @@
             "qtd": 2
         },
         {
-            "brawler": "GENE",
+            "brawler": "BROCK",
+            "qtd": 2
+        },
+        {
+            "brawler": "WILLOW",
             "qtd": 2
         },
         {
@@ -2249,11 +2257,7 @@
             "qtd": 1
         },
         {
-            "brawler": "KAZE",
-            "qtd": 1
-        },
-        {
-            "brawler": "STU",
+            "brawler": "MAISIE",
             "qtd": 1
         },
         {
@@ -2261,19 +2265,15 @@
             "qtd": 1
         },
         {
+            "brawler": "KAZE",
+            "qtd": 1
+        },
+        {
             "brawler": "BARLEY",
             "qtd": 1
         },
         {
-            "brawler": "JANET",
-            "qtd": 1
-        },
-        {
-            "brawler": "MAISIE",
-            "qtd": 1
-        },
-        {
-            "brawler": "PENNY",
+            "brawler": "STU",
             "qtd": 1
         },
         {
@@ -2285,11 +2285,7 @@
             "qtd": 1
         },
         {
-            "brawler": "FINX",
-            "qtd": 1
-        },
-        {
-            "brawler": "POCO",
+            "brawler": "JANET",
             "qtd": 1
         },
         {
@@ -2297,11 +2293,31 @@
             "qtd": 1
         },
         {
-            "brawler": "RUFFS",
+            "brawler": "FINX",
+            "qtd": 1
+        },
+        {
+            "brawler": "PENNY",
+            "qtd": 1
+        },
+        {
+            "brawler": "POCO",
             "qtd": 1
         },
         {
             "brawler": "MICO",
+            "qtd": 1
+        },
+        {
+            "brawler": "RUFFS",
+            "qtd": 1
+        },
+        {
+            "brawler": "BYRON",
+            "qtd": 1
+        },
+        {
+            "brawler": "MORTIS",
             "qtd": 1
         }
     ],
@@ -3181,6 +3197,10 @@
             "qtd": 6
         },
         {
+            "brawler": "CHESTER",
+            "qtd": 5
+        },
+        {
             "brawler": "OLLIE",
             "qtd": 5
         },
@@ -3189,15 +3209,15 @@
             "qtd": 4
         },
         {
-            "brawler": "CHESTER",
-            "qtd": 4
+            "brawler": "BROCK",
+            "qtd": 3
         },
         {
             "brawler": "SIRIUS",
             "qtd": 3
         },
         {
-            "brawler": "PEARL",
+            "brawler": "KIT",
             "qtd": 3
         },
         {
@@ -3209,11 +3229,15 @@
             "qtd": 3
         },
         {
-            "brawler": "ALLI",
+            "brawler": "PEARL",
+            "qtd": 3
+        },
+        {
+            "brawler": "SANDY",
             "qtd": 2
         },
         {
-            "brawler": "SHADE",
+            "brawler": "CHARLIE",
             "qtd": 2
         },
         {
@@ -3221,15 +3245,11 @@
             "qtd": 2
         },
         {
-            "brawler": "BROCK",
+            "brawler": "MOE",
             "qtd": 2
         },
         {
-            "brawler": "KIT",
-            "qtd": 2
-        },
-        {
-            "brawler": "FINX",
+            "brawler": "SHADE",
             "qtd": 2
         },
         {
@@ -3237,16 +3257,16 @@
             "qtd": 2
         },
         {
-            "brawler": "MOE",
-            "qtd": 2
-        },
-        {
             "brawler": "EMZ",
             "qtd": 2
         },
         {
-            "brawler": "SANDY",
-            "qtd": 1
+            "brawler": "ALLI",
+            "qtd": 2
+        },
+        {
+            "brawler": "FINX",
+            "qtd": 2
         },
         {
             "brawler": "COLT",
@@ -3257,7 +3277,15 @@
             "qtd": 1
         },
         {
+            "brawler": "PAM",
+            "qtd": 1
+        },
+        {
             "brawler": "LUMI",
+            "qtd": 1
+        },
+        {
+            "brawler": "CROW",
             "qtd": 1
         },
         {
@@ -3269,19 +3297,7 @@
             "qtd": 1
         },
         {
-            "brawler": "PAM",
-            "qtd": 1
-        },
-        {
-            "brawler": "CROW",
-            "qtd": 1
-        },
-        {
             "brawler": "ROSA",
-            "qtd": 1
-        },
-        {
-            "brawler": "CHARLIE",
             "qtd": 1
         },
         {
@@ -3290,6 +3306,14 @@
         },
         {
             "brawler": "DARRYL",
+            "qtd": 1
+        },
+        {
+            "brawler": "PIERCE",
+            "qtd": 1
+        },
+        {
+            "brawler": "GLOWY",
             "qtd": 1
         }
     ],
@@ -4687,19 +4711,23 @@
     ],
     "#GVLRUG9Q": [
         {
+            "brawler": "GENE",
+            "qtd": 2
+        },
+        {
             "brawler": "MOE",
             "qtd": 2
         },
         {
-            "brawler": "NITA",
-            "qtd": 1
-        },
-        {
-            "brawler": "GENE",
-            "qtd": 1
+            "brawler": "SIRIUS",
+            "qtd": 2
         },
         {
             "brawler": "MEEPLE",
+            "qtd": 1
+        },
+        {
+            "brawler": "NITA",
             "qtd": 1
         },
         {
@@ -4717,23 +4745,43 @@
         {
             "brawler": "BROCK",
             "qtd": 1
+        },
+        {
+            "brawler": "NAJIA",
+            "qtd": 1
+        },
+        {
+            "brawler": "CHUCK",
+            "qtd": 1
+        },
+        {
+            "brawler": "CROW",
+            "qtd": 1
+        },
+        {
+            "brawler": "BYRON",
+            "qtd": 1
         }
     ],
     "#LU8C9YJU": [
+        {
+            "brawler": "MINA",
+            "qtd": 6
+        },
         {
             "brawler": "STARR NOVA",
             "qtd": 6
         },
         {
-            "brawler": "MINA",
-            "qtd": 4
+            "brawler": "DAMIAN",
+            "qtd": 6
         },
         {
             "brawler": "KENJI",
             "qtd": 3
         },
         {
-            "brawler": "EDGAR",
+            "brawler": "MEEPLE",
             "qtd": 3
         },
         {
@@ -4741,12 +4789,12 @@
             "qtd": 3
         },
         {
-            "brawler": "DAMIAN",
+            "brawler": "EDGAR",
             "qtd": 3
         },
         {
-            "brawler": "MEEPLE",
-            "qtd": 3
+            "brawler": "OTIS",
+            "qtd": 2
         },
         {
             "brawler": "SHADE",
@@ -4755,10 +4803,6 @@
         {
             "brawler": "POCO",
             "qtd": 2
-        },
-        {
-            "brawler": "OTIS",
-            "qtd": 1
         },
         {
             "brawler": "BIBI",
@@ -4798,6 +4842,10 @@
         },
         {
             "brawler": "ALLI",
+            "qtd": 1
+        },
+        {
+            "brawler": "BERRY",
             "qtd": 1
         }
     ],
@@ -5031,19 +5079,19 @@
             "qtd": 12
         },
         {
-            "brawler": "KAZE",
+            "brawler": "MORTIS",
             "qtd": 5
         },
         {
-            "brawler": "MORTIS",
-            "qtd": 4
+            "brawler": "KAZE",
+            "qtd": 5
         },
         {
             "brawler": "CORDELIUS",
             "qtd": 4
         },
         {
-            "brawler": "OTIS",
+            "brawler": "PENNY",
             "qtd": 3
         },
         {
@@ -5055,11 +5103,15 @@
             "qtd": 3
         },
         {
+            "brawler": "OTIS",
+            "qtd": 3
+        },
+        {
             "brawler": "LUMI",
             "qtd": 2
         },
         {
-            "brawler": "PENNY",
+            "brawler": "CROW",
             "qtd": 2
         },
         {
@@ -5071,15 +5123,11 @@
             "qtd": 1
         },
         {
-            "brawler": "POCO",
-            "qtd": 1
-        },
-        {
-            "brawler": "NITA",
-            "qtd": 1
-        },
-        {
             "brawler": "FINX",
+            "qtd": 1
+        },
+        {
+            "brawler": "POCO",
             "qtd": 1
         },
         {
@@ -5091,7 +5139,7 @@
             "qtd": 1
         },
         {
-            "brawler": "CROW",
+            "brawler": "NITA",
             "qtd": 1
         },
         {
@@ -5235,31 +5283,27 @@
             "qtd": 4
         },
         {
-            "brawler": "CROW",
+            "brawler": "STU",
+            "qtd": 3
+        },
+        {
+            "brawler": "MELODIE",
             "qtd": 2
         },
         {
-            "brawler": "STU",
+            "brawler": "KAZE",
             "qtd": 2
         },
         {
             "brawler": "ALLI",
-            "qtd": 1
+            "qtd": 2
+        },
+        {
+            "brawler": "CROW",
+            "qtd": 2
         },
         {
             "brawler": "GUS",
-            "qtd": 1
-        },
-        {
-            "brawler": "KAZE",
-            "qtd": 1
-        },
-        {
-            "brawler": "COLETTE",
-            "qtd": 1
-        },
-        {
-            "brawler": "BELLE",
             "qtd": 1
         },
         {
@@ -5267,7 +5311,15 @@
             "qtd": 1
         },
         {
+            "brawler": "COLETTE",
+            "qtd": 1
+        },
+        {
             "brawler": "BROCK",
+            "qtd": 1
+        },
+        {
+            "brawler": "BELLE",
             "qtd": 1
         },
         {
@@ -5275,11 +5327,11 @@
             "qtd": 1
         },
         {
-            "brawler": "MOE",
+            "brawler": "JAE-YONG",
             "qtd": 1
         },
         {
-            "brawler": "JAE-YONG",
+            "brawler": "MOE",
             "qtd": 1
         },
         {
@@ -5287,26 +5339,26 @@
             "qtd": 1
         },
         {
-            "brawler": "MELODIE",
+            "brawler": "WILLOW",
+            "qtd": 1
+        },
+        {
+            "brawler": "MINA",
+            "qtd": 1
+        },
+        {
+            "brawler": "MANDY",
             "qtd": 1
         }
     ],
     "#U8YYJUG2": [
         {
             "brawler": "LUMI",
-            "qtd": 3
+            "qtd": 4
         },
         {
             "brawler": "JANET",
             "qtd": 3
-        },
-        {
-            "brawler": "LEON",
-            "qtd": 2
-        },
-        {
-            "brawler": "ANGELO",
-            "qtd": 2
         },
         {
             "brawler": "RUFFS",
@@ -5317,11 +5369,19 @@
             "qtd": 2
         },
         {
-            "brawler": "DOUG",
-            "qtd": 1
+            "brawler": "ANGELO",
+            "qtd": 2
         },
         {
-            "brawler": "EDGAR",
+            "brawler": "LEON",
+            "qtd": 2
+        },
+        {
+            "brawler": "STU",
+            "qtd": 2
+        },
+        {
+            "brawler": "DOUG",
             "qtd": 1
         },
         {
@@ -5329,11 +5389,11 @@
             "qtd": 1
         },
         {
-            "brawler": "GENE",
+            "brawler": "EDGAR",
             "qtd": 1
         },
         {
-            "brawler": "STU",
+            "brawler": "GENE",
             "qtd": 1
         },
         {
@@ -5359,11 +5419,35 @@
         {
             "brawler": "JAE-YONG",
             "qtd": 1
+        },
+        {
+            "brawler": "CHESTER",
+            "qtd": 1
+        },
+        {
+            "brawler": "PIERCE",
+            "qtd": 1
+        },
+        {
+            "brawler": "BO",
+            "qtd": 1
+        },
+        {
+            "brawler": "LOLA",
+            "qtd": 1
+        },
+        {
+            "brawler": "PENNY",
+            "qtd": 1
         }
     ],
     "#88PL8L2JC": [
         {
             "brawler": "MINA",
+            "qtd": 8
+        },
+        {
+            "brawler": "COLT",
             "qtd": 7
         },
         {
@@ -5371,7 +5455,11 @@
             "qtd": 7
         },
         {
-            "brawler": "COLT",
+            "brawler": "MORTIS",
+            "qtd": 6
+        },
+        {
+            "brawler": "EDGAR",
             "qtd": 6
         },
         {
@@ -5381,14 +5469,6 @@
         {
             "brawler": "KAZE",
             "qtd": 5
-        },
-        {
-            "brawler": "MORTIS",
-            "qtd": 5
-        },
-        {
-            "brawler": "EDGAR",
-            "qtd": 4
         },
         {
             "brawler": "STU",
@@ -5403,19 +5483,11 @@
             "qtd": 3
         },
         {
-            "brawler": "KENJI",
-            "qtd": 2
-        },
-        {
             "brawler": "GENE",
             "qtd": 2
         },
         {
-            "brawler": "RUFFS",
-            "qtd": 2
-        },
-        {
-            "brawler": "EMZ",
+            "brawler": "KENJI",
             "qtd": 2
         },
         {
@@ -5423,7 +5495,15 @@
             "qtd": 2
         },
         {
-            "brawler": "BULL",
+            "brawler": "EMZ",
+            "qtd": 2
+        },
+        {
+            "brawler": "RUFFS",
+            "qtd": 2
+        },
+        {
+            "brawler": "GLOWY",
             "qtd": 1
         },
         {
@@ -5431,11 +5511,7 @@
             "qtd": 1
         },
         {
-            "brawler": "BROCK",
-            "qtd": 1
-        },
-        {
-            "brawler": "GLOWY",
+            "brawler": "BULL",
             "qtd": 1
         },
         {
@@ -5443,15 +5519,15 @@
             "qtd": 1
         },
         {
-            "brawler": "JAE-YONG",
-            "qtd": 1
-        },
-        {
             "brawler": "MELODIE",
             "qtd": 1
         },
         {
-            "brawler": "BELLE",
+            "brawler": "JAE-YONG",
+            "qtd": 1
+        },
+        {
+            "brawler": "BROCK",
             "qtd": 1
         },
         {
@@ -5459,11 +5535,15 @@
             "qtd": 1
         },
         {
-            "brawler": "OLLIE",
+            "brawler": "BELLE",
             "qtd": 1
         },
         {
             "brawler": "BUZZ",
+            "qtd": 1
+        },
+        {
+            "brawler": "OLLIE",
             "qtd": 1
         },
         {
@@ -5472,6 +5552,14 @@
         },
         {
             "brawler": "AMBER",
+            "qtd": 1
+        },
+        {
+            "brawler": "ALLI",
+            "qtd": 1
+        },
+        {
+            "brawler": "STARR NOVA",
             "qtd": 1
         }
     ],
@@ -5502,6 +5590,14 @@
         },
         {
             "brawler": "PIERCE",
+            "qtd": 1
+        },
+        {
+            "brawler": "CHESTER",
+            "qtd": 1
+        },
+        {
+            "brawler": "MEEPLE",
             "qtd": 1
         }
     ],
@@ -5828,7 +5924,19 @@
     "#R80QRP0G": [
         {
             "brawler": "LUMI",
-            "qtd": 8
+            "qtd": 9
+        },
+        {
+            "brawler": "CHESTER",
+            "qtd": 5
+        },
+        {
+            "brawler": "DAMIAN",
+            "qtd": 4
+        },
+        {
+            "brawler": "RUFFS",
+            "qtd": 4
         },
         {
             "brawler": "STU",
@@ -5839,27 +5947,11 @@
             "qtd": 4
         },
         {
-            "brawler": "DAMIAN",
-            "qtd": 4
-        },
-        {
-            "brawler": "CHESTER",
-            "qtd": 4
-        },
-        {
-            "brawler": "RUFFS",
+            "brawler": "CHARLIE",
             "qtd": 3
         },
         {
-            "brawler": "FANG",
-            "qtd": 2
-        },
-        {
             "brawler": "ANGELO",
-            "qtd": 2
-        },
-        {
-            "brawler": "BYRON",
             "qtd": 2
         },
         {
@@ -5867,23 +5959,7 @@
             "qtd": 2
         },
         {
-            "brawler": "STARR NOVA",
-            "qtd": 2
-        },
-        {
-            "brawler": "LEON",
-            "qtd": 2
-        },
-        {
-            "brawler": "BROCK",
-            "qtd": 2
-        },
-        {
-            "brawler": "WILLOW",
-            "qtd": 2
-        },
-        {
-            "brawler": "CHARLIE",
+            "brawler": "BYRON",
             "qtd": 2
         },
         {
@@ -5891,19 +5967,39 @@
             "qtd": 2
         },
         {
-            "brawler": "MAX",
-            "qtd": 1
+            "brawler": "LEON",
+            "qtd": 2
         },
         {
-            "brawler": "COLT",
-            "qtd": 1
+            "brawler": "MEEPLE",
+            "qtd": 2
+        },
+        {
+            "brawler": "FANG",
+            "qtd": 2
+        },
+        {
+            "brawler": "OTIS",
+            "qtd": 2
+        },
+        {
+            "brawler": "WILLOW",
+            "qtd": 2
+        },
+        {
+            "brawler": "STARR NOVA",
+            "qtd": 2
+        },
+        {
+            "brawler": "BROCK",
+            "qtd": 2
         },
         {
             "brawler": "GUS",
-            "qtd": 1
+            "qtd": 2
         },
         {
-            "brawler": "BO",
+            "brawler": "MAX",
             "qtd": 1
         },
         {
@@ -5915,11 +6011,11 @@
             "qtd": 1
         },
         {
-            "brawler": "OTIS",
+            "brawler": "COLT",
             "qtd": 1
         },
         {
-            "brawler": "GENE",
+            "brawler": "BO",
             "qtd": 1
         },
         {
@@ -5935,7 +6031,7 @@
             "qtd": 1
         },
         {
-            "brawler": "MEEPLE",
+            "brawler": "GENE",
             "qtd": 1
         },
         {
@@ -7015,11 +7111,35 @@
         {
             "brawler": "SIRIUS",
             "qtd": 1
+        },
+        {
+            "brawler": "FINX",
+            "qtd": 1
+        },
+        {
+            "brawler": "STARR NOVA",
+            "qtd": 1
+        },
+        {
+            "brawler": "LUMI",
+            "qtd": 1
         }
     ],
     "#CPRPVQGYQ": [
         {
             "brawler": "MORTIS",
+            "qtd": 1
+        },
+        {
+            "brawler": "EDGAR",
+            "qtd": 1
+        },
+        {
+            "brawler": "CHESTER",
+            "qtd": 1
+        },
+        {
+            "brawler": "MEEPLE",
             "qtd": 1
         }
     ],
@@ -7208,6 +7328,236 @@
     "#9YRYGVLV": [
         {
             "brawler": "MANDY",
+            "qtd": 1
+        }
+    ],
+    "#PRYQLVRJU": [
+        {
+            "brawler": "OTIS",
+            "qtd": 1
+        },
+        {
+            "brawler": "CHESTER",
+            "qtd": 1
+        },
+        {
+            "brawler": "BELLE",
+            "qtd": 1
+        }
+    ],
+    "#YGU28JJPL": [
+        {
+            "brawler": "MELODIE",
+            "qtd": 1
+        },
+        {
+            "brawler": "FANG",
+            "qtd": 1
+        },
+        {
+            "brawler": "GENE",
+            "qtd": 1
+        }
+    ],
+    "#YCG8R08U0": [
+        {
+            "brawler": "CHARLIE",
+            "qtd": 1
+        },
+        {
+            "brawler": "MEEPLE",
+            "qtd": 1
+        }
+    ],
+    "#8Q2ULG0UG": [
+        {
+            "brawler": "CHESTER",
+            "qtd": 1
+        },
+        {
+            "brawler": "PENNY",
+            "qtd": 1
+        }
+    ],
+    "#2Q9U920QG": [
+        {
+            "brawler": "GRIFF",
+            "qtd": 1
+        },
+        {
+            "brawler": "GENE",
+            "qtd": 1
+        }
+    ],
+    "#9GV2G0YCG": [
+        {
+            "brawler": "TRUNK",
+            "qtd": 1
+        },
+        {
+            "brawler": "LEON",
+            "qtd": 1
+        }
+    ],
+    "#YQU0R2U2Q": [
+        {
+            "brawler": "OTIS",
+            "qtd": 1
+        },
+        {
+            "brawler": "FANG",
+            "qtd": 1
+        }
+    ],
+    "#8QPQ0RCRU": [
+        {
+            "brawler": "EMZ",
+            "qtd": 1
+        },
+        {
+            "brawler": "GENE",
+            "qtd": 1
+        }
+    ],
+    "#89UP2029L": [
+        {
+            "brawler": "LUMI",
+            "qtd": 1
+        },
+        {
+            "brawler": "FANG",
+            "qtd": 1
+        }
+    ],
+    "#PQ822J9JC": [
+        {
+            "brawler": "CHARLIE",
+            "qtd": 1
+        },
+        {
+            "brawler": "BROCK",
+            "qtd": 1
+        }
+    ],
+    "#98QVPVJUV": [
+        {
+            "brawler": "LEON",
+            "qtd": 2
+        }
+    ],
+    "#2C8UU0Q0J0": [
+        {
+            "brawler": "PENNY",
+            "qtd": 1
+        },
+        {
+            "brawler": "MEEPLE",
+            "qtd": 1
+        },
+        {
+            "brawler": "GENE",
+            "qtd": 1
+        }
+    ],
+    "#PU820GUUR": [
+        {
+            "brawler": "COLT",
+            "qtd": 1
+        },
+        {
+            "brawler": "EMZ",
+            "qtd": 1
+        },
+        {
+            "brawler": "MEEPLE",
+            "qtd": 1
+        }
+    ],
+    "#P9GUC2UQU": [
+        {
+            "brawler": "AMBER",
+            "qtd": 1
+        },
+        {
+            "brawler": "EDGAR",
+            "qtd": 1
+        },
+        {
+            "brawler": "LEON",
+            "qtd": 1
+        }
+    ],
+    "#890CQC82": [
+        {
+            "brawler": "OTIS",
+            "qtd": 1
+        },
+        {
+            "brawler": "PENNY",
+            "qtd": 1
+        }
+    ],
+    "#PVVVVYPR2": [
+        {
+            "brawler": "STU",
+            "qtd": 1
+        },
+        {
+            "brawler": "GENE",
+            "qtd": 1
+        }
+    ],
+    "#28GPVJL88U": [
+        {
+            "brawler": "ROSA",
+            "qtd": 1
+        },
+        {
+            "brawler": "EDGAR",
+            "qtd": 1
+        }
+    ],
+    "#2CYV9CLCYG": [
+        {
+            "brawler": "COLETTE",
+            "qtd": 1
+        },
+        {
+            "brawler": "CHARLIE",
+            "qtd": 1
+        }
+    ],
+    "#28GY0GUJ0L": [
+        {
+            "brawler": "CHESTER",
+            "qtd": 1
+        },
+        {
+            "brawler": "MEEPLE",
+            "qtd": 1
+        }
+    ],
+    "#2JCL90QYJ9": [
+        {
+            "brawler": "OTIS",
+            "qtd": 1
+        },
+        {
+            "brawler": "LUMI",
+            "qtd": 1
+        }
+    ],
+    "#89LJLLVCC": [
+        {
+            "brawler": "ANGELO",
+            "qtd": 1
+        },
+        {
+            "brawler": "BULL",
+            "qtd": 1
+        },
+        {
+            "brawler": "KAZE",
             "qtd": 1
         }
     ]
