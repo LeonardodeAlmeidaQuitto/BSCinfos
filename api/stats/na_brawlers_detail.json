@@ -3493,14 +3493,14 @@
     "BEA": {
         "top_mapas": [
             {
+                "mapa": "",
+                "modo": "bounty",
+                "picks": 6
+            },
+            {
                 "mapa": "Ring of Fire",
                 "modo": "hotZone",
                 "picks": 5
-            },
-            {
-                "mapa": "",
-                "modo": "bounty",
-                "picks": 4
             },
             {
                 "mapa": "Out in the Open",
@@ -3510,16 +3510,16 @@
         ],
         "sinergias": [
             {
-                "com": "FINX",
+                "com": "BUZZ",
                 "picks": 3,
                 "vitorias": 2,
                 "win_rate": "66.7%"
             },
             {
-                "com": "CHUCK",
-                "picks": 2,
+                "com": "FINX",
+                "picks": 3,
                 "vitorias": 2,
-                "win_rate": "100.0%"
+                "win_rate": "66.7%"
             },
             {
                 "com": "BROCK",
@@ -3534,10 +3534,10 @@
                 "win_rate": "50.0%"
             },
             {
-                "com": "8-BIT",
-                "picks": 1,
-                "vitorias": 0,
-                "win_rate": "0.0%"
+                "com": "CHUCK",
+                "picks": 2,
+                "vitorias": 2,
+                "win_rate": "100.0%"
             }
         ]
     },
