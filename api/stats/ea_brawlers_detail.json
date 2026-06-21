@@ -511,9 +511,9 @@
                 "picks": 7
             },
             {
-                "mapa": "Pit Stop",
-                "modo": "heist",
-                "picks": 6
+                "mapa": "",
+                "modo": "knockout",
+                "picks": 7
             }
         ],
         "sinergias": [
@@ -554,7 +554,7 @@
             {
                 "mapa": "",
                 "modo": "knockout",
-                "picks": 26
+                "picks": 28
             },
             {
                 "mapa": "Hideout",
@@ -1035,13 +1035,13 @@
                 "win_rate": "28.6%"
             },
             {
-                "com": "MINA",
+                "com": "LILY",
                 "picks": 6,
                 "vitorias": 4,
                 "win_rate": "66.7%"
             },
             {
-                "com": "LILY",
+                "com": "MINA",
                 "picks": 6,
                 "vitorias": 4,
                 "win_rate": "66.7%"
@@ -1265,23 +1265,23 @@
                 "picks": 10
             },
             {
-                "mapa": "Dueling Beetles",
-                "modo": "hotZone",
-                "picks": 6
+                "mapa": "Layer Cake",
+                "modo": "bounty",
+                "picks": 7
             }
         ],
         "sinergias": [
+            {
+                "com": "MORTIS",
+                "picks": 9,
+                "vitorias": 6,
+                "win_rate": "66.7%"
+            },
             {
                 "com": "SIRIUS",
                 "picks": 8,
                 "vitorias": 6,
                 "win_rate": "75.0%"
-            },
-            {
-                "com": "MORTIS",
-                "picks": 7,
-                "vitorias": 4,
-                "win_rate": "57.1%"
             },
             {
                 "com": "EDGAR",
@@ -1296,10 +1296,10 @@
                 "win_rate": "42.9%"
             },
             {
-                "com": "KENJI",
-                "picks": 6,
-                "vitorias": 2,
-                "win_rate": "33.3%"
+                "com": "RUFFS",
+                "picks": 7,
+                "vitorias": 5,
+                "win_rate": "71.4%"
             }
         ]
     },
@@ -1612,13 +1612,13 @@
     "ALLI": {
         "top_mapas": [
             {
-                "mapa": "Kaboom Canyon",
-                "modo": "heist",
-                "picks": 3
-            },
-            {
                 "mapa": "Layer Cake",
                 "modo": "bounty",
+                "picks": 4
+            },
+            {
+                "mapa": "Kaboom Canyon",
+                "modo": "heist",
                 "picks": 3
             },
             {
@@ -1635,20 +1635,20 @@
                 "win_rate": "40.0%"
             },
             {
-                "com": "LUMI",
-                "picks": 3,
-                "vitorias": 2,
-                "win_rate": "66.7%"
-            },
-            {
                 "com": "OTIS",
                 "picks": 3,
                 "vitorias": 1,
                 "win_rate": "33.3%"
             },
             {
+                "com": "LUMI",
+                "picks": 3,
+                "vitorias": 2,
+                "win_rate": "66.7%"
+            },
+            {
                 "com": "MEEPLE",
-                "picks": 2,
+                "picks": 3,
                 "vitorias": 0,
                 "win_rate": "0.0%"
             },
@@ -2480,15 +2480,15 @@
             {
                 "mapa": "Layer Cake",
                 "modo": "bounty",
-                "picks": 6
+                "picks": 7
             }
         ],
         "sinergias": [
             {
-                "com": "OTIS",
-                "picks": 8,
-                "vitorias": 3,
-                "win_rate": "37.5%"
+                "com": "CROW",
+                "picks": 9,
+                "vitorias": 6,
+                "win_rate": "66.7%"
             },
             {
                 "com": "STU",
@@ -2497,10 +2497,10 @@
                 "win_rate": "37.5%"
             },
             {
-                "com": "CROW",
-                "picks": 7,
-                "vitorias": 4,
-                "win_rate": "57.1%"
+                "com": "OTIS",
+                "picks": 8,
+                "vitorias": 3,
+                "win_rate": "37.5%"
             },
             {
                 "com": "LUMI",
@@ -2883,7 +2883,7 @@
             {
                 "mapa": "Crystal Arcade",
                 "modo": "gemGrab",
-                "picks": 3
+                "picks": 4
             }
         ],
         "sinergias": [
@@ -2906,10 +2906,10 @@
                 "win_rate": "25.0%"
             },
             {
-                "com": "BYRON",
+                "com": "ANGELO",
                 "picks": 2,
-                "vitorias": 2,
-                "win_rate": "100.0%"
+                "vitorias": 1,
+                "win_rate": "50.0%"
             },
             {
                 "com": "FINX",
@@ -3814,24 +3814,24 @@
             {
                 "mapa": "Crystal Arcade",
                 "modo": "gemGrab",
-                "picks": 2
+                "picks": 3
             }
         ],
         "sinergias": [
             {
                 "com": "CHESTER",
-                "picks": 5,
+                "picks": 6,
                 "vitorias": 3,
-                "win_rate": "60.0%"
+                "win_rate": "50.0%"
             },
             {
-                "com": "LILY",
+                "com": "STU",
                 "picks": 4,
                 "vitorias": 2,
                 "win_rate": "50.0%"
             },
             {
-                "com": "STU",
+                "com": "LILY",
                 "picks": 4,
                 "vitorias": 2,
                 "win_rate": "50.0%"
@@ -3843,7 +3843,7 @@
                 "win_rate": "33.3%"
             },
             {
-                "com": "OTIS",
+                "com": "SHADE",
                 "picks": 2,
                 "vitorias": 0,
                 "win_rate": "0.0%"
