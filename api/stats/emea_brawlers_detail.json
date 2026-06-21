@@ -216,8 +216,8 @@
                 "picks": 11
             },
             {
-                "mapa": "Ring of Fire",
-                "modo": "hotZone",
+                "mapa": "Pinball Dreams",
+                "modo": "brawlBall",
                 "picks": 9
             }
         ],
@@ -1124,27 +1124,27 @@
     "CLANCY": {
         "top_mapas": [
             {
-                "mapa": "Layer Cake",
-                "modo": "bounty",
-                "picks": 2
-            },
-            {
                 "mapa": "Pinhole Punt",
                 "modo": "brawlBall",
                 "picks": 2
             },
             {
-                "mapa": "Beach Ball",
-                "modo": "brawlBall",
+                "mapa": "Layer Cake",
+                "modo": "bounty",
+                "picks": 2
+            },
+            {
+                "mapa": "Belle's Rock",
+                "modo": "knockout",
                 "picks": 1
             }
         ],
         "sinergias": [
             {
                 "com": "MORTIS",
-                "picks": 3,
+                "picks": 4,
                 "vitorias": 2,
-                "win_rate": "66.7%"
+                "win_rate": "50.0%"
             },
             {
                 "com": "CHESTER",
@@ -1192,16 +1192,16 @@
         ],
         "sinergias": [
             {
+                "com": "KENJI",
+                "picks": 13,
+                "vitorias": 7,
+                "win_rate": "53.8%"
+            },
+            {
                 "com": "LUMI",
                 "picks": 12,
                 "vitorias": 6,
                 "win_rate": "50.0%"
-            },
-            {
-                "com": "KENJI",
-                "picks": 12,
-                "vitorias": 7,
-                "win_rate": "58.3%"
             },
             {
                 "com": "MINA",
@@ -3510,6 +3510,12 @@
         ],
         "sinergias": [
             {
+                "com": "EDGAR",
+                "picks": 5,
+                "vitorias": 0,
+                "win_rate": "0.0%"
+            },
+            {
                 "com": "BYRON",
                 "picks": 5,
                 "vitorias": 1,
@@ -3520,12 +3526,6 @@
                 "picks": 5,
                 "vitorias": 2,
                 "win_rate": "40.0%"
-            },
-            {
-                "com": "EDGAR",
-                "picks": 5,
-                "vitorias": 0,
-                "win_rate": "0.0%"
             },
             {
                 "com": "KAZE",
