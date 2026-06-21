@@ -871,7 +871,7 @@
             {
                 "mapa": "Pit Stop",
                 "modo": "heist",
-                "picks": 21
+                "picks": 22
             },
             {
                 "mapa": "Safe Zone",
@@ -1848,9 +1848,9 @@
                 "picks": 13
             },
             {
-                "mapa": "Kaboom Canyon",
-                "modo": "heist",
-                "picks": 10
+                "mapa": "Layer Cake",
+                "modo": "bounty",
+                "picks": 11
             }
         ],
         "sinergias": [
@@ -1861,16 +1861,16 @@
                 "win_rate": "69.2%"
             },
             {
-                "com": "BELLE",
-                "picks": 10,
-                "vitorias": 7,
-                "win_rate": "70.0%"
-            },
-            {
                 "com": "BYRON",
                 "picks": 10,
                 "vitorias": 5,
                 "win_rate": "50.0%"
+            },
+            {
+                "com": "BELLE",
+                "picks": 10,
+                "vitorias": 7,
+                "win_rate": "70.0%"
             },
             {
                 "com": "PENNY",
@@ -1879,10 +1879,10 @@
                 "win_rate": "60.0%"
             },
             {
-                "com": "LUMI",
+                "com": "CROW",
                 "picks": 9,
-                "vitorias": 7,
-                "win_rate": "77.8%"
+                "vitorias": 5,
+                "win_rate": "55.6%"
             }
         ]
     },
@@ -2052,18 +2052,12 @@
                 "picks": 2
             },
             {
-                "mapa": "Ring of Fire",
-                "modo": "hotZone",
+                "mapa": "Pit Stop",
+                "modo": "heist",
                 "picks": 1
             }
         ],
         "sinergias": [
-            {
-                "com": "GENE",
-                "picks": 2,
-                "vitorias": 1,
-                "win_rate": "50.0%"
-            },
             {
                 "com": "BROCK",
                 "picks": 2,
@@ -2071,10 +2065,10 @@
                 "win_rate": "50.0%"
             },
             {
-                "com": "BEA",
-                "picks": 1,
+                "com": "GENE",
+                "picks": 2,
                 "vitorias": 1,
-                "win_rate": "100.0%"
+                "win_rate": "50.0%"
             },
             {
                 "com": "AMBER",
@@ -2083,10 +2077,16 @@
                 "win_rate": "100.0%"
             },
             {
-                "com": "CROW",
+                "com": "BEA",
                 "picks": 1,
-                "vitorias": 0,
-                "win_rate": "0.0%"
+                "vitorias": 1,
+                "win_rate": "100.0%"
+            },
+            {
+                "com": "CLANCY",
+                "picks": 1,
+                "vitorias": 1,
+                "win_rate": "100.0%"
             }
         ]
     },
@@ -2858,14 +2858,14 @@
     "ALLI": {
         "top_mapas": [
             {
-                "mapa": "Pinhole Punt",
-                "modo": "brawlBall",
+                "mapa": "Layer Cake",
+                "modo": "bounty",
                 "picks": 10
             },
             {
-                "mapa": "Layer Cake",
-                "modo": "bounty",
-                "picks": 9
+                "mapa": "Pinhole Punt",
+                "modo": "brawlBall",
+                "picks": 10
             },
             {
                 "mapa": "Hard Rock Mine",
@@ -2893,16 +2893,16 @@
                 "win_rate": "33.3%"
             },
             {
-                "com": "MEEPLE",
-                "picks": 5,
-                "vitorias": 3,
-                "win_rate": "60.0%"
-            },
-            {
                 "com": "OTIS",
                 "picks": 5,
                 "vitorias": 2,
                 "win_rate": "40.0%"
+            },
+            {
+                "com": "MEEPLE",
+                "picks": 5,
+                "vitorias": 3,
+                "win_rate": "60.0%"
             }
         ]
     },
