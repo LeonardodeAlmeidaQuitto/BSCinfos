@@ -3495,7 +3495,7 @@
             {
                 "mapa": "",
                 "modo": "bounty",
-                "picks": 6
+                "picks": 8
             },
             {
                 "mapa": "Ring of Fire",
@@ -3510,7 +3510,7 @@
         ],
         "sinergias": [
             {
-                "com": "BUZZ",
+                "com": "KENJI",
                 "picks": 3,
                 "vitorias": 2,
                 "win_rate": "66.7%"
@@ -3522,22 +3522,22 @@
                 "win_rate": "66.7%"
             },
             {
-                "com": "BROCK",
-                "picks": 2,
-                "vitorias": 1,
-                "win_rate": "50.0%"
-            },
-            {
-                "com": "EVE",
-                "picks": 2,
-                "vitorias": 1,
-                "win_rate": "50.0%"
+                "com": "BUZZ",
+                "picks": 3,
+                "vitorias": 2,
+                "win_rate": "66.7%"
             },
             {
                 "com": "CHUCK",
                 "picks": 2,
                 "vitorias": 2,
                 "win_rate": "100.0%"
+            },
+            {
+                "com": "EVE",
+                "picks": 2,
+                "vitorias": 1,
+                "win_rate": "50.0%"
             }
         ]
     },
