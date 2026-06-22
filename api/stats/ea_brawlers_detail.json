@@ -554,7 +554,7 @@
             {
                 "mapa": "",
                 "modo": "knockout",
-                "picks": 36
+                "picks": 38
             },
             {
                 "mapa": "Hideout",
@@ -3677,6 +3677,11 @@
     "MANDY": {
         "top_mapas": [
             {
+                "mapa": "",
+                "modo": "knockout",
+                "picks": 1
+            },
+            {
                 "mapa": "Hideout",
                 "modo": "bounty",
                 "picks": 1
@@ -3688,6 +3693,12 @@
                 "picks": 1,
                 "vitorias": 0,
                 "win_rate": "0.0%"
+            },
+            {
+                "com": "OLLIE",
+                "picks": 1,
+                "vitorias": 1,
+                "win_rate": "100.0%"
             },
             {
                 "com": "RUFFS",
