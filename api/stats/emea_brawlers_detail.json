@@ -1861,16 +1861,16 @@
                 "win_rate": "69.2%"
             },
             {
-                "com": "BYRON",
-                "picks": 10,
-                "vitorias": 5,
-                "win_rate": "50.0%"
-            },
-            {
                 "com": "BELLE",
                 "picks": 10,
                 "vitorias": 7,
                 "win_rate": "70.0%"
+            },
+            {
+                "com": "BYRON",
+                "picks": 10,
+                "vitorias": 5,
+                "win_rate": "50.0%"
             },
             {
                 "com": "PENNY",
@@ -1879,10 +1879,10 @@
                 "win_rate": "60.0%"
             },
             {
-                "com": "CROW",
+                "com": "LUMI",
                 "picks": 9,
-                "vitorias": 5,
-                "win_rate": "55.6%"
+                "vitorias": 7,
+                "win_rate": "77.8%"
             }
         ]
     },
@@ -2052,9 +2052,9 @@
                 "picks": 2
             },
             {
-                "mapa": "Pit Stop",
-                "modo": "heist",
-                "picks": 1
+                "mapa": "Ring of Fire",
+                "modo": "hotZone",
+                "picks": 2
             }
         ],
         "sinergias": [
@@ -2071,13 +2071,13 @@
                 "win_rate": "50.0%"
             },
             {
-                "com": "AMBER",
+                "com": "BEA",
                 "picks": 1,
                 "vitorias": 1,
                 "win_rate": "100.0%"
             },
             {
-                "com": "BEA",
+                "com": "AMBER",
                 "picks": 1,
                 "vitorias": 1,
                 "win_rate": "100.0%"
