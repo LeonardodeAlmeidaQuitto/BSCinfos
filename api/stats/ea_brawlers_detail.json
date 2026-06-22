@@ -2344,6 +2344,12 @@
                 "win_rate": "0.0%"
             },
             {
+                "com": "DAMIAN",
+                "picks": 2,
+                "vitorias": 1,
+                "win_rate": "50.0%"
+            },
+            {
                 "com": "DRACO",
                 "picks": 2,
                 "vitorias": 2,
@@ -2351,12 +2357,6 @@
             },
             {
                 "com": "CROW",
-                "picks": 2,
-                "vitorias": 1,
-                "win_rate": "50.0%"
-            },
-            {
-                "com": "KAZE",
                 "picks": 2,
                 "vitorias": 1,
                 "win_rate": "50.0%"
@@ -3915,6 +3915,11 @@
     "HANK": {
         "top_mapas": [
             {
+                "mapa": "",
+                "modo": "knockout",
+                "picks": 1
+            },
+            {
                 "mapa": "Dueling Beetles",
                 "modo": "hotZone",
                 "picks": 1
@@ -3923,14 +3928,15 @@
                 "mapa": "Goldarm Gulch",
                 "modo": "knockout",
                 "picks": 1
-            },
-            {
-                "mapa": "Layer Cake",
-                "modo": "bounty",
-                "picks": 1
             }
         ],
         "sinergias": [
+            {
+                "com": "BERRY",
+                "picks": 1,
+                "vitorias": 0,
+                "win_rate": "0.0%"
+            },
             {
                 "com": "COLETTE",
                 "picks": 1,
@@ -3951,12 +3957,6 @@
             },
             {
                 "com": "EMZ",
-                "picks": 1,
-                "vitorias": 1,
-                "win_rate": "100.0%"
-            },
-            {
-                "com": "GRAY",
                 "picks": 1,
                 "vitorias": 1,
                 "win_rate": "100.0%"
