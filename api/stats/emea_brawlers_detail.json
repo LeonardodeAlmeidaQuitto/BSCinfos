@@ -910,7 +910,7 @@
                 "win_rate": "42.9%"
             },
             {
-                "com": "MELODIE",
+                "com": "BUZZ",
                 "picks": 6,
                 "vitorias": 4,
                 "win_rate": "66.7%"
@@ -4091,11 +4091,22 @@
                 "mapa": "Power Alley",
                 "modo": "volleyBrawl",
                 "picks": 1
+            },
+            {
+                "mapa": "Ring of Fire",
+                "modo": "hotZone",
+                "picks": 1
             }
         ],
         "sinergias": [
             {
                 "com": "BIBI",
+                "picks": 1,
+                "vitorias": 1,
+                "win_rate": "100.0%"
+            },
+            {
+                "com": "COLT",
                 "picks": 1,
                 "vitorias": 1,
                 "win_rate": "100.0%"

@@ -1192,16 +1192,16 @@
         ],
         "sinergias": [
             {
-                "com": "MINA",
-                "picks": 32,
-                "vitorias": 17,
-                "win_rate": "53.1%"
-            },
-            {
                 "com": "PIERCE",
                 "picks": 32,
                 "vitorias": 18,
                 "win_rate": "56.2%"
+            },
+            {
+                "com": "MINA",
+                "picks": 32,
+                "vitorias": 17,
+                "win_rate": "53.1%"
             },
             {
                 "com": "GENE",
@@ -4462,16 +4462,16 @@
                 "win_rate": "37.5%"
             },
             {
-                "com": "OTIS",
-                "picks": 7,
-                "vitorias": 4,
-                "win_rate": "57.1%"
-            },
-            {
                 "com": "STU",
                 "picks": 7,
                 "vitorias": 2,
                 "win_rate": "28.6%"
+            },
+            {
+                "com": "OTIS",
+                "picks": 7,
+                "vitorias": 4,
+                "win_rate": "57.1%"
             },
             {
                 "com": "CHESTER",
@@ -4796,14 +4796,14 @@
     "MR. P": {
         "top_mapas": [
             {
-                "mapa": "Hideout",
-                "modo": "bounty",
+                "mapa": "",
+                "modo": "knockout",
                 "picks": 3
             },
             {
-                "mapa": "",
-                "modo": "knockout",
-                "picks": 2
+                "mapa": "Hideout",
+                "modo": "bounty",
+                "picks": 3
             },
             {
                 "mapa": "Dry Season",
@@ -5029,6 +5029,12 @@
                 "win_rate": "100.0%"
             },
             {
+                "com": "COLT",
+                "picks": 1,
+                "vitorias": 1,
+                "win_rate": "100.0%"
+            },
+            {
                 "com": "FRANK",
                 "picks": 1,
                 "vitorias": 1,
@@ -5036,12 +5042,6 @@
             },
             {
                 "com": "GALE",
-                "picks": 1,
-                "vitorias": 0,
-                "win_rate": "0.0%"
-            },
-            {
-                "com": "KENJI",
                 "picks": 1,
                 "vitorias": 0,
                 "win_rate": "0.0%"

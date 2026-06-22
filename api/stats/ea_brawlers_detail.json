@@ -501,6 +501,11 @@
     "COLT": {
         "top_mapas": [
             {
+                "mapa": "",
+                "modo": "knockout",
+                "picks": 11
+            },
+            {
                 "mapa": "Kaboom Canyon",
                 "modo": "heist",
                 "picks": 8
@@ -508,11 +513,6 @@
             {
                 "mapa": "Safe Zone",
                 "modo": "heist",
-                "picks": 7
-            },
-            {
-                "mapa": "",
-                "modo": "knockout",
                 "picks": 7
             }
         ],
@@ -522,6 +522,12 @@
                 "picks": 8,
                 "vitorias": 2,
                 "win_rate": "25.0%"
+            },
+            {
+                "com": "ROSA",
+                "picks": 4,
+                "vitorias": 2,
+                "win_rate": "50.0%"
             },
             {
                 "com": "EDGAR",
@@ -540,12 +546,6 @@
                 "picks": 3,
                 "vitorias": 2,
                 "win_rate": "66.7%"
-            },
-            {
-                "com": "JAE-YONG",
-                "picks": 3,
-                "vitorias": 3,
-                "win_rate": "100.0%"
             }
         ]
     },
@@ -806,8 +806,8 @@
                 "picks": 6
             },
             {
-                "mapa": "Hideout",
-                "modo": "bounty",
+                "mapa": "",
+                "modo": "knockout",
                 "picks": 5
             }
         ],
@@ -819,16 +819,16 @@
                 "win_rate": "57.1%"
             },
             {
-                "com": "BELLE",
-                "picks": 6,
-                "vitorias": 3,
-                "win_rate": "50.0%"
-            },
-            {
                 "com": "JAE-YONG",
                 "picks": 6,
                 "vitorias": 4,
                 "win_rate": "66.7%"
+            },
+            {
+                "com": "BELLE",
+                "picks": 6,
+                "vitorias": 3,
+                "win_rate": "50.0%"
             },
             {
                 "com": "GENE",
@@ -3853,6 +3853,11 @@
     "MAISIE": {
         "top_mapas": [
             {
+                "mapa": "",
+                "modo": "knockout",
+                "picks": 2
+            },
+            {
                 "mapa": "Hard Rock Mine",
                 "modo": "gemGrab",
                 "picks": 2
@@ -4622,12 +4627,23 @@
     "ROSA": {
         "top_mapas": [
             {
+                "mapa": "",
+                "modo": "knockout",
+                "picks": 2
+            },
+            {
                 "mapa": "Layer Cake",
                 "modo": "bounty",
                 "picks": 1
             }
         ],
         "sinergias": [
+            {
+                "com": "COLT",
+                "picks": 4,
+                "vitorias": 2,
+                "win_rate": "50.0%"
+            },
             {
                 "com": "EDGAR",
                 "picks": 1,
@@ -4693,7 +4709,7 @@
             {
                 "mapa": "",
                 "modo": "knockout",
-                "picks": 2
+                "picks": 3
             }
         ],
         "sinergias": [
@@ -4701,6 +4717,12 @@
                 "com": "COLT",
                 "picks": 2,
                 "vitorias": 2,
+                "win_rate": "100.0%"
+            },
+            {
+                "com": "BROCK",
+                "picks": 1,
+                "vitorias": 1,
                 "win_rate": "100.0%"
             }
         ]
