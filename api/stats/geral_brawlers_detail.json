@@ -2,6 +2,16 @@
     "LOU": {
         "mapas": [
             {
+                "modo": "bounty",
+                "mapa": "Hideout",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "friendly",
+                "picks": 1,
+                "vitorias": 1,
+                "win_rate": "100.0%"
+            },
+            {
                 "modo": "hotZone",
                 "mapa": "Dueling Beetles",
                 "ano": "2026",
@@ -286,6 +296,16 @@
                 "mapa": "Hideout",
                 "ano": "2026",
                 "mes": "JUNHO",
+                "tipo": "friendly",
+                "picks": 1,
+                "vitorias": 1,
+                "win_rate": "100.0%"
+            },
+            {
+                "modo": "bounty",
+                "mapa": "Hideout",
+                "ano": "2026",
+                "mes": "JUNHO",
                 "tipo": "tournament",
                 "picks": 2,
                 "vitorias": 2,
@@ -531,6 +551,16 @@
                 "mapa": "Hard Rock Mine",
                 "ano": "2026",
                 "mes": "JUNHO",
+                "tipo": "friendly",
+                "picks": 1,
+                "vitorias": 1,
+                "win_rate": "100.0%"
+            },
+            {
+                "modo": "gemGrab",
+                "mapa": "Hard Rock Mine",
+                "ano": "2026",
+                "mes": "JUNHO",
                 "tipo": "tournament",
                 "picks": 2,
                 "vitorias": 0,
@@ -670,6 +700,16 @@
                 "picks": 1,
                 "vitorias": 1,
                 "win_rate": "100.0%"
+            },
+            {
+                "modo": "bounty",
+                "mapa": "Shooting Star",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 0,
+                "win_rate": "0.0%"
             },
             {
                 "modo": "brawlBall",
@@ -962,8 +1002,8 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "friendly",
-                "picks": 2,
-                "vitorias": 2,
+                "picks": 3,
+                "vitorias": 3,
                 "win_rate": "100.0%"
             },
             {
@@ -1205,6 +1245,16 @@
                 "picks": 1,
                 "vitorias": 1,
                 "win_rate": "100.0%"
+            },
+            {
+                "modo": "hotZone",
+                "mapa": "Open Business",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 1,
+                "win_rate": "100.0%"
             }
         ],
         "sinergias": []
@@ -1237,9 +1287,9 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "friendly",
-                "picks": 1,
-                "vitorias": 0,
-                "win_rate": "0.0%"
+                "picks": 3,
+                "vitorias": 1,
+                "win_rate": "33.3%"
             },
             {
                 "modo": "bounty",
@@ -1267,9 +1317,9 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 2,
+                "picks": 3,
                 "vitorias": 1,
-                "win_rate": "50.0%"
+                "win_rate": "33.3%"
             },
             {
                 "modo": "brawlBall",
@@ -1347,9 +1397,9 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "friendly",
-                "picks": 1,
-                "vitorias": 0,
-                "win_rate": "0.0%"
+                "picks": 3,
+                "vitorias": 1,
+                "win_rate": "33.3%"
             },
             {
                 "modo": "gemGrab",
@@ -1485,6 +1535,16 @@
                 "picks": 1,
                 "vitorias": 0,
                 "win_rate": "0.0%"
+            },
+            {
+                "modo": "bounty",
+                "mapa": "Shooting Star",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 1,
+                "win_rate": "100.0%"
             },
             {
                 "modo": "brawlBall",
@@ -1967,7 +2027,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "friendly",
-                "picks": 1,
+                "picks": 2,
                 "vitorias": 0,
                 "win_rate": "0.0%"
             },
@@ -2030,6 +2090,16 @@
                 "picks": 2,
                 "vitorias": 1,
                 "win_rate": "50.0%"
+            },
+            {
+                "modo": "gemGrab",
+                "mapa": "Hard Rock Mine",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "friendly",
+                "picks": 1,
+                "vitorias": 0,
+                "win_rate": "0.0%"
             },
             {
                 "modo": "heist",
@@ -2147,6 +2217,16 @@
     "ANGELO": {
         "mapas": [
             {
+                "modo": "bounty",
+                "mapa": "",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "friendly",
+                "picks": 1,
+                "vitorias": 1,
+                "win_rate": "100.0%"
+            },
+            {
                 "modo": "heist",
                 "mapa": "Kaboom Canyon",
                 "ano": "2026",
@@ -2163,6 +2243,16 @@
                 "mes": "JUNHO",
                 "tipo": "tournament",
                 "picks": 1,
+                "vitorias": 0,
+                "win_rate": "0.0%"
+            },
+            {
+                "modo": "knockout",
+                "mapa": "",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "friendly",
+                "picks": 2,
                 "vitorias": 0,
                 "win_rate": "0.0%"
             },
@@ -2257,9 +2347,9 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1,
-                "vitorias": 0,
-                "win_rate": "0.0%"
+                "picks": 2,
+                "vitorias": 1,
+                "win_rate": "50.0%"
             },
             {
                 "modo": "brawlBall",
@@ -2887,9 +2977,9 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "friendly",
-                "picks": 1,
-                "vitorias": 0,
-                "win_rate": "0.0%"
+                "picks": 3,
+                "vitorias": 1,
+                "win_rate": "33.3%"
             },
             {
                 "modo": "gemGrab",
@@ -3447,8 +3537,8 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "friendly",
-                "picks": 1,
-                "vitorias": 1,
+                "picks": 3,
+                "vitorias": 3,
                 "win_rate": "100.0%"
             },
             {
@@ -3477,9 +3567,9 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1,
+                "picks": 2,
                 "vitorias": 1,
-                "win_rate": "100.0%"
+                "win_rate": "50.0%"
             },
             {
                 "modo": "hotZone",
@@ -3565,6 +3655,16 @@
                 "picks": 2,
                 "vitorias": 2,
                 "win_rate": "100.0%"
+            },
+            {
+                "modo": "gemGrab",
+                "mapa": "Hard Rock Mine",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "friendly",
+                "picks": 1,
+                "vitorias": 0,
+                "win_rate": "0.0%"
             },
             {
                 "modo": "hotZone",
@@ -3797,9 +3897,9 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "friendly",
-                "picks": 1,
+                "picks": 2,
                 "vitorias": 1,
-                "win_rate": "100.0%"
+                "win_rate": "50.0%"
             }
         ],
         "sinergias": []
@@ -3907,9 +4007,9 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1,
+                "picks": 2,
                 "vitorias": 1,
-                "win_rate": "100.0%"
+                "win_rate": "50.0%"
             }
         ],
         "sinergias": []
@@ -4237,9 +4337,9 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "friendly",
-                "picks": 2,
-                "vitorias": 0,
-                "win_rate": "0.0%"
+                "picks": 4,
+                "vitorias": 2,
+                "win_rate": "50.0%"
             },
             {
                 "modo": "bounty",
@@ -4272,6 +4372,16 @@
                 "win_rate": "100.0%"
             },
             {
+                "modo": "bounty",
+                "mapa": "Shooting Star",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 0,
+                "win_rate": "0.0%"
+            },
+            {
                 "modo": "heist",
                 "mapa": "Safe Zone",
                 "ano": "2026",
@@ -4280,6 +4390,16 @@
                 "picks": 1,
                 "vitorias": 1,
                 "win_rate": "100.0%"
+            },
+            {
+                "modo": "knockout",
+                "mapa": "",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "friendly",
+                "picks": 6,
+                "vitorias": 0,
+                "win_rate": "0.0%"
             },
             {
                 "modo": "knockout",
@@ -4367,9 +4487,9 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 2,
-                "vitorias": 0,
-                "win_rate": "0.0%"
+                "picks": 3,
+                "vitorias": 1,
+                "win_rate": "33.3%"
             },
             {
                 "modo": "hotZone",
@@ -4643,6 +4763,16 @@
         "mapas": [
             {
                 "modo": "bounty",
+                "mapa": "Hideout",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "friendly",
+                "picks": 1,
+                "vitorias": 1,
+                "win_rate": "100.0%"
+            },
+            {
+                "modo": "bounty",
                 "mapa": "Layer Cake",
                 "ano": "2026",
                 "mes": "JUNHO",
@@ -4842,9 +4972,9 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "friendly",
-                "picks": 2,
+                "picks": 3,
                 "vitorias": 1,
-                "win_rate": "50.0%"
+                "win_rate": "33.3%"
             }
         ],
         "sinergias": []
@@ -5061,6 +5191,16 @@
                 "mapa": "Hard Rock Mine",
                 "ano": "2026",
                 "mes": "JUNHO",
+                "tipo": "friendly",
+                "picks": 1,
+                "vitorias": 0,
+                "win_rate": "0.0%"
+            },
+            {
+                "modo": "gemGrab",
+                "mapa": "Hard Rock Mine",
+                "ano": "2026",
+                "mes": "JUNHO",
                 "tipo": "tournament",
                 "picks": 2,
                 "vitorias": 1,
@@ -5082,7 +5222,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1,
+                "picks": 2,
                 "vitorias": 0,
                 "win_rate": "0.0%"
             }
@@ -5097,8 +5237,8 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "friendly",
-                "picks": 1,
-                "vitorias": 1,
+                "picks": 2,
+                "vitorias": 2,
                 "win_rate": "100.0%"
             },
             {
@@ -5127,9 +5267,9 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "friendly",
-                "picks": 2,
+                "picks": 3,
                 "vitorias": 1,
-                "win_rate": "50.0%"
+                "win_rate": "33.3%"
             },
             {
                 "modo": "bounty",
@@ -5147,6 +5287,16 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "friendly",
+                "picks": 1,
+                "vitorias": 1,
+                "win_rate": "100.0%"
+            },
+            {
+                "modo": "bounty",
+                "mapa": "Shooting Star",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
                 "picks": 1,
                 "vitorias": 1,
                 "win_rate": "100.0%"
@@ -5992,8 +6142,8 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1,
-                "vitorias": 1,
+                "picks": 2,
+                "vitorias": 2,
                 "win_rate": "100.0%"
             },
             {
@@ -6283,6 +6433,16 @@
             },
             {
                 "modo": "knockout",
+                "mapa": "",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "friendly",
+                "picks": 1,
+                "vitorias": 1,
+                "win_rate": "100.0%"
+            },
+            {
+                "modo": "knockout",
                 "mapa": "Goldarm Gulch",
                 "ano": "2026",
                 "mes": "JUNHO",
@@ -6316,6 +6476,16 @@
     },
     "BROCK": {
         "mapas": [
+            {
+                "modo": "bounty",
+                "mapa": "Hideout",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "friendly",
+                "picks": 1,
+                "vitorias": 0,
+                "win_rate": "0.0%"
+            },
             {
                 "modo": "brawlBall",
                 "mapa": "Stockpile Stadium",
@@ -6389,6 +6559,16 @@
             {
                 "modo": "brawlBall",
                 "mapa": "Pocket Pleasures",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "friendly",
+                "picks": 1,
+                "vitorias": 1,
+                "win_rate": "100.0%"
+            },
+            {
+                "modo": "knockout",
+                "mapa": "",
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "friendly",
@@ -6752,6 +6932,26 @@
     "DARRYL": {
         "mapas": [
             {
+                "modo": "bounty",
+                "mapa": "Hideout",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "friendly",
+                "picks": 1,
+                "vitorias": 0,
+                "win_rate": "0.0%"
+            },
+            {
+                "modo": "gemGrab",
+                "mapa": "Hard Rock Mine",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "friendly",
+                "picks": 1,
+                "vitorias": 0,
+                "win_rate": "0.0%"
+            },
+            {
                 "modo": "heist",
                 "mapa": "Safe Zone",
                 "ano": "2026",
@@ -6901,6 +7101,16 @@
     },
     "NANI": {
         "mapas": [
+            {
+                "modo": "bounty",
+                "mapa": "Hideout",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "friendly",
+                "picks": 1,
+                "vitorias": 0,
+                "win_rate": "0.0%"
+            },
             {
                 "modo": "bounty",
                 "mapa": "Hideout",

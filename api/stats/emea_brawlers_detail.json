@@ -7,8 +7,8 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "friendly",
-                "picks": 1,
-                "vitorias": 1,
+                "picks": 2,
+                "vitorias": 2,
                 "win_rate": "100.0%"
             },
             {
@@ -772,9 +772,9 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "friendly",
-                "picks": 1,
+                "picks": 2,
                 "vitorias": 1,
-                "win_rate": "100.0%"
+                "win_rate": "50.0%"
             }
         ],
         "sinergias": []
@@ -1862,9 +1862,9 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "friendly",
-                "picks": 1,
+                "picks": 2,
                 "vitorias": 1,
-                "win_rate": "100.0%"
+                "win_rate": "50.0%"
             }
         ],
         "sinergias": []
@@ -2741,6 +2741,16 @@
     },
     "ANGELO": {
         "mapas": [
+            {
+                "modo": "bounty",
+                "mapa": "",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "friendly",
+                "picks": 1,
+                "vitorias": 1,
+                "win_rate": "100.0%"
+            },
             {
                 "modo": "heist",
                 "mapa": "Kaboom Canyon",
