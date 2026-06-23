@@ -3457,7 +3457,7 @@
                 "win_rate": "100.0%"
             },
             {
-                "com": "MOE",
+                "com": "MEEPLE",
                 "picks": 2,
                 "vitorias": 1,
                 "win_rate": "50.0%"
@@ -4695,6 +4695,11 @@
     "SURGE": {
         "top_mapas": [
             {
+                "mapa": "",
+                "modo": "knockout",
+                "picks": 1
+            },
+            {
                 "mapa": "Gem Fort",
                 "modo": "gemGrab",
                 "picks": 1
@@ -4712,6 +4717,12 @@
                 "picks": 1,
                 "vitorias": 0,
                 "win_rate": "0.0%"
+            },
+            {
+                "com": "WILLOW",
+                "picks": 1,
+                "vitorias": 1,
+                "win_rate": "100.0%"
             }
         ]
     },
