@@ -118,6 +118,10 @@ let dadosTimes = {};
 let detalhesBrawlers = {};
 let regiaoAtiva = "SA";
 
+// Estados para guardar quem está sendo visualizado na tela e poder atualizar ao mudar o filtro
+let brawlerAtualSelecionado = null;
+let timeAtualSelecionado = { id: null, regiao: null };
+
 const formatarNomeImagem = (n) => `brawlers/${n.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
 const formatarNomeMapa = (m) => `element/maps/${m.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
 
@@ -170,7 +174,7 @@ window.carregarRegiao = async function(regiao) {
     } catch (e) {}
 
     try { popularFiltrosIniciais(); } catch(e) {}
-    try { filtrarEAplicarDados(); } catch(e) {}
+    try { filtrarTudo(); } catch(e) {}
     try { renderizarListaBrawlers(); } catch(e) {}
     try { renderizarListaTimes(regiaoAtiva); } catch(e) { console.error(e); }
 };
@@ -183,27 +187,39 @@ function popularFiltrosIniciais() {
     const anos = [...new Set(dadosOriginaisRegiao.map(d => d.ano))].filter(a => a);
     const meses = [...new Set(dadosOriginaisRegiao.map(d => d.mes))].filter(m => m);
 
-    selectAno.innerHTML = '';
-    selectMes.innerHTML = '';
+    selectAno.innerHTML = '<option value="TODOS" selected>Todos os Anos</option>';
+    selectMes.innerHTML = '<option value="TODOS" selected>Todos os Meses</option>';
 
     anos.sort().forEach(ano => selectAno.innerHTML += `<option value="${ano}">${ano}</option>`);
     const ordemMeses = ["JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"];
     meses.sort((a, b) => ordemMeses.indexOf(a) - ordemMeses.indexOf(b)).forEach(mes => {
         selectMes.innerHTML += `<option value="${mes}">${mes}</option>`;
     });
-
-    if (anos.length > 0) selectAno.value = anos[anos.length - 1];
-    if (meses.length > 0) selectMes.value = meses[meses.length - 1];
 }
 
+// Master Handler para atualizar TUDO baseado nos novos filtros globais
+window.filtrarTudo = function() {
+    filtrarEAplicarDados(); // Atualiza a tela Meta
+    
+    // Se o usuário estiver vendo um brawler ou time, recarregamos com os filtros atuais
+    if (brawlerAtualSelecionado) {
+        exibirInfoBrawler(brawlerAtualSelecionado);
+    }
+    if (timeAtualSelecionado.id) {
+        exibirInfoTime(timeAtualSelecionado.id, timeAtualSelecionado.regiao);
+    }
+};
+
 window.filtrarEAplicarDados = function() {
-    const anoSel = document.getElementById('select-ano')?.value;
-    const mesSel = document.getElementById('select-mes')?.value;
+    const anoSel = document.getElementById('select-ano')?.value || "TODOS";
+    const mesSel = document.getElementById('select-mes')?.value || "TODOS";
+    const tipoSel = document.getElementById('select-tipo')?.value || "overhaul";
 
     let dadosFiltrados = dadosOriginaisRegiao;
 
-    if (anoSel && anoSel !== "TODOS") dadosFiltrados = dadosFiltrados.filter(d => d.ano === anoSel);
-    if (mesSel && mesSel !== "TODOS") dadosFiltrados = dadosFiltrados.filter(d => d.mes === mesSel);
+    if (anoSel !== "TODOS") dadosFiltrados = dadosFiltrados.filter(d => d.ano === anoSel);
+    if (mesSel !== "TODOS") dadosFiltrados = dadosFiltrados.filter(d => d.mes === mesSel);
+    if (tipoSel !== "overhaul") dadosFiltrados = dadosFiltrados.filter(d => d.tipo === tipoSel);
 
     const mesesParaNumero = {
         "JANEIRO": "01", "FEVEREIRO": "02", "MARÇO": "03", "ABRIL": "04",
@@ -211,7 +227,7 @@ window.filtrarEAplicarDados = function() {
         "SETEMBRO": "09", "OUTUBRO": "10", "NOVEMBRO": "11", "DEZEMBRO": "12"
     };
 
-    if (anoSel && mesSel && anoSel !== "TODOS" && mesSel !== "TODOS") {
+    if (anoSel !== "TODOS" && mesSel !== "TODOS") {
         const numMes = mesesParaNumero[mesSel.toUpperCase()];
         const chaveMapa = `${anoSel}-${numMes}`;
         const mapasDoMes = MAPAS_POR_MES[chaveMapa];
@@ -248,16 +264,27 @@ function renderizarGridModos(dados, ano, mes) {
             const dadosMapa = dados.filter(d => d.mapa.toLowerCase() === mapa.toLowerCase());
             if (dadosMapa.length === 0) return;
 
-            dadosMapa.sort((a, b) => b.picks - a.picks);
+            // Agrega os dados caso existam múltiplas linhas de "scrim" e "tournament" pro mesmo brawler
+            let brawlersAgrupados = {};
+            dadosMapa.forEach(d => {
+                if(!brawlersAgrupados[d.pick]) brawlersAgrupados[d.pick] = { pick: d.pick, picks: 0, vitorias: 0 };
+                brawlersAgrupados[d.pick].picks += d.picks;
+                brawlersAgrupados[d.pick].vitorias += d.vitorias;
+            });
+            
+            let listaM = Object.values(brawlersAgrupados);
+            listaM.sort((a, b) => b.picks - a.picks);
 
-            let linhasBrawlers = dadosMapa.map(d => `
+            let totalPicksMapa = listaM.reduce((sum, item) => sum + item.picks, 0);
+
+            let linhasBrawlers = listaM.map(d => `
                 <tr style="cursor: pointer;" onclick="abrirModalBrawler('${d.pick}')" title="Análise detalhada de ${d.pick}">
                     <td class="col-img"><img src="${formatarNomeImagem(d.pick)}" onerror="this.src='brawlers/default.png'"></td>
                     <td style="text-align: left; font-weight: bold;">${d.pick.toUpperCase()}</td>
                     <td>${d.picks}</td>
-                    <td style="color: #aaa;">${d.pick_rate || '0.0%'}</td>
+                    <td style="color: #aaa;">${ totalPicksMapa > 0 ? ((d.picks / totalPicksMapa) * 100).toFixed(1) + '%' : '0.0%' }</td>
                     <td>${d.vitorias}</td>
-                    <td class="winrate-cell">${d.win_rate}</td>
+                    <td class="winrate-cell">${ d.picks > 0 ? ((d.vitorias / d.picks) * 100).toFixed(1) + '%' : '0.0%' }</td>
                 </tr>
             `).join('');
 
@@ -301,7 +328,7 @@ function renderizarAllMaps(dados) {
     let totalPartidasGerais = 0;
     
     dados.forEach(d => {
-        let key = d.mapa + d.ano + d.mes;
+        let key = d.mapa + d.ano + d.mes + (d.tipo||'');
         if(!mapasVistos.has(key)) {
             mapasVistos.add(key);
             totalPartidasGerais += (d.total_partidas_mapa || 0);
@@ -362,7 +389,50 @@ window.filtrarBrawlersSidebar = function() {
     });
 };
 
-function gerarHTMLDetalhes(nomeBrawler, info) {
+function filtrarEAggregarInfoBrawler(info) {
+    const anoSel = document.getElementById('select-ano')?.value || "TODOS";
+    const mesSel = document.getElementById('select-mes')?.value || "TODOS";
+    const tipoSel = document.getElementById('select-tipo')?.value || "overhaul";
+
+    // 1. Filtrar e agregar Mapas
+    let mapasFiltrados = (info.top_mapas || []).filter(m => 
+        (anoSel === "TODOS" || m.ano === anoSel) && 
+        (mesSel === "TODOS" || m.mes === mesSel) &&
+        (tipoSel === "overhaul" || m.tipo === tipoSel)
+    );
+    let mapaAgrupado = {};
+    mapasFiltrados.forEach(m => {
+        let k = m.mapa + '|' + m.modo;
+        if(!mapaAgrupado[k]) mapaAgrupado[k] = { mapa: m.mapa, modo: m.modo, picks: 0 };
+        mapaAgrupado[k].picks += m.picks;
+    });
+    let topMapas = Object.values(mapaAgrupado).sort((a,b) => b.picks - a.picks).slice(0, 3);
+
+    // 2. Filtrar e agregar Sinergias
+    let sinergiasFiltradas = (info.sinergias || []).filter(s => 
+        (anoSel === "TODOS" || s.ano === anoSel) && 
+        (mesSel === "TODOS" || s.mes === mesSel) &&
+        (tipoSel === "overhaul" || s.tipo === tipoSel)
+    );
+    let sinergiaAgrupada = {};
+    sinergiasFiltradas.forEach(s => {
+        if(!sinergiaAgrupada[s.com]) sinergiaAgrupada[s.com] = { com: s.com, picks: 0, vitorias: 0 };
+        sinergiaAgrupada[s.com].picks += s.picks;
+        sinergiaAgrupada[s.com].vitorias += s.vitorias;
+    });
+    let topSinergias = Object.values(sinergiaAgrupada).map(s => ({
+        com: s.com,
+        picks: s.picks,
+        vitorias: s.vitorias,
+        win_rate: s.picks > 0 ? ((s.vitorias/s.picks)*100).toFixed(1) + '%' : '0.0%'
+    })).sort((a,b) => b.picks - a.picks).slice(0, 5);
+
+    return { top_mapas: topMapas, sinergias: topSinergias };
+}
+
+function gerarHTMLDetalhes(nomeBrawler, infoBruta) {
+    const info = filtrarEAggregarInfoBrawler(infoBruta);
+
     let mapasHTML = info.top_mapas && info.top_mapas.length > 0 ? info.top_mapas.map(m => `
         <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 12px; background: #111; padding: 10px; border-radius: 8px; border: 1px solid var(--borda-destaque);">
             <img src="${formatarNomeMapa(m.mapa)}" onerror="this.src='elements/default.png'" style="width: 70px; height: 50px; border-radius: 6px; object-fit: cover;">
@@ -372,7 +442,7 @@ function gerarHTMLDetalhes(nomeBrawler, info) {
                 <div style="color: var(--accent-purple); font-weight: bold; font-size: 13px; margin-top: 4px;">${m.picks} Partidas</div>
             </div>
         </div>
-    `).join('') : `<div style="font-size:13px; color:#555;">Sem dados suficientes em ${regiaoAtiva}.</div>`;
+    `).join('') : `<div style="font-size:13px; color:#555;">Sem dados pro filtro atual.</div>`;
 
     let sinergiasHTML = info.sinergias && info.sinergias.length > 0 ? info.sinergias.map(s => `
         <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background: #111; border-radius: 8px; border: 1px solid var(--borda-destaque); margin-bottom: 10px;">
@@ -388,7 +458,7 @@ function gerarHTMLDetalhes(nomeBrawler, info) {
                 <span style="color: var(--winrate-color); font-weight: bold;">${s.win_rate} WR</span>
             </div>
         </div>
-    `).join('') : `<div style="font-size:13px; color:#555;">Sem dados de companheiros de equipe na região ${regiaoAtiva}.</div>`;
+    `).join('') : `<div style="font-size:13px; color:#555;">Sem dados pro filtro atual.</div>`;
 
     return `
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -408,22 +478,24 @@ window.exibirInfoBrawler = function(nome) {
     const painel = document.getElementById("painel-info-brawler");
     if (!painel) return;
     
+    brawlerAtualSelecionado = nome;
+
     document.querySelectorAll("#lista-brawlers-sidebar .sidebar-item").forEach(i => {
         i.classList.toggle("active", i.querySelector(".brawler-name").textContent.toLowerCase() === nome.toLowerCase());
     });
 
-    const info = detalhesBrawlers[nome.toUpperCase()] || {top_mapas: [], sinergias: []};
+    const infoBruta = detalhesBrawlers[nome.toUpperCase()] || {top_mapas: [], sinergias: []};
     painel.innerHTML = `
         <div class="brawler-profile-header">
             <img src="${formatarNomeImagem(nome)}" class="brawler-large-avatar" onerror="this.src='brawlers/default.png'">
             <h2>${nome} <span style="font-size: 14px; color: #888; font-weight: normal;">/ REGIÃO ${regiaoAtiva}</span></h2>
         </div>
-        ${gerarHTMLDetalhes(nome, info)}
+        ${gerarHTMLDetalhes(nome, infoBruta)}
     `;
 };
 
 window.abrirModalBrawler = function(nomeBrawler) {
-    const info = detalhesBrawlers[nomeBrawler.toUpperCase()] || {top_mapas: [], sinergias: []};
+    const infoBruta = detalhesBrawlers[nomeBrawler.toUpperCase()] || {top_mapas: [], sinergias: []};
     let modal = document.getElementById('modal-analise-brawler');
     if (!modal) {
         modal = document.createElement('div');
@@ -442,7 +514,7 @@ window.abrirModalBrawler = function(nomeBrawler) {
                 <button class="brawler-modal-close" onclick="fecharModalBrawler()">&times;</button>
             </div>
             <div class="brawler-modal-body">
-                ${gerarHTMLDetalhes(nomeBrawler, info)}
+                ${gerarHTMLDetalhes(nomeBrawler, infoBruta)}
             </div>
         </div>
     `;
@@ -518,6 +590,8 @@ window.exibirInfoTime = function(idTime, regiaoDoTime) {
     const painel = document.getElementById("painel-info-time");
     if (!painel) return;
 
+    timeAtualSelecionado = { id: idTime, regiao: regiaoDoTime };
+
     document.querySelectorAll("#lista-times-sidebar .sidebar-item").forEach(i => {
         i.style.borderLeftColor = String(i.getAttribute("data-teamid")) === String(idTime) ? "var(--accent-purple)" : "transparent";
         i.style.backgroundColor = String(i.getAttribute("data-teamid")) === String(idTime) ? "var(--bg-cards)" : "transparent";
@@ -540,10 +614,18 @@ window.exibirInfoTime = function(idTime, regiaoDoTime) {
 
     if (!timeConfig) return;
 
+    const anoSel = document.getElementById('select-ano')?.value || "TODOS";
+    const mesSel = document.getElementById('select-mes')?.value || "TODOS";
+    const tipoSel = document.getElementById('select-tipo')?.value || "overhaul";
+
     let picksSomadosTime = {};
     timeConfig.jogadores.forEach(jogador => {
         const picksDoJogador = dadosTimes[jogador.tag] || [];
         picksDoJogador.forEach(p => {
+            if (anoSel !== "TODOS" && p.ano !== anoSel) return;
+            if (mesSel !== "TODOS" && p.mes !== mesSel) return;
+            if (tipoSel !== "overhaul" && p.tipo !== tipoSel) return;
+
             if (!picksSomadosTime[p.brawler]) picksSomadosTime[p.brawler] = 0;
             picksSomadosTime[p.brawler] += p.qtd;
         });
@@ -562,14 +644,26 @@ window.exibirInfoTime = function(idTime, regiaoDoTime) {
     `).join('');
 
     let playersHTML = timeConfig.jogadores.map(player => {
-        const picksPlayer = (dadosTimes[player.tag] || []).slice(0, 5);
+        const picksDoJogadorBruto = dadosTimes[player.tag] || [];
+        
+        let aggPlayer = {};
+        picksDoJogadorBruto.forEach(p => {
+            if (anoSel !== "TODOS" && p.ano !== anoSel) return;
+            if (mesSel !== "TODOS" && p.mes !== mesSel) return;
+            if (tipoSel !== "overhaul" && p.tipo !== tipoSel) return;
+            
+            if(!aggPlayer[p.brawler]) aggPlayer[p.brawler] = 0;
+            aggPlayer[p.brawler] += p.qtd;
+        });
+
+        let picksPlayer = Object.keys(aggPlayer).map(b => ({brawler: b, qtd: aggPlayer[b]})).sort((a,b) => b.qtd - a.qtd).slice(0, 5);
         
         let picksHTML = picksPlayer.length ? picksPlayer.map(p => `
             <div class="player-mini-pick" onclick="abrirModalBrawler('${p.brawler}')" style="cursor: pointer; display: flex; flex-direction: column; align-items: center;">
                 <img src="${formatarNomeImagem(p.brawler)}" onerror="this.src='brawlers/default.png'" style="width: 40px; height: 40px; border-radius: 4px; border: 1px solid #333; object-fit: cover;">
                 <span style="margin-top: 4px; font-size: 10px; background: #111; padding: 2px 4px; border-radius: 4px; color: #ccc;">x${p.qtd}</span>
             </div>
-        `).join('') : '<span style="color:#666; font-size:12px;">Sem partidas registradas.</span>';
+        `).join('') : '<span style="color:#666; font-size:12px;">Sem dados p/ o filtro.</span>';
 
         return `
             <div class="player-roster-card" style="background: var(--bg-cards); border: 1px solid var(--borda-destaque); border-radius: 10px; padding: 15px;">
