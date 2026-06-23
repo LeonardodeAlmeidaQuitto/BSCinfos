@@ -2177,5 +2177,49 @@
                 "vitorias": 1
             }
         ]
+    },
+    "SPROUT": {
+        "top_mapas": [
+            {
+                "mapa": "",
+                "modo": "knockout",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1
+            }
+        ],
+        "sinergias": [
+            {
+                "com": "DYNAMIKE",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 1
+            }
+        ]
+    },
+    "DYNAMIKE": {
+        "top_mapas": [
+            {
+                "mapa": "",
+                "modo": "knockout",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1
+            }
+        ],
+        "sinergias": [
+            {
+                "com": "SPROUT",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 1
+            }
+        ]
     }
 }

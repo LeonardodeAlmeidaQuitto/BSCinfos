@@ -221,7 +221,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1
+                "picks": 2
             },
             {
                 "mapa": "New Horizons",
@@ -293,6 +293,14 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
+                "picks": 1
+            },
+            {
+                "mapa": "Pinhole Punt",
+                "modo": "brawlBall",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
                 "picks": 1
             },
             {
@@ -434,6 +442,14 @@
                 "vitorias": 1
             },
             {
+                "com": "CROW",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 0
+            },
+            {
                 "com": "DAMIAN",
                 "ano": "2026",
                 "mes": "JUNHO",
@@ -550,8 +566,8 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1,
-                "vitorias": 1
+                "picks": 2,
+                "vitorias": 2
             },
             {
                 "com": "KIT",
@@ -670,7 +686,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1,
+                "picks": 2,
                 "vitorias": 0
             },
             {
@@ -680,6 +696,14 @@
                 "tipo": "scrim",
                 "picks": 4,
                 "vitorias": 2
+            },
+            {
+                "com": "SHADE",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 1
             },
             {
                 "com": "SQUEAK",
@@ -774,12 +798,20 @@
                 "picks": 2
             },
             {
+                "mapa": "Kaboom Canyon",
+                "modo": "heist",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1
+            },
+            {
                 "mapa": "Layer Cake",
                 "modo": "bounty",
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
-                "picks": 2
+                "picks": 3
             },
             {
                 "mapa": "Layer Cake",
@@ -944,12 +976,28 @@
                 "vitorias": 1
             },
             {
+                "com": "COLETTE",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 1
+            },
+            {
                 "com": "COLT",
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
                 "picks": 2,
                 "vitorias": 0
+            },
+            {
+                "com": "COLT",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 1
             },
             {
                 "com": "CORDELIUS",
@@ -1025,6 +1073,14 @@
             },
             {
                 "com": "JANET",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 1
+            },
+            {
+                "com": "KIT",
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
@@ -1116,8 +1172,8 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
-                "picks": 4,
-                "vitorias": 3
+                "picks": 5,
+                "vitorias": 4
             },
             {
                 "com": "PIERCE",
@@ -1193,7 +1249,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1
+                "picks": 2
             },
             {
                 "mapa": "Gem Fort",
@@ -1582,6 +1638,14 @@
                 "vitorias": 1
             },
             {
+                "com": "FINX",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 0
+            },
+            {
                 "com": "GLOWY",
                 "ano": "2026",
                 "mes": "JUNHO",
@@ -1890,7 +1954,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1,
+                "picks": 2,
                 "vitorias": 1
             },
             {
@@ -1991,7 +2055,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
-                "picks": 1
+                "picks": 2
             },
             {
                 "mapa": "Layer Cake",
@@ -2043,6 +2107,14 @@
             }
         ],
         "sinergias": [
+            {
+                "com": "BROCK",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 0
+            },
             {
                 "com": "BROCK",
                 "ano": "2026",
@@ -2154,6 +2226,14 @@
                 "tipo": "scrim",
                 "picks": 3,
                 "vitorias": 1
+            },
+            {
+                "com": "LILY",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 0
             },
             {
                 "com": "LUMI",
@@ -2357,7 +2437,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 3
+                "picks": 4
             },
             {
                 "mapa": "Gem Fort",
@@ -2666,6 +2746,14 @@
                 "vitorias": 1
             },
             {
+                "com": "GLOWY",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 1
+            },
+            {
                 "com": "GRIFF",
                 "ano": "2026",
                 "mes": "JUNHO",
@@ -2728,6 +2816,14 @@
                 "tipo": "tournament",
                 "picks": 1,
                 "vitorias": 0
+            },
+            {
+                "com": "LILY",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 1
             },
             {
                 "com": "LUMI",
@@ -3554,6 +3650,14 @@
                 "picks": 1
             },
             {
+                "mapa": "Layer Cake",
+                "modo": "bounty",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1
+            },
+            {
                 "mapa": "New Horizons",
                 "modo": "knockout",
                 "ano": "2026",
@@ -3868,6 +3972,14 @@
                 "vitorias": 1
             },
             {
+                "com": "LEON",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 1
+            },
+            {
                 "com": "LOU",
                 "ano": "2026",
                 "mes": "JUNHO",
@@ -3960,6 +4072,14 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 1
+            },
+            {
+                "com": "PENNY",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
                 "picks": 1,
                 "vitorias": 1
             },
@@ -4157,7 +4277,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1
+                "picks": 2
             },
             {
                 "mapa": "Pinball Dreams",
@@ -4200,6 +4320,14 @@
                 "tipo": "scrim",
                 "picks": 1,
                 "vitorias": 0
+            },
+            {
+                "com": "BELLE",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 1
             },
             {
                 "com": "BERRY",
@@ -4288,6 +4416,14 @@
                 "tipo": "tournament",
                 "picks": 1,
                 "vitorias": 0
+            },
+            {
+                "com": "EVE",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 1
             },
             {
                 "com": "FINX",
@@ -4729,7 +4865,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1
+                "picks": 2
             },
             {
                 "mapa": "Double Swoosh",
@@ -4820,12 +4956,20 @@
                 "picks": 1
             },
             {
+                "mapa": "Kaboom Canyon",
+                "modo": "heist",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1
+            },
+            {
                 "mapa": "Layer Cake",
                 "modo": "bounty",
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
-                "picks": 2
+                "picks": 3
             },
             {
                 "mapa": "Layer Cake",
@@ -4833,7 +4977,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 2
+                "picks": 3
             },
             {
                 "mapa": "New Horizons",
@@ -4958,6 +5102,14 @@
                 "vitorias": 0
             },
             {
+                "com": "BELLE",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 0
+            },
+            {
                 "com": "BIBI",
                 "ano": "2026",
                 "mes": "JUNHO",
@@ -4970,6 +5122,14 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 0
+            },
+            {
+                "com": "BUZZ",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
                 "picks": 1,
                 "vitorias": 0
             },
@@ -5042,7 +5202,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 2,
+                "picks": 3,
                 "vitorias": 2
             },
             {
@@ -5087,6 +5247,14 @@
             },
             {
                 "com": "FANG",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 0
+            },
+            {
+                "com": "FINX",
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
@@ -5198,6 +5366,14 @@
                 "vitorias": 0
             },
             {
+                "com": "MAX",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 1
+            },
+            {
                 "com": "MEEPLE",
                 "ano": "2026",
                 "mes": "JUNHO",
@@ -5210,7 +5386,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1,
+                "picks": 2,
                 "vitorias": 0
             },
             {
@@ -5242,8 +5418,8 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 2,
-                "vitorias": 2
+                "picks": 3,
+                "vitorias": 3
             },
             {
                 "com": "NITA",
@@ -5324,6 +5500,14 @@
                 "tipo": "scrim",
                 "picks": 3,
                 "vitorias": 3
+            },
+            {
+                "com": "STARR NOVA",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 0
             },
             {
                 "com": "STU",
@@ -5416,6 +5600,14 @@
             {
                 "mapa": "Dueling Beetles",
                 "modo": "hotZone",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 2
+            },
+            {
+                "mapa": "Kaboom Canyon",
+                "modo": "heist",
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
@@ -5584,6 +5776,14 @@
                 "vitorias": 1
             },
             {
+                "com": "LUMI",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 0
+            },
+            {
                 "com": "MEEPLE",
                 "ano": "2026",
                 "mes": "JUNHO",
@@ -5632,6 +5832,14 @@
                 "vitorias": 1
             },
             {
+                "com": "RUFFS",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 0
+            },
+            {
                 "com": "SIRIUS",
                 "ano": "2026",
                 "mes": "JUNHO",
@@ -5648,6 +5856,14 @@
                 "vitorias": 1
             },
             {
+                "com": "STARR NOVA",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 0
+            },
+            {
                 "com": "STU",
                 "ano": "2026",
                 "mes": "JUNHO",
@@ -5660,7 +5876,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1,
+                "picks": 2,
                 "vitorias": 0
             }
         ]
@@ -6502,6 +6718,14 @@
     "EMZ": {
         "top_mapas": [
             {
+                "mapa": "Crystal Arcade",
+                "modo": "gemGrab",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1
+            },
+            {
                 "mapa": "Dueling Beetles",
                 "modo": "hotZone",
                 "ano": "2026",
@@ -6836,7 +7060,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1,
+                "picks": 2,
                 "vitorias": 0
             },
             {
@@ -6908,7 +7132,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1,
+                "picks": 2,
                 "vitorias": 0
             }
         ]
@@ -7199,7 +7423,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1
+                "picks": 2
             },
             {
                 "mapa": "New Horizons",
@@ -7548,6 +7772,14 @@
                 "vitorias": 1
             },
             {
+                "com": "MEEPLE",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 0
+            },
+            {
                 "com": "MELODIE",
                 "ano": "2026",
                 "mes": "JUNHO",
@@ -7664,7 +7896,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 2,
+                "picks": 3,
                 "vitorias": 2
             },
             {
@@ -7760,6 +7992,22 @@
                 "picks": 1
             },
             {
+                "mapa": "Kaboom Canyon",
+                "modo": "heist",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1
+            },
+            {
+                "mapa": "Kaboom Canyon",
+                "modo": "heist",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1
+            },
+            {
                 "mapa": "Layer Cake",
                 "modo": "bounty",
                 "ano": "2026",
@@ -7802,6 +8050,14 @@
         ],
         "sinergias": [
             {
+                "com": "AMBER",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 1
+            },
+            {
                 "com": "BELLE",
                 "ano": "2026",
                 "mes": "JUNHO",
@@ -7811,6 +8067,14 @@
             },
             {
                 "com": "CHESTER",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 1
+            },
+            {
+                "com": "COLT",
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
@@ -7846,8 +8110,8 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
-                "picks": 1,
-                "vitorias": 1
+                "picks": 2,
+                "vitorias": 2
             },
             {
                 "com": "EMZ",
@@ -7872,6 +8136,14 @@
                 "tipo": "scrim",
                 "picks": 1,
                 "vitorias": 0
+            },
+            {
+                "com": "KAZE",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 1
             },
             {
                 "com": "LUMI",
@@ -8282,6 +8554,14 @@
     "MAX": {
         "top_mapas": [
             {
+                "mapa": "Crystal Arcade",
+                "modo": "gemGrab",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1
+            },
+            {
                 "mapa": "Dueling Beetles",
                 "modo": "hotZone",
                 "ano": "2026",
@@ -8380,6 +8660,14 @@
                 "vitorias": 0
             },
             {
+                "com": "MORTIS",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 1
+            },
+            {
                 "com": "POCO",
                 "ano": "2026",
                 "mes": "JUNHO",
@@ -8389,6 +8677,14 @@
             },
             {
                 "com": "RICO",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 1
+            },
+            {
+                "com": "RUFFS",
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
@@ -8582,6 +8878,14 @@
                 "picks": 4
             },
             {
+                "mapa": "Crystal Arcade",
+                "modo": "gemGrab",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1
+            },
+            {
                 "mapa": "Double Swoosh",
                 "modo": "gemGrab",
                 "ano": "2026",
@@ -8675,7 +8979,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1
+                "picks": 2
             },
             {
                 "mapa": "Pit Stop",
@@ -8756,7 +9060,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1,
+                "picks": 2,
                 "vitorias": 0
             },
             {
@@ -8868,7 +9172,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1,
+                "picks": 2,
                 "vitorias": 0
             },
             {
@@ -8961,6 +9265,14 @@
             },
             {
                 "com": "KIT",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 0
+            },
+            {
+                "com": "LEON",
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
@@ -9124,7 +9436,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1,
+                "picks": 2,
                 "vitorias": 0
             },
             {
@@ -9242,6 +9554,14 @@
                 "mes": "JUNHO",
                 "tipo": "tournament",
                 "picks": 4
+            },
+            {
+                "mapa": "Pinhole Punt",
+                "modo": "brawlBall",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1
             },
             {
                 "mapa": "Ring of Fire",
@@ -9402,8 +9722,8 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1,
-                "vitorias": 1
+                "picks": 2,
+                "vitorias": 2
             },
             {
                 "com": "MELODIE",
@@ -9490,6 +9810,14 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 1
+            },
+            {
+                "com": "SHADE",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
                 "picks": 1,
                 "vitorias": 1
             },
@@ -9869,7 +10197,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
-                "picks": 5
+                "picks": 6
             },
             {
                 "mapa": "Shooting Star",
@@ -9881,6 +10209,14 @@
             }
         ],
         "sinergias": [
+            {
+                "com": "8-BIT",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 0
+            },
             {
                 "com": "BROCK",
                 "ano": "2026",
@@ -10142,7 +10478,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
-                "picks": 1,
+                "picks": 2,
                 "vitorias": 1
             },
             {
@@ -10267,7 +10603,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1
+                "picks": 2
             },
             {
                 "mapa": "Double Swoosh",
@@ -10680,6 +11016,14 @@
                 "vitorias": 1
             },
             {
+                "com": "MAX",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 1
+            },
+            {
                 "com": "MINA",
                 "ano": "2026",
                 "mes": "JUNHO",
@@ -10740,8 +11084,8 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 2,
-                "vitorias": 2
+                "picks": 3,
+                "vitorias": 3
             },
             {
                 "com": "SHADE",
@@ -10975,7 +11319,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1
+                "picks": 2
             },
             {
                 "mapa": "Double Swoosh",
@@ -10999,7 +11343,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1
+                "picks": 2
             },
             {
                 "mapa": "Hard Rock Mine",
@@ -11208,7 +11552,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1,
+                "picks": 2,
                 "vitorias": 0
             },
             {
@@ -11224,7 +11568,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1,
+                "picks": 2,
                 "vitorias": 0
             },
             {
@@ -11328,7 +11672,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1,
+                "picks": 2,
                 "vitorias": 1
             },
             {
@@ -11400,7 +11744,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1,
+                "picks": 2,
                 "vitorias": 0
             },
             {
@@ -11934,6 +12278,14 @@
                 "picks": 1
             },
             {
+                "mapa": "Layer Cake",
+                "modo": "bounty",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1
+            },
+            {
                 "mapa": "New Horizons",
                 "modo": "knockout",
                 "ano": "2026",
@@ -11995,7 +12347,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1
+                "picks": 2
             },
             {
                 "mapa": "Ring of Fire",
@@ -12015,6 +12367,14 @@
             }
         ],
         "sinergias": [
+            {
+                "com": "ALLI",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 0
+            },
             {
                 "com": "AMBER",
                 "ano": "2026",
@@ -12232,6 +12592,14 @@
                 "vitorias": 1
             },
             {
+                "com": "MINA",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 1
+            },
+            {
                 "com": "MORTIS",
                 "ano": "2026",
                 "mes": "JUNHO",
@@ -12262,6 +12630,22 @@
                 "tipo": "tournament",
                 "picks": 1,
                 "vitorias": 0
+            },
+            {
+                "com": "OTIS",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 0
+            },
+            {
+                "com": "PENNY",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 1
             },
             {
                 "com": "PIERCE",
@@ -12417,7 +12801,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
-                "picks": 1
+                "picks": 2
             },
             {
                 "mapa": "Layer Cake",
@@ -12622,6 +13006,14 @@
                 "vitorias": 1
             },
             {
+                "com": "KAZE",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 1
+            },
+            {
                 "com": "KENJI",
                 "ano": "2026",
                 "mes": "JUNHO",
@@ -12714,8 +13106,8 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
-                "picks": 1,
-                "vitorias": 1
+                "picks": 2,
+                "vitorias": 2
             },
             {
                 "com": "PIERCE",
@@ -12903,7 +13295,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 2
+                "picks": 3
             },
             {
                 "mapa": "Pocket Pleasures",
@@ -13068,6 +13460,14 @@
                 "vitorias": 1
             },
             {
+                "com": "EDGAR",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 0
+            },
+            {
                 "com": "FANG",
                 "ano": "2026",
                 "mes": "JUNHO",
@@ -13113,6 +13513,14 @@
                 "mes": "JUNHO",
                 "tipo": "scrim",
                 "picks": 3,
+                "vitorias": 0
+            },
+            {
+                "com": "JAE-YONG",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
                 "vitorias": 0
             },
             {
@@ -13905,7 +14313,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
-                "picks": 1
+                "picks": 2
             },
             {
                 "mapa": "Out in the Open",
@@ -13914,6 +14322,14 @@
                 "mes": "JUNHO",
                 "tipo": "scrim",
                 "picks": 2
+            },
+            {
+                "mapa": "Out in the Open",
+                "modo": "knockout",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1
             },
             {
                 "mapa": "Safe Zone",
@@ -13950,6 +14366,14 @@
                 "vitorias": 0
             },
             {
+                "com": "BUZZ",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 0
+            },
+            {
                 "com": "BYRON",
                 "ano": "2026",
                 "mes": "JUNHO",
@@ -13972,6 +14396,22 @@
                 "tipo": "scrim",
                 "picks": 2,
                 "vitorias": 0
+            },
+            {
+                "com": "DAMIAN",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 1
+            },
+            {
+                "com": "EVE",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 1
             },
             {
                 "com": "GENE",
@@ -14068,6 +14508,14 @@
                 "tipo": "scrim",
                 "picks": 1,
                 "vitorias": 0
+            },
+            {
+                "com": "RUFFS",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 0
             }
         ]
     },
@@ -14120,6 +14568,14 @@
     "EVE": {
         "top_mapas": [
             {
+                "mapa": "Out in the Open",
+                "modo": "knockout",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1
+            },
+            {
                 "mapa": "Ring of Fire",
                 "modo": "hotZone",
                 "ano": "2026",
@@ -14129,6 +14585,22 @@
             }
         ],
         "sinergias": [
+            {
+                "com": "BELLE",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 1
+            },
+            {
+                "com": "DAMIAN",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 1
+            },
             {
                 "com": "MR. P",
                 "ano": "2026",
@@ -14179,7 +14651,15 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
-                "picks": 3
+                "picks": 4
+            },
+            {
+                "mapa": "Layer Cake",
+                "modo": "bounty",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1
             },
             {
                 "mapa": "Ring of Fire",
@@ -14252,14 +14732,22 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
-                "picks": 4,
-                "vitorias": 3
+                "picks": 5,
+                "vitorias": 4
             },
             {
                 "com": "KIT",
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
+                "picks": 2,
+                "vitorias": 2
+            },
+            {
+                "com": "LEON",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
                 "picks": 1,
                 "vitorias": 1
             },
@@ -14292,6 +14780,14 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 1
+            },
+            {
+                "com": "MINA",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
                 "picks": 1,
                 "vitorias": 1
             },
@@ -14560,6 +15056,14 @@
                 "picks": 2
             },
             {
+                "mapa": "Pinhole Punt",
+                "modo": "brawlBall",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1
+            },
+            {
                 "mapa": "Pit Stop",
                 "modo": "heist",
                 "ano": "2026",
@@ -14666,6 +15170,14 @@
                 "vitorias": 0
             },
             {
+                "com": "KENJI",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 1
+            },
+            {
                 "com": "KIT",
                 "ano": "2026",
                 "mes": "JUNHO",
@@ -14704,6 +15216,14 @@
                 "tipo": "scrim",
                 "picks": 4,
                 "vitorias": 2
+            },
+            {
+                "com": "MEEPLE",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 1
             },
             {
                 "com": "MORTIS",
@@ -15232,6 +15752,14 @@
                 "mes": "JUNHO",
                 "tipo": "scrim",
                 "picks": 2
+            },
+            {
+                "mapa": "Out in the Open",
+                "modo": "knockout",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1
             }
         ],
         "sinergias": [
@@ -15244,12 +15772,28 @@
                 "vitorias": 1
             },
             {
+                "com": "BYRON",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 0
+            },
+            {
                 "com": "DAMIAN",
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
                 "picks": 1,
                 "vitorias": 1
+            },
+            {
+                "com": "EDGAR",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 0
             },
             {
                 "com": "FANG",
@@ -15427,7 +15971,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
-                "picks": 1
+                "picks": 2
             },
             {
                 "mapa": "Pinhole Punt",
@@ -15456,7 +16000,23 @@
                 "vitorias": 1
             },
             {
+                "com": "COLETTE",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 1
+            },
+            {
                 "com": "CROW",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 1
+            },
+            {
+                "com": "EDGAR",
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
@@ -15497,7 +16057,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
-                "picks": 12
+                "picks": 16
             },
             {
                 "mapa": "Crystal Arcade",
@@ -15743,7 +16303,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
-                "picks": 1
+                "picks": 2
             },
             {
                 "mapa": "Layer Cake",
@@ -15783,7 +16343,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1
+                "picks": 2
             },
             {
                 "mapa": "Pinball Dreams",
@@ -15836,6 +16396,22 @@
         ],
         "sinergias": [
             {
+                "com": "AMBER",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 1
+            },
+            {
+                "com": "BYRON",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 0
+            },
+            {
                 "com": "CHESTER",
                 "ano": "2026",
                 "mes": "JUNHO",
@@ -15856,8 +16432,8 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
-                "picks": 1,
-                "vitorias": 1
+                "picks": 2,
+                "vitorias": 2
             },
             {
                 "com": "COLT",
@@ -15914,6 +16490,14 @@
                 "tipo": "scrim",
                 "picks": 2,
                 "vitorias": 1
+            },
+            {
+                "com": "JAE-YONG",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 0
             },
             {
                 "com": "KAZE",
@@ -16492,6 +17076,14 @@
                 "picks": 1
             },
             {
+                "mapa": "Pinhole Punt",
+                "modo": "brawlBall",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1
+            },
+            {
                 "mapa": "Ring of Fire",
                 "modo": "hotZone",
                 "ano": "2026",
@@ -16582,6 +17174,14 @@
                 "vitorias": 0
             },
             {
+                "com": "LEON",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 0
+            },
+            {
                 "com": "LUMI",
                 "ano": "2026",
                 "mes": "JUNHO",
@@ -16634,7 +17234,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1,
+                "picks": 2,
                 "vitorias": 0
             },
             {
@@ -16773,7 +17373,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
-                "picks": 1
+                "picks": 2
             },
             {
                 "mapa": "Hard Rock Mine",
@@ -16922,6 +17522,14 @@
                 "vitorias": 0
             },
             {
+                "com": "CHESTER",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 1
+            },
+            {
                 "com": "CLANCY",
                 "ano": "2026",
                 "mes": "JUNHO",
@@ -17015,6 +17623,14 @@
                 "mes": "JUNHO",
                 "tipo": "tournament",
                 "picks": 2,
+                "vitorias": 1
+            },
+            {
+                "com": "LILY",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
                 "vitorias": 1
             },
             {
@@ -17367,7 +17983,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
-                "picks": 5
+                "picks": 6
             },
             {
                 "mapa": "Super Beach",
@@ -17379,6 +17995,14 @@
             }
         ],
         "sinergias": [
+            {
+                "com": "8-BIT",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 0
+            },
             {
                 "com": "ANGELO",
                 "ano": "2026",
@@ -17496,7 +18120,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
-                "picks": 1,
+                "picks": 2,
                 "vitorias": 1
             },
             {
@@ -17525,6 +18149,14 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
+                "picks": 1
+            },
+            {
+                "mapa": "Kaboom Canyon",
+                "modo": "heist",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
                 "picks": 1
             },
             {
@@ -17626,6 +18258,14 @@
                 "vitorias": 0
             },
             {
+                "com": "COLETTE",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 1
+            },
+            {
                 "com": "CROW",
                 "ano": "2026",
                 "mes": "JUNHO",
@@ -17664,6 +18304,14 @@
                 "tipo": "scrim",
                 "picks": 2,
                 "vitorias": 0
+            },
+            {
+                "com": "KAZE",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 1
             },
             {
                 "com": "KIT",
@@ -17742,6 +18390,14 @@
                 "picks": 1
             },
             {
+                "mapa": "Layer Cake",
+                "modo": "bounty",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1
+            },
+            {
                 "mapa": "Pinball Dreams",
                 "modo": "brawlBall",
                 "ano": "2026",
@@ -17767,6 +18423,14 @@
             }
         ],
         "sinergias": [
+            {
+                "com": "BELLE",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 0
+            },
             {
                 "com": "CORDELIUS",
                 "ano": "2026",
@@ -17848,6 +18512,14 @@
                 "vitorias": 1
             },
             {
+                "com": "RUFFS",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 0
+            },
+            {
                 "com": "SANDY",
                 "ano": "2026",
                 "mes": "JUNHO",
@@ -17876,6 +18548,14 @@
                 "picks": 1
             },
             {
+                "mapa": "Dueling Beetles",
+                "modo": "hotZone",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1
+            },
+            {
                 "mapa": "Hard Rock Mine",
                 "modo": "gemGrab",
                 "ano": "2026",
@@ -17890,11 +18570,43 @@
                 "mes": "JUNHO",
                 "tipo": "tournament",
                 "picks": 1
+            },
+            {
+                "mapa": "Kaboom Canyon",
+                "modo": "heist",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1
             }
         ],
         "sinergias": [
             {
+                "com": "BROCK",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 0
+            },
+            {
                 "com": "BYRON",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 1
+            },
+            {
+                "com": "CHARLIE",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 0
+            },
+            {
+                "com": "CHESTER",
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
@@ -17908,6 +18620,14 @@
                 "tipo": "scrim",
                 "picks": 1,
                 "vitorias": 0
+            },
+            {
+                "com": "GLOWY",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 1
             },
             {
                 "com": "JANET",
@@ -18120,6 +18840,14 @@
                 "picks": 1
             },
             {
+                "mapa": "Deep End",
+                "modo": "knockout",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1
+            },
+            {
                 "mapa": "Goldarm Gulch",
                 "modo": "knockout",
                 "ano": "2026",
@@ -18133,6 +18861,14 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
+                "picks": 1
+            },
+            {
+                "mapa": "Kaboom Canyon",
+                "modo": "heist",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
                 "picks": 1
             },
             {
@@ -18162,6 +18898,14 @@
         ],
         "sinergias": [
             {
+                "com": "BEA",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 0
+            },
+            {
                 "com": "BELLE",
                 "ano": "2026",
                 "mes": "JUNHO",
@@ -18183,6 +18927,14 @@
                 "mes": "JUNHO",
                 "tipo": "scrim",
                 "picks": 3,
+                "vitorias": 0
+            },
+            {
+                "com": "CHARLIE",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
                 "vitorias": 0
             },
             {
@@ -18243,6 +18995,14 @@
             },
             {
                 "com": "LEON",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 0
+            },
+            {
+                "com": "LILY",
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
@@ -18520,6 +19280,14 @@
     "BEA": {
         "top_mapas": [
             {
+                "mapa": "Deep End",
+                "modo": "knockout",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1
+            },
+            {
                 "mapa": "Hard Rock Mine",
                 "modo": "gemGrab",
                 "ano": "2026",
@@ -18558,9 +19326,25 @@
                 "mes": "JUNHO",
                 "tipo": "scrim",
                 "picks": 1
+            },
+            {
+                "mapa": "Safe Zone",
+                "modo": "heist",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1
             }
         ],
         "sinergias": [
+            {
+                "com": "BROCK",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 0
+            },
             {
                 "com": "BYRON",
                 "ano": "2026",
@@ -18570,12 +19354,28 @@
                 "vitorias": 0
             },
             {
+                "com": "CHUCK",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 1
+            },
+            {
                 "com": "COLT",
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
                 "picks": 1,
                 "vitorias": 0
+            },
+            {
+                "com": "CORDELIUS",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 1
             },
             {
                 "com": "DAMIAN",
@@ -18708,6 +19508,14 @@
                 "mes": "JUNHO",
                 "tipo": "scrim",
                 "picks": 4
+            },
+            {
+                "mapa": "Kaboom Canyon",
+                "modo": "heist",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1
             },
             {
                 "mapa": "Layer Cake",
@@ -18928,6 +19736,14 @@
                 "vitorias": 1
             },
             {
+                "com": "FINX",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 0
+            },
+            {
                 "com": "FRANK",
                 "ano": "2026",
                 "mes": "JUNHO",
@@ -19118,6 +19934,14 @@
                 "tipo": "scrim",
                 "picks": 3,
                 "vitorias": 3
+            },
+            {
+                "com": "RUFFS",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 0
             },
             {
                 "com": "SANDY",
@@ -19359,7 +20183,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
-                "picks": 1
+                "picks": 2
             },
             {
                 "mapa": "Super Beach",
@@ -19380,6 +20204,14 @@
         ],
         "sinergias": [
             {
+                "com": "BEA",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 1
+            },
+            {
                 "com": "BUZZ",
                 "ano": "2026",
                 "mes": "JUNHO",
@@ -19397,6 +20229,14 @@
             },
             {
                 "com": "BYRON",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 1
+            },
+            {
+                "com": "CHUCK",
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
@@ -19702,6 +20542,14 @@
     "DYNAMIKE": {
         "top_mapas": [
             {
+                "mapa": "",
+                "modo": "knockout",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1
+            },
+            {
                 "mapa": "Goldarm Gulch",
                 "modo": "knockout",
                 "ano": "2026",
@@ -19750,6 +20598,14 @@
                 "tipo": "scrim",
                 "picks": 1,
                 "vitorias": 0
+            },
+            {
+                "com": "SPROUT",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 1
             }
         ]
     },
@@ -20156,6 +21012,14 @@
                 "mes": "JUNHO",
                 "tipo": "tournament",
                 "picks": 1
+            },
+            {
+                "mapa": "Safe Zone",
+                "modo": "heist",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1
             }
         ],
         "sinergias": [
@@ -20168,10 +21032,26 @@
                 "vitorias": 0
             },
             {
+                "com": "MELODIE",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 0
+            },
+            {
                 "com": "MINA",
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "tournament",
+                "picks": 1,
+                "vitorias": 0
+            },
+            {
+                "com": "PIERCE",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
                 "picks": 1,
                 "vitorias": 0
             }
@@ -20215,10 +21095,26 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
-                "picks": 3
+                "picks": 4
             }
         ],
         "sinergias": [
+            {
+                "com": "BEA",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 1
+            },
+            {
+                "com": "CORDELIUS",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 1
+            },
             {
                 "com": "CROW",
                 "ano": "2026",
@@ -20635,6 +21531,28 @@
         "sinergias": [
             {
                 "com": "WILLOW",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 1
+            }
+        ]
+    },
+    "SPROUT": {
+        "top_mapas": [
+            {
+                "mapa": "",
+                "modo": "knockout",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1
+            }
+        ],
+        "sinergias": [
+            {
+                "com": "DYNAMIKE",
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
