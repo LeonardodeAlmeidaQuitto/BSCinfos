@@ -46,17 +46,23 @@
     </nav>
 
     <main class="main-container">
+        
+        <header class="page-header" style="margin-bottom: 20px;">
+            <h1>SOUTH AMERICA INFOS <span class="accent">ANALYSIS</span></h1>
+            <p class="subtitle">Dados extraídos de Scrims e Torneios Oficiais</p>
+        </header>
+
+        <div class="filter-container" style="display: flex; gap: 15px; justify-content: center; margin-bottom: 30px;">
+            <select id="select-ano" class="filter-select" onchange="filtrarTudo()"></select>
+            <select id="select-mes" class="filter-select" onchange="filtrarTudo()"></select>
+            <select id="select-tipo" class="filter-select" onchange="filtrarTudo()">
+                <option value="overhaul" selected>Overhaul (Todos)</option>
+                <option value="scrim">Scrim (Amistosos)</option>
+                <option value="tournament">Tournament (Torneios)</option>
+            </select>
+        </div>
+
         <div id="tela-meta" class="tela-secao tela-ativa">
-            <header class="page-header">
-                <h1>SOUTH AMERICA INFOS <span class="accent">ANALYSIS</span></h1>
-                <p class="subtitle">Dados extraídos de Scrims e Torneios Oficiais</p>
-            </header>
-            
-            <div class="filter-container">
-                <select id="select-ano" class="filter-select" onchange="filtrarEAplicarDados()"></select>
-                <select id="select-mes" class="filter-select" onchange="filtrarEAplicarDados()"></select>
-            </div>
-            
             <div id="grid-modos"></div> 
 
             <div class="modo-section">
@@ -119,20 +125,17 @@
         document.addEventListener('DOMContentLoaded', () => {
             carregarRegiao('sa');
             window.mudarTela = function(tela) {
-                // Oculta todas as telas
                 document.querySelectorAll('.tela-secao').forEach(sec => {
                     sec.classList.remove('tela-ativa');
                     sec.classList.add('tela-oculta');
                 });
                 
-                // Mostra a tela clicada
                 const telaAlvo = document.getElementById(`tela-${tela}`);
                 if (telaAlvo) {
                     telaAlvo.classList.remove('tela-oculta');
                     telaAlvo.classList.add('tela-ativa');
                 }
 
-                // Atualiza o texto do botão principal do menu dropdown SA
                 const titulos = {
                     'meta': 'SA ▼ (META)', 
                     'brawlers': 'SA ▼ (BRAWLERS)', 
@@ -141,7 +144,6 @@
                 };
                 document.getElementById('sa-menu-btn').textContent = titulos[tela];
 
-                // Fecha o dropdown após o clique
                 const dp = document.querySelectorAll('.dropdown');
                 dp.forEach(d => d.classList.remove('active'));
             };
