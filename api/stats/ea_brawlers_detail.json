@@ -2133,5 +2133,49 @@
                 "vitorias": 0
             }
         ]
+    },
+    "SURGE": {
+        "top_mapas": [
+            {
+                "mapa": "",
+                "modo": "knockout",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1
+            }
+        ],
+        "sinergias": [
+            {
+                "com": "WILLOW",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 1
+            }
+        ]
+    },
+    "WILLOW": {
+        "top_mapas": [
+            {
+                "mapa": "",
+                "modo": "knockout",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1
+            }
+        ],
+        "sinergias": [
+            {
+                "com": "SURGE",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 1
+            }
+        ]
     }
 }

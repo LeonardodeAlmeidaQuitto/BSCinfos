@@ -4413,7 +4413,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
-                "picks": 8
+                "picks": 12
             },
             {
                 "mapa": "Pit Stop",
@@ -4540,6 +4540,14 @@
                 "picks": 1
             },
             {
+                "mapa": "Deep End",
+                "modo": "knockout",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1
+            },
+            {
                 "mapa": "Hard Rock Mine",
                 "modo": "gemGrab",
                 "ano": "2026",
@@ -4549,6 +4557,14 @@
             }
         ],
         "sinergias": [
+            {
+                "com": "ANGELO",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 0
+            },
             {
                 "com": "CHESTER",
                 "ano": "2026",
@@ -5108,6 +5124,14 @@
     "ANGELO": {
         "top_mapas": [
             {
+                "mapa": "Deep End",
+                "modo": "knockout",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1
+            },
+            {
                 "mapa": "Goldarm Gulch",
                 "modo": "knockout",
                 "ano": "2026",
@@ -5164,6 +5188,14 @@
                 "tipo": "tournament",
                 "picks": 1,
                 "vitorias": 1
+            },
+            {
+                "com": "JANET",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 0
             },
             {
                 "com": "LEON",
