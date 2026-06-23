@@ -2089,5 +2089,49 @@
                 "vitorias": 0
             }
         ]
+    },
+    "BERRY": {
+        "top_mapas": [
+            {
+                "mapa": "",
+                "modo": "knockout",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1
+            }
+        ],
+        "sinergias": [
+            {
+                "com": "HANK",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 0
+            }
+        ]
+    },
+    "HANK": {
+        "top_mapas": [
+            {
+                "mapa": "",
+                "modo": "knockout",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1
+            }
+        ],
+        "sinergias": [
+            {
+                "com": "BERRY",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 0
+            }
+        ]
     }
 }
