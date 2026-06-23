@@ -120,6 +120,16 @@
                 "picks": 1,
                 "vitorias": 1,
                 "win_rate": "100.0%"
+            },
+            {
+                "modo": "knockout",
+                "mapa": "",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "friendly",
+                "picks": 1,
+                "vitorias": 1,
+                "win_rate": "100.0%"
             }
         ],
         "sinergias": []
@@ -242,9 +252,9 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "friendly",
-                "picks": 6,
-                "vitorias": 0,
-                "win_rate": "0.0%"
+                "picks": 10,
+                "vitorias": 2,
+                "win_rate": "20.0%"
             }
         ],
         "sinergias": []
@@ -260,6 +270,36 @@
                 "picks": 2,
                 "vitorias": 0,
                 "win_rate": "0.0%"
+            }
+        ],
+        "sinergias": []
+    },
+    "GENE": {
+        "mapas": [
+            {
+                "modo": "knockout",
+                "mapa": "",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "friendly",
+                "picks": 1,
+                "vitorias": 1,
+                "win_rate": "100.0%"
+            }
+        ],
+        "sinergias": []
+    },
+    "FANG": {
+        "mapas": [
+            {
+                "modo": "knockout",
+                "mapa": "",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "friendly",
+                "picks": 2,
+                "vitorias": 2,
+                "win_rate": "100.0%"
             }
         ],
         "sinergias": []
