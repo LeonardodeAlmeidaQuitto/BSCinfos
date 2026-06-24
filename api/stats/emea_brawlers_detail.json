@@ -10087,10 +10087,18 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
-                "picks": 3
+                "picks": 4
             }
         ],
         "sinergias": [
+            {
+                "com": "BIBI",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 0
+            },
             {
                 "com": "CORDELIUS",
                 "ano": "2026",
@@ -10443,7 +10451,7 @@
                 "ano": "2026",
                 "mes": "JUNHO",
                 "tipo": "scrim",
-                "picks": 5
+                "picks": 6
             },
             {
                 "mapa": "Safe Zone",
@@ -10478,6 +10486,14 @@
                 "tipo": "scrim",
                 "picks": 1,
                 "vitorias": 1
+            },
+            {
+                "com": "BUZZ",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "scrim",
+                "picks": 1,
+                "vitorias": 0
             },
             {
                 "com": "COLETTE",
