@@ -12,14 +12,13 @@
     <nav class="navbar">
         <a href="index.html" class="nav-link">MENU</a>
         <div class="nav-links">
-            
             <div class="dropdown">
                 <a href="#" class="nav-link" id="sa-menu-btn">SA ▼ (META)</a>
                 <div class="dropdown-content">
                     <a href="#" onclick="mudarTela('meta'); return false;">Meta</a>
                     <a href="#" onclick="mudarTela('brawlers'); return false;">Brawlers</a>
                     <a href="#" onclick="mudarTela('times'); return false;">Times</a>
-                    <a href="#" onclick="mudarTela('players'); return false;">Players</a>
+                    <a href="#" onclick="mudarTela('scrims'); return false;">Scrims</a>
                 </div>
             </div>
 
@@ -40,13 +39,11 @@
                     </a>
                 </div>
             </div>
-
             <a href="geral.html" class="nav-link">GERAL</a>
         </div>
     </nav>
 
     <main class="main-container">
-        
         <header class="page-header" style="margin-bottom: 20px;">
             <h1>SOUTH AMERICA INFOS <span class="accent">ANALYSIS</span></h1>
             <p class="subtitle">Dados extraídos de Scrims e Torneios Oficiais</p>
@@ -64,11 +61,8 @@
 
         <div id="tela-meta" class="tela-secao tela-ativa">
             <div id="grid-modos"></div> 
-
             <div class="modo-section">
-                <div class="modo-header" onclick="toggleElemento(this)">
-                    ALL MAPS ANALYSIS <span>▶</span>
-                </div>
+                <div class="modo-header" onclick="toggleElemento(this)">ALL MAPS ANALYSIS <span>▶</span></div>
                 <div class="mapa-content" style="display:none">
                     <table class="excel-table">
                         <thead>
@@ -81,8 +75,7 @@
                                 <th class="col-stats sortable" onclick="ordenarTabela(this, 'percent')">WR% ↕</th>
                             </tr>
                         </thead>
-                        <tbody id="tbody-all-maps">
-                        </tbody>
+                        <tbody id="tbody-all-maps"></tbody>
                     </table>
                 </div>
             </div>
@@ -112,11 +105,9 @@
             </div>
         </div>
 
-        <div id="tela-players" class="tela-secao tela-oculta">
-            <div style="padding: 40px; text-align: center; color: #888;">
-                <h2 style="color: #fff; margin-bottom: 10px;">Área de Players</h2>
-                <p>Aqui você pode montar o conteúdo focado apenas em jogadores.</p>
-            </div>
+        <div id="tela-scrims" class="tela-secao tela-oculta">
+            <div id="scrims-lista" style="display: flex; flex-direction: column; gap: 15px; padding: 20px;"></div>
+            <div id="scrims-detalhe" style="display: none; padding: 20px;"></div>
         </div>
 
     </main>
@@ -140,7 +131,7 @@
                     'meta': 'SA ▼ (META)', 
                     'brawlers': 'SA ▼ (BRAWLERS)', 
                     'times': 'SA ▼ (TIMES)',
-                    'players': 'SA ▼ (PLAYERS)'
+                    'scrims': 'SA ▼ (SCRIMS)'
                 };
                 document.getElementById('sa-menu-btn').textContent = titulos[tela];
 
