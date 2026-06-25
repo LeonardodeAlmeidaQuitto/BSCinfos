@@ -5,132 +5,125 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SOUTH AMERICA Infos</title>
     <link rel="stylesheet" href="style.css">
-    <script src="app.js" defer></script>
+    <script src="app.js"></script>
 </head>
 <body>
 
     <nav class="navbar">
         <a href="index.html" class="nav-link">MENU</a>
         <div class="nav-links">
-            
             <div class="dropdown">
                 <a href="#" class="nav-link" id="sa-menu-btn">SA ▼ (META)</a>
                 <div class="dropdown-content">
                     <a href="#" onclick="mudarTela('meta'); return false;">Meta</a>
                     <a href="#" onclick="mudarTela('brawlers'); return false;">Brawlers</a>
                     <a href="#" onclick="mudarTela('times'); return false;">Times</a>
-                    <a href="#" onclick="mudarTela('players'); return false;">Players</a>
+                    <a href="#" onclick="mudarTela('scrins'); return false;">Scrimes</a>
                 </div>
             </div>
-
             <div class="dropdown">
                 <a href="#" class="nav-link">OUTROS ▼</a>
                 <div class="dropdown-content">
-                    <a href="na.html" style="display: flex; align-items: center; gap: 8px;">
-                        <img src="element/na.png" style="width: 20px; height: 20px; border-radius: 50%;" onerror="this.style.display='none'"> North America
-                    </a>
-                    <a href="emea.html" style="display: flex; align-items: center; gap: 8px;">
-                        <img src="element/emea.png" style="width: 20px; height: 20px; border-radius: 50%;" onerror="this.style.display='none'"> EMEA
-                    </a>
-                    <a href="apac.html" style="display: flex; align-items: center; gap: 8px;">
-                        <img src="element/apac.png" style="width: 20px; height: 20px; border-radius: 50%;" onerror="this.style.display='none'"> APAC
-                    </a>
+                    <a href="na.html" style="display: flex; align-items: center; gap: 8px;">NA</a>
+                    <a href="emea.html" style="display: flex; align-items: center; gap: 8px;">EMEA</a>
+                    <a href="ea.html" style="display: flex; align-items: center; gap: 8px;">EA</a>
                 </div>
             </div>
+            <a href="geral.html" class="nav-link">GERAL</a>
         </div>
     </nav>
 
-    <main class="conteudo-principal">
-        
+    <main class="main-container">
+        <header class="page-header">
+            <h1>SOUTH AMERICA INFOS <span class="accent">ANALYSIS</span></h1>
+        </header>
+
+        <!-- Filtros Globais (Agora afetam META, BRAWLERS, TIMES e SCRINS) -->
+        <div class="filter-container">
+            <select id="select-ano" class="filter-select" onchange="filtrarTudo()"></select>
+            <select id="select-mes" class="filter-select" onchange="filtrarTudo()"></select>
+            <select id="select-tipo" class="filter-select" onchange="filtrarTudo()">
+                <option value="overhaul">Ambos os Tipos</option>
+                <option value="tournament">Tournament</option>
+                <option value="friendly">Scrim / Friendly</option>
+            </select>
+        </div>
+
+        <!-- TELA 1: META -->
         <div id="tela-meta" class="tela-secao tela-ativa">
-            <h2 class="titulo-secao">Análise do Meta Geral (SA)</h2>
-            <div class="tabela-responsiva">
-                <table class="tabela-dados">
-                    <thead>
-                        <tr>
-                            <th>Posição</th>
-                            <th>Brawler</th>
-                            <th>Partidas Jogadas</th>
-                            <th>Vitórias</th>
-                            <th>Win Rate</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabela-meta-corpo">
-                        </tbody>
-                </table>
+            <div id="grid-modos"></div> 
+            <div class="modo-section">
+                <div class="modo-header" onclick="toggleElemento(this)">ALL MAPS ANALYSIS <span>▶</span></div>
+                <div class="mapa-content" style="display:none">
+                    <table class="excel-table">
+                        <thead>
+                            <tr>
+                                <th class="col-img">IMG</th>
+                                <th class="sortable" onclick="ordenarTabela(this, 'string')" style="text-align: left;">BRAWLER ↕</th>
+                                <th class="col-stats sortable" onclick="ordenarTabela(this, 'number')">P ↕</th>
+                                <th class="col-stats sortable" onclick="ordenarTabela(this, 'percent')">PR% ↕</th>
+                                <th class="col-stats sortable" onclick="ordenarTabela(this, 'number')">W ↕</th>
+                                <th class="col-stats sortable" onclick="ordenarTabela(this, 'percent')">WR% ↕</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-all-maps"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
+        <!-- TELA 2: BRAWLERS -->
         <div id="tela-brawlers" class="tela-secao tela-oculta">
-            <h2 class="titulo-secao">Estatísticas Detalhadas de Brawlers</h2>
-            <div class="brawlers-grid" id="grid-brawlers">
+            <div class="brawlers-container">
+                <div class="sidebar">
+                    <input type="text" id="search-brawler-sidebar" class="sidebar-search" placeholder="Buscar Brawler..." oninput="filtrarBrawlersSidebar()">
+                    <div class="sidebar-list" id="lista-brawlers-sidebar"></div>
                 </div>
-        </div>
-
-        <div id="tela-times" class="tela-secao tela-oculta">
-            <h2 class="titulo-secao">Power Rankings & Roster de Times</h2>
-            <div id="container-times">
+                <div class="info-panel" id="painel-info-brawler">
+                    <div class="placeholder-text">Selecione um brawler.</div>
                 </div>
-        </div>
-
-        <div id="tela-players" class="tela-secao tela-oculta">
-            <h2 class="titulo-secao">Estatísticas Individuais dos Jogadores</h2>
-            <div class="players-grid" id="grid-players">
-                </div>
-        </div>
-
-    </main>
-
-    <div id="brawler-modal" class="brawler-modal-overlay" onclick="fecharModal(event)">
-        <div class="brawler-modal-card">
-            <div class="brawler-modal-header">
-                <h3 id="modal-brawler-nome">Nome do Brawler</h3>
-                <button class="btn-fechar" onclick="document.getElementById('brawler-modal').style.display='none'">&times;</button>
             </div>
-            <div class="brawler-modal-body" id="modal-brawler-conteudo">
-                </div>
         </div>
-    </div>
+
+        <!-- TELA 3: TIMES -->
+        <div id="tela-times" class="tela-secao tela-oculta">
+            <div class="times-container">
+                <div class="sidebar">
+                    <div class="sidebar-header">EQUIPES REGISTRADAS</div>
+                    <div class="sidebar-list" id="lista-times-sidebar"></div>
+                </div>
+                <div class="info-panel" id="painel-info-time">
+                    <div class="placeholder-text">Selecione um time.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TELA 4: SCRINS -->
+        <div id="tela-scrins" class="tela-secao tela-oculta">
+            <div id="scrins-lista" class="scrins-grid" style="display: grid; gap: 15px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
+                <!-- Interface 1: Lista das Scrims (Print 215) -->
+            </div>
+            <div id="scrins-detalhe" style="display:none; background: var(--bg-paineis); padding: 20px; border-radius: 12px; border: 1px solid var(--borda-destaque);">
+                <!-- Interface 2: Detalhes da Scrim (Print 214) -->
+            </div>
+        </div>
+    </main>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            if (typeof carregarRegiao === 'function') {
-                carregarRegiao('sa');
-            }
-
+            carregarRegiao('sa');
             window.mudarTela = function(tela) {
-                document.querySelectorAll('.tela-secao').forEach(sec => {
-                    sec.classList.remove('tela-ativa');
-                    sec.classList.add('tela-oculta');
-                });
+                document.querySelectorAll('.tela-secao').forEach(sec => sec.classList.replace('tela-ativa', 'tela-oculta'));
+                document.getElementById(`tela-${tela}`).classList.replace('tela-oculta', 'tela-ativa');
                 
-                const telaAlvo = document.getElementById(`tela-${tela}`);
-                if (telaAlvo) {
-                    telaAlvo.classList.remove('tela-oculta');
-                    telaAlvo.classList.add('tela-ativa');
-                }
-
-                const titulos = {
-                    'meta': 'SA ▼ (META)', 
-                    'brawlers': 'SA ▼ (BRAWLERS)', 
-                    'times': 'SA ▼ (TIMES)',
-                    'players': 'SA ▼ (PLAYERS)'
-                };
-                
-                const btn = document.getElementById('sa-menu-btn');
-                if (btn && titulos[tela]) {
-                    btn.textContent = titulos[tela];
-                }
-
+                const titulos = {'meta': 'SA ▼ (META)', 'brawlers': 'SA ▼ (BRAWLERS)', 'times': 'SA ▼ (TIMES)', 'scrins': 'SA ▼ (SCRINS)'};
+                document.getElementById('sa-menu-btn').textContent = titulos[tela];
                 document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('active'));
+                
+                // Força o recarregamento com o filtro ativo ao trocar de tela
+                filtrarTudo();
             };
         });
-
-        function fecharModal(e) {
-            if (e.target.id === 'brawler-modal') {
-                document.getElementById('brawler-modal').style.display = 'none';
-            }
-        }
     </script>
 </body>
 </html>
