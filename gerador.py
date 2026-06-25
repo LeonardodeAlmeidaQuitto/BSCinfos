@@ -232,32 +232,84 @@ def minerar_dados():
             with open(path_json, 'w', encoding='utf-8') as f:
                 json.dump(detalhes, f, ensure_ascii=False, indent=4)
 
-        gerar_detalhes_brawlers(df_stats, 'api/stats/geral_brawlers_detail.json')
+        def gerar_detalhes_e_scrims(df_input, path_json, regiao_str):
+            detalhes = {}
+            # Agrupa Scrims por intervalo de 2 horas
+            scrims_dict = {}
+            
+            # Analisa partida por partida para gerar Sinergias e Counters Corretos
+            df_partidas = df_input.groupby('id_partida')
+            for id_partida, grupo in df_partidas:
+                t0 = grupo[grupo['id_time'] == grupo.iloc[0]['id_time']]
+                t1 = grupo[grupo['id_time'] != grupo.iloc[0]['id_time']]
+                
+                if len(t0) == 0 or len(t1) == 0: continue
+                
+                vencedor_id = t0.iloc[0]['id_time'] if t0.iloc[0]['win'] == 1 else t1.iloc[0]['id_time']
+                
+                data_obj = datetime.strptime(grupo.iloc[0]['data_adicao'], '%d/%m/%Y %H:%M:%S')
+                ano, mes = grupo.iloc[0]['ano'], grupo.iloc[0]['mes']
+                
+                # ------ LÓGICA DE SCRIMS (Agrupar partidas em 2h) ------
+                time_a, time_b = sorted([t0.iloc[0]['id_time'], t1.iloc[0]['id_time']])
+                chave_scrim = f"{ano}_{mes}_{data_obj.strftime('%d')}_{time_a}_{time_b}"
+                
+                if chave_scrim not in scrims_dict:
+                    scrims_dict[chave_scrim] = {
+                        "ano": ano, "mes": mes, "data": data_obj.strftime('%d/%m/%Y'),
+                        "t1_id": t0.iloc[0]['id_time'], "t1_nome": t0.iloc[0]['nome_time'],
+                        "t2_id": t1.iloc[0]['id_time'], "t2_nome": t1.iloc[0]['nome_time'],
+                        "t1_score": 0, "t2_score": 0, "rounds": []
+                    }
+                
+                # Se time 0 for o T1 do scrim group
+                if t0.iloc[0]['id_time'] == scrims_dict[chave_scrim]['t1_id']:
+                    if t0.iloc[0]['win'] == 1: scrims_dict[chave_scrim]['t1_score'] += 1
+                    else: scrims_dict[chave_scrim]['t2_score'] += 1
+                else:
+                    if t1.iloc[0]['win'] == 1: scrims_dict[chave_scrim]['t1_score'] += 1
+                    else: scrims_dict[chave_scrim]['t2_score'] += 1
+
+                scrims_dict[chave_scrim]['rounds'].append({
+                    "mapa": grupo.iloc[0]['mapa'],
+                    "modo": grupo.iloc[0]['modo'],
+                    "hora": data_obj.strftime('%H:%M'),
+                    "t1_picks": t0['pick'].tolist(),
+                    "t2_picks": t1['pick'].tolist()
+                })
+                # -----------------------------------------------------
+
+                # LÓGICA DE COUNTERS E SINERGIAS
+                tipo_p = grupo.iloc[0]['tipo']
+                
+                def alimentar_relacionamento(team_aliados, team_inimigos):
+                    for _, p1 in team_aliados.iterrows():
+                        brawler = p1['pick']
+                        if brawler not in detalhes:
+                            detalhes[brawler] = {"mapas": [], "sinergias": [], "oponentes": []}
+                        
+                        # Inimigos (Counters)
+                        for _, p2 in team_inimigos.iterrows():
+                            detalhes[brawler]["oponentes"].append({
+                                "com": p2['pick'], "vitorias": int(p1['win']), "ano": ano, "mes": mes, "tipo": tipo_p, "picks": 1
+                            })
+
+                alimentar_relacionamento(t0, t1)
+                alimentar_relacionamento(t1, t0)
+
+            # Salvar JSON Brawlers
+            with open(path_json, 'w', encoding='utf-8') as f:
+                json.dump(detalhes, f, ensure_ascii=False)
+                
+            # Salvar JSON Scrims
+            with open(f"api/stats/scrims_{regiao_str.lower()}.json", 'w', encoding='utf-8') as fs:
+                json.dump(list(scrims_dict.values()), fs, ensure_ascii=False)
+
+        # Chamar as funções durante o loop de extração:
+        gerar_detalhes_e_scrims(df_stats, "api/stats/geral_brawlers_detail.json", "GERAL")
         for reg in regioes_validas:
             df_reg = df_stats[df_stats['regiao_list'] == reg]
-            gerar_detalhes_brawlers(df_reg, f"api/stats/{str(reg).lower()}_brawlers_detail.json")
-
-        # 3. GERAÇÃO DOS ARQUIVOS DE TIMES - COM FILTROS INCLUSOS
-        def extrair_dados_times(df_input):
-            times_dict = {}
-            # Agrupando quantidade de picks de cada jogador separados por Brawler, Ano, Mes, Tipo
-            df_grouped = df_input.groupby(['player_tag', 'pick', 'ano', 'mes', 'tipo']).size().reset_index(name='qtd')
-            for tag in df_grouped['player_tag'].unique():
-                if pd.isna(tag) or not tag or str(tag).lower() == 'nan': continue
-                df_player = df_grouped[df_grouped['player_tag'] == tag]
-                times_dict[str(tag)] = df_player[['pick', 'qtd', 'ano', 'mes', 'tipo']].rename(columns={'pick': 'brawler'}).to_dict(orient='records')
-            return times_dict
-
-        times_geral = extrair_dados_times(df_stats)
-        with open("api/stats/times_geral.json", 'w', encoding='utf-8') as f:
-            json.dump(times_geral, f, ensure_ascii=False, indent=4)
-
-        for regiao in regioes_validas:
-            df_regiao = df_stats[df_stats['regiao_list'] == regiao]
-            times_regiao = extrair_dados_times(df_regiao)
-            nome_arquivo = f"api/stats/times_{str(regiao).lower()}.json"
-            with open(nome_arquivo, 'w', encoding='utf-8') as f:
-                json.dump(times_regiao, f, ensure_ascii=False, indent=4)
+            gerar_detalhes_e_scrims(df_reg, f"api/stats/{str(reg).lower()}_brawlers_detail.json", reg)
 
     print(f"\n✅ Concluído! Total de novas partidas: {total_novas}")
 
