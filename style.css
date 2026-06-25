@@ -110,3 +110,14 @@ body { background-color: var(--bg-geral); color: var(--texto); min-height: 100vh
 .synergy-box { background: #111; border: 1px solid var(--borda-destaque); padding: 15px; border-radius: 8px; }
 .synergy-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--borda-suave); }
 .synergy-item img { width: 24px; height: 24px; border-radius: 4px; margin-right: 10px; vertical-align: middle; }
+
+.dropdown:hover .dropdown-content {
+    display: block !important;
+}
+.dropdown-content {
+    animation: fadeIn 0.2s ease-in-out;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
