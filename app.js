@@ -84,680 +84,401 @@ const CONFIGURACAO_MANUAL_TIMES = {
 };
 
 // ========================================================
-// 2. CONFIGURAÇÕES GLOBAIS
+// 2. ESTADO GLOBAL DA APLICAÇÃO
 // ========================================================
-const MAPAS_POR_MES = {
-    "2026-04": {
-        "brawlBall": ["Super Beach", "Pinhole Punt", "Sneaky Fields"],
-        "bounty": ["Shooting Star", "Hideout", "Layer Cake"],
-        "heist": ["Hot Potato", "Safe Zone", "Bridge Too Far"],
-        "knockout": ["Goldarm Gulch", "Belle's Rock", "Out in the Open"],
-        "gemGrab": ["Hard Rock Mine", "Double Swoosh", "Deathcap Trap"],
-        "hotZone": ["Ring of Fire", "Open Business", "Dueling Beetles"]
-    },
-    "2026-05": {
-        "brawlBall": ["Triple Dribble", "Pinhole Punt", "Pinball Dreams"],
-        "bounty": ["Dry Season", "Hideout", "Layer Cake"],
-        "heist": ["Pit Stop", "Safe Zone", "Kaboom Canyon"],
-        "knockout": ["Goldarm Gulch", "New Horizons", "Out in the Open"],
-        "gemGrab": ["Hard Rock Mine", "Gem Fort", "Crystal Arcade"],
-        "hotZone": ["Ring of Fire", "Dueling Beetles", "Open Business"]
-    },
-    "2026-06": {
-        "brawlBall": ["Triple Dribble", "Pinhole Punt", "Pinball Dreams"],
-        "bounty": ["Dry Season", "Hideout", "Layer Cake"],
-        "heist": ["Pit Stop", "Safe Zone", "Kaboom Canyon"],
-        "knockout": ["Goldarm Gulch", "New Horizons", "Out in the Open"],
-        "gemGrab": ["Hard Rock Mine", "Gem Fort", "Crystal Arcade"],
-        "hotZone": ["Ring of Fire", "Dueling Beetles", "Open Business"]
-    }
-};
-
-let dadosOriginaisRegiao = [];
-let dadosTimes = {};
-let detalhesBrawlers = {};
-let regiaoAtiva = "SA";
-
-// Estados para guardar quem está sendo visualizado na tela e poder atualizar ao mudar o filtro
-let brawlerAtualSelecionado = null;
-let timeAtualSelecionado = { id: null, regiao: null };
-
-const formatarNomeImagem = (n) => `brawlers/${n.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
-const formatarNomeMapa = (m) => `element/maps/${m.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
-
-window.toggleElemento = function(header) {
-    const content = header.nextElementSibling;
-    const icon = header.querySelector('span');
-    if (content.style.display === "none" || !content.style.display) {
-        content.style.display = "grid";
-        if (icon) icon.textContent = "▼";
-    } else {
-        content.style.display = "none";
-        if (icon) icon.textContent = "▶";
-    }
-};
+let dadosBrawlersRegiao = {};
+let dadosTimesGeral = {};
+let regiaoAtual = 'sa';
 
 // ========================================================
-// 3. CARREGAMENTO DINÂMICO
+// 3. INICIALIZAÇÃO E EVENTOS (DOM)
+// ========================================================
+document.addEventListener("DOMContentLoaded", () => {
+    // Configuração de Menus Dropdown
+    const dropdowns = document.querySelectorAll(".dropdown");
+    dropdowns.forEach(dropdown => {
+        const link = dropdown.querySelector(".nav-link");
+        if (!link) return;
+        
+        link.addEventListener("click", (e) => {
+            if (link.getAttribute('href') === '#') {
+                e.preventDefault();
+                dropdowns.forEach(other => { if (other !== dropdown) other.classList.remove("active"); });
+                dropdown.classList.toggle("active");
+            }
+        });
+    });
+
+    // Fechar dropdowns ao clicar fora
+    document.addEventListener("click", (e) => {
+        if (!e.target.closest(".dropdown")) {
+            dropdowns.forEach(d => d.classList.remove("active"));
+        }
+    });
+
+    // Ouvintes para Filtros Globais (caso existam na página)
+    const filtroTipo = document.getElementById('filtro-tipo');
+    const filtroMes = document.getElementById('filtro-mes');
+    
+    if (filtroTipo) filtroTipo.addEventListener('change', () => renderizarTelas());
+    if (filtroMes) filtroMes.addEventListener('change', () => renderizarTelas());
+});
+
+// ========================================================
+// 4. CARREGAMENTO DE DADOS (API)
 // ========================================================
 window.carregarRegiao = async function(regiao) {
-    regiaoAtiva = regiao.toUpperCase();
-    
-    dadosTimes = {};
-    detalhesBrawlers = {};
-
-    try {
-        const urlStats = `api/stats/${regiao.toLowerCase()}.json`;
-        const resStats = await fetch(urlStats);
-        if (resStats.ok) {
-            let dadosBrutos = await resStats.json();
-            dadosOriginaisRegiao = dadosBrutos.map(d => {
-                if (d.mes && (d.mes.toUpperCase() === "ANTIGO" || d.mes.toUpperCase() === "ANTIGA")) {
-                    d.mes = "ABRIL";
-                    if (d.ano === "ANTIGO" || !d.ano) d.ano = "2026";
-                } else if (d.mes) {
-                    d.mes = d.mes.toUpperCase();
-                }
-                return d;
-            });
-        }
-    } catch (e) { console.warn("Erro ao carregar dados da região.", e); }
-
-    try {
-        const resTimes = await fetch(`api/stats/times_${regiao.toLowerCase()}.json`);
-        if (resTimes.ok) dadosTimes = await resTimes.json();
-    } catch (e) {}
+    regiaoAtual = regiao.toLowerCase();
     
     try {
-        const resDetalhes = await fetch(`api/stats/${regiao.toLowerCase()}_brawlers_detail.json`);
-        if (resDetalhes.ok) detalhesBrawlers = await resDetalhes.json();
-    } catch (e) {}
-
-    try { popularFiltrosIniciais(); } catch(e) {}
-    try { filtrarTudo(); } catch(e) {}
-    try { renderizarListaBrawlers(); } catch(e) {}
-    try { renderizarListaTimes(regiaoAtiva); } catch(e) { console.error(e); }
-};
-
-function popularFiltrosIniciais() {
-    const selectAno = document.getElementById('select-ano');
-    const selectMes = document.getElementById('select-mes');
-    if (!selectAno || !selectMes) return;
-
-    const anos = [...new Set(dadosOriginaisRegiao.map(d => d.ano))].filter(a => a);
-    const meses = [...new Set(dadosOriginaisRegiao.map(d => d.mes))].filter(m => m);
-
-    selectAno.innerHTML = '<option value="TODOS" selected>Todos os Anos</option>';
-    selectMes.innerHTML = '<option value="TODOS" selected>Todos os Meses</option>';
-
-    anos.sort().forEach(ano => selectAno.innerHTML += `<option value="${ano}">${ano}</option>`);
-    const ordemMeses = ["JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"];
-    meses.sort((a, b) => ordemMeses.indexOf(a) - ordemMeses.indexOf(b)).forEach(mes => {
-        selectMes.innerHTML += `<option value="${mes}">${mes}</option>`;
-    });
-}
-
-// Master Handler para atualizar TUDO baseado nos novos filtros globais
-window.filtrarTudo = function() {
-    filtrarEAplicarDados(); // Atualiza a tela Meta
-    
-    // Se o usuário estiver vendo um brawler ou time, recarregamos com os filtros atuais
-    if (brawlerAtualSelecionado) {
-        exibirInfoBrawler(brawlerAtualSelecionado);
-    }
-    if (timeAtualSelecionado.id) {
-        exibirInfoTime(timeAtualSelecionado.id, timeAtualSelecionado.regiao);
-    }
-};
-
-window.filtrarEAplicarDados = function() {
-    const anoSel = document.getElementById('select-ano')?.value || "TODOS";
-    const mesSel = document.getElementById('select-mes')?.value || "TODOS";
-    const tipoSel = document.getElementById('select-tipo')?.value || "overhaul";
-
-    let dadosFiltrados = dadosOriginaisRegiao;
-
-    if (anoSel !== "TODOS") dadosFiltrados = dadosFiltrados.filter(d => d.ano === anoSel);
-    if (mesSel !== "TODOS") dadosFiltrados = dadosFiltrados.filter(d => d.mes === mesSel);
-    if (tipoSel !== "overhaul") dadosFiltrados = dadosFiltrados.filter(d => d.tipo === tipoSel);
-
-    const mesesParaNumero = {
-        "JANEIRO": "01", "FEVEREIRO": "02", "MARÇO": "03", "ABRIL": "04",
-        "MAIO": "05", "JUNHO": "06", "JULHO": "07", "AGOSTO": "08",
-        "SETEMBRO": "09", "OUTUBRO": "10", "NOVEMBRO": "11", "DEZEMBRO": "12"
-    };
-
-    if (anoSel !== "TODOS" && mesSel !== "TODOS") {
-        const numMes = mesesParaNumero[mesSel.toUpperCase()];
-        const chaveMapa = `${anoSel}-${numMes}`;
-        const mapasDoMes = MAPAS_POR_MES[chaveMapa];
-
-        if (mapasDoMes) {
-            let mapasValidos = [];
-            Object.values(mapasDoMes).forEach(lista => lista.forEach(m => mapasValidos.push(m.toLowerCase())));
-            dadosFiltrados = dadosFiltrados.filter(d => mapasValidos.includes(d.mapa.toLowerCase()));
+        // Carrega dados específicos dos brawlers da região
+        const resBrawlers = await fetch(`api/stats/${regiaoAtual}_brawlers_detail.json`);
+        if (resBrawlers.ok) {
+            dadosBrawlersRegiao = await resBrawlers.json();
         } else {
-            dadosFiltrados = [];
+            console.warn(`Aviso: Não foi possível carregar os detalhes dos brawlers para a região: ${regiaoAtual}`);
+            dadosBrawlersRegiao = {};
         }
-    }
 
-    renderizarGridModos(dadosFiltrados, anoSel, mesSel);
-    renderizarAllMaps(dadosFiltrados);
-};
-
-function renderizarGridModos(dados, ano, mes) {
-    const container = document.getElementById('grid-modos');
-    if (!container) return;
-    container.innerHTML = '';
-
-    const mesesParaNumero = { "JANEIRO": "01", "FEVEREIRO": "02", "MARÇO": "03", "ABRIL": "04", "MAIO": "05", "JUNHO": "06", "JULHO": "07", "AGOSTO": "08", "SETEMBRO": "09", "OUTUBRO": "10", "NOVEMBRO": "11", "DEZEMBRO": "12" };
-    const numMes = (mes && mes !== "TODOS") ? mesesParaNumero[mes.toUpperCase()] : "05";
-    const anoAtual = (ano && ano !== "TODOS") ? ano : "2026";
-    const chaveMes = `${anoAtual}-${numMes}`;
-    const configuracaoMapas = MAPAS_POR_MES[chaveMes] || {};
-
-    Object.keys(configuracaoMapas).forEach(modo => {
-        const mapasDoModo = configuracaoMapas[modo];
-        let mapasHTML = "";
-
-        mapasDoModo.forEach(mapa => {
-            const dadosMapa = dados.filter(d => d.mapa.toLowerCase() === mapa.toLowerCase());
-            if (dadosMapa.length === 0) return;
-
-            // Agrega os dados caso existam múltiplas linhas de "scrim" e "tournament" pro mesmo brawler
-            let brawlersAgrupados = {};
-            dadosMapa.forEach(d => {
-                if(!brawlersAgrupados[d.pick]) brawlersAgrupados[d.pick] = { pick: d.pick, picks: 0, vitorias: 0 };
-                brawlersAgrupados[d.pick].picks += d.picks;
-                brawlersAgrupados[d.pick].vitorias += d.vitorias;
-            });
-            
-            let listaM = Object.values(brawlersAgrupados);
-            listaM.sort((a, b) => b.picks - a.picks);
-
-            let totalPicksMapa = listaM.reduce((sum, item) => sum + item.picks, 0);
-
-            let linhasBrawlers = listaM.map(d => `
-                <tr style="cursor: pointer;" onclick="abrirModalBrawler('${d.pick}')" title="Análise detalhada de ${d.pick}">
-                    <td class="col-img"><img src="${formatarNomeImagem(d.pick)}" onerror="this.src='brawlers/default.png'"></td>
-                    <td style="text-align: left; font-weight: bold;">${d.pick.toUpperCase()}</td>
-                    <td>${d.picks}</td>
-                    <td style="color: #aaa;">${ totalPicksMapa > 0 ? ((d.picks / totalPicksMapa) * 100).toFixed(1) + '%' : '0.0%' }</td>
-                    <td>${d.vitorias}</td>
-                    <td class="winrate-cell">${ d.picks > 0 ? ((d.vitorias / d.picks) * 100).toFixed(1) + '%' : '0.0%' }</td>
-                </tr>
-            `).join('');
-
-            mapasHTML += `
-                <div class="mapa-container">
-                    <h3 class="mapa-title">${mapa.toUpperCase()}</h3>
-                    <table class="excel-table">
-                        <thead>
-                            <tr>
-                                <th class="col-img">IMG</th>
-                                <th style="text-align: left; cursor: pointer;" onclick="ordenarTabela(this, 'string')">BRAWLER ↕</th>
-                                <th class="col-stats sortable" style="cursor: pointer;" onclick="ordenarTabela(this, 'number')">P ↕</th>
-                                <th class="col-stats sortable" style="cursor: pointer;" onclick="ordenarTabela(this, 'percent')">PR% ↕</th>
-                                <th class="col-stats sortable" style="cursor: pointer;" onclick="ordenarTabela(this, 'number')">W ↕</th>
-                                <th class="col-stats sortable" style="cursor: pointer;" onclick="ordenarTabela(this, 'percent')">WR% ↕</th>
-                            </tr>
-                        </thead>
-                        <tbody>${linhasBrawlers}</tbody>
-                    </table>
-                </div>
-            `;
-        });
-
-        if (mapasHTML) {
-            const section = document.createElement("div");
-            section.className = "modo-section";
-            const nomeExibicaoModo = modo.replace(/([A-Z])/g, ' $1').trim().toUpperCase();
-            section.innerHTML = `
-                <div class="modo-header" onclick="toggleElemento(this)">${nomeExibicaoModo} <span>▶</span></div>
-                <div class="mapa-content" style="display:none">${mapasHTML}</div>`;
-            container.appendChild(section);
+        // Carrega dados consolidados de picks por tag de player
+        const resTimes = await fetch(`api/stats/times_geral.json`);
+        if (resTimes.ok) {
+            dadosTimesGeral = await resTimes.json();
+        } else {
+            console.warn("Aviso: Ficheiro times_geral.json não encontrado.");
+            dadosTimesGeral = {};
         }
-    });
-}
 
-function renderizarAllMaps(dados) {
-    const tbody = document.getElementById('tbody-all-maps');
-    if (!tbody) return;
+        // Renderiza as telas após carregar as fontes de dados
+        renderizarTelas();
 
-    let mapasVistos = new Set();
-    let totalPartidasGerais = 0;
-    
-    dados.forEach(d => {
-        let key = d.mapa + d.ano + d.mes + (d.tipo||'');
-        if(!mapasVistos.has(key)) {
-            mapasVistos.add(key);
-            totalPartidasGerais += (d.total_partidas_mapa || 0);
-        }
-    });
-
-    let agrupadoGeral = {};
-    dados.forEach(d => {
-        if (!agrupadoGeral[d.pick]) agrupadoGeral[d.pick] = { picks: 0, vitorias: 0 };
-        agrupadoGeral[d.pick].picks += d.picks;
-        agrupadoGeral[d.pick].vitorias += d.vitorias;
-    });
-
-    let listaGeral = Object.keys(agrupadoGeral).map(brawler => {
-        const item = agrupadoGeral[brawler];
-        const wr = item.picks > 0 ? ((item.vitorias / item.picks) * 100).toFixed(1) + "%" : "0.0%";
-        const pr = totalPartidasGerais > 0 ? ((item.picks / totalPartidasGerais) * 100).toFixed(1) + "%" : "0.0%";
-        return { brawler, picks: item.picks, vitorias: item.vitorias, win_rate: wr, pick_rate: pr };
-    });
-
-    listaGeral.sort((a, b) => b.picks - a.picks);
-
-    tbody.innerHTML = listaGeral.map(d => `
-        <tr style="cursor: pointer;" onclick="abrirModalBrawler('${d.brawler}')" title="Análise detalhada de ${d.brawler}">
-            <td class="col-img"><img src="${formatarNomeImagem(d.brawler)}" onerror="this.src='brawlers/default.png'"></td>
-            <td style="text-align: left; font-weight: bold;">${d.brawler.toUpperCase()}</td>
-            <td>${d.picks}</td>
-            <td style="color: #aaa;">${d.pick_rate}</td>
-            <td>${d.vitorias}</td>
-            <td class="winrate-cell">${d.win_rate}</td>
-        </tr>
-    `).join('');
-}
-
-function renderizarListaBrawlers() {
-    const container = document.getElementById("lista-brawlers-sidebar");
-    if (!container) return;
-    
-    let brawlers = Object.keys(detalhesBrawlers);
-    if (brawlers.length === 0 && dadosOriginaisRegiao.length > 0) {
-        brawlers = [...new Set(dadosOriginaisRegiao.map(d => d.pick.toLowerCase()))];
+    } catch (erro) {
+        console.error("Erro crítico ao processar o carregamento da região:", erro);
     }
-    brawlers.sort();
-    
-    container.innerHTML = brawlers.map(b => `
-        <div class="sidebar-item" onclick="exibirInfoBrawler('${b}')" style="display: flex; align-items: center; gap: 12px; padding: 10px; cursor: pointer;">
-            <img src="${formatarNomeImagem(b)}" style="width: 35px; height: 35px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border-dark);" onerror="this.src='brawlers/default.png'">
-            <span class="brawler-name" style="font-weight: 600; font-size: 14px; text-transform: uppercase;">${b}</span>
-        </div>
-    `).join('');
-}
-
-window.filtrarBrawlersSidebar = function() {
-    const termo = document.getElementById("search-brawler-sidebar").value.toLowerCase();
-    document.querySelectorAll("#lista-brawlers-sidebar .sidebar-item").forEach(item => {
-        const nome = item.querySelector(".brawler-name").textContent.toLowerCase();
-        item.style.display = nome.includes(termo) ? "flex" : "none";
-    });
-};
-
-function filtrarEAggregarInfoBrawler(info) {
-    const anoSel = document.getElementById('select-ano')?.value || "TODOS";
-    const mesSel = document.getElementById('select-mes')?.value || "TODOS";
-    const tipoSel = document.getElementById('select-tipo')?.value || "overhaul";
-
-    // 1. Filtrar e agregar Mapas
-    let mapasFiltrados = (info.top_mapas || []).filter(m => 
-        (anoSel === "TODOS" || m.ano === anoSel) && 
-        (mesSel === "TODOS" || m.mes === mesSel) &&
-        (tipoSel === "overhaul" || m.tipo === tipoSel)
-    );
-    let mapaAgrupado = {};
-    mapasFiltrados.forEach(m => {
-        let k = m.mapa + '|' + m.modo;
-        if(!mapaAgrupado[k]) mapaAgrupado[k] = { mapa: m.mapa, modo: m.modo, picks: 0 };
-        mapaAgrupado[k].picks += m.picks;
-    });
-    let topMapas = Object.values(mapaAgrupado).sort((a,b) => b.picks - a.picks).slice(0, 3);
-
-    // 2. Filtrar e agregar Sinergias
-    let sinergiasFiltradas = (info.sinergias || []).filter(s => 
-        (anoSel === "TODOS" || s.ano === anoSel) && 
-        (mesSel === "TODOS" || s.mes === mesSel) &&
-        (tipoSel === "overhaul" || s.tipo === tipoSel)
-    );
-    let sinergiaAgrupada = {};
-    sinergiasFiltradas.forEach(s => {
-        if(!sinergiaAgrupada[s.com]) sinergiaAgrupada[s.com] = { com: s.com, picks: 0, vitorias: 0 };
-        sinergiaAgrupada[s.com].picks += s.picks;
-        sinergiaAgrupada[s.com].vitorias += s.vitorias;
-    });
-    let topSinergias = Object.values(sinergiaAgrupada).map(s => ({
-        com: s.com,
-        picks: s.picks,
-        vitorias: s.vitorias,
-        win_rate: s.picks > 0 ? ((s.vitorias/s.picks)*100).toFixed(1) + '%' : '0.0%'
-    })).sort((a,b) => b.picks - a.picks).slice(0, 5);
-
-    return { top_mapas: topMapas, sinergias: topSinergias };
-}
-
-function gerarHTMLDetalhes(nomeBrawler, infoBruta) {
-    const info = filtrarEAggregarInfoBrawler(infoBruta);
-
-    let mapasHTML = info.top_mapas && info.top_mapas.length > 0 ? info.top_mapas.map(m => `
-        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 12px; background: #111; padding: 10px; border-radius: 8px; border: 1px solid var(--borda-destaque);">
-            <img src="${formatarNomeMapa(m.mapa)}" onerror="this.src='elements/default.png'" style="width: 70px; height: 50px; border-radius: 6px; object-fit: cover;">
-            <div>
-                <div style="font-weight: bold; font-size: 15px; color: #fff;">${m.mapa.toUpperCase()}</div>
-                <div style="color: #888; font-size: 12px; margin-top: 2px;">${m.modo.toUpperCase()}</div>
-                <div style="color: var(--accent-purple); font-weight: bold; font-size: 13px; margin-top: 4px;">${m.picks} Partidas</div>
-            </div>
-        </div>
-    `).join('') : `<div style="font-size:13px; color:#555;">Sem dados pro filtro atual.</div>`;
-
-    let sinergiasHTML = info.sinergias && info.sinergias.length > 0 ? info.sinergias.map(s => `
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background: #111; border-radius: 8px; border: 1px solid var(--borda-destaque); margin-bottom: 10px;">
-            <div style="display: flex; align-items: center; gap: 6px;">
-                <img src="${formatarNomeImagem(nomeBrawler)}" style="width: 32px; height: 32px; border-radius: 4px;">
-                <span style="color: #666; font-size: 18px; font-weight: bold; margin: 0 4px;">+</span>
-                <img src="${formatarNomeImagem(s.com)}" style="width: 32px; height: 32px; border-radius: 4px; border: 2px solid var(--accent-purple);">
-                <span style="font-size: 14px; font-weight: bold; margin-left: 8px; color: #fff;">${s.com.toUpperCase()}</span>
-            </div>
-            <div style="font-size: 13px; color: #ccc; display: flex; gap: 15px;">
-                <span><strong>${s.picks}</strong> PICKS</span>
-                <span><strong>${s.vitorias}</strong> WINS</span>
-                <span style="color: var(--winrate-color); font-weight: bold;">${s.win_rate} WR</span>
-            </div>
-        </div>
-    `).join('') : `<div style="font-size:13px; color:#555;">Sem dados pro filtro atual.</div>`;
-
-    return `
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-            <div>
-                <h4 style="font-size: 14px; color: #888; margin-bottom: 15px; text-transform: uppercase;">Top 3 Mapas & Modos</h4>
-                ${mapasHTML}
-            </div>
-            <div>
-                <h4 style="font-size: 14px; color: #888; margin-bottom: 15px; text-transform: uppercase;">Top 5 Sinergias (Mesmo Time)</h4>
-                ${sinergiasHTML}
-            </div>
-        </div>
-    `;
-}
-
-window.exibirInfoBrawler = function(nome) {
-    const painel = document.getElementById("painel-info-brawler");
-    if (!painel) return;
-    
-    brawlerAtualSelecionado = nome;
-
-    document.querySelectorAll("#lista-brawlers-sidebar .sidebar-item").forEach(i => {
-        i.classList.toggle("active", i.querySelector(".brawler-name").textContent.toLowerCase() === nome.toLowerCase());
-    });
-
-    const infoBruta = detalhesBrawlers[nome.toUpperCase()] || {top_mapas: [], sinergias: []};
-    painel.innerHTML = `
-        <div class="brawler-profile-header">
-            <img src="${formatarNomeImagem(nome)}" class="brawler-large-avatar" onerror="this.src='brawlers/default.png'">
-            <h2>${nome} <span style="font-size: 14px; color: #888; font-weight: normal;">/ REGIÃO ${regiaoAtiva}</span></h2>
-        </div>
-        ${gerarHTMLDetalhes(nome, infoBruta)}
-    `;
-};
-
-window.abrirModalBrawler = function(nomeBrawler) {
-    const infoBruta = detalhesBrawlers[nomeBrawler.toUpperCase()] || {top_mapas: [], sinergias: []};
-    let modal = document.getElementById('modal-analise-brawler');
-    if (!modal) {
-        modal = document.createElement('div');
-        modal.id = 'modal-analise-brawler';
-        modal.className = 'brawler-modal-overlay';
-        document.body.appendChild(modal);
-    }
-
-    modal.innerHTML = `
-        <div class="brawler-modal-card">
-            <div class="brawler-modal-header">
-                <div style="display:flex; align-items:center; gap: 15px;">
-                    <img src="${formatarNomeImagem(nomeBrawler)}" style="width: 40px; height: 40px; border-radius: 6px; border: 1px solid var(--accent-purple);">
-                    <h2>ANÁLISE AVANÇADA: ${nomeBrawler.toUpperCase()} <span style="color:#666; font-size:12px;">(${regiaoAtiva})</span></h2>
-                </div>
-                <button class="brawler-modal-close" onclick="fecharModalBrawler()">&times;</button>
-            </div>
-            <div class="brawler-modal-body">
-                ${gerarHTMLDetalhes(nomeBrawler, infoBruta)}
-            </div>
-        </div>
-    `;
-    modal.style.display = 'flex';
-};
-
-window.fecharModalBrawler = function() {
-    const modal = document.getElementById('modal-analise-brawler');
-    if (modal) modal.style.display = 'none';
 };
 
 // ========================================================
-// 5. RENDERIZAÇÃO DE TIMES
-// ========================================================
-function renderizarListaTimes(regiaoAtual) {
-    const container = document.getElementById("lista-times-sidebar");
-    if (!container) return;
-
-    let htmlFinal = "";
-
-    if (regiaoAtual === "GERAL") {
-        Object.keys(CONFIGURACAO_MANUAL_TIMES).forEach(reg => {
-             htmlFinal += `
-                <div class="sidebar-header" style="margin-top:20px; color:#fff; background: var(--bg-paineis); padding: 5px; text-align: center; border-radius: 4px;">
-                    🌍 REGIÃO: ${reg}
-                </div>
-             `;
-             htmlFinal += gerarHTMLTierTimes(CONFIGURACAO_MANUAL_TIMES[reg], reg);
-        });
-    } else {
-        const configRegiao = CONFIGURACAO_MANUAL_TIMES[regiaoAtual];
-        if (!configRegiao) {
-            container.innerHTML = `<p style="padding: 10px; color: #666;">Região não configurada.</p>`;
-            return;
-        }
-        htmlFinal = gerarHTMLTierTimes(configRegiao, regiaoAtual);
-    }
-
-    container.innerHTML = htmlFinal;
-}
-
-function gerarHTMLTierTimes(configRegiao, regiaoDoTime) {
-    let html = "";
-    Object.keys(configRegiao).forEach(tier => {
-        const timesDoTier = configRegiao[tier];
-        let timesHTML = "";
-
-        timesDoTier.forEach(timeConfig => {
-            const siglaImg = (timeConfig.id_time || "default").toLowerCase().split(' ')[0];
-            timesHTML += `
-                <div class="sidebar-item" data-teamid="${timeConfig.id_time}" onclick="exibirInfoTime('${timeConfig.id_time}', '${regiaoDoTime}')" style="padding: 12px; cursor: pointer; font-weight: 600; margin-left: 10px; border-left: 2px solid transparent; display: flex; align-items: center; gap: 10px;">
-                    <img src="element/teams/${siglaImg}.png" style="width: 24px; height: 24px; object-fit: contain; border-radius: 4px;" onerror="this.style.display='none'">
-                    <span>${timeConfig.nome_time}</span>
-                </div>
-            `;
-        });
-
-        if (timesHTML !== "") {
-            html += `
-                <div style="margin-top: 15px;">
-                    <div style="font-size: 12px; color: var(--accent-purple); font-weight: 900; letter-spacing: 1px; padding: 5px 10px; text-transform: uppercase;">
-                        ${tier}
-                    </div>
-                    ${timesHTML}
-                </div>
-            `;
-        }
-    });
-    return html;
-}
-
-window.exibirInfoTime = function(idTime, regiaoDoTime) {
-    const painel = document.getElementById("painel-info-time");
-    if (!painel) return;
-
-    timeAtualSelecionado = { id: idTime, regiao: regiaoDoTime };
-
-    document.querySelectorAll("#lista-times-sidebar .sidebar-item").forEach(i => {
-        i.style.borderLeftColor = String(i.getAttribute("data-teamid")) === String(idTime) ? "var(--accent-purple)" : "transparent";
-        i.style.backgroundColor = String(i.getAttribute("data-teamid")) === String(idTime) ? "var(--bg-cards)" : "transparent";
-    });
-
-    let timeConfig = null;
-    let tierTime = "";
-    const configRegiao = CONFIGURACAO_MANUAL_TIMES[regiaoDoTime];
-    
-    if (configRegiao) {
-        for (const [tier, times] of Object.entries(configRegiao)) {
-            const achou = times.find(t => t.id_time === idTime);
-            if (achou) {
-                timeConfig = achou;
-                tierTime = tier;
-                break;
-            }
-        }
-    }
-
-    if (!timeConfig) return;
-
-    const anoSel = document.getElementById('select-ano')?.value || "TODOS";
-    const mesSel = document.getElementById('select-mes')?.value || "TODOS";
-    const tipoSel = document.getElementById('select-tipo')?.value || "overhaul";
-
-    let picksSomadosTime = {};
-    timeConfig.jogadores.forEach(jogador => {
-        const picksDoJogador = dadosTimes[jogador.tag] || [];
-        picksDoJogador.forEach(p => {
-            if (anoSel !== "TODOS" && p.ano !== anoSel) return;
-            if (mesSel !== "TODOS" && p.mes !== mesSel) return;
-            if (tipoSel !== "overhaul" && p.tipo !== tipoSel) return;
-
-            if (!picksSomadosTime[p.brawler]) picksSomadosTime[p.brawler] = 0;
-            picksSomadosTime[p.brawler] += p.qtd;
-        });
-    });
-
-    let top15Time = Object.keys(picksSomadosTime)
-        .map(b => ({ brawler: b, qtd: picksSomadosTime[b] }))
-        .sort((a, b) => b.qtd - a.qtd)
-        .slice(0, 15);
-
-    let top15TimeHTML = top15Time.map(p => `
-        <div class="player-mini-pick" onclick="abrirModalBrawler('${p.brawler}')" style="cursor: pointer; display: flex; flex-direction: column; align-items: center;" title="${p.brawler}">
-            <img src="${formatarNomeImagem(p.brawler)}" onerror="this.src='brawlers/default.png'" style="width: 50px; height: 50px; border-radius: 8px; border: 2px solid var(--accent-purple); object-fit: cover;">
-            <span class="pick-count" style="margin-top: -10px; z-index: 2; font-size: 11px; background: #000; padding: 2px 8px; border-radius: 10px; color: var(--winrate-color); font-weight: bold;">x${p.qtd}</span>
-        </div>
-    `).join('');
-
-    let playersHTML = timeConfig.jogadores.map(player => {
-        const picksDoJogadorBruto = dadosTimes[player.tag] || [];
-        
-        let aggPlayer = {};
-        picksDoJogadorBruto.forEach(p => {
-            if (anoSel !== "TODOS" && p.ano !== anoSel) return;
-            if (mesSel !== "TODOS" && p.mes !== mesSel) return;
-            if (tipoSel !== "overhaul" && p.tipo !== tipoSel) return;
-            
-            if(!aggPlayer[p.brawler]) aggPlayer[p.brawler] = 0;
-            aggPlayer[p.brawler] += p.qtd;
-        });
-
-        let picksPlayer = Object.keys(aggPlayer).map(b => ({brawler: b, qtd: aggPlayer[b]})).sort((a,b) => b.qtd - a.qtd).slice(0, 5);
-        
-        let picksHTML = picksPlayer.length ? picksPlayer.map(p => `
-            <div class="player-mini-pick" onclick="abrirModalBrawler('${p.brawler}')" style="cursor: pointer; display: flex; flex-direction: column; align-items: center;">
-                <img src="${formatarNomeImagem(p.brawler)}" onerror="this.src='brawlers/default.png'" style="width: 40px; height: 40px; border-radius: 4px; border: 1px solid #333; object-fit: cover;">
-                <span style="margin-top: 4px; font-size: 10px; background: #111; padding: 2px 4px; border-radius: 4px; color: #ccc;">x${p.qtd}</span>
-            </div>
-        `).join('') : '<span style="color:#666; font-size:12px;">Sem dados p/ o filtro.</span>';
-
-        return `
-            <div class="player-roster-card" style="background: var(--bg-cards); border: 1px solid var(--borda-destaque); border-radius: 10px; padding: 15px;">
-                <div class="player-info-top" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 10px; margin-bottom: 15px;">
-                    <span class="p-nickname" style="font-size: 16px; font-weight: 900; color: #fff;">${player.nick}</span>
-                    <span class="p-tag" style="font-size: 11px; color: #888; background: #000; padding: 4px 8px; border-radius: 4px;">${player.tag}</span>
-                </div>
-                <div class="player-history-box">
-                    <h5 style="color: #888; margin-bottom: 10px; font-size: 12px; text-transform: uppercase;">Top 5 Brawlers</h5>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">${picksHTML}</div>
-                </div>
-            </div>
-        `;
-    }).join('');
-
-    const siglaImgPainel = (timeConfig.id_time || "default").toLowerCase().split(' ')[0];
-
-    painel.innerHTML = `
-        <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid var(--borda-destaque); display: flex; flex-direction: column; align-items: center;">
-            <div style="font-size: 12px; color: var(--accent-purple); font-weight: bold; letter-spacing: 2px; margin-bottom: 10px;">${tierTime} (${regiaoDoTime})</div>
-            <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
-                <img src="element/teams/${siglaImgPainel}.png" style="width: 60px; height: 60px; object-fit: contain;" onerror="this.style.display='none'">
-                <h2 style="font-size: 32px; font-weight: 900; text-transform: uppercase; margin: 0;">${timeConfig.nome_time}</h2>
-            </div>
-        </div>
-        
-        <div style="background: var(--bg-cards); border: 1px solid var(--borda-destaque); border-radius: 10px; padding: 20px; margin-bottom: 30px;">
-            <h3 style="margin-bottom: 15px; font-size: 14px; color: #888; text-transform: uppercase;">🔥 TOP 15 Picks Globais da Equipe</h3>
-            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                ${top15TimeHTML || '<span style="color:#666;">Sem dados coletados ainda.</span>'}
-            </div>
-        </div>
-
-        <h3 style="margin-bottom: 15px; font-size: 14px; color: #888; text-transform: uppercase;">👥 Roster Principal & Picks Individuais</h3>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
-            ${playersHTML}
-        </div>
-    `;
-};
-
-
-// ========================================================
-// 6. FUNÇÕES DE ORDENAÇÃO E EVENTOS DE UI
+// 5. SISTEMA DE ORDENAÇÃO DE TABELAS (SORT)
 // ========================================================
 window.ordenarTabela = function(th, tipo) {
     const tabela = th.closest('table');
     const tbody = tabela.querySelector('tbody');
+    if (!tbody) return;
+    
     const linhas = Array.from(tbody.querySelectorAll('tr'));
     const colunaIndex = Array.from(th.parentNode.children).indexOf(th);
     const ascendente = !th.classList.contains('sort-asc');
     
     tabela.querySelectorAll('th').forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
     th.classList.add(ascendente ? 'sort-asc' : 'sort-desc');
-
+    
     linhas.sort((linhaA, linhaB) => {
-        let celulaA = linhaA.children[colunaIndex].textContent.trim();
-        let celulaB = linhaB.children[colunaIndex].textContent.trim();
-
+        let celulaA = linhaA.children[colunaIndex] ? linhaA.children[colunaIndex].textContent.trim() : '';
+        let celulaB = linhaB.children[colunaIndex] ? linhaB.children[colunaIndex].textContent.trim() : '';
+        
         if (tipo === 'number' || tipo === 'percent') {
-            let numA = parseFloat(celulaA.replace('%', ''));
-            let numB = parseFloat(celulaB.replace('%', ''));
+            let numA = parseFloat(celulaA.replace('%', '').replace(/\s/g, '').replace(',', '.')) || 0;
+            let numB = parseFloat(celulaB.replace('%', '').replace(/\s/g, '').replace(',', '.')) || 0;
             return ascendente ? numA - numB : numB - numA;
-        } else {
-            return ascendente ? celulaA.localeCompare(celulaB) : celulaB.localeCompare(celulaA);
         }
+        return ascendente ? celulaA.localeCompare(celulaB) : celulaB.localeCompare(celulaA);
     });
-
+    
     linhas.forEach(linha => tbody.appendChild(linha));
 };
 
-document.addEventListener("DOMContentLoaded", () => {
-    const dropdowns = document.querySelectorAll(".dropdown");
-    dropdowns.forEach(dropdown => {
-        const link = dropdown.querySelector(".nav-link");
-        if (!link) return;
-        link.addEventListener("click", (e) => {
-            e.preventDefault();
-            dropdowns.forEach(other => { if (other !== dropdown) other.classList.remove("active"); });
-            dropdown.classList.toggle("active");
-        });
-    });
-    document.addEventListener("click", (e) => {
-        if (!e.target.closest(".dropdown")) dropdowns.forEach(d => d.classList.remove("active"));
-    });
+// ========================================================
+// 6. CONTROLADORES DE RENDERIZAÇÃO DE TELAS
+// ========================================================
+function renderizarTelas() {
+    // Captura os valores atuais dos filtros se presentes no DOM
+    const filtroTipoVal = document.getElementById('filtro-tipo') ? document.getElementById('filtro-tipo').value : 'todos';
+    const filtroMesVal = document.getElementById('filtro-mes') ? document.getElementById('filtro-mes').value : 'todos';
 
-    const styleTag = document.createElement('style');
-    styleTag.innerHTML = `
-        .brawler-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
-        .brawler-modal-card { background: var(--bg-paineis); border: 2px solid var(--accent-purple); border-radius: 12px; width: 100%; max-width: 800px; box-shadow: 0 0 25px rgba(204, 0, 255, 0.4); overflow: hidden; }
-        .brawler-modal-header { background: #000; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--borda-suave); }
-        .brawler-modal-header h2 { font-size: 18px; color: #ffffff; letter-spacing: 1px; margin: 0; }
-        .brawler-modal-close { background: none; border: none; color: #888; font-size: 28px; cursor: pointer; }
-        .brawler-modal-close:hover { color: #ff3333; }
-        .brawler-modal-body { padding: 25px; max-height: 80vh; overflow-y: auto; }
+    renderizarMeta(filtroTipoVal, filtroMesVal);
+    renderizarBrawlers(filtroTipoVal, filtroMesVal);
+    renderizarTimes(filtroTipoVal, filtroMesVal);
+    renderizarPlayers(filtroTipoVal, filtroMesVal);
+}
+
+// --- TELA META ---
+function renderizarMeta(tipoFiltro, mesFiltro) {
+    const container = document.getElementById('conteudo-meta');
+    if (!container) return;
+
+    // Constrói visualização rápida baseada nos brawlers mais vitoriosos/populares
+    let html = `
+        <div style="padding: 20px;">
+            <h2 style="margin-bottom: 20px; border-bottom: 2px solid var(--accent-purple); padding-bottom: 10px;">META GERAL DA REGIÃO</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px;">
     `;
-    document.head.appendChild(styleTag);
-});
+
+    const brawlersOrdenados = Object.entries(dadosBrawlersRegiao)
+        .map(([nome, dados]) => ({ nome, ...dados }))
+        .sort((a, b) => (b.vitorias || 0) - (a.vitorias || 0))
+        .slice(0, 6);
+
+    if (brawlersOrdenados.length === 0) {
+        html += `<p style="color: var(--texto-secundario);">Nenhum dado estatístico disponível para o Meta neste filtro.</p>`;
+    } else {
+        brawlersOrdenados.forEach((b, idx) => {
+            html += `
+                <div style="background: var(--bg-cards); border: 1px solid var(--borda-destaque); border-radius: 8px; padding: 15px; text-align: center; position: relative;">
+                    <div style="position: absolute; top: 10px; left: 10px; background: var(--accent-purple); color: #fff; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">#${idx+1}</div>
+                    <h3 style="color: var(--accent-hover); margin-bottom: 10px; margin-top: 10px;">${b.nome.toUpperCase()}</h3>
+                    <p style="font-size: 14px; color: var(--texto-secundario);">Vitórias Totais: <strong style="color: #fff">${b.vitorias || 0}</strong></p>
+                    <p style="font-size: 16px; margin-top: 5px; color: var(--winrate-color);">Win Rate: ${b.win_rate || '0.0%'}</p>
+                </div>
+            `;
+        });
+    }
+
+    html += `</div></div>`;
+    container.innerHTML = html;
+}
+
+// --- TELA BRAWLERS ---
+function renderizarBrawlers(tipoFiltro, mesFiltro) {
+    const container = document.getElementById('conteudo-brawlers');
+    if (!container) return;
+
+    let html = `
+        <div style="padding: 20px;">
+            <h2 style="margin-bottom: 20px; border-bottom: 2px solid var(--accent-purple); padding-bottom: 10px;">ESTATÍSTICAS DOS BRAWLERS</h2>
+            <table class="tabela-stats" style="width: 100%; border-collapse: collapse; background: var(--bg-paineis);">
+                <thead>
+                    <tr style="background: #000; text-align: left;">
+                        <th style="padding: 12px; cursor: pointer;" onclick="ordenarTabela(this, 'string')">Brawler ▼</th>
+                        <th style="padding: 12px; cursor: pointer;" onclick="ordenarTabela(this, 'number')">Picks ▼</th>
+                        <th style="padding: 12px; cursor: pointer;" onclick="ordenarTabela(this, 'number')">Vitórias ▼</th>
+                        <th style="padding: 12px; cursor: pointer;" onclick="ordenarTabela(this, 'percent')">Win Rate ▼</th>
+                        <th style="padding: 12px;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+    const entradas = Object.entries(dadosBrawlersRegiao);
+    if (entradas.length === 0) {
+        html += `<tr><td colspan="5" style="padding: 20px; text-align: center; color: var(--texto-secundario);">Sem dados de partidas registrados.</td></tr>`;
+    } else {
+        entradas.forEach(([nome, dados]) => {
+            html += `
+                <tr style="border-bottom: 1px solid var(--borda-suave);">
+                    <td style="padding: 12px; font-weight: bold; color: var(--accent-hover);">${nome.toUpperCase()}</td>
+                    <td style="padding: 12px;">${dados.total || 0}</td>
+                    <td style="padding: 12px;">${dados.vitorias || 0}</td>
+                    <td style="padding: 12px; color: var(--winrate-color); font-weight: bold;">${dados.win_rate || '0.0%'}</td>
+                    <td style="padding: 12px;"><button style="background: var(--accent-purple); border: none; color: white; padding: 6px 12px; border-radius: 4px; cursor: pointer;" onclick="abrirModalBrawler('${nome}')">Detalhes</button></td>
+                </tr>
+            `;
+        });
+    }
+
+    html += `</tbody></table></div>`;
+    container.innerHTML = html;
+}
+
+// --- TELA TIMES ---
+function renderizarTimes(tipoFiltro, mesFiltro) {
+    const container = document.getElementById('conteudo-times');
+    if (!container) return;
+
+    const regiaoChave = regiaoAtual.toUpperCase();
+    const tiers = CONFIGURACAO_MANUAL_TIMES[regiaoChave];
+
+    if (!tiers) {
+        container.innerHTML = `<p style="padding: 20px; color: var(--texto-secundario);">Nenhuma configuração de roster manual encontrada para a região: ${regiaoChave}</p>`;
+        return;
+    }
+
+    let html = `<div style="padding: 20px;">`;
+
+    for (const [nomeTier, listaTimes] of Object.entries(tiers)) {
+        html += `
+            <h2 style="margin-top: 20px; margin-bottom: 15px; color: var(--accent-hover); font-size: 22px; border-left: 4px solid var(--accent-purple); padding-left: 10px;">${nomeTier}</h2>
+            <div class="roster-container-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 30px;">
+        `;
+
+        listaTimes.forEach(time => {
+            html += `
+                <div class="team-card" style="background: var(--bg-paineis); border: 1px solid var(--borda-destaque); border-radius: 10px; padding: 20px;">
+                    <h3 style="font-size: 20px; color: #fff; margin-bottom: 15px; text-transform: uppercase;">${time.nome_time} <span style="font-size: 12px; color: var(--texto-secundario);">(${time.id_time})</span></h3>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+            `;
+
+            time.jogadores.forEach(j => {
+                // Filtra os picks do jogador a partir do JSON carregado da API de acordo com os filtros de ano/mês/tipo
+                const historicoPicks = dadosTimesGeral[j.tag] || [];
+                
+                let picksFiltrados = historicoPicks.filter(item => {
+                    let matchTipo = (tipoFiltro === 'todos' || item.tipo === tipoFiltro);
+                    let matchMes = true;
+                    if (mesFiltro !== 'todos') {
+                        let [mes, ano] = mesFiltro.split('-'); // ex: "06-2026"
+                        matchMes = (item.mes == parseInt(mes) && item.ano == parseInt(ano));
+                    }
+                    return matchTipo && matchMes;
+                });
+
+                // Consolida a contagem dos brawlers mais jogados por este player
+                let picksAgrupados = {};
+                picksFiltrados.forEach(p => {
+                    picksAgrupados[p.pick] = (picksAgrupados[p.pick] || 0) + (p.qtd || 1);
+                });
+
+                let topPicksStr = Object.entries(picksAgrupados)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 3)
+                    .map(([brawler, qtd]) => `${brawler}(${qtd})`)
+                    .join(', ');
+
+                html += `
+                    <div style="background: var(--bg-cards); padding: 10px; border-radius: 6px; border-left: 3px solid var(--accent-purple);">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: bold; color: var(--texto);">${j.nick}</span>
+                            <span style="font-size: 11px; background: #000; padding: 2px 6px; border-radius: 4px; color: var(--texto-secundario);">${j.tag}</span>
+                        </div>
+                        <div style="font-size: 12px; color: var(--texto-secundario); margin-top: 6px;">
+                            Picks Recentes: <span style="color: #fff;">${topPicksStr || 'Nenhum registro'}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `</div></div>`;
+        });
+
+        html += `</div>`;
+    }
+
+    html += `</div>`;
+    container.innerHTML = html;
+}
+
+// --- TELA PLAYERS ---
+function renderizarPlayers(tipoFiltro, mesFiltro) {
+    const container = document.getElementById('conteudo-players');
+    if (!container) return;
+
+    let html = `
+        <div style="padding: 20px;">
+            <h2 style="margin-bottom: 20px; border-bottom: 2px solid var(--accent-purple); padding-bottom: 10px;">RANKING E DADOS DOS JOGADORES</h2>
+            <table class="tabela-stats" style="width: 100%; border-collapse: collapse; background: var(--bg-paineis);">
+                <thead>
+                    <tr style="background: #000; text-align: left;">
+                        <th style="padding: 12px; cursor: pointer;" onclick="ordenarTabela(this, 'string')">Jogador ▼</th>
+                        <th style="padding: 12px; cursor: pointer;" onclick="ordenarTabela(this, 'string')">Tag ▼</th>
+                        <th style="padding: 12px; cursor: pointer;" onclick="ordenarTabela(this, 'number')">Total Picks ▼</th>
+                        <th style="padding: 12px;">Brawler Favorito</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+    const regiaoChave = regiaoAtual.toUpperCase();
+    const tiers = CONFIGURACAO_MANUAL_TIMES[regiaoChave];
+    let listaTodosJogadores = [];
+
+    if (tiers) {
+        for (const [tier, times] of Object.entries(tiers)) {
+            times.forEach(t => {
+                t.jogadores.forEach(j => {
+                    listaTodosJogadores.push(j);
+                });
+            });
+        }
+    }
+
+    if (listaTodosJogadores.length === 0) {
+        html += `<tr><td colspan="4" style="padding: 20px; text-align: center; color: var(--texto-secundario);">Nenhum jogador mapeado na base.</td></tr>`;
+    } else {
+        listaTodosJogadores.forEach(j => {
+            const historicoPicks = dadosTimesGeral[j.tag] || [];
+            
+            let picksFiltrados = historicoPicks.filter(item => {
+                let matchTipo = (tipoFiltro === 'todos' || item.tipo === tipoFiltro);
+                let matchMes = true;
+                if (mesFiltro !== 'todos') {
+                    let [mes, ano] = mesFiltro.split('-');
+                    matchMes = (item.mes == parseInt(mes) && item.ano == parseInt(ano));
+                }
+                return matchTipo && matchMes;
+            });
+
+            let totalPicks = 0;
+            let picksAgrupados = {};
+            
+            picksFiltrados.forEach(p => {
+                let qtdVal = p.qtd || 1;
+                totalPicks += qtdVal;
+                picksAgrupados[p.pick] = (picksAgrupados[p.pick] || 0) + qtdVal;
+            });
+
+            let brawlerMaisJogado = Object.entries(picksAgrupados)
+                .sort((a, b) => b[1] - a[1])[0];
+            
+            let brawlerFavoritoStr = brawlerMaisJogado ? `${brawlerMaisJogado[0].toUpperCase()} (${brawlerMaisJogado[1]})` : 'N/A';
+
+            html += `
+                <tr style="border-bottom: 1px solid var(--borda-suave);">
+                    <td style="padding: 12px; font-weight: bold; color: var(--accent-hover);">${j.nick}</td>
+                    <td style="padding: 12px; color: var(--texto-secundario); font-family: monospace;">${j.tag}</td>
+                    <td style="padding: 12px;">${totalPicks}</td>
+                    <td style="padding: 12px; color: #fff;">${brawlerFavoritoStr}</td>
+                </tr>
+            `;
+        });
+    }
+
+    html += `</tbody></table></div>`;
+    container.innerHTML = html;
+}
+
+// ========================================================
+// 7. JANELA MODAL DETALHADA DO BRAWLER
+// ========================================================
+window.abrirModalBrawler = function(nomeBrawler) {
+    const brawlerData = dadosBrawlersRegiao[nomeBrawler];
+    if (!brawlerData) return;
+
+    let modal = document.getElementById('brawler-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'brawler-modal';
+        modal.className = 'brawler-modal-overlay';
+        modal.onclick = function(e) {
+            if (e.target === modal) modal.style.display = 'none';
+        };
+        document.body.appendChild(modal);
+    }
+
+    // Estruturação do conteúdo interno renderizado dinamicamente no modal
+    modal.innerHTML = `
+        <div class="brawler-modal-card" style="background: var(--bg-paineis); border: 2px solid var(--accent-purple); border-radius: 12px; width: 100%; max-width: 600px; margin: 5% auto; box-shadow: 0 0 25px rgba(204, 0, 255, 0.4); overflow: hidden; color: white;">
+            <div class="brawler-modal-header" style="background: #000; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--borda-suave);">
+                <h2 style="color: var(--accent-hover); margin: 0;">ANÁLISE DE ${nomeBrawler.toUpperCase()}</h2>
+                <span style="cursor: pointer; font-size: 28px; color: var(--texto-secundario); line-height: 1;" onclick="document.getElementById('brawler-modal').style.display='none'">&times;</span>
+            </div>
+            <div style="padding: 20px; max-height: 65vh; overflow-y: auto;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: var(--bg-cards); padding: 15px; border-radius: 8px; border: 1px solid var(--borda-destaque); margin-bottom: 20px;">
+                    <div>
+                        <p style="color: var(--texto-secundario); font-size: 13px; margin: 0;">Taxa de Vitória</p>
+                        <p style="font-size: 24px; font-weight: bold; color: var(--winrate-color); margin: 5px 0 0 0;">${brawlerData.win_rate || '0.0%'}</p>
+                    </div>
+                    <div>
+                        <p style="color: var(--texto-secundario); font-size: 13px; margin: 0;">Partidas Computadas</p>
+                        <p style="font-size: 24px; font-weight: bold; color: #fff; margin: 5px 0 0 0;">${brawlerData.total || 0}</p>
+                    </div>
+                </div>
+                
+                <h4 style="margin-bottom: 10px; color: var(--accent-hover); border-bottom: 1px solid var(--borda-suave); padding-bottom: 5px;">MÉTRICAS ADICIONAIS</h4>
+                <p style="font-size: 14px; color: var(--texto-secundario); margin: 8px 0;">Vitórias Registadas: <span style="color: #fff; font-weight: bold;">${brawlerData.vitorias || 0}</span></p>
+                <p style="font-size: 14px; color: var(--texto-secundario); margin: 8px 0;">Status de Amostragem: <span style="color: var(--winrate-color); font-weight: bold;">Ativo</span></p>
+                <p style="font-size: 12px; color: var(--texto-secundario); margin-top: 20px; font-style: italic;">*Dados baseados em torneios e treinos coletados de forma automatizada via API do Brawl Stars.</p>
+            </div>
+        </div>
+    `;
+
+    modal.style.display = 'block';
+};
