@@ -136,7 +136,7 @@ window.toggleElemento = function(header) {
 };
 
 // ========================================================
-// 2. PARSERS E CARREGAMENTO DE DADOS (CSV DIRETO)
+// 2. PARSERS E CARREGAMENTO DE DADOS (CSV DIRETO E LIMPO)
 // ========================================================
 function parseCSV(text) {
     let rows = text.split('\n').filter(r => r.trim() !== '');
@@ -166,9 +166,8 @@ window.carregarRegiao = async function(regiao) {
     dadosOriginaisRegiao = [];
 
     try {
-        // Tenta ler o historico_bruto (2).csv, se falhar tenta historico_bruto.csv
-        let res = await fetch("historico_bruto (2).csv").catch(() => null);
-        if(!res || !res.ok) res = await fetch("historico_bruto.csv").catch(() => null);
+        // Busca ESTRITAMENTE o historico_bruto.csv
+        let res = await fetch("historico_bruto.csv");
         
         if(res && res.ok) {
             const text = await res.text();
@@ -208,8 +207,8 @@ window.carregarRegiao = async function(regiao) {
                 }
             });
         } else {
-            console.warn("Nenhum CSV encontrado.");
-            document.querySelector('.main-container').innerHTML += `<div style="color:red; text-align:center; padding: 20px;">ERRO: historico_bruto.csv não encontrado na pasta.</div>`;
+            console.warn("historico_bruto.csv não encontrado.");
+            document.querySelector('.main-container').innerHTML += `<div style="color:red; text-align:center; padding: 20px;">ERRO: historico_bruto.csv não encontrado na pasta raiz.</div>`;
         }
     } catch (e) { console.error("Erro no processamento do CSV.", e); }
 
@@ -701,7 +700,6 @@ window.renderizarScrims = function(dadosFiltrados) {
         let m = matches[row.id_partida];
         
         // Identificar os times pelos blocos de 6 (os primeiros 3 são time A, os próximos time B)
-        // Como agrupamos iterando as linhas, a ordem importa. Vamos rastrear pelo id_time para simplificar
         let teamKey = row.id_time || "UNKNOWN";
         if (Object.keys(m.times).length < 2 && !m.times[teamKey]) {
             m.times[teamKey] = { nome: row.nome_time || teamKey, id: row.id_time, win: row.vitorias };
