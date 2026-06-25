@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SOUTH AMERICA Infos</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Adicionando PapaParse para ler o CSV bruto localmente -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="app.js" defer></script>
 </head>
 <body>
@@ -18,7 +20,7 @@
                     <a href="#" onclick="mudarTela('meta'); return false;">Meta</a>
                     <a href="#" onclick="mudarTela('brawlers'); return false;">Brawlers</a>
                     <a href="#" onclick="mudarTela('times'); return false;">Times</a>
-                    <a href="#" onclick="mudarTela('scrims'); return false;">Scrimes</a>
+                    <a href="#" onclick="mudarTela('scrims'); return false;">Scrins</a>
                 </div>
             </div>
             <a href="geral.html" class="nav-link">GERAL</a>
@@ -30,38 +32,23 @@
             <h1>SOUTH AMERICA INFOS <span class="accent">ANALYSIS</span></h1>
         </header>
 
+        <!-- Filtros Globais -->
         <div class="filter-container">
-            <select id="select-ano" class="filter-select" onchange="filtrarTudo()"></select>
-            <select id="select-mes" class="filter-select" onchange="filtrarTudo()"></select>
-            <select id="select-tipo" class="filter-select" onchange="filtrarTudo()">
-                <option value="overhaul">Overhaul (Todos)</option>
-                <option value="scrim">Scrim / Friendly</option>
+            <select id="select-ano" class="filter-select" onchange="processarDadosGlobais()"></select>
+            <select id="select-mes" class="filter-select" onchange="processarDadosGlobais()"></select>
+            <select id="select-tipo" class="filter-select" onchange="processarDadosGlobais()">
+                <option value="todos">Overhaul (Todos)</option>
+                <option value="scrim">Scrim</option>
                 <option value="tournament">Tournament</option>
             </select>
         </div>
 
+        <!-- Tela META -->
         <div id="tela-meta" class="tela-secao tela-ativa">
-            <div id="grid-modos"></div> 
-            <div class="modo-section">
-                <div class="modo-header" onclick="toggleElemento(this)">ALL MAPS ANALYSIS <span>▶</span></div>
-                <div class="mapa-content" style="display:none">
-                    <table class="excel-table">
-                        <thead>
-                            <tr>
-                                <th class="col-img">IMG</th>
-                                <th class="sortable" onclick="ordenarTabela(this, 'string')" style="text-align: left;">BRAWLER ↕</th>
-                                <th class="col-stats sortable" onclick="ordenarTabela(this, 'number')">P ↕</th>
-                                <th class="col-stats sortable" onclick="ordenarTabela(this, 'percent')">PR% ↕</th>
-                                <th class="col-stats sortable" onclick="ordenarTabela(this, 'number')">W ↕</th>
-                                <th class="col-stats sortable" onclick="ordenarTabela(this, 'percent')">WR% ↕</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbody-all-maps"></tbody>
-                    </table>
-                </div>
-            </div>
+            <div id="conteudo-meta"></div> 
         </div>
 
+        <!-- Tela BRAWLERS -->
         <div id="tela-brawlers" class="tela-secao tela-oculta">
             <div class="brawlers-container">
                 <div class="sidebar">
@@ -74,6 +61,7 @@
             </div>
         </div>
 
+        <!-- Tela TIMES -->
         <div id="tela-times" class="tela-secao tela-oculta">
             <div class="times-container">
                 <div class="sidebar">
@@ -86,9 +74,10 @@
             </div>
         </div>
 
+        <!-- Tela SCRIMS -->
         <div id="tela-scrims" class="tela-secao tela-oculta">
             <div id="scrims-lista" class="scrins-grid"></div>
-            <div id="scrims-detalhe" style="display:none; background: var(--bg-paineis); padding: 20px; border-radius: 12px; border: 1px solid var(--borda-destaque);"></div>
+            <div id="scrims-detalhe" style="display:none;"></div>
         </div>
 
     </main>
@@ -97,8 +86,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            if(typeof carregarRegiao === 'function') carregarRegiao('sa');
-            
             window.mudarTela = function(tela) {
                 document.querySelectorAll('.tela-secao').forEach(sec => sec.classList.replace('tela-ativa', 'tela-oculta'));
                 document.getElementById(`tela-${tela}`).classList.replace('tela-oculta', 'tela-ativa');
