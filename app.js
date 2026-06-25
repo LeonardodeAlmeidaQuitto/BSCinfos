@@ -97,7 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // 1. CARREGAMENTO E PROCESSAMENTO DO CSV
 // ==========================================
 function carregarCSV() {
-    Papa.parse("historico_bruto_2.csv", {
+    Papa.parse("historico_bruto.csv", {
         download: true,
         header: true,
         skipEmptyLines: true,
