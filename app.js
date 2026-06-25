@@ -193,7 +193,7 @@ function renderizarMeta() {
         html += `
             <tr>
                 <td style="text-align: left; font-weight:bold; color:var(--accent-hover)">
-                    <img src="element/brawlers/${nome.toLowerCase()}.png" style="width:24px; vertical-align:middle; margin-right:8px;" onerror="this.src='element/brawlers/default.png'">
+                    <img src="brawlers/${nome.toLowerCase()}.png" style="width:24px; vertical-align:middle; margin-right:8px;" onerror="this.src=brawlers/default.png'">
                     ${nome}
                 </td>
                 <td>${s.picks}</td>
@@ -271,7 +271,7 @@ function renderizarDetalhesBrawler(brawler) {
 
     let htmlSinergia = `
         <div class="brawler-profile-header">
-            <img src="element/brawlers/${brawler.toLowerCase()}.png" class="brawler-large-avatar" onerror="this.src='element/brawlers/default.png'">
+            <img src="brawlers/${brawler.toLowerCase()}.png" class="brawler-large-avatar" onerror="this.src='brawlers/default.png'">
             <h2>${brawler}</h2>
         </div>
         <div class="synergy-grid">
@@ -279,7 +279,7 @@ function renderizarDetalhesBrawler(brawler) {
                 <h3 style="color:#00ff66; margin-bottom:15px;">É BOM CONTRA (COUNTERA)</h3>
                 ${countersTop.map(c => `
                     <div class="synergy-item">
-                        <span><img src="element/brawlers/${c.nome.toLowerCase()}.png" onerror="this.src='element/brawlers/default.png'"> ${c.nome}</span>
+                        <span><img src="brawlers/${c.nome.toLowerCase()}.png" onerror="this.src='brawlers/default.png'"> ${c.nome}</span>
                         <span style="color:var(--texto-secundario)">WR: ${c.wr.toFixed(1)}%</span>
                     </div>
                 `).join('') || '<p>Dados insuficientes</p>'}
@@ -288,7 +288,7 @@ function renderizarDetalhesBrawler(brawler) {
                 <h3 style="color:#ff3333; margin-bottom:15px;">RUIM CONTRA (COUNTERS)</h3>
                 ${counteradosTop.map(c => `
                     <div class="synergy-item">
-                        <span><img src="element/brawlers/${c.nome.toLowerCase()}.png" onerror="this.src='element/brawlers/default.png'"> ${c.nome}</span>
+                        <span><img src="brawlers/${c.nome.toLowerCase()}.png" onerror="this.src='brawlers/default.png'"> ${c.nome}</span>
                         <span style="color:var(--texto-secundario)">WR: ${(100 - c.wr).toFixed(1)}%</span>
                     </div>
                 `).join('') || '<p>Dados insuficientes</p>'}
@@ -446,12 +446,12 @@ function renderizarListaScrims(scrims) {
         div.className = 'scrim-card';
         div.innerHTML = `
             <div class="scrim-team-info">
-                <img src="element/logos/${scrim.timeA.replace(/\s/g, '')}.png" class="scrim-team-logo" onerror="this.src='element/logos/default.png'">
+                <img src="element/teams/${scrim.timeA.replace(/\s/g, '')}.png" class="scrim-team-logo" onerror="this.src='element/teams/default.png'">
                 <span style="font-weight:bold; font-size:14px;">${scrim.timeA}</span>
             </div>
             <div class="scrim-score">${scrim.scoreA} - ${scrim.scoreB}</div>
             <div class="scrim-team-info" style="flex-direction: row-reverse;">
-                <img src="element/logos/${scrim.timeB.replace(/\s/g, '')}.png" class="scrim-team-logo" onerror="this.src='element/logos/default.png'">
+                <img src="element/teams/${scrim.timeB.replace(/\s/g, '')}.png" class="scrim-team-logo" onerror="this.src='element/teams/default.png'">
                 <span style="font-weight:bold; font-size:14px;">${scrim.timeB}</span>
             </div>
             <div style="position:absolute; bottom:5px; left:15px; font-size:10px; color:var(--texto-secundario)">${scrim.dataFormatada}</div>
@@ -479,9 +479,9 @@ function renderizarDetalheScrim(scrim) {
 
         <div class="scrim-detail-header">
             <div style="display: flex; justify-content: center; align-items: center; gap: 30px;">
-                <img src="element/logos/${scrim.timeA.replace(/\s/g, '')}.png" style="height:60px;" onerror="this.src='element/logos/default.png'">
+                <img src="element/teams/${scrim.timeA.replace(/\s/g, '')}.png" style="height:60px;" onerror="this.src='element/teams/default.png'">
                 <div style="font-size: 32px; font-weight: 900; color: #fff;">${scrim.scoreA} <span style="color:var(--accent-purple)">x</span> ${scrim.scoreB}</div>
-                <img src="element/logos/${scrim.timeB.replace(/\s/g, '')}.png" style="height:60px;" onerror="this.src='element/logos/default.png'">
+                <img src="element/teams/${scrim.timeB.replace(/\s/g, '')}.png" style="height:60px;" onerror="this.src='element/teams/default.png'">
             </div>
         </div>
 
@@ -516,7 +516,7 @@ window.selecionarRound = function(index, btnElement) {
             <div class="team-picks" style="flex: 0 1 auto;">
                 ${round.picksA.map(pick => `
                     <div class="pick-row">
-                        <img src="element/brawlers/${pick.toLowerCase()}.png" onerror="this.src='element/brawlers/default.png'">
+                        <img src="brawlers/${pick.toLowerCase()}.png" onerror="this.src='brawlers/default.png'">
                     </div>
                 `).join('')}
             </div>
@@ -524,7 +524,7 @@ window.selecionarRound = function(index, btnElement) {
             <div class="team-picks" style="align-items: flex-end; flex: 0 1 auto;">
                 ${round.picksB.map(pick => `
                     <div class="pick-row" style="flex-direction: row-reverse;">
-                        <img src="element/brawlers/${pick.toLowerCase()}.png" onerror="this.src='element/brawlers/default.png'">
+                        <img src="brawlers/${pick.toLowerCase()}.png" onerror="this.src='brawlers/default.png'">
                     </div>
                 `).join('')}
             </div>
@@ -628,8 +628,8 @@ function renderizarTabelaMeta(dadosParaTabela) {
         tr.innerHTML = `
             <td>
                 <div style="display: flex; align-items: center; gap: 12px;">
-                    <img src="element/brawlers/${imgNome}.png" 
-                         onerror="this.src='element/brawlers/default.png'" 
+                    <img src="brawlers/${imgNome}.png" 
+                         onerror="this.src='brawlers/default.png'" 
                          style="width: 35px; height: 35px; border-radius: 6px; object-fit: cover; border: 1px solid var(--borda-suave);">
                     <span style="font-weight: 900; color: #fff;">${d.pick}</span>
                 </div>
