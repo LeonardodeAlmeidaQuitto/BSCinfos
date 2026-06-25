@@ -321,6 +321,16 @@
                 "mapa": "Gem Fort",
                 "ano": "2026",
                 "mes": "JUNHO",
+                "tipo": "friendly",
+                "picks": 2,
+                "vitorias": 0,
+                "win_rate": "0.0%"
+            },
+            {
+                "modo": "gemGrab",
+                "mapa": "Gem Fort",
+                "ano": "2026",
+                "mes": "JUNHO",
                 "tipo": "scrim",
                 "picks": 2,
                 "vitorias": 1,
@@ -621,6 +631,16 @@
     },
     "BYRON": {
         "mapas": [
+            {
+                "modo": "bounty",
+                "mapa": "",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "friendly",
+                "picks": 1,
+                "vitorias": 1,
+                "win_rate": "100.0%"
+            },
             {
                 "modo": "bounty",
                 "mapa": "",
@@ -2091,6 +2111,16 @@
     },
     "MORTIS": {
         "mapas": [
+            {
+                "modo": "bounty",
+                "mapa": "",
+                "ano": "2026",
+                "mes": "JUNHO",
+                "tipo": "friendly",
+                "picks": 1,
+                "vitorias": 1,
+                "win_rate": "100.0%"
+            },
             {
                 "modo": "bounty",
                 "mapa": "Dry Season",
