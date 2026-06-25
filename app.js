@@ -246,7 +246,6 @@ window.filtrarEAplicarDados = function() {
 };
 
 function renderizarGridModos(dados, ano, mes) {
-    let listaM = Object.values(brawlersAgrupados).filter(d => d.picks >= 5);
     const container = document.getElementById('grid-modos');
     if (!container) return;
     container.innerHTML = '';
@@ -322,7 +321,6 @@ function renderizarGridModos(dados, ano, mes) {
 }
 
 function renderizarAllMaps(dados) {
-    let listaGeral = Object.keys(agrupadoGeral).map(brawler => { ... }).filter(d => d.picks >= 5);
     const tbody = document.getElementById('tbody-all-maps');
     if (!tbody) return;
 
@@ -763,156 +761,3 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
     document.head.appendChild(styleTag);
 });
-
-function gerarHTMLDetalhes(nomeBrawler, infoBruta) {
-    const anoSel = document.getElementById('select-ano')?.value || "TODOS";
-    const mesSel = document.getElementById('select-mes')?.value || "TODOS";
-    const tipoSel = document.getElementById('select-tipo')?.value || "overhaul";
-
-    // Filtro Universal
-    const filtrarStats = (lista) => (lista || []).filter(item => 
-        (anoSel === "TODOS" || item.ano === anoSel) && 
-        (mesSel === "TODOS" || item.mes === mesSel) &&
-        (tipoSel === "overhaul" || item.tipo === tipoSel)
-    );
-
-    let oponentesFiltrados = filtrarStats(infoBruta.oponentes);
-    let oponentesAgrupados = {};
-    oponentesFiltrados.forEach(o => {
-        if(!oponentesAgrupados[o.com]) oponentesAgrupados[o.com] = { com: o.com, picks: 0, vitorias: 0 };
-        oponentesAgrupados[o.com].picks += o.picks;
-        oponentesAgrupados[o.com].vitorias += o.vitorias; // Vitórias do brawler principal CONTRA o oponente
-    });
-
-    let listaOponentes = Object.values(oponentesAgrupados).map(o => ({
-        ...o,
-        winrate: (o.vitorias / o.picks) * 100
-    })).filter(o => o.picks >= 5); // Apenas matchs com volume relevante
-
-    // COUNTERA (Brawler ganha mais de 50%)
-    let topCountera = [...listaOponentes].sort((a,b) => b.winrate - a.winrate).slice(0, 5);
-    // COUNTERADO (Brawler perde muito, WR baixo)
-    let topCounters = [...listaOponentes].sort((a,b) => a.winrate - b.winrate).slice(0, 5);
-
-    const renderCardCard = (s, isOponente = false) => `
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background: #111; border-radius: 8px; border: 1px solid var(--borda-destaque); margin-bottom: 10px;">
-            <div style="display: flex; align-items: center; gap: 6px;">
-                <img src="${formatarNomeImagem(nomeBrawler)}" style="width: 32px; height: 32px; border-radius: 4px;">
-                <span style="color: #666; font-size: 18px; font-weight: bold; margin: 0 4px;">${isOponente ? '⚔️' : '+'}</span>
-                <img src="${formatarNomeImagem(s.com)}" style="width: 32px; height: 32px; border-radius: 4px; border: 2px solid ${isOponente ? '#ff3333' : 'var(--accent-purple)'};">
-                <span style="font-size: 14px; font-weight: bold; margin-left: 8px; color: #fff;">${s.com.toUpperCase()}</span>
-            </div>
-            <div style="font-size: 13px; color: #ccc; display: flex; gap: 15px;">
-                <span><strong>${s.picks}</strong> MATCHES</span>
-                <span style="color: ${s.winrate >= 50 ? 'var(--winrate-color)' : '#ff3333'}; font-weight: bold;">${s.winrate.toFixed(1)}% WR</span>
-            </div>
-        </div>
-    `;
-
-    return `
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-            <div>
-                <h4 style="font-size: 14px; color: #888; margin-bottom: 15px;">AQUEM ESTE BRAWLER É MELHOR CONTRA (TOP 5 COUNTERA)</h4>
-                ${topCountera.length ? topCountera.map(c => renderCardCard(c, true)).join('') : '<div class="no-data">Sem dados p/ o filtro.</div>'}
-            </div>
-            <div>
-                <h4 style="font-size: 14px; color: #888; margin-bottom: 15px;">QUEM É MELHOR CONTRA ESTE BRAWLER (TOP 5 COUNTERS)</h4>
-                ${topCounters.length ? topCounters.map(c => renderCardCard(c, true)).join('') : '<div class="no-data">Sem dados p/ o filtro.</div>'}
-            </div>
-        </div>
-    `;
-}
-
-// ==== LÓGICA DE SCRIMS (Interfaces 1 e 2) ====
-let dadosScrimesGlobal = [];
-
-// Chame isso após carregar as regiões
-async function carregarScrimes(regiao) {
-    try {
-        const res = await fetch(`api/stats/scrims_${regiao.toLowerCase()}.json`);
-        if (res.ok) {
-            dadosScrimesGlobal = await res.json();
-            renderizarListaScrimes();
-        }
-    } catch(e) {}
-}
-
-window.renderizarListaScrimes = function() {
-    const lista = document.getElementById("scrins-lista");
-    const detalhe = document.getElementById("scrins-detalhe");
-    if(!lista || !detalhe) return;
-
-    lista.style.display = 'grid';
-    detalhe.style.display = 'none';
-
-    // Aplica os filtros de Data
-    const anoSel = document.getElementById('select-ano')?.value || "TODOS";
-    const mesSel = document.getElementById('select-mes')?.value || "TODOS";
-    
-    let scrimesFiltradas = dadosScrimesGlobal.filter(s => 
-        (anoSel === "TODOS" || s.ano === anoSel) && 
-        (mesSel === "TODOS" || s.mes === mesSel)
-    );
-
-    lista.innerHTML = scrimesFiltradas.map((scrim, idx) => `
-        <div onclick="abrirDetalheScrim(${idx})" style="background: var(--bg-cards); border: 1px solid var(--borda-suave); padding: 15px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <img src="element/teams/${scrim.t1_id.toLowerCase()}.png" width="40" onerror="this.src='element/teams/default.png'">
-                <h3 style="margin: 0; font-size: 16px;">${scrim.t1_id}</h3>
-            </div>
-            <div style="text-align: center;">
-                <div style="font-weight: 900; font-size: 20px; color: var(--accent-purple);">${scrim.t1_score} - ${scrim.t2_score}</div>
-                <div style="font-size: 10px; color: #666;">${scrim.data}</div>
-            </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <h3 style="margin: 0; font-size: 16px;">${scrim.t2_id}</h3>
-                <img src="element/teams/${scrim.t2_id.toLowerCase()}.png" width="40" onerror="this.src='element/teams/default.png'">
-            </div>
-        </div>
-    `).join('');
-};
-
-window.abrirDetalheScrim = function(idx) {
-    const scrim = dadosScrimesGlobal[idx];
-    document.getElementById("scrins-lista").style.display = 'none';
-    const detalhe = document.getElementById("scrins-detalhe");
-    detalhe.style.display = 'block';
-
-    let roundsHTML = scrim.rounds.map(r => `
-        <div style="background: #000; padding: 10px; border-radius: 8px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
-            <!-- Picks Time 1 -->
-            <div style="display: flex; gap: 5px;">
-                ${r.t1_picks.map(p => `<img src="${formatarNomeImagem(p)}" width="30" style="border-radius:4px;">`).join('')}
-            </div>
-            
-            <!-- Info do Mapa -->
-            <div style="text-align: center; cursor: pointer;">
-                <img src="${formatarNomeMapa(r.mapa)}" width="80" style="border-radius:6px; border: 1px solid #333;" onerror="this.src='element/maps/default.png'">
-                <div style="font-size: 11px; color: #888; margin-top: 5px;">${r.modo.toUpperCase()}</div>
-                <div style="font-size: 9px; color: #555;">${r.hora}</div>
-            </div>
-
-            <!-- Picks Time 2 -->
-            <div style="display: flex; gap: 5px;">
-                ${r.t2_picks.map(p => `<img src="${formatarNomeImagem(p)}" width="30" style="border-radius:4px;">`).join('')}
-            </div>
-        </div>
-    `).join('');
-
-    detalhe.innerHTML = `
-        <button onclick="renderizarListaScrimes()" style="background:none; border:none; color:var(--accent-purple); cursor:pointer; font-weight:bold; margin-bottom:20px;">◀ VOLTAR PARA LISTA</button>
-        <div style="display: flex; justify-content: space-around; align-items: center; margin-bottom: 20px;">
-            <div style="text-align: center;">
-                <img src="element/teams/${scrim.t1_id.toLowerCase()}.png" width="60" onerror="this.src='element/teams/default.png'">
-                <h2>${scrim.t1_nome}</h2>
-            </div>
-            <h1 style="font-size: 40px; color: #fff;">${scrim.t1_score} <span style="color:#555">X</span> ${scrim.t2_score}</h1>
-            <div style="text-align: center;">
-                <img src="element/teams/${scrim.t2_id.toLowerCase()}.png" width="60" onerror="this.src='element/teams/default.png'">
-                <h2>${scrim.t2_nome}</h2>
-            </div>
-        </div>
-        <hr style="border-color: #222; margin-bottom: 20px;">
-        <div>${roundsHTML}</div>
-    `;
-};
