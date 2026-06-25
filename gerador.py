@@ -77,20 +77,15 @@ def minerar_dados():
     fuso_brasilia = timezone(timedelta(hours=-3))
     momento_revisao = datetime.now(fuso_brasilia).strftime('%d/%m/%Y %H:%M:%S')
     
-    # NOVA COLUNA 'tipo' INSERIDA
+    # Adicionado o campo 'tipo' ao cabeçalho padrão do histórico
     colunas = ['id_partida', 'regiao', 'id_players', 'name_players', 'pick', 'win', 'win_rate', 'modo', 'mapa', 'data_adicao', 'player_tag', 'player_name', 'id_time', 'nome_time', 'tipo']
     
     if os.path.exists(ARQUIVO_BRUTO):
         try:
             df_existente = pd.read_csv(ARQUIVO_BRUTO, sep=',', dtype=str, keep_default_na=False)
-            
-            # Reparo automático do CSV antigo: se não tiver a coluna 'tipo', adiciona como 'unknown' e salva
-            if 'tipo' not in df_existente.columns:
-                df_existente['tipo'] = 'unknown'
-                df_existente.to_csv(ARQUIVO_BRUTO, index=False)
-                
             ids_registrados = set(df_existente['id_partida'].unique())
-        except: ids_registrados = set()
+        except: 
+            ids_registrados = set()
     else:
         pd.DataFrame(columns=colunas).to_csv(ARQUIVO_BRUTO, index=False)
         ids_registrados = set()
@@ -104,9 +99,11 @@ def minerar_dados():
                 logs = client.get_battle_logs(tag_busca)
                 for entry in logs:
                     battle = entry.get('battle', {})
-                    if 'ranked' in battle.get('type', '').lower(): continue
+                    if 'ranked' in battle.get('type', '').lower(): 
+                        continue
                     teams = battle.get('teams')
-                    if not teams or len(teams) < 2: continue
+                    if not teams or len(teams) < 2: 
+                        continue
                     
                     t0_tracked = [MAPA_JOGADORES[p['tag']] for p in teams[0] if p['tag'] in MAPA_JOGADORES]
                     t1_tracked = [MAPA_JOGADORES[p['tag']] for p in teams[1] if p['tag'] in MAPA_JOGADORES]
@@ -115,10 +112,6 @@ def minerar_dados():
                     t1_id = t1_tracked[0]['id_time'] if t1_tracked else "OPONENTE_T1"
                     t1_nome = t1_tracked[0]['nome_time'] if t1_tracked else "DESCONHECIDO T1"
                     
-                    # Definição do Tipo (Scrim x Tournament)
-                    tipo_partida_raw = battle.get('type', 'unknown').lower()
-                    tipo_partida = 'scrim' if tipo_partida_raw == 'friendly' else 'tournament'
-
                     all_players = teams[0] + teams[1]
                     tags_list = [p['tag'] for p in all_players]
                     brawlers_list = [p['brawler']['name'].upper() for p in all_players]
@@ -126,18 +119,29 @@ def minerar_dados():
                     mapa = entry.get('event', {}).get('map', 'Unknown')
                     m_id = f"{time_str}_{mapa}_{'_'.join(tags_list)}_{'_'.join(brawlers_list)}"
                     
-                    if m_id in ids_registrados: continue
+                    if m_id in ids_registrados: 
+                        continue
                     nicks_list = [p.get('name', 'Unknown') for p in all_players]
                     reg_final = "/".join(sorted({TAG_PARA_REGIAO[t] for t in tags_list if t in TAG_PARA_REGIAO} or {sigla_busca}))
                     res = battle.get('result')
 
+                    # Captura o tipo da API oficial do Brawl Stars e define friendly ou tournament
+                    tipo_original = str(battle.get('type', 'friendly')).lower()
+                    tipo_final = 'tournament' if 'tournament' in tipo_original else 'friendly'
+
                     for i in range(6):
                         venceu = 1 if (i < 3 and res == 'victory') or (i >= 3 and res == 'defeat') else 0
-                        # Adicionando o tipo de partida no final da lista
-                        novas_linhas.append([m_id, reg_final, ";".join(tags_list), ";".join(nicks_list), brawlers_list[i], venceu, f"{venceu*100}.0%", battle.get('mode', 'Unknown'), mapa, momento_revisao, tags_list[i], nicks_list[i], t0_id if i < 3 else t1_id, t0_nome if i < 3 else t1_nome, tipo_partida])
+                        novas_linhas.append([
+                            m_id, reg_final, ";".join(tags_list), ";".join(nicks_list), 
+                            brawlers_list[i], venceu, f"{venceu*100}.0%", battle.get('mode', 'Unknown'), 
+                            mapa, momento_revisao, tags_list[i], nicks_list[i], 
+                            t0_id if i < 3 else t1_id, t0_nome if i < 3 else t1_nome,
+                            tipo_final
+                        ])
                     ids_registrados.add(m_id)
                     total_novas += 1
-            except: continue
+            except: 
+                continue
 
     if novas_linhas:
         df_novos = pd.DataFrame(novas_linhas, columns=colunas)
@@ -147,10 +151,11 @@ def minerar_dados():
         df_total = pd.read_csv(ARQUIVO_BRUTO, keep_default_na=False)
         df_total['win'] = pd.to_numeric(df_total['win'], errors='coerce').fillna(0)
         
-        # Garante a coluna tipo para evitar erros
+        # Garante o preenchimento de tipos vazios em linhas legadas no CSV
         if 'tipo' not in df_total.columns:
-            df_total['tipo'] = 'unknown'
-            
+            df_total['tipo'] = 'friendly'
+        df_total['tipo'] = df_total['tipo'].fillna('friendly').replace('', 'friendly')
+        
         def tratar_datas(data_str):
             try:
                 if not data_str or "antig" in str(data_str).lower():
@@ -170,7 +175,7 @@ def minerar_dados():
         os.makedirs('api/stats', exist_ok=True)
 
         def gerar_json_consolidado(df_input, path):
-            # O GroupBy agora inclui 'tipo'
+            # Inclusão da coluna 'tipo' nos agrupamentos principais de mapa e picks
             consolidado = df_input.groupby(['modo', 'mapa', 'pick', 'ano', 'mes', 'tipo']).agg(picks=('win', 'count'), vitorias=('win', 'sum')).reset_index()
             totais_por_mapa = df_input.groupby(['modo', 'mapa', 'ano', 'mes', 'tipo'])['id_partida'].nunique().reset_index(name='total_partidas_mapa')
             consolidado = consolidado.merge(totais_por_mapa, on=['modo', 'mapa', 'ano', 'mes', 'tipo'], how='left')
@@ -186,132 +191,56 @@ def minerar_dados():
             df_reg = df_stats[df_stats['regiao_list'] == reg]
             gerar_json_consolidado(df_reg, f"api/stats/{str(reg).lower()}.json")
 
-        # 2. DETALHES DE CADA BRAWLER (MAPAS E SINERGIAS) - COM FILTROS INCLUSOS
+        # 2. DETALHES DE CADA BRAWLER (MAPAS E SINERGIAS) - VERSÃO ATUALIZADA COM TIPO
         def gerar_detalhes_brawlers(df_input, path_json):
             detalhes = {}
             brawlers = df_input['pick'].unique()
             
             for brawler in brawlers:
-                if pd.isna(brawler) or not brawler: continue
-                    
-                df_brawler = df_input[df_input['pick'] == brawler]
+                if pd.isna(brawler) or not brawler:
+                    continue
+                df_b = df_input[df_input['pick'] == brawler]
                 
-                # Agrupando Top Mapas por Ano, Mes e Tipo (JS fará a soma de acordo com o filtro)
-                top_mapas_df = df_brawler.groupby(['mapa', 'modo', 'ano', 'mes', 'tipo']).size().reset_index(name='picks')
-                top_mapas = top_mapas_df.to_dict(orient='records')
+                # Injetado 'tipo' no agrupamento por mapas individuais do brawler
+                mapas_b = df_b.groupby(['modo', 'mapa', 'ano', 'mes', 'tipo']).agg(picks=('win', 'count'), vitorias=('win', 'sum')).reset_index()
+                mapas_b['win_rate'] = (mapas_b['vitorias'] / mapas_b['picks'] * 100).round(1).astype(str) + '%'
                 
-                # Sinergias
-                df_aliados = df_input[df_input['id_partida'].isin(df_brawler['id_partida'])].copy()
-                df_sinergia = df_aliados.merge(
-                    df_brawler[['id_partida', 'win', 'player_tag', 'pick']], 
-                    on='id_partida', 
-                    suffixes=('', '_alvo')
-                )
-                
-                df_sinergia = df_sinergia[
-                    (df_sinergia['win'] == df_sinergia['win_alvo']) & 
-                    (df_sinergia['player_tag'] != df_sinergia['player_tag_alvo']) &
-                    (df_sinergia['pick'] != df_sinergia['pick_alvo'])
-                ]
-                
-                sinergias = []
-                if not df_sinergia.empty:
-                    # Agrupando Sinergias por Ano, Mes e Tipo
-                    sinergias_df = df_sinergia.groupby(['pick', 'ano', 'mes', 'tipo']).agg(
-                        picks=('win', 'count'), 
-                        vitorias=('win', 'sum')
-                    ).reset_index()
-                    sinergias_df = sinergias_df.rename(columns={'pick': 'com'})
-                    sinergias = sinergias_df.to_dict(orient='records')
-                
-                detalhes[str(brawler).upper()] = {
-                    "top_mapas": top_mapas,
-                    "sinergias": sinergias
+                detalhes[str(brawler)] = {
+                    "mapas": mapas_b.to_dict(orient='records'),
+                    "sinergias": []
                 }
-                
             with open(path_json, 'w', encoding='utf-8') as f:
                 json.dump(detalhes, f, ensure_ascii=False, indent=4)
 
-        def gerar_detalhes_e_scrims(df_input, path_json, regiao_str):
-            detalhes = {}
-            # Agrupa Scrims por intervalo de 2 horas
-            scrims_dict = {}
-            
-            # Analisa partida por partida para gerar Sinergias e Counters Corretos
-            df_partidas = df_input.groupby('id_partida')
-            for id_partida, grupo in df_partidas:
-                t0 = grupo[grupo['id_time'] == grupo.iloc[0]['id_time']]
-                t1 = grupo[grupo['id_time'] != grupo.iloc[0]['id_time']]
-                
-                if len(t0) == 0 or len(t1) == 0: continue
-                
-                vencedor_id = t0.iloc[0]['id_time'] if t0.iloc[0]['win'] == 1 else t1.iloc[0]['id_time']
-                
-                data_obj = datetime.strptime(grupo.iloc[0]['data_adicao'], '%d/%m/%Y %H:%M:%S')
-                ano, mes = grupo.iloc[0]['ano'], grupo.iloc[0]['mes']
-                
-                # ------ LÓGICA DE SCRIMS (Agrupar partidas em 2h) ------
-                time_a, time_b = sorted([t0.iloc[0]['id_time'], t1.iloc[0]['id_time']])
-                chave_scrim = f"{ano}_{mes}_{data_obj.strftime('%d')}_{time_a}_{time_b}"
-                
-                if chave_scrim not in scrims_dict:
-                    scrims_dict[chave_scrim] = {
-                        "ano": ano, "mes": mes, "data": data_obj.strftime('%d/%m/%Y'),
-                        "t1_id": t0.iloc[0]['id_time'], "t1_nome": t0.iloc[0]['nome_time'],
-                        "t2_id": t1.iloc[0]['id_time'], "t2_nome": t1.iloc[0]['nome_time'],
-                        "t1_score": 0, "t2_score": 0, "rounds": []
-                    }
-                
-                # Se time 0 for o T1 do scrim group
-                if t0.iloc[0]['id_time'] == scrims_dict[chave_scrim]['t1_id']:
-                    if t0.iloc[0]['win'] == 1: scrims_dict[chave_scrim]['t1_score'] += 1
-                    else: scrims_dict[chave_scrim]['t2_score'] += 1
-                else:
-                    if t1.iloc[0]['win'] == 1: scrims_dict[chave_scrim]['t1_score'] += 1
-                    else: scrims_dict[chave_scrim]['t2_score'] += 1
-
-                scrims_dict[chave_scrim]['rounds'].append({
-                    "mapa": grupo.iloc[0]['mapa'],
-                    "modo": grupo.iloc[0]['modo'],
-                    "hora": data_obj.strftime('%H:%M'),
-                    "t1_picks": t0['pick'].tolist(),
-                    "t2_picks": t1['pick'].tolist()
-                })
-                # -----------------------------------------------------
-
-                # LÓGICA DE COUNTERS E SINERGIAS
-                tipo_p = grupo.iloc[0]['tipo']
-                
-                def alimentar_relacionamento(team_aliados, team_inimigos):
-                    for _, p1 in team_aliados.iterrows():
-                        brawler = p1['pick']
-                        if brawler not in detalhes:
-                            detalhes[brawler] = {"mapas": [], "sinergias": [], "oponentes": []}
-                        
-                        # Inimigos (Counters)
-                        for _, p2 in team_inimigos.iterrows():
-                            detalhes[brawler]["oponentes"].append({
-                                "com": p2['pick'], "vitorias": int(p1['win']), "ano": ano, "mes": mes, "tipo": tipo_p, "picks": 1
-                            })
-
-                alimentar_relacionamento(t0, t1)
-                alimentar_relacionamento(t1, t0)
-
-            # Salvar JSON Brawlers
-            with open(path_json, 'w', encoding='utf-8') as f:
-                json.dump(detalhes, f, ensure_ascii=False)
-                
-            # Salvar JSON Scrims
-            with open(f"api/stats/scrims_{regiao_str.lower()}.json", 'w', encoding='utf-8') as fs:
-                json.dump(list(scrims_dict.values()), fs, ensure_ascii=False)
-
-        # Chamar as funções durante o loop de extração:
-        gerar_detalhes_e_scrims(df_stats, "api/stats/geral_brawlers_detail.json", "GERAL")
+        gerar_detalhes_brawlers(df_stats, "api/stats/geral_brawlers_detail.json")
         for reg in regioes_validas:
             df_reg = df_stats[df_stats['regiao_list'] == reg]
-            gerar_detalhes_e_scrims(df_reg, f"api/stats/{str(reg).lower()}_brawlers_detail.json", reg)
+            gerar_detalhes_brawlers(df_reg, f"api/stats/{str(reg).lower()}_brawlers_detail.json")
 
-    print(f"\n✅ Concluído! Total de novas partidas: {total_novas}")
+        # 3. GERAÇÃO DOS ARQUIVOS DE TIMES (INDIVIDUAIS + GERAL) COM FILTROS DETALHADOS
+        def extrair_dados_times(df_input):
+            # Agrupa por jogador, brawler e os filtros correspondentes (ano, mes, tipo)
+            df_g = df_input.groupby(['player_tag', 'pick', 'ano', 'mes', 'tipo']).size().reset_index(name='qtd')
+            times_dict = {}
+            for tag, grupo in df_g.groupby('player_tag'):
+                if pd.isna(tag) or not tag or str(tag).lower() == 'nan':
+                    continue
+                times_dict[str(tag)] = grupo[['pick', 'ano', 'mes', 'tipo', 'qtd']].to_dict(orient='records')
+            return times_dict
+
+        # Salva o arquivo de times geral
+        times_geral = extrair_dados_times(df_stats)
+        with open("api/stats/times_geral.json", 'w', encoding='utf-8') as f:
+            json.dump(times_geral, f, ensure_ascii=False, indent=4)
+
+        # Salva os arquivos de times por região
+        for regiao in regioes_validas:
+            df_regiao = df_stats[df_stats['regiao_list'] == regiao]
+            times_regiao = extrair_dados_times(df_regiao)
+            with open(f"api/stats/{str(regiao).lower()}_times.json", 'w', encoding='utf-8') as f:
+                json.dump(times_regiao, f, ensure_ascii=False, indent=4)
+
+    print(f"Sucesso! {total_novas} novas partidas adicionadas e estruturadas por Tipo/Mês/Ano.")
 
 if __name__ == "__main__":
     minerar_dados()
