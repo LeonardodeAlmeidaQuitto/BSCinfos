@@ -531,3 +531,112 @@ window.selecionarRound = function(index, btnElement) {
         </div>
     `;
 };
+
+// NOVA PARTE
+
+// 1. Variáveis globais para guardar o estado do filtro
+let metaDadosBrutos = []; // Variável para armazenar os dados totais do Meta
+let modoSelecionado = 'todos';
+let mapaSelecionado = 'todos';
+
+// 2. Função para formatar o nome da imagem corretamente (tira espaços, pontos e transforma em minúsculo)
+function formatarNomeBrawler(nome) {
+    if (!nome) return 'default';
+    return nome.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+// 3. Função para inicializar os filtros do Meta
+function inicializarFiltrosMeta(dadosOriginais) {
+    metaDadosBrutos = dadosOriginais; // Salva para uso futuro
+    const selectModo = document.getElementById('filtro-modo');
+    const selectMapa = document.getElementById('filtro-mapa');
+
+    if (!selectModo || !selectMapa) return;
+
+    // Pega todos os Modos únicos
+    const modos = [...new Set(dadosOriginais.map(d => d.modo))].filter(Boolean);
+    
+    selectModo.innerHTML = '<option value="todos">Todos os Modos e Mapas</option>';
+    modos.forEach(modo => {
+        selectModo.innerHTML += `<option value="${modo}">${modo.toUpperCase()}</option>`;
+    });
+
+    // Ao mudar o Modo, atualiza a lista de mapas
+    selectModo.addEventListener('change', (e) => {
+        modoSelecionado = e.target.value;
+        mapaSelecionado = 'todos'; // Volta para "todos os mapas" daquele modo
+        atualizarDropdownMapas();
+        aplicarFiltrosMeta();
+    });
+
+    // Ao mudar o Mapa, apenas filtra a tabela
+    selectMapa.addEventListener('change', (e) => {
+        mapaSelecionado = e.target.value;
+        aplicarFiltrosMeta();
+    });
+
+    atualizarDropdownMapas();
+}
+
+// 4. Atualiza os options do select de Mapa dependendo do Modo escolhido
+function atualizarDropdownMapas() {
+    const selectMapa = document.getElementById('filtro-mapa');
+    if (!selectMapa) return;
+
+    let mapas = [];
+    if (modoSelecionado === 'todos') {
+        mapas = [...new Set(metaDadosBrutos.map(d => d.mapa))].filter(Boolean);
+    } else {
+        // Pega só os mapas do modo específico
+        mapas = [...new Set(metaDadosBrutos.filter(d => d.modo === modoSelecionado).map(d => d.mapa))].filter(Boolean);
+    }
+
+    selectMapa.innerHTML = '<option value="todos">Todos os Mapas</option>';
+    mapas.forEach(mapa => {
+        selectMapa.innerHTML += `<option value="${mapa}">${mapa}</option>`;
+    });
+}
+
+// 5. Aplica o filtro selecionado e envia para a tabela
+function aplicarFiltrosMeta() {
+    let dadosFiltrados = metaDadosBrutos;
+
+    if (modoSelecionado !== 'todos') {
+        dadosFiltrados = dadosFiltrados.filter(d => d.modo === modoSelecionado);
+    }
+    if (mapaSelecionado !== 'todos') {
+        dadosFiltrados = dadosFiltrados.filter(d => d.mapa === mapaSelecionado);
+    }
+
+    // AQUI VOCÊ CHAMA SUA FUNÇÃO QUE MONTA A TABELA
+    // Exemplo: renderizarTabelaMeta(dadosFiltrados);
+    renderizarTabelaMeta(dadosFiltrados);
+}
+
+// 6. Atualização de como você desenha as linhas da tabela (Para incluir as imagens)
+function renderizarTabelaMeta(dadosParaTabela) {
+    const tbody = document.querySelector('#tabela-meta tbody'); // Altere para o ID correto da sua tabela
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+    dadosParaTabela.forEach(d => {
+        const tr = document.createElement('tr');
+        
+        // A MÁGICA DA IMAGEM ESTÁ AQUI
+        const imgNome = formatarNomeBrawler(d.pick); 
+        
+        tr.innerHTML = `
+            <td>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <img src="element/brawlers/${imgNome}.png" 
+                         onerror="this.src='element/brawlers/default.png'" 
+                         style="width: 35px; height: 35px; border-radius: 6px; object-fit: cover; border: 1px solid var(--borda-suave);">
+                    <span style="font-weight: 900; color: #fff;">${d.pick}</span>
+                </div>
+            </td>
+            <td>${d.vitorias || 0}</td>
+            <td style="color: var(--winrate-color);">${d.win_rate || '0.0%'}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
