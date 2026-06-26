@@ -89,13 +89,12 @@ const CONFIGURACAO_MANUAL_TIMES = {
     }
 };
 
-// Utilitários de formatação e verificação
-const formatImg = n => n.toLowerCase().replace(/[^a-z0-9]/g, '');
-const isTimeSA = (nome) => {
+const formatImg = n => { if(!n) return 'default'; return n.toLowerCase().replace(/[^a-z0-9]/g, ''); };
+const isTimeSA = (id) => {
     let sa = CONFIGURACAO_MANUAL_TIMES["SA"];
     if(!sa) return false;
     for(let tier in sa) {
-        if(sa[tier].find(t => t.nome_time === nome || t.id_time === nome)) return true;
+        if(sa[tier].find(t => t.id_time === id)) return true;
     }
     return false;
 };
@@ -105,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ==========================================
-// 1. CARREGAMENTO E PROCESSAMENTO DO CSV
+// 2. CARREGAMENTO E PROCESSAMENTO (INCLUI TIER ?)
 // ==========================================
 function carregarCSV() {
     Papa.parse("historico_bruto.csv", {
@@ -114,8 +113,74 @@ function carregarCSV() {
         skipEmptyLines: true,
         complete: function(results) {
             dadosBrutos = results.data;
+            processarTimesDesconhecidos(dadosBrutos); // GERA OS ROSTERS DESCONHECIDOS
             popularFiltrosGlobais();
             processarDadosGlobais();
+        }
+    });
+}
+
+function processarTimesDesconhecidos(dados) {
+    // Garante que a SA tem a categoria "TIER ?"
+    if (!CONFIGURACAO_MANUAL_TIMES["SA"]["TIER ?"]) {
+        CONFIGURACAO_MANUAL_TIMES["SA"]["TIER ?"] = [];
+    }
+
+    const mapaTimesDesconhecidos = new Map();
+    let unkCounter = 1;
+
+    dados.forEach(linha => {
+        let regiao = linha.regiao ? linha.regiao.split('/')[0] : "SA";
+        if (regiao !== "SA") regiao = "SA"; // Forçamos tudo que formos exibir para SA no momento
+
+        // Checa se o time desta linha já existe em algum tier da SA
+        let timeOficial = false;
+        for (let tier in CONFIGURACAO_MANUAL_TIMES[regiao]) {
+            if (tier !== "TIER ?" && CONFIGURACAO_MANUAL_TIMES[regiao][tier].some(t => t.id_time === linha.id_time)) {
+                timeOficial = true;
+                break;
+            }
+        }
+
+        // Se for time não mapeado (desconhecido/oponente)
+        if (!timeOficial && linha.id_players && linha.name_players && linha.player_tag) {
+            const idsPlayers = linha.id_players.split(';');
+            const namesPlayers = linha.name_players.split(';');
+            const pIndex = idsPlayers.indexOf(linha.player_tag);
+            
+            if (pIndex !== -1) {
+                const startIndex = pIndex < 3 ? 0 : 3;
+                const timeTags = idsPlayers.slice(startIndex, startIndex + 3);
+                const timeNames = namesPlayers.slice(startIndex, startIndex + 3);
+                
+                // Valida que formou um time de 3 jogadores reais
+                if (timeTags.length === 3 && !timeTags.includes("None") && !timeTags.includes("")) {
+                    const assinaturaTime = timeTags.slice().sort().join('_');
+                    
+                    if (!mapaTimesDesconhecidos.has(assinaturaTime)) {
+                        const novoId = `unk${unkCounter}`;
+                        const novoNome = `Unknow ${unkCounter}`;
+                        mapaTimesDesconhecidos.set(assinaturaTime, { id: novoId, nome: novoNome });
+                        
+                        // INJETA NA CONSTANTE
+                        CONFIGURACAO_MANUAL_TIMES[regiao]["TIER ?"].push({
+                            id_time: novoId,
+                            nome_time: novoNome,
+                            jogadores: [
+                                { nick: timeNames[0], tag: timeTags[0] },
+                                { nick: timeNames[1], tag: timeTags[1] },
+                                { nick: timeNames[2], tag: timeTags[2] }
+                            ]
+                        });
+                        unkCounter++;
+                    }
+                    
+                    // Altera a linha para ter o ID do time gerado
+                    const timeGerado = mapaTimesDesconhecidos.get(assinaturaTime);
+                    linha.id_time = timeGerado.id;
+                    linha.nome_time = timeGerado.nome;
+                }
+            }
         }
     });
 }
@@ -156,8 +221,8 @@ function processarDadosGlobais() {
         }
         if(tipo !== 'todos') matchTipo = (row.tipo === tipo);
         
-        // FILTRAGEM: Somente times da região SA
-        let ehSA = isTimeSA(row.nome_time);
+        // FILTRO ESTREITO: Somente dados onde a equipe consta na SA
+        let ehSA = isTimeSA(row.id_time);
         
         return matchAno && matchMes && matchTipo && ehSA;
     });
@@ -171,7 +236,7 @@ function processarDadosGlobais() {
 }
 
 // ==========================================
-// 2. TELA META (REGRA: SA APENAS, 5 PICKS OU MAIS, SEPARADO POR MAPA)
+// 3. TELA META (REGRA: SA APENAS, 5 PICKS OU MAIS)
 // ==========================================
 function renderizarMeta() {
     const container = document.getElementById('conteudo-meta');
@@ -253,7 +318,7 @@ function renderizarMeta() {
 }
 
 // ==========================================
-// 3. TELA BRAWLERS (COM WR%, PR% E TOP MAPAS/SINERGIAS)
+// 4. TELA BRAWLERS (COM WR%, PR% E TOP MAPAS/SINERGIAS)
 // ==========================================
 function renderizarSidebarBrawlers() {
     let pickCounts = {};
@@ -262,7 +327,6 @@ function renderizarSidebarBrawlers() {
         pickCounts[b] = (pickCounts[b] || 0) + 1;
     });
 
-    // Somente brawlers com mais de 5 picks na SA
     listaBrawlers = Object.keys(pickCounts).filter(b => pickCounts[b] >= 5).sort();
     
     const sidebar = document.getElementById('lista-brawlers-sidebar');
@@ -293,7 +357,6 @@ function filtrarBrawlersSidebar() {
 
 function renderizarDetalhesBrawler(brawler) {
     const painel = document.getElementById('painel-info-brawler');
-    
     let partidasDeste = dadosFiltrados.filter(r => r.pick.toUpperCase() === brawler);
     let totalPicks = partidasDeste.length;
     if(totalPicks === 0) return;
@@ -316,9 +379,6 @@ function renderizarDetalhesBrawler(brawler) {
     let statsSinergia = {};
     let idsPartidas = [...new Set(partidasDeste.map(r => r.id_partida))];
     
-    // Pega o número total de partidas avaliadas na SA para o PR% global (opcional)
-    // Mas o PR contra um brawler geralmente é (Vezes Pego / Total Matches Brawler)
-    
     idsPartidas.forEach(id => {
         let todosNaPartida = dadosFiltrados.filter(r => r.id_partida === id);
         let brawlerRows = todosNaPartida.filter(r => r.pick.toUpperCase() === brawler);
@@ -329,11 +389,11 @@ function renderizarDetalhesBrawler(brawler) {
             
             todosNaPartida.forEach(p => {
                 let pName = p.pick.toUpperCase();
-                if(p.id_time !== timeDoBrawler) { // Contra
+                if(p.id_time !== timeDoBrawler) { 
                     if(!statsContra[pName]) statsContra[pName] = { matches: 0, bwWins: 0, bwLosses: 0 };
                     statsContra[pName].matches++;
                     if(ganhou) statsContra[pName].bwWins++; else statsContra[pName].bwLosses++;
-                } else if(p.id_time === timeDoBrawler && pName !== brawler) { // Sinergia (mesmo time, outro champ)
+                } else if(p.id_time === timeDoBrawler && pName !== brawler) { 
                     if(!statsSinergia[pName]) statsSinergia[pName] = { matches: 0, bwWins: 0 };
                     statsSinergia[pName].matches++;
                     if(ganhou) statsSinergia[pName].bwWins++;
@@ -346,9 +406,8 @@ function renderizarDetalhesBrawler(brawler) {
         return { nome, matches: s.matches, wins: s.bwWins, losses: s.bwLosses, wr: (s.bwWins / s.matches) * 100, pr: (s.matches / totalPicks) * 100 };
     }).filter(m => m.matches >= 3); 
 
-    let countersTop = [...matchups].sort((a, b) => b.wr - a.wr).slice(0, 5); // O brawler ganha muito
-    let counteradosTop = [...matchups].sort((a, b) => a.wr - b.wr).slice(0, 5); // O brawler perde muito
-    
+    let countersTop = [...matchups].sort((a, b) => b.wr - a.wr).slice(0, 5); 
+    let counteradosTop = [...matchups].sort((a, b) => a.wr - b.wr).slice(0, 5); 
     let sinergiasTop = Object.entries(statsSinergia).map(([nome, s]) => {
         return { nome, matches: s.matches, wins: s.bwWins, wr: (s.bwWins / s.matches) * 100, pr: (s.matches / totalPicks) * 100 };
     }).filter(m => m.matches >= 3).sort((a,b) => b.wr - a.wr).slice(0,5);
@@ -431,33 +490,42 @@ function renderizarDetalhesBrawler(brawler) {
 }
 
 // ==========================================
-// 4. TELA TIMES (LOGO E JOGADORES)
+// 5. TELA TIMES (ROSTERS FIXOS DA CONSTANTE E LOGOS POR ID)
 // ==========================================
 function renderizarSidebarTimes() {
     const sidebar = document.getElementById('lista-times-sidebar');
     sidebar.innerHTML = '';
     
-    let timesJogaram = [...new Set(dadosFiltrados.map(r => r.nome_time))].sort();
+    const timesSA = CONFIGURACAO_MANUAL_TIMES["SA"];
+    if(!timesSA) return;
 
-    timesJogaram.forEach(t => {
-        if(t.includes("DESCONHECIDO")) return;
-        let div = document.createElement('div');
-        div.className = 'sidebar-item';
-        div.innerHTML = `<img src="element/teams/${t.replace(/\s/g, '')}.png" style="width:24px; height:24px; object-fit:contain; border-radius:4px;" onerror="this.src='element/teams/default.png'"> <span style="font-weight:bold;">${t}</span>`;
-        div.onclick = () => {
-            document.querySelectorAll('#lista-times-sidebar .sidebar-item').forEach(i => i.classList.remove('active'));
-            div.classList.add('active');
-            timeSelecionado = t;
-            renderizarDetalhesTime(t);
-        };
-        sidebar.appendChild(div);
-    });
+    for(let tier in timesSA) {
+        if(timesSA[tier].length === 0) continue;
+        
+        let tierHeader = document.createElement('div');
+        tierHeader.className = 'sidebar-header';
+        tierHeader.innerText = tier;
+        sidebar.appendChild(tierHeader);
+
+        timesSA[tier].forEach(t => {
+            let div = document.createElement('div');
+            div.className = 'sidebar-item';
+            div.innerHTML = `<img src="element/teams/${t.id_time.toLowerCase()}.png" style="width:24px; height:24px; object-fit:contain; border-radius:4px;" onerror="this.src='element/teams/default.png'"> <span style="font-weight:bold;">${t.nome_time}</span>`;
+            div.onclick = () => {
+                document.querySelectorAll('#lista-times-sidebar .sidebar-item').forEach(i => i.classList.remove('active'));
+                div.classList.add('active');
+                timeSelecionado = t;
+                renderizarDetalhesTime(t);
+            };
+            sidebar.appendChild(div);
+        });
+    }
 }
 
 function renderizarDetalhesTime(time) {
     const painel = document.getElementById('painel-info-time');
-    let partidasDoTime = dadosFiltrados.filter(r => r.nome_time === time);
-    let logoUrl = `element/teams/${time.replace(/\s/g, '')}.png`;
+    let partidasDoTime = dadosFiltrados.filter(r => r.id_time === time.id_time);
+    let logoUrl = `element/teams/${time.id_time.toLowerCase()}.png`;
 
     // Top 10 Brawlers do TIME
     let timeBrawlers = {};
@@ -468,51 +536,52 @@ function renderizarDetalhesTime(time) {
     });
     let top10Time = Object.entries(timeBrawlers).sort((a,b) => b[1] - a[1]).slice(0, 10);
 
-    // Agrupa e conta matches reais para achar os 3 que mais jogaram
-    let jogadoresInfo = {};
-    partidasDoTime.forEach(r => {
-        let nick = r.player_name;
-        if(!jogadoresInfo[nick]) jogadoresInfo[nick] = { picks: 0, brawlers: {} };
-        jogadoresInfo[nick].picks++;
-        let b = r.pick.toUpperCase();
-        if(!jogadoresInfo[nick].brawlers[b]) jogadoresInfo[nick].brawlers[b] = 0;
-        jogadoresInfo[nick].brawlers[b]++;
-    });
-    
-    // Top 3 Players
-    let top3Players = Object.entries(jogadoresInfo).sort((a,b) => b[1].picks - a[1].picks).slice(0, 3);
-
     let html = `
         <div style="display:flex; align-items:center; gap:20px; margin-bottom:30px; border-bottom:1px solid var(--borda-destaque); padding-bottom:20px;">
             <img src="${logoUrl}" style="width:80px; height:80px; object-fit:contain; background:var(--bg-cards); border-radius:12px; border:2px solid var(--borda-destaque);" onerror="this.src='element/teams/default.png'">
-            <h2 style="color: var(--accent-purple); font-size: 32px; font-weight:900;">${time}</h2>
+            <h2 style="color: var(--accent-purple); font-size: 32px; font-weight:900;">${time.nome_time} <span style="font-size:14px; color:var(--texto-secundario)">(${time.id_time})</span></h2>
         </div>
 
         <div style="background:var(--bg-cards); padding:20px; border-radius:12px; border:1px solid var(--borda-destaque); margin-bottom:30px;">
             <h3 style="color:var(--texto); margin-bottom:15px; font-size:16px;">TOP 10 BRAWLERS DA EQUIPE</h3>
             <div style="display:flex; flex-wrap:wrap; gap:10px;">
-                ${top10Time.map(([b, qtd]) => `
+                ${top10Time.length > 0 ? top10Time.map(([b, qtd]) => `
                     <div style="background:var(--bg-paineis); padding:8px 12px; border-radius:6px; border:1px solid var(--borda-suave); display:flex; align-items:center; gap:10px;">
                         <img src="brawlers/${formatImg(b)}.png" style="width:24px; border-radius:4px;" onerror="this.src='brawlers/default.png'">
                         <span style="font-weight:bold; font-size:13px;">${b}</span>
                         <span style="color:var(--texto-secundario); font-size:12px; font-weight:bold;">(${qtd})</span>
                     </div>
-                `).join('')}
+                `).join('') : '<span style="color:var(--texto-secundario); font-size:13px;">Sem dados suficientes no filtro.</span>'}
             </div>
         </div>
 
-        <h3 style="color:var(--texto); margin-bottom:15px; font-size:16px;">JOGADORES (MAIS ATUANTES)</h3>
+        <h3 style="color:var(--texto); margin-bottom:15px; font-size:16px;">JOGADORES (ROSTER OFICIAL)</h3>
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
     `;
 
-    top3Players.forEach(([nick, dados]) => {
-        let top5Brawlers = Object.entries(dados.brawlers).sort((a,b) => b[1] - a[1]).slice(0, 5);
+    // Processa os jogadores mapeados em CONFIGURACAO_MANUAL_TIMES
+    time.jogadores.forEach(jogador => {
+        let partidasJogador = partidasDoTime.filter(r => r.player_tag === jogador.tag);
+        let picksTotal = partidasJogador.length;
+        
+        let brawlersJogador = {};
+        partidasJogador.forEach(r => {
+            let b = r.pick.toUpperCase();
+            if(!brawlersJogador[b]) brawlersJogador[b] = 0;
+            brawlersJogador[b]++;
+        });
+        
+        let top5Brawlers = Object.entries(brawlersJogador).sort((a,b) => b[1] - a[1]).slice(0, 5);
+
         html += `
             <div style="background: var(--bg-cards); padding: 20px; border-radius: 12px; border: 1px solid var(--borda-destaque);">
-                <h4 style="color:var(--accent-purple); margin-bottom:5px; font-size:18px;">${nick}</h4>
-                <p style="color: var(--texto-secundario); font-size: 12px; margin-bottom: 20px; font-weight:bold;">Total de Picks: ${dados.picks}</p>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                    <h4 style="color:var(--accent-purple); font-size:18px;">${jogador.nick}</h4>
+                    <span style="font-size:10px; background:#000; padding:3px 6px; border-radius:4px; color:var(--texto-secundario);">${jogador.tag}</span>
+                </div>
+                <p style="color: var(--texto-secundario); font-size: 12px; margin-bottom: 20px; font-weight:bold;">Total de Picks: ${picksTotal}</p>
                 <div style="display:flex; flex-direction:column; gap:8px;">
-                    ${top5Brawlers.map(([b, qtd], idx) => `
+                    ${top5Brawlers.length > 0 ? top5Brawlers.map(([b, qtd], idx) => `
                         <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-paineis); padding:8px 12px; border-radius:6px; border:1px solid var(--borda-suave);">
                             <div style="display:flex; align-items:center; gap:10px;">
                                 <span style="font-weight:900; color:var(--texto-secundario); font-size:11px;">#${idx+1}</span>
@@ -521,7 +590,7 @@ function renderizarDetalhesTime(time) {
                             </div>
                             <span style="font-size:12px; color:var(--texto-secundario); font-weight:bold;">${qtd}</span>
                         </div>
-                    `).join('')}
+                    `).join('') : '<span style="color:var(--texto-secundario); font-size:12px;">Sem picks no filtro.</span>'}
                 </div>
             </div>
         `;
@@ -532,7 +601,7 @@ function renderizarDetalhesTime(time) {
 }
 
 // ==========================================
-// 5. TELA SCRIMS (SOMENTE SA)
+// 6. TELA SCRIMS (SOMENTE SA E LOGOS POR ID)
 // ==========================================
 function processarScrimes() {
     let rawMatches = {};
@@ -547,22 +616,24 @@ function processarScrimes() {
         let t0 = linhas.slice(0, 3);
         let t1 = linhas.slice(3, 6);
         
-        let timeA = t0[0].nome_time;
-        let timeB = t1[0].nome_time;
+        let t0Id = t0[0].id_time;
+        let t1Id = t1[0].id_time;
 
-        // FILTRO ESTREITO: Ambos precisam ser da SA de acordo com os rosters do CONFIGURACAO_MANUAL_TIMES
-        if(!isTimeSA(timeA) || !isTimeSA(timeB)) return;
+        // FILTRO: Ambos precisam ser da SA
+        if(!isTimeSA(t0Id) || !isTimeSA(t1Id)) return;
 
         let dataStr = linhas[0].data_adicao; 
         let timestamp = parseDateBR(dataStr);
-        let vencedor = parseInt(t0[0].win) === 1 ? timeA : timeB;
+        let vencedor = parseInt(t0[0].win) === 1 ? t0Id : t1Id;
 
         partidasEstruturadas.push({
             id: linhas[0].id_partida,
             modo: linhas[0].modo,
             mapa: linhas[0].mapa,
-            timeA: timeA,
-            timeB: timeB,
+            tAId: t0Id,
+            tBId: t1Id,
+            tANome: t0[0].nome_time,
+            tBNome: t1[0].nome_time,
             picksA: t0.map(p => p.pick.toUpperCase()),
             picksB: t1.map(p => p.pick.toUpperCase()),
             t0Full: t0,
@@ -577,21 +648,23 @@ function processarScrimes() {
     partidasEstruturadas.sort((a,b) => a.timestamp - b.timestamp);
 
     partidasEstruturadas.forEach(partida => {
-        let chaveTimes = [partida.timeA, partida.timeB].sort().join(' VS ');
+        let chaveTimes = [partida.tAId, partida.tBId].sort().join(' VS ');
         let scrimExistente = scrims.find(s => s.chave === chaveTimes && (partida.timestamp - s.ultimoUpdate) <= (2 * 60 * 60 * 1000));
 
         if(scrimExistente) {
             scrimExistente.rounds.push(partida);
             scrimExistente.ultimoUpdate = partida.timestamp;
-            if(partida.vencedor === partida.timeA) scrimExistente.scoreA++;
-            if(partida.vencedor === partida.timeB) scrimExistente.scoreB++;
+            if(partida.vencedor === partida.tAId) scrimExistente.scoreA++;
+            if(partida.vencedor === partida.tBId) scrimExistente.scoreB++;
         } else {
             scrims.push({
                 chave: chaveTimes,
-                timeA: partida.timeA,
-                timeB: partida.timeB,
-                scoreA: partida.vencedor === partida.timeA ? 1 : 0,
-                scoreB: partida.vencedor === partida.timeB ? 1 : 0,
+                tAId: partida.tAId,
+                tBId: partida.tBId,
+                tANome: partida.tANome,
+                tBNome: partida.tBNome,
+                scoreA: partida.vencedor === partida.tAId ? 1 : 0,
+                scoreB: partida.vencedor === partida.tBId ? 1 : 0,
                 inicio: partida.timestamp,
                 ultimoUpdate: partida.timestamp,
                 dataFormatada: partida.dataFormatada.split(' ')[0], 
@@ -619,7 +692,7 @@ function renderizarListaScrims(scrims) {
     lista.innerHTML = '';
 
     if(scrims.length === 0) {
-        lista.innerHTML = '<p style="padding:20px; color:var(--texto-secundario); font-weight:bold; grid-column:1/-1; text-align:center;">Nenhuma scrim inteiramente SA encontrada.</p>';
+        lista.innerHTML = '<p style="padding:20px; color:var(--texto-secundario); font-weight:bold; grid-column:1/-1; text-align:center;">Nenhuma scrim SA encontrada.</p>';
         return;
     }
 
@@ -628,13 +701,13 @@ function renderizarListaScrims(scrims) {
         div.className = 'scrim-card';
         div.innerHTML = `
             <div class="scrim-team-info">
-                <img src="element/teams/${scrim.timeA.replace(/\s/g, '')}.png" class="scrim-team-logo" onerror="this.src='element/teams/default.png'">
-                <span style="font-weight:900; font-size:14px;">${scrim.timeA}</span>
+                <img src="element/teams/${scrim.tAId.toLowerCase()}.png" class="scrim-team-logo" onerror="this.src='element/teams/default.png'">
+                <span style="font-weight:900; font-size:14px;">${scrim.tANome}</span>
             </div>
             <div class="scrim-score">${scrim.scoreA} - ${scrim.scoreB}</div>
             <div class="scrim-team-info" style="flex-direction: row-reverse;">
-                <img src="element/teams/${scrim.timeB.replace(/\s/g, '')}.png" class="scrim-team-logo" onerror="this.src='element/teams/default.png'">
-                <span style="font-weight:900; font-size:14px;">${scrim.timeB}</span>
+                <img src="element/teams/${scrim.tBId.toLowerCase()}.png" class="scrim-team-logo" onerror="this.src='element/teams/default.png'">
+                <span style="font-weight:900; font-size:14px;">${scrim.tBNome}</span>
             </div>
             <div style="position:absolute; bottom:8px; left:15px; font-size:11px; color:var(--texto-secundario); font-weight:bold;">${scrim.dataFormatada}</div>
             <div style="position:absolute; bottom:8px; right:15px; font-size:11px; color:var(--texto-secundario); font-weight:bold;">Rounds: ${scrim.rounds.length}</div>
@@ -650,7 +723,6 @@ function renderizarDetalheScrim(scrim) {
     lista.style.display = 'none';
     detalhe.style.display = 'block';
 
-    // Obtendo nomes unicos de players nos rounds (max 3)
     let playersA = [...new Set(scrim.rounds.flatMap(r => r.t0Full.map(p => p.player_name)))].slice(0,3);
     let playersB = [...new Set(scrim.rounds.flatMap(r => r.t1Full.map(p => p.player_name)))].slice(0,3);
 
@@ -663,7 +735,7 @@ function renderizarDetalheScrim(scrim) {
         <div class="scrim-detail-header">
             <div style="display: flex; justify-content: center; align-items: flex-start; gap: 40px;">
                 <div style="text-align:center;">
-                    <img src="element/teams/${scrim.timeA.replace(/\s/g, '')}.png" style="height:80px; object-fit:contain; background:var(--bg-cards); border-radius:8px; border:2px solid var(--borda-destaque);" onerror="this.src='element/teams/default.png'">
+                    <img src="element/teams/${scrim.tAId.toLowerCase()}.png" style="height:80px; object-fit:contain; background:var(--bg-cards); border-radius:8px; border:2px solid var(--borda-destaque);" onerror="this.src='element/teams/default.png'">
                     <div style="font-size:11px; color:var(--texto-secundario); display:flex; gap:8px; justify-content:center; margin-top:8px; font-weight:bold;">
                         ${playersA.map(p => `<span>${p}</span>`).join('')}
                     </div>
@@ -672,7 +744,7 @@ function renderizarDetalheScrim(scrim) {
                 <div style="font-size: 42px; font-weight: 900; color: #fff; line-height:80px;">${scrim.scoreA} <span style="color:var(--accent-purple)">-</span> ${scrim.scoreB}</div>
                 
                 <div style="text-align:center;">
-                    <img src="element/teams/${scrim.timeB.replace(/\s/g, '')}.png" style="height:80px; object-fit:contain; background:var(--bg-cards); border-radius:8px; border:2px solid var(--borda-destaque);" onerror="this.src='element/teams/default.png'">
+                    <img src="element/teams/${scrim.tBId.toLowerCase()}.png" style="height:80px; object-fit:contain; background:var(--bg-cards); border-radius:8px; border:2px solid var(--borda-destaque);" onerror="this.src='element/teams/default.png'">
                     <div style="font-size:11px; color:var(--texto-secundario); display:flex; gap:8px; justify-content:center; margin-top:8px; font-weight:bold;">
                         ${playersB.map(p => `<span>${p}</span>`).join('')}
                     </div>
