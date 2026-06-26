@@ -4,6 +4,10 @@ let listaBrawlers = [];
 let brawlerSelecionado = null;
 let timeSelecionado = null;
 
+// Captura a região atual do HTML (definida no <script> do HTML). 
+// Se por algum motivo não encontrar, usa "SA" como padrão de segurança.
+const _REGIAO = window.REGIAO_ATUAL ? window.REGIAO_ATUAL.toUpperCase() : "SA";
+
 // ========================================================
 // 1. CONFIGURAÇÃO MANUAL DE TIMES, TIERS E ROSTERS
 // ========================================================
@@ -90,21 +94,25 @@ const CONFIGURACAO_MANUAL_TIMES = {
 };
 
 function carregarTimesSalvosLocal() {
-    let salvos = JSON.parse(localStorage.getItem('customTeams_SA')) || [];
-    if (!CONFIGURACAO_MANUAL_TIMES["SA"]["TIMES REGISTRADOS"]) {
-        CONFIGURACAO_MANUAL_TIMES["SA"]["TIMES REGISTRADOS"] = [];
+    let salvos = JSON.parse(localStorage.getItem('customTeams_' + _REGIAO)) || [];
+    if (!CONFIGURACAO_MANUAL_TIMES[_REGIAO]) {
+        CONFIGURACAO_MANUAL_TIMES[_REGIAO] = {};
     }
-    salvos.forEach(t => CONFIGURACAO_MANUAL_TIMES["SA"]["TIMES REGISTRADOS"].push(t));
+    if (!CONFIGURACAO_MANUAL_TIMES[_REGIAO]["TIMES REGISTRADOS"]) {
+        CONFIGURACAO_MANUAL_TIMES[_REGIAO]["TIMES REGISTRADOS"] = [];
+    }
+    salvos.forEach(t => CONFIGURACAO_MANUAL_TIMES[_REGIAO]["TIMES REGISTRADOS"].push(t));
 }
 carregarTimesSalvosLocal();
 
 const formatImg = n => { if(!n) return 'default'; return n.toLowerCase().replace(/[^a-z0-9]/g, ''); };
 
-const isTimeSA = (id) => {
-    let sa = CONFIGURACAO_MANUAL_TIMES["SA"];
-    if(!sa) return false;
-    for(let tier in sa) {
-        if(sa[tier].find(t => t.id_time === id)) return true;
+// Verifica dinamicamente na região atual
+const isTimeDaRegiaoAtual = (id) => {
+    let reg = CONFIGURACAO_MANUAL_TIMES[_REGIAO];
+    if(!reg) return false;
+    for(let tier in reg) {
+        if(reg[tier].find(t => t.id_time === id)) return true;
     }
     return false;
 };
@@ -170,8 +178,8 @@ function carregarCSV() {
 }
 
 function processarTimesDesconhecidos(dados) {
-    if (!CONFIGURACAO_MANUAL_TIMES["SA"]["TIER ?"]) {
-        CONFIGURACAO_MANUAL_TIMES["SA"]["TIER ?"] = [];
+    if (!CONFIGURACAO_MANUAL_TIMES[_REGIAO]["TIER ?"]) {
+        CONFIGURACAO_MANUAL_TIMES[_REGIAO]["TIER ?"] = [];
     }
 
     const mapaTimesDesconhecidos = new Map();
@@ -213,7 +221,8 @@ function processarTimesDesconhecidos(dados) {
                         let oponentesTags = (startIndex < 3) ? partidaTags.tagsB : partidaTags.tagsA;
                         let oponenteTime = encontrarTimePorRoster(oponentesTags);
                         
-                        if (oponenteTime && oponenteTime.regiao === "SA") {
+                        // Vincula o time desconhecido apenas se o oponente for da região atual
+                        if (oponenteTime && oponenteTime.regiao === _REGIAO) {
                             const assinaturaTime = timeTags.slice().sort().join('_');
                             
                             if (!mapaTimesDesconhecidos.has(assinaturaTime)) {
@@ -221,7 +230,7 @@ function processarTimesDesconhecidos(dados) {
                                 const novoNome = `Unknow ${unkCounter}`;
                                 mapaTimesDesconhecidos.set(assinaturaTime, { id: novoId, nome: novoNome });
                                 
-                                CONFIGURACAO_MANUAL_TIMES["SA"]["TIER ?"].push({
+                                CONFIGURACAO_MANUAL_TIMES[_REGIAO]["TIER ?"].push({
                                     id_time: novoId,
                                     nome_time: novoNome,
                                     jogadores: [
@@ -276,7 +285,6 @@ function processarDadosGlobais() {
     const dia = document.getElementById('select-dia').value;
     const tipo = document.getElementById('select-tipo').value;
 
-    // 1. Criamos uma massa de dados do período para analisar as Scrims com os dois times intactos
     let dadosPeriodo = dadosBrutos.filter(row => {
         let matchAno = true, matchMes = true, matchDia = true, matchTipo = true;
         if(row.data_adicao) {
@@ -290,8 +298,8 @@ function processarDadosGlobais() {
         return matchAno && matchMes && matchDia && matchTipo;
     });
 
-    // 2. Filtramos estritamente linhas de times da SA para alimentar o Meta, Brawlers e Times
-    dadosFiltrados = dadosPeriodo.filter(row => isTimeSA(row.id_time));
+    // Agora filtra pela Região Dinâmica 
+    dadosFiltrados = dadosPeriodo.filter(row => isTimeDaRegiaoAtual(row.id_time));
 
     renderizarMeta();
     renderizarSidebarBrawlers();
@@ -299,12 +307,11 @@ function processarDadosGlobais() {
     renderizarSidebarTimes();
     if(timeSelecionado) renderizarDetalhesTime(timeSelecionado);
     
-    // 3. Processamos as scrims usando a base completa do período (evita sumiço dos oponentes)
     processarScrimes(dadosPeriodo);
 }
 
 // ==========================================
-// 3. TELA META (CORRIGIDO PARA TORNEIOS COM PICKS >= 1)
+// 3. TELA META 
 // ==========================================
 window.toggleModoMeta = function(idModo) {
     const content = document.getElementById(`modo-content-${idModo}`);
@@ -351,7 +358,6 @@ function renderizarMeta() {
         `;
         
         Object.entries(mapasDict).forEach(([mapa, brawlers]) => {
-            // CORREÇÃO: Reduzido de >= 5 para >= 1 para não sumir com mapas de campeonatos de tiro curto
             let valid = Object.entries(brawlers).filter(x => x[1].picks >= 1).sort((a,b) => b[1].picks - a[1].picks);
             if(valid.length === 0) return;
 
@@ -411,11 +417,11 @@ function renderizarMeta() {
         `;
     }
 
-    container.innerHTML = html || '<p style="padding:20px; text-align:center;">Nenhum dado encontrado para os filtros atuais na SA.</p>';
+    container.innerHTML = html || `<p style="padding:20px; text-align:center;">Nenhum dado encontrado para os filtros atuais na ${_REGIAO}.</p>`;
 }
 
 // ==========================================
-// 4. TELA BRAWLERS
+// 4. TELA BRAWLERS 
 // ==========================================
 function renderizarSidebarBrawlers() {
     let pickCounts = {};
@@ -516,7 +522,7 @@ function renderizarDetalhesBrawler(brawler) {
             </div>
         </div>
         
-        <h3 style="color:var(--accent-purple); font-size:16px; margin-bottom:15px;">TOP 3 MAPAS</h3>
+        <h3 style="color:var(--accent-purple); font-size:16px; margin-bottom:15px;">TOP 3 MAPAS (DO BRAWLER)</h3>
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:15px; margin-bottom: 30px;">
             ${topMapas.map(([m, s]) => `
                 <div style="background:var(--bg-cards); padding:15px; border-radius:8px; border:1px solid var(--borda-destaque); text-align:center;">
@@ -535,7 +541,7 @@ function renderizarDetalhesBrawler(brawler) {
 
         <div class="synergy-grid">
             <div class="synergy-box">
-                <h3 style="color:var(--winrate-color); margin-bottom:15px; font-size:14px;">BOM CONTRA</h3>
+                <h3 style="color:var(--winrate-color); margin-bottom:15px; font-size:14px;">BOM CONTRA (Adversários)</h3>
                 ${countersTop.map(c => `
                     <div class="synergy-item">
                         <div style="display:flex; align-items:center;">
@@ -551,7 +557,7 @@ function renderizarDetalhesBrawler(brawler) {
             </div>
 
             <div class="synergy-box">
-                <h3 style="color:var(--loss-color); margin-bottom:15px; font-size:14px;">RUIM CONTRA</h3>
+                <h3 style="color:var(--loss-color); margin-bottom:15px; font-size:14px;">RUIM CONTRA (Adversários)</h3>
                 ${counteradosTop.map(c => `
                     <div class="synergy-item">
                         <div style="display:flex; align-items:center;">
@@ -567,7 +573,7 @@ function renderizarDetalhesBrawler(brawler) {
             </div>
 
             <div class="synergy-box" style="grid-column: 1 / -1;">
-                <h3 style="color:var(--synergy-color); margin-bottom:15px; font-size:14px;">TOP 5 SINERGIAS</h3>
+                <h3 style="color:var(--synergy-color); margin-bottom:15px; font-size:14px;">TOP 5 SINERGIAS (Brawlers Juntos)</h3>
                 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:15px;">
                 ${sinergiasTop.map(c => `
                     <div style="background:var(--bg-paineis); padding:15px; border-radius:8px; text-align:center; border:1px solid var(--borda-suave);">
@@ -591,18 +597,18 @@ function renderizarSidebarTimes() {
     const sidebar = document.getElementById('lista-times-sidebar');
     sidebar.innerHTML = '';
     
-    const timesSA = CONFIGURACAO_MANUAL_TIMES["SA"];
-    if(!timesSA) return;
+    const timesRegiao = CONFIGURACAO_MANUAL_TIMES[_REGIAO];
+    if(!timesRegiao) return;
 
-    for(let tier in timesSA) {
-        if(timesSA[tier].length === 0) continue;
+    for(let tier in timesRegiao) {
+        if(timesRegiao[tier].length === 0) continue;
         
         let tierHeader = document.createElement('div');
         tierHeader.className = 'sidebar-header';
         tierHeader.innerText = tier;
         sidebar.appendChild(tierHeader);
 
-        timesSA[tier].forEach(t => {
+        timesRegiao[tier].forEach(t => {
             let div = document.createElement('div');
             div.className = 'sidebar-item';
             div.innerHTML = `<img src="element/teams/${t.id_time.toLowerCase()}.png" style="width:24px; height:24px; object-fit:contain; border-radius:4px;" onerror="this.src='element/teams/default.png'"> <span style="font-weight:bold;">${t.nome_time}</span>`;
@@ -622,7 +628,7 @@ window.registrarTimeCustom = function(oldId) {
     const newName = document.getElementById('custom-name').value;
     
     let timeObj = null;
-    CONFIGURACAO_MANUAL_TIMES["SA"]["TIER ?"] = CONFIGURACAO_MANUAL_TIMES["SA"]["TIER ?"].filter(t => {
+    CONFIGURACAO_MANUAL_TIMES[_REGIAO]["TIER ?"] = CONFIGURACAO_MANUAL_TIMES[_REGIAO]["TIER ?"].filter(t => {
         if(t.id_time === oldId) {
             timeObj = t;
             return false;
@@ -638,12 +644,12 @@ window.registrarTimeCustom = function(oldId) {
         timeObj.jogadores[1].nick = document.getElementById('nick-1').value;
         timeObj.jogadores[2].nick = document.getElementById('nick-2').value;
 
-        if(!CONFIGURACAO_MANUAL_TIMES["SA"]["TIMES REGISTRADOS"]) CONFIGURACAO_MANUAL_TIMES["SA"]["TIMES REGISTRADOS"] = [];
-        CONFIGURACAO_MANUAL_TIMES["SA"]["TIMES REGISTRADOS"].push(timeObj);
+        if(!CONFIGURACAO_MANUAL_TIMES[_REGIAO]["TIMES REGISTRADOS"]) CONFIGURACAO_MANUAL_TIMES[_REGIAO]["TIMES REGISTRADOS"] = [];
+        CONFIGURACAO_MANUAL_TIMES[_REGIAO]["TIMES REGISTRADOS"].push(timeObj);
         
-        let salvos = JSON.parse(localStorage.getItem('customTeams_SA')) || [];
+        let salvos = JSON.parse(localStorage.getItem('customTeams_' + _REGIAO)) || [];
         salvos.push(timeObj);
-        localStorage.setItem('customTeams_SA', JSON.stringify(salvos));
+        localStorage.setItem('customTeams_' + _REGIAO, JSON.stringify(salvos));
         
         dadosBrutos.forEach(r => {
             if(r.id_time === oldId) {
@@ -758,12 +764,10 @@ function renderizarDetalhesTime(time) {
 }
 
 // ==========================================
-// 6. TELA SCRIMS (CORRIGIDA)
+// 6. TELA SCRIMS
 // ==========================================
 function processarScrimes(dadosPeriodo) {
     let rawMatches = {};
-    
-    // Agrupa usando a base do período sem fracionar linhas dos oponentes de fora da SA
     dadosPeriodo.forEach(r => {
         if(!rawMatches[r.id_partida]) rawMatches[r.id_partida] = [];
         rawMatches[r.id_partida].push(r);
@@ -778,16 +782,13 @@ function processarScrimes(dadosPeriodo) {
         let t0Id = t0[0].id_time;
         let t1Id = t1[0].id_time;
 
-        let t0EhSA = isTimeSA(t0Id);
-        let t1EhSA = isTimeSA(t1Id);
+        let t0EhRegiao = isTimeDaRegiaoAtual(t0Id);
+        let t1EhRegiao = isTimeDaRegiaoAtual(t1Id);
 
-        // REGRA DE REGIÃO EXIGIDA:
-        // Só exibe se pelo menos um for da SA
-        if (!t0EhSA && !t1EhSA) return;
+        if (!t0EhRegiao && !t1EhRegiao) return;
 
-        // Se houver confronto internacional (ex: SA contra NA), só exibe se o adversário for um time registrado conhecido
-        if ((t0EhSA && !t1EhSA) || (!t0EhSA && t1EhSA)) {
-            let oponenteId = t0EhSA ? t1Id : t0Id;
+        if ((t0EhRegiao && !t1EhRegiao) || (!t0EhRegiao && t1EhRegiao)) {
+            let oponenteId = t0EhRegiao ? t1Id : t0Id;
             let oponenteExiste = false;
             for (let reg in CONFIGURACAO_MANUAL_TIMES) {
                 for (let tier in CONFIGURACAO_MANUAL_TIMES[reg]) {
@@ -863,7 +864,7 @@ function renderizarListaScrims(scrims) {
     lista.innerHTML = '';
 
     if(scrims.length === 0) {
-        lista.innerHTML = '<p style="padding:20px; color:var(--texto-secundario); font-weight:bold; grid-column:1/-1; text-align:center;">Nenhuma scrim SA encontrada no filtro atual.</p>';
+        lista.innerHTML = `<p style="padding:20px; color:var(--texto-secundario); font-weight:bold; grid-column:1/-1; text-align:center;">Nenhuma scrim da ${_REGIAO} encontrada no filtro atual.</p>`;
         return;
     }
 
