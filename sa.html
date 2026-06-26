@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SOUTH AMERICA Infos</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Adicionando PapaParse para ler o CSV bruto localmente -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="app.js" defer></script>
 </head>
@@ -32,7 +31,6 @@
             <h1>SOUTH AMERICA INFOS <span class="accent">ANALYSIS</span></h1>
         </header>
 
-        <!-- Filtros Globais -->
         <div class="filter-container">
             <select id="select-ano" class="filter-select" onchange="processarDadosGlobais()"></select>
             <select id="select-mes" class="filter-select" onchange="processarDadosGlobais()"></select>
@@ -43,12 +41,10 @@
             </select>
         </div>
 
-        <!-- Tela META -->
         <div id="tela-meta" class="tela-secao tela-ativa">
             <div id="conteudo-meta"></div> 
         </div>
 
-        <!-- Tela BRAWLERS -->
         <div id="tela-brawlers" class="tela-secao tela-oculta">
             <div class="brawlers-container">
                 <div class="sidebar">
@@ -61,7 +57,6 @@
             </div>
         </div>
 
-        <!-- Tela TIMES -->
         <div id="tela-times" class="tela-secao tela-oculta">
             <div class="times-container">
                 <div class="sidebar">
@@ -74,7 +69,6 @@
             </div>
         </div>
 
-        <!-- Tela SCRIMS -->
         <div id="tela-scrims" class="tela-secao tela-oculta">
             <div id="scrims-lista" class="scrins-grid"></div>
             <div id="scrims-detalhe" style="display:none;"></div>
