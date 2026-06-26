@@ -89,6 +89,17 @@ const CONFIGURACAO_MANUAL_TIMES = {
     }
 };
 
+// Utilitários de formatação e verificação
+const formatImg = n => n.toLowerCase().replace(/[^a-z0-9]/g, '');
+const isTimeSA = (nome) => {
+    let sa = CONFIGURACAO_MANUAL_TIMES["SA"];
+    if(!sa) return false;
+    for(let tier in sa) {
+        if(sa[tier].find(t => t.nome_time === nome || t.id_time === nome)) return true;
+    }
+    return false;
+};
+
 document.addEventListener("DOMContentLoaded", () => {
     carregarCSV();
 });
@@ -110,9 +121,7 @@ function carregarCSV() {
 }
 
 function popularFiltrosGlobais() {
-    let anos = new Set();
-    let meses = new Set();
-    
+    let anos = new Set(), meses = new Set();
     dadosBrutos.forEach(row => {
         if(row.data_adicao) {
             let partes = row.data_adicao.split(' ')[0].split('/');
@@ -146,7 +155,11 @@ function processarDadosGlobais() {
             if(mes !== 'todos') matchMes = partes[1] === mes;
         }
         if(tipo !== 'todos') matchTipo = (row.tipo === tipo);
-        return matchAno && matchMes && matchTipo;
+        
+        // FILTRAGEM: Somente times da região SA
+        let ehSA = isTimeSA(row.nome_time);
+        
+        return matchAno && matchMes && matchTipo && ehSA;
     });
 
     renderizarMeta();
@@ -158,72 +171,109 @@ function processarDadosGlobais() {
 }
 
 // ==========================================
-// 2. TELA META (REGRA: 5 PICKS OU MAIS)
+// 2. TELA META (REGRA: SA APENAS, 5 PICKS OU MAIS, SEPARADO POR MAPA)
 // ==========================================
 function renderizarMeta() {
     const container = document.getElementById('conteudo-meta');
-    let stats = {};
+    let statsAll = {};
+    let statsMap = {};
 
     dadosFiltrados.forEach(row => {
         let b = row.pick.toUpperCase();
-        if(!stats[b]) stats[b] = { picks: 0, wins: 0 };
-        stats[b].picks++;
-        if(parseInt(row.win) === 1) stats[b].wins++;
+        let map = row.mapa || "Desconhecido";
+        let mode = row.modo || "Desconhecido";
+        
+        if(!statsAll[b]) statsAll[b] = { picks: 0, wins: 0 };
+        statsAll[b].picks++;
+        if(parseInt(row.win) === 1) statsAll[b].wins++;
+        
+        let modeMapKey = `${mode} - ${map}`;
+        if(!statsMap[modeMapKey]) statsMap[modeMapKey] = {};
+        if(!statsMap[modeMapKey][b]) statsMap[modeMapKey][b] = { picks: 0, wins: 0 };
+        statsMap[modeMapKey][b].picks++;
+        if(parseInt(row.win) === 1) statsMap[modeMapKey][b].wins++;
     });
 
-    let brawlersValidos = Object.entries(stats)
-        .filter(([nome, s]) => s.picks >= 5)
-        .sort((a, b) => b[1].picks - a[1].picks);
+    // ALL MAPS - Brawlers >= 5 picks
+    let brawlersAllValidos = Object.entries(statsAll).filter(x => x[1].picks >= 5).sort((a,b) => b[1].picks - a[1].picks);
 
     let html = `
-        <table class="excel-table">
-            <thead>
-                <tr>
-                    <th style="text-align: left;">BRAWLER</th>
-                    <th>PICKS</th>
-                    <th>VITÓRIAS</th>
-                    <th>WIN RATE</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
+    <div class="modo-section">
+        <div class="modo-header">ALL MAPS DA REGIÃO SA</div>
+        <div class="mapa-content" style="display:block;">
+            <table class="excel-table">
+                <thead><tr><th style="text-align:left;">BRAWLER</th><th>PICKS</th><th>VITÓRIAS</th><th>WIN RATE</th></tr></thead>
+                <tbody>
+                    ${brawlersAllValidos.map(([b, s]) => `
+                        <tr>
+                            <td style="text-align:left; font-weight:bold; color:var(--accent-hover)">
+                                <img src="brawlers/${formatImg(b)}.png" style="width:28px; vertical-align:middle; margin-right:10px; border-radius:4px;" onerror="this.src='brawlers/default.png'">
+                                ${b}
+                            </td>
+                            <td>${s.picks}</td>
+                            <td>${s.wins}</td>
+                            <td class="winrate-cell">${((s.wins/s.picks)*100).toFixed(1)}%</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+    </div>`;
 
-    brawlersValidos.forEach(([nome, s]) => {
-        let wr = ((s.wins / s.picks) * 100).toFixed(1) + '%';
+    // Por Modo/Mapa - Brawlers >= 5 picks
+    Object.entries(statsMap).forEach(([modeMapKey, brawlers]) => {
+        let valid = Object.entries(brawlers).filter(x => x[1].picks >= 5).sort((a,b) => b[1].picks - a[1].picks);
+        if(valid.length === 0) return;
+
         html += `
-            <tr>
-                <td style="text-align: left; font-weight:bold; color:var(--accent-hover)">
-                    <img src="brawlers/${nome.toLowerCase()}.png" style="width:24px; vertical-align:middle; margin-right:8px;" onerror="this.src=brawlers/default.png'">
-                    ${nome}
-                </td>
-                <td>${s.picks}</td>
-                <td>${s.wins}</td>
-                <td class="winrate-cell">${wr}</td>
-            </tr>
-        `;
+        <div class="modo-section">
+            <div class="modo-header">${modeMapKey.toUpperCase()}</div>
+            <div class="mapa-content" style="display:block;">
+                <table class="excel-table">
+                    <thead><tr><th style="text-align:left;">BRAWLER</th><th>PICKS</th><th>VITÓRIAS</th><th>WIN RATE</th></tr></thead>
+                    <tbody>
+                        ${valid.map(([b, s]) => `
+                            <tr>
+                                <td style="text-align:left; font-weight:bold; color:var(--accent-hover)">
+                                    <img src="brawlers/${formatImg(b)}.png" style="width:28px; vertical-align:middle; margin-right:10px; border-radius:4px;" onerror="this.src='brawlers/default.png'">
+                                    ${b}
+                                </td>
+                                <td>${s.picks}</td>
+                                <td>${s.wins}</td>
+                                <td class="winrate-cell">${((s.wins/s.picks)*100).toFixed(1)}%</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>`;
     });
 
-    html += `</tbody></table>`;
-    container.innerHTML = brawlersValidos.length ? html : '<p style="padding:20px;">Nenhum dado encontrado para os filtros atuais.</p>';
+    container.innerHTML = brawlersAllValidos.length ? html : '<p style="padding:20px; text-align:center;">Nenhum dado encontrado para os filtros atuais na SA.</p>';
 }
 
 // ==========================================
-// 3. TELA BRAWLERS (COUNTERS E COUNTERADOS)
+// 3. TELA BRAWLERS (COM WR%, PR% E TOP MAPAS/SINERGIAS)
 // ==========================================
 function renderizarSidebarBrawlers() {
-    let brawlersUnicos = [...new Set(dadosFiltrados.map(r => r.pick.toUpperCase()))].sort();
-    listaBrawlers = brawlersUnicos;
+    let pickCounts = {};
+    dadosFiltrados.forEach(r => {
+        let b = r.pick.toUpperCase();
+        pickCounts[b] = (pickCounts[b] || 0) + 1;
+    });
+
+    // Somente brawlers com mais de 5 picks na SA
+    listaBrawlers = Object.keys(pickCounts).filter(b => pickCounts[b] >= 5).sort();
     
     const sidebar = document.getElementById('lista-brawlers-sidebar');
     sidebar.innerHTML = '';
-    brawlersUnicos.forEach(b => {
+    
+    listaBrawlers.forEach(b => {
         let div = document.createElement('div');
         div.className = 'sidebar-item';
-        div.style.padding = '10px';
-        div.style.cursor = 'pointer';
-        div.innerText = b;
+        div.innerHTML = `<img src="brawlers/${formatImg(b)}.png" style="width:24px; border-radius:4px;" onerror="this.src='brawlers/default.png'"> <span>${b}</span>`;
         div.onclick = () => {
-            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+            document.querySelectorAll('#lista-brawlers-sidebar .sidebar-item').forEach(i => i.classList.remove('active'));
             div.classList.add('active');
             brawlerSelecionado = b;
             renderizarDetalhesBrawler(b);
@@ -236,7 +286,8 @@ function filtrarBrawlersSidebar() {
     const termo = document.getElementById('search-brawler-sidebar').value.toLowerCase();
     const items = document.getElementById('lista-brawlers-sidebar').children;
     Array.from(items).forEach(item => {
-        item.style.display = item.innerText.toLowerCase().includes(termo) ? 'block' : 'none';
+        let nome = item.querySelector('span').innerText.toLowerCase();
+        item.style.display = nome.includes(termo) ? 'flex' : 'none';
     });
 }
 
@@ -244,63 +295,143 @@ function renderizarDetalhesBrawler(brawler) {
     const painel = document.getElementById('painel-info-brawler');
     
     let partidasDeste = dadosFiltrados.filter(r => r.pick.toUpperCase() === brawler);
+    let totalPicks = partidasDeste.length;
+    if(totalPicks === 0) return;
+    
+    let wins = partidasDeste.filter(r => parseInt(r.win) === 1).length;
+    let wrGeral = ((wins/totalPicks)*100).toFixed(1) + '%';
+    
+    // Top 3 Mapas
+    let mapasStats = {};
+    partidasDeste.forEach(r => {
+        let m = r.mapa;
+        if(!mapasStats[m]) mapasStats[m] = { picks: 0, wins: 0 };
+        mapasStats[m].picks++;
+        if(parseInt(r.win) === 1) mapasStats[m].wins++;
+    });
+    let topMapas = Object.entries(mapasStats).sort((a,b) => b[1].picks - a[1].picks).slice(0,3);
+
+    // Adversários e Sinergias
+    let statsContra = {};
+    let statsSinergia = {};
     let idsPartidas = [...new Set(partidasDeste.map(r => r.id_partida))];
     
-    let statsContra = {};
+    // Pega o número total de partidas avaliadas na SA para o PR% global (opcional)
+    // Mas o PR contra um brawler geralmente é (Vezes Pego / Total Matches Brawler)
     
     idsPartidas.forEach(id => {
         let todosNaPartida = dadosFiltrados.filter(r => r.id_partida === id);
-        let timeDoBrawler = todosNaPartida.find(r => r.pick.toUpperCase() === brawler).id_time;
-        let oponentes = todosNaPartida.filter(r => r.id_time !== timeDoBrawler);
-        let brawlerGanhou = parseInt(todosNaPartida.find(r => r.pick.toUpperCase() === brawler).win) === 1;
-
-        oponentes.forEach(op => {
-            let opNome = op.pick.toUpperCase();
-            if(!statsContra[opNome]) statsContra[opNome] = { matches: 0, brawlerWins: 0 };
-            statsContra[opNome].matches++;
-            if(brawlerGanhou) statsContra[opNome].brawlerWins++;
+        let brawlerRows = todosNaPartida.filter(r => r.pick.toUpperCase() === brawler);
+        
+        brawlerRows.forEach(meRow => {
+            let timeDoBrawler = meRow.id_time;
+            let ganhou = parseInt(meRow.win) === 1;
+            
+            todosNaPartida.forEach(p => {
+                let pName = p.pick.toUpperCase();
+                if(p.id_time !== timeDoBrawler) { // Contra
+                    if(!statsContra[pName]) statsContra[pName] = { matches: 0, bwWins: 0, bwLosses: 0 };
+                    statsContra[pName].matches++;
+                    if(ganhou) statsContra[pName].bwWins++; else statsContra[pName].bwLosses++;
+                } else if(p.id_time === timeDoBrawler && pName !== brawler) { // Sinergia (mesmo time, outro champ)
+                    if(!statsSinergia[pName]) statsSinergia[pName] = { matches: 0, bwWins: 0 };
+                    statsSinergia[pName].matches++;
+                    if(ganhou) statsSinergia[pName].bwWins++;
+                }
+            });
         });
     });
 
-    let matchups = Object.entries(statsContra).map(([opNome, s]) => {
-        return { nome: opNome, matches: s.matches, wr: (s.brawlerWins / s.matches) * 100 };
-    }).filter(m => m.matches >= 3);
+    let matchups = Object.entries(statsContra).map(([nome, s]) => {
+        return { nome, matches: s.matches, wins: s.bwWins, losses: s.bwLosses, wr: (s.bwWins / s.matches) * 100, pr: (s.matches / totalPicks) * 100 };
+    }).filter(m => m.matches >= 3); 
 
-    let countersTop = [...matchups].sort((a, b) => b.wr - a.wr).slice(0, 5);
-    let counteradosTop = [...matchups].sort((a, b) => a.wr - b.wr).slice(0, 5);
+    let countersTop = [...matchups].sort((a, b) => b.wr - a.wr).slice(0, 5); // O brawler ganha muito
+    let counteradosTop = [...matchups].sort((a, b) => a.wr - b.wr).slice(0, 5); // O brawler perde muito
+    
+    let sinergiasTop = Object.entries(statsSinergia).map(([nome, s]) => {
+        return { nome, matches: s.matches, wins: s.bwWins, wr: (s.bwWins / s.matches) * 100, pr: (s.matches / totalPicks) * 100 };
+    }).filter(m => m.matches >= 3).sort((a,b) => b.wr - a.wr).slice(0,5);
 
-    let htmlSinergia = `
+    let html = `
         <div class="brawler-profile-header">
-            <img src="brawlers/${brawler.toLowerCase()}.png" class="brawler-large-avatar" onerror="this.src='brawlers/default.png'">
-            <h2>${brawler}</h2>
+            <img src="brawlers/${formatImg(brawler)}.png" class="brawler-large-avatar" onerror="this.src='brawlers/default.png'">
+            <div>
+                <h2 style="font-size:28px;">${brawler}</h2>
+                <p style="color:var(--texto-secundario); font-size:14px; font-weight:bold; margin-top:5px;">PICKS: <span style="color:#fff">${totalPicks}</span> | W: <span style="color:#fff">${wins}</span> | WR%: <span class="winrate-cell">${wrGeral}</span></p>
+            </div>
         </div>
+        
+        <h3 style="color:var(--accent-purple); font-size:16px; margin-bottom:15px;">TOP 3 MAPAS (DO BRAWLER)</h3>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:15px; margin-bottom: 30px;">
+            ${topMapas.map(([m, s]) => `
+                <div style="background:var(--bg-cards); padding:15px; border-radius:8px; border:1px solid var(--borda-destaque); text-align:center;">
+                    <div style="font-weight:900; font-size:14px; margin-bottom:8px;">${m}</div>
+                    <div style="font-size:13px; color:var(--texto-secundario); display:flex; justify-content:center; gap:10px;">
+                        <span>P: <strong style="color:#fff">${s.picks}</strong></span> 
+                        <span>PR: <strong style="color:#fff">${((s.picks/totalPicks)*100).toFixed(1)}%</strong></span>
+                    </div>
+                    <div style="font-size:13px; color:var(--texto-secundario); display:flex; justify-content:center; gap:10px; margin-top:5px;">
+                        <span>W: <strong style="color:#fff">${s.wins}</strong></span> 
+                        <span>WR: <strong class="winrate-cell">${((s.wins/s.picks)*100).toFixed(1)}%</strong></span>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+
         <div class="synergy-grid">
             <div class="synergy-box">
-                <h3 style="color:#00ff66; margin-bottom:15px;">É BOM CONTRA (COUNTERA)</h3>
+                <h3 style="color:var(--winrate-color); margin-bottom:15px; font-size:14px;">BOM CONTRA (Adversários)</h3>
                 ${countersTop.map(c => `
                     <div class="synergy-item">
-                        <span><img src="brawlers/${c.nome.toLowerCase()}.png" onerror="this.src='brawlers/default.png'"> ${c.nome}</span>
-                        <span style="color:var(--texto-secundario)">WR: ${c.wr.toFixed(1)}%</span>
+                        <div style="display:flex; align-items:center;">
+                            <img src="brawlers/${formatImg(c.nome)}.png" onerror="this.src='brawlers/default.png'">
+                            <span style="font-weight:bold; font-size:13px;">${c.nome}</span>
+                        </div>
+                        <div style="text-align:right; font-size:12px; display:flex; gap:10px; font-weight:bold;">
+                            <div style="display:flex; flex-direction:column; color:var(--texto-secundario);"><span>P: ${c.matches}</span><span>PR%: ${c.pr.toFixed(1)}%</span></div>
+                            <div style="display:flex; flex-direction:column;"><span>W: <span style="color:#fff">${c.wins}</span></span><span style="color:var(--winrate-color);">WR%: ${c.wr.toFixed(1)}%</span></div>
+                        </div>
                     </div>
-                `).join('') || '<p>Dados insuficientes</p>'}
+                `).join('') || '<p style="font-size:12px; color:var(--texto-secundario);">Dados insuficientes</p>'}
             </div>
+
             <div class="synergy-box">
-                <h3 style="color:#ff3333; margin-bottom:15px;">RUIM CONTRA (COUNTERS)</h3>
+                <h3 style="color:var(--loss-color); margin-bottom:15px; font-size:14px;">RUIM CONTRA (Adversários)</h3>
                 ${counteradosTop.map(c => `
                     <div class="synergy-item">
-                        <span><img src="brawlers/${c.nome.toLowerCase()}.png" onerror="this.src='brawlers/default.png'"> ${c.nome}</span>
-                        <span style="color:var(--texto-secundario)">WR: ${(100 - c.wr).toFixed(1)}%</span>
+                        <div style="display:flex; align-items:center;">
+                            <img src="brawlers/${formatImg(c.nome)}.png" onerror="this.src='brawlers/default.png'">
+                            <span style="font-weight:bold; font-size:13px;">${c.nome}</span>
+                        </div>
+                        <div style="text-align:right; font-size:12px; display:flex; gap:10px; font-weight:bold;">
+                            <div style="display:flex; flex-direction:column; color:var(--texto-secundario);"><span>P: ${c.matches}</span><span>PR%: ${c.pr.toFixed(1)}%</span></div>
+                            <div style="display:flex; flex-direction:column;"><span>L: <span style="color:#fff">${c.losses}</span></span><span style="color:var(--loss-color);">WR%: ${c.wr.toFixed(1)}%</span></div>
+                        </div>
                     </div>
-                `).join('') || '<p>Dados insuficientes</p>'}
+                `).join('') || '<p style="font-size:12px; color:var(--texto-secundario);">Dados insuficientes</p>'}
+            </div>
+
+            <div class="synergy-box" style="grid-column: 1 / -1;">
+                <h3 style="color:var(--synergy-color); margin-bottom:15px; font-size:14px;">TOP 5 SINERGIAS (Brawlers Juntos)</h3>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:15px;">
+                ${sinergiasTop.map(c => `
+                    <div style="background:var(--bg-paineis); padding:15px; border-radius:8px; text-align:center; border:1px solid var(--borda-suave);">
+                        <img src="brawlers/${formatImg(c.nome)}.png" style="width:40px; height:40px; border-radius:6px; margin-bottom:8px; object-fit:cover;" onerror="this.src='brawlers/default.png'">
+                        <div style="font-weight:900; font-size:14px; margin-bottom:5px;">${c.nome}</div>
+                        <div style="font-size:12px; color:var(--texto-secundario); font-weight:bold;">P: ${c.matches} | PR%: ${c.pr.toFixed(1)}%</div>
+                        <div style="font-size:12px; color:var(--texto-secundario); font-weight:bold; margin-top:2px;">W: <span style="color:#fff">${c.wins}</span> | <span style="color:var(--winrate-color)">WR%: ${c.wr.toFixed(1)}%</span></div>
+                    </div>
+                `).join('') || '<p style="font-size:12px; color:var(--texto-secundario);">Dados insuficientes</p>'}
+                </div>
             </div>
         </div>
     `;
-
-    painel.innerHTML = htmlSinergia;
+    painel.innerHTML = html;
 }
 
 // ==========================================
-// 4. TELA TIMES
+// 4. TELA TIMES (LOGO E JOGADORES)
 // ==========================================
 function renderizarSidebarTimes() {
     const sidebar = document.getElementById('lista-times-sidebar');
@@ -309,12 +440,10 @@ function renderizarSidebarTimes() {
     let timesJogaram = [...new Set(dadosFiltrados.map(r => r.nome_time))].sort();
 
     timesJogaram.forEach(t => {
-        if(t === "DESCONHECIDO T0" || t === "DESCONHECIDO T1") return;
+        if(t.includes("DESCONHECIDO")) return;
         let div = document.createElement('div');
         div.className = 'sidebar-item';
-        div.style.padding = '10px';
-        div.style.cursor = 'pointer';
-        div.innerText = t;
+        div.innerHTML = `<img src="element/teams/${t.replace(/\s/g, '')}.png" style="width:24px; height:24px; object-fit:contain; border-radius:4px;" onerror="this.src='element/teams/default.png'"> <span style="font-weight:bold;">${t}</span>`;
         div.onclick = () => {
             document.querySelectorAll('#lista-times-sidebar .sidebar-item').forEach(i => i.classList.remove('active'));
             div.classList.add('active');
@@ -328,23 +457,72 @@ function renderizarSidebarTimes() {
 function renderizarDetalhesTime(time) {
     const painel = document.getElementById('painel-info-time');
     let partidasDoTime = dadosFiltrados.filter(r => r.nome_time === time);
-    
-    let jogadores = {};
+    let logoUrl = `element/teams/${time.replace(/\s/g, '')}.png`;
+
+    // Top 10 Brawlers do TIME
+    let timeBrawlers = {};
     partidasDoTime.forEach(r => {
-        if(!jogadores[r.player_name]) jogadores[r.player_name] = { picks: 0 };
-        jogadores[r.player_name].picks++;
+        let b = r.pick.toUpperCase();
+        if(!timeBrawlers[b]) timeBrawlers[b] = 0;
+        timeBrawlers[b]++;
     });
+    let top10Time = Object.entries(timeBrawlers).sort((a,b) => b[1] - a[1]).slice(0, 10);
+
+    // Agrupa e conta matches reais para achar os 3 que mais jogaram
+    let jogadoresInfo = {};
+    partidasDoTime.forEach(r => {
+        let nick = r.player_name;
+        if(!jogadoresInfo[nick]) jogadoresInfo[nick] = { picks: 0, brawlers: {} };
+        jogadoresInfo[nick].picks++;
+        let b = r.pick.toUpperCase();
+        if(!jogadoresInfo[nick].brawlers[b]) jogadoresInfo[nick].brawlers[b] = 0;
+        jogadoresInfo[nick].brawlers[b]++;
+    });
+    
+    // Top 3 Players
+    let top3Players = Object.entries(jogadoresInfo).sort((a,b) => b[1].picks - a[1].picks).slice(0, 3);
 
     let html = `
-        <h2 style="color: var(--accent-purple); margin-bottom: 20px;">${time}</h2>
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+        <div style="display:flex; align-items:center; gap:20px; margin-bottom:30px; border-bottom:1px solid var(--borda-destaque); padding-bottom:20px;">
+            <img src="${logoUrl}" style="width:80px; height:80px; object-fit:contain; background:var(--bg-cards); border-radius:12px; border:2px solid var(--borda-destaque);" onerror="this.src='element/teams/default.png'">
+            <h2 style="color: var(--accent-purple); font-size: 32px; font-weight:900;">${time}</h2>
+        </div>
+
+        <div style="background:var(--bg-cards); padding:20px; border-radius:12px; border:1px solid var(--borda-destaque); margin-bottom:30px;">
+            <h3 style="color:var(--texto); margin-bottom:15px; font-size:16px;">TOP 10 BRAWLERS DA EQUIPE</h3>
+            <div style="display:flex; flex-wrap:wrap; gap:10px;">
+                ${top10Time.map(([b, qtd]) => `
+                    <div style="background:var(--bg-paineis); padding:8px 12px; border-radius:6px; border:1px solid var(--borda-suave); display:flex; align-items:center; gap:10px;">
+                        <img src="brawlers/${formatImg(b)}.png" style="width:24px; border-radius:4px;" onerror="this.src='brawlers/default.png'">
+                        <span style="font-weight:bold; font-size:13px;">${b}</span>
+                        <span style="color:var(--texto-secundario); font-size:12px; font-weight:bold;">(${qtd})</span>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+
+        <h3 style="color:var(--texto); margin-bottom:15px; font-size:16px;">JOGADORES (MAIS ATUANTES)</h3>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
     `;
 
-    Object.entries(jogadores).sort((a,b) => b[1].picks - a[1].picks).forEach(([nick, dados]) => {
+    top3Players.forEach(([nick, dados]) => {
+        let top5Brawlers = Object.entries(dados.brawlers).sort((a,b) => b[1] - a[1]).slice(0, 5);
         html += `
-            <div style="background: var(--bg-cards); padding: 15px; border-radius: 8px; border: 1px solid var(--borda-destaque);">
-                <h3>${nick}</h3>
-                <p style="color: var(--texto-secundario); font-size: 13px; margin-top: 5px;">Picks Totais (Neste Filtro): ${dados.picks}</p>
+            <div style="background: var(--bg-cards); padding: 20px; border-radius: 12px; border: 1px solid var(--borda-destaque);">
+                <h4 style="color:var(--accent-purple); margin-bottom:5px; font-size:18px;">${nick}</h4>
+                <p style="color: var(--texto-secundario); font-size: 12px; margin-bottom: 20px; font-weight:bold;">Total de Picks: ${dados.picks}</p>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    ${top5Brawlers.map(([b, qtd], idx) => `
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-paineis); padding:8px 12px; border-radius:6px; border:1px solid var(--borda-suave);">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <span style="font-weight:900; color:var(--texto-secundario); font-size:11px;">#${idx+1}</span>
+                                <img src="brawlers/${formatImg(b)}.png" style="width:24px; border-radius:4px;" onerror="this.src='brawlers/default.png'">
+                                <span style="font-size:13px; font-weight:bold;">${b}</span>
+                            </div>
+                            <span style="font-size:12px; color:var(--texto-secundario); font-weight:bold;">${qtd}</span>
+                        </div>
+                    `).join('')}
+                </div>
             </div>
         `;
     });
@@ -354,7 +532,7 @@ function renderizarDetalhesTime(time) {
 }
 
 // ==========================================
-// 5. TELA SCRIMS (AGRUPAMENTO DE 2 HORAS)
+// 5. TELA SCRIMS (SOMENTE SA)
 // ==========================================
 function processarScrimes() {
     let rawMatches = {};
@@ -369,18 +547,26 @@ function processarScrimes() {
         let t0 = linhas.slice(0, 3);
         let t1 = linhas.slice(3, 6);
         
+        let timeA = t0[0].nome_time;
+        let timeB = t1[0].nome_time;
+
+        // FILTRO ESTREITO: Ambos precisam ser da SA de acordo com os rosters do CONFIGURACAO_MANUAL_TIMES
+        if(!isTimeSA(timeA) || !isTimeSA(timeB)) return;
+
         let dataStr = linhas[0].data_adicao; 
         let timestamp = parseDateBR(dataStr);
-
-        let vencedor = parseInt(t0[0].win) === 1 ? t0[0].nome_time : t1[0].nome_time;
+        let vencedor = parseInt(t0[0].win) === 1 ? timeA : timeB;
 
         partidasEstruturadas.push({
             id: linhas[0].id_partida,
             modo: linhas[0].modo,
-            timeA: t0[0].nome_time,
-            timeB: t1[0].nome_time,
+            mapa: linhas[0].mapa,
+            timeA: timeA,
+            timeB: timeB,
             picksA: t0.map(p => p.pick.toUpperCase()),
             picksB: t1.map(p => p.pick.toUpperCase()),
+            t0Full: t0,
+            t1Full: t1,
             vencedor: vencedor,
             timestamp: timestamp,
             dataFormatada: dataStr
@@ -392,11 +578,7 @@ function processarScrimes() {
 
     partidasEstruturadas.forEach(partida => {
         let chaveTimes = [partida.timeA, partida.timeB].sort().join(' VS ');
-        
-        let scrimExistente = scrims.find(s => 
-            s.chave === chaveTimes && 
-            (partida.timestamp - s.ultimoUpdate) <= (2 * 60 * 60 * 1000)
-        );
+        let scrimExistente = scrims.find(s => s.chave === chaveTimes && (partida.timestamp - s.ultimoUpdate) <= (2 * 60 * 60 * 1000));
 
         if(scrimExistente) {
             scrimExistente.rounds.push(partida);
@@ -437,29 +619,26 @@ function renderizarListaScrims(scrims) {
     lista.innerHTML = '';
 
     if(scrims.length === 0) {
-        lista.innerHTML = '<p style="padding:20px;">Nenhuma scrim encontrada nos filtros.</p>';
+        lista.innerHTML = '<p style="padding:20px; color:var(--texto-secundario); font-weight:bold; grid-column:1/-1; text-align:center;">Nenhuma scrim inteiramente SA encontrada.</p>';
         return;
     }
 
-    scrims.forEach((scrim, index) => {
+    scrims.forEach((scrim) => {
         let div = document.createElement('div');
         div.className = 'scrim-card';
         div.innerHTML = `
             <div class="scrim-team-info">
                 <img src="element/teams/${scrim.timeA.replace(/\s/g, '')}.png" class="scrim-team-logo" onerror="this.src='element/teams/default.png'">
-                <span style="font-weight:bold; font-size:14px;">${scrim.timeA}</span>
+                <span style="font-weight:900; font-size:14px;">${scrim.timeA}</span>
             </div>
             <div class="scrim-score">${scrim.scoreA} - ${scrim.scoreB}</div>
             <div class="scrim-team-info" style="flex-direction: row-reverse;">
                 <img src="element/teams/${scrim.timeB.replace(/\s/g, '')}.png" class="scrim-team-logo" onerror="this.src='element/teams/default.png'">
-                <span style="font-weight:bold; font-size:14px;">${scrim.timeB}</span>
+                <span style="font-weight:900; font-size:14px;">${scrim.timeB}</span>
             </div>
-            <div style="position:absolute; bottom:5px; left:15px; font-size:10px; color:var(--texto-secundario)">${scrim.dataFormatada}</div>
-            <div style="position:absolute; bottom:5px; right:15px; font-size:10px; color:var(--texto-secundario)">Rounds: ${scrim.rounds.length}</div>
+            <div style="position:absolute; bottom:8px; left:15px; font-size:11px; color:var(--texto-secundario); font-weight:bold;">${scrim.dataFormatada}</div>
+            <div style="position:absolute; bottom:8px; right:15px; font-size:11px; color:var(--texto-secundario); font-weight:bold;">Rounds: ${scrim.rounds.length}</div>
         `;
-        div.style.position = 'relative';
-        div.style.paddingBottom = '30px';
-
         div.onclick = () => renderizarDetalheScrim(scrim);
         lista.appendChild(div);
     });
@@ -471,25 +650,41 @@ function renderizarDetalheScrim(scrim) {
     lista.style.display = 'none';
     detalhe.style.display = 'block';
 
+    // Obtendo nomes unicos de players nos rounds (max 3)
+    let playersA = [...new Set(scrim.rounds.flatMap(r => r.t0Full.map(p => p.player_name)))].slice(0,3);
+    let playersB = [...new Set(scrim.rounds.flatMap(r => r.t1Full.map(p => p.player_name)))].slice(0,3);
+
     let html = `
         <button onclick="document.getElementById('scrims-lista').style.display='grid'; document.getElementById('scrims-detalhe').style.display='none';" 
-                style="background: transparent; border: 1px solid var(--accent-purple); color: var(--accent-purple); padding: 5px 15px; border-radius: 4px; cursor:pointer; margin-bottom: 20px;">
+                style="background: transparent; border: 2px solid var(--accent-purple); color: var(--accent-purple); padding: 8px 20px; font-weight:bold; border-radius: 6px; cursor:pointer; margin-bottom: 30px;">
             ← VOLTAR
         </button>
 
         <div class="scrim-detail-header">
-            <div style="display: flex; justify-content: center; align-items: center; gap: 30px;">
-                <img src="element/teams/${scrim.timeA.replace(/\s/g, '')}.png" style="height:60px;" onerror="this.src='element/teams/default.png'">
-                <div style="font-size: 32px; font-weight: 900; color: #fff;">${scrim.scoreA} <span style="color:var(--accent-purple)">x</span> ${scrim.scoreB}</div>
-                <img src="element/teams/${scrim.timeB.replace(/\s/g, '')}.png" style="height:60px;" onerror="this.src='element/teams/default.png'">
+            <div style="display: flex; justify-content: center; align-items: flex-start; gap: 40px;">
+                <div style="text-align:center;">
+                    <img src="element/teams/${scrim.timeA.replace(/\s/g, '')}.png" style="height:80px; object-fit:contain; background:var(--bg-cards); border-radius:8px; border:2px solid var(--borda-destaque);" onerror="this.src='element/teams/default.png'">
+                    <div style="font-size:11px; color:var(--texto-secundario); display:flex; gap:8px; justify-content:center; margin-top:8px; font-weight:bold;">
+                        ${playersA.map(p => `<span>${p}</span>`).join('')}
+                    </div>
+                </div>
+                
+                <div style="font-size: 42px; font-weight: 900; color: #fff; line-height:80px;">${scrim.scoreA} <span style="color:var(--accent-purple)">-</span> ${scrim.scoreB}</div>
+                
+                <div style="text-align:center;">
+                    <img src="element/teams/${scrim.timeB.replace(/\s/g, '')}.png" style="height:80px; object-fit:contain; background:var(--bg-cards); border-radius:8px; border:2px solid var(--borda-destaque);" onerror="this.src='element/teams/default.png'">
+                    <div style="font-size:11px; color:var(--texto-secundario); display:flex; gap:8px; justify-content:center; margin-top:8px; font-weight:bold;">
+                        ${playersB.map(p => `<span>${p}</span>`).join('')}
+                    </div>
+                </div>
             </div>
         </div>
 
         <div class="scrim-rounds-container" id="rounds-scroll">
             ${scrim.rounds.map((r, i) => `
                 <div class="scrim-round-btn ${i === 0 ? 'active' : ''}" onclick="selecionarRound(${i}, this)">
-                    <img src="element/${r.modo.toLowerCase()}.png" onerror="this.src='element/default_mode.png'">
-                    <span style="font-size:12px; font-weight:bold;">SET ${i+1}</span>
+                    <span style="font-size:11px; font-weight:900; color:var(--accent-purple); display:block; margin-bottom:5px;">SET ${i+1}</span>
+                    <img src="element/modes/${formatImg(r.modo)}.png" onerror="this.src='element/modes/default.png'">
                 </div>
             `).join('')}
         </div>
@@ -498,7 +693,6 @@ function renderizarDetalheScrim(scrim) {
     `;
 
     detalhe.innerHTML = html;
-    
     window.scrimAtual = scrim;
     selecionarRound(0, detalhe.querySelector('.scrim-round-btn'));
 }
@@ -509,134 +703,43 @@ window.selecionarRound = function(index, btnElement) {
 
     let round = window.scrimAtual.rounds[index];
     const container = document.getElementById('round-view-container');
+    
+    let playersA = round.t0Full.map(p => p.player_name);
+    let playersB = round.t1Full.map(p => p.player_name);
 
     container.innerHTML = `
-        <p style="text-align:center; font-size:12px; color:var(--texto-secundario); margin-bottom:15px;">Horário: ${round.dataFormatada.split(' ')[1]}</p>
-        <div class="round-details-view" style="justify-content: space-between;">
-            <div class="team-picks" style="flex: 0 1 auto;">
-                ${round.picksA.map(pick => `
-                    <div class="pick-row">
-                        <img src="brawlers/${pick.toLowerCase()}.png" onerror="this.src='brawlers/default.png'">
-                    </div>
-                `).join('')}
+        <div class="round-details-view">
+            <div style="text-align:center;">
+                <p style="font-size:12px; color:var(--texto-secundario); font-weight:bold;">${round.dataFormatada.split(' ')[1]} | ${round.modo.toUpperCase()}</p>
+            </div>
+            
+            <div class="player-names-scrim" style="justify-content: space-around;">
+                <div style="display:flex; gap:35px;">${playersA.map(p => `<span>${p}</span>`).join('')}</div>
+                <div style="display:flex; gap:35px;">${playersB.map(p => `<span>${p}</span>`).join('')}</div>
             </div>
 
-            <div class="team-picks" style="align-items: flex-end; flex: 0 1 auto;">
-                ${round.picksB.map(pick => `
-                    <div class="pick-row" style="flex-direction: row-reverse;">
-                        <img src="brawlers/${pick.toLowerCase()}.png" onerror="this.src='brawlers/default.png'">
-                    </div>
-                `).join('')}
+            <div class="scrim-picks-container">
+                <div class="team-picks-scrim" style="flex-direction:row; justify-content:flex-end;">
+                    ${round.picksA.map(pick => `
+                        <div class="pick-row">
+                            <img src="brawlers/${formatImg(pick)}.png" onerror="this.src='brawlers/default.png'">
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="map-middle-scrim">
+                    <img src="element/maps/${formatImg(round.mapa)}.png" onerror="this.src='element/maps/default.png'">
+                    <p style="font-size:12px; font-weight:900; margin-top:8px;">${round.mapa}</p>
+                </div>
+
+                <div class="team-picks-scrim" style="flex-direction:row; justify-content:flex-start;">
+                    ${round.picksB.map(pick => `
+                        <div class="pick-row">
+                            <img src="brawlers/${formatImg(pick)}.png" onerror="this.src='brawlers/default.png'">
+                        </div>
+                    `).join('')}
+                </div>
             </div>
         </div>
     `;
 };
-
-// NOVA PARTE
-
-// 1. Variáveis globais para guardar o estado do filtro
-let metaDadosBrutos = []; // Variável para armazenar os dados totais do Meta
-let modoSelecionado = 'todos';
-let mapaSelecionado = 'todos';
-
-// 2. Função para formatar o nome da imagem corretamente (tira espaços, pontos e transforma em minúsculo)
-function formatarNomeBrawler(nome) {
-    if (!nome) return 'default';
-    return nome.toLowerCase().replace(/[^a-z0-9]/g, '');
-}
-
-// 3. Função para inicializar os filtros do Meta
-function inicializarFiltrosMeta(dadosOriginais) {
-    metaDadosBrutos = dadosOriginais; // Salva para uso futuro
-    const selectModo = document.getElementById('filtro-modo');
-    const selectMapa = document.getElementById('filtro-mapa');
-
-    if (!selectModo || !selectMapa) return;
-
-    // Pega todos os Modos únicos
-    const modos = [...new Set(dadosOriginais.map(d => d.modo))].filter(Boolean);
-    
-    selectModo.innerHTML = '<option value="todos">Todos os Modos e Mapas</option>';
-    modos.forEach(modo => {
-        selectModo.innerHTML += `<option value="${modo}">${modo.toUpperCase()}</option>`;
-    });
-
-    // Ao mudar o Modo, atualiza a lista de mapas
-    selectModo.addEventListener('change', (e) => {
-        modoSelecionado = e.target.value;
-        mapaSelecionado = 'todos'; // Volta para "todos os mapas" daquele modo
-        atualizarDropdownMapas();
-        aplicarFiltrosMeta();
-    });
-
-    // Ao mudar o Mapa, apenas filtra a tabela
-    selectMapa.addEventListener('change', (e) => {
-        mapaSelecionado = e.target.value;
-        aplicarFiltrosMeta();
-    });
-
-    atualizarDropdownMapas();
-}
-
-// 4. Atualiza os options do select de Mapa dependendo do Modo escolhido
-function atualizarDropdownMapas() {
-    const selectMapa = document.getElementById('filtro-mapa');
-    if (!selectMapa) return;
-
-    let mapas = [];
-    if (modoSelecionado === 'todos') {
-        mapas = [...new Set(metaDadosBrutos.map(d => d.mapa))].filter(Boolean);
-    } else {
-        // Pega só os mapas do modo específico
-        mapas = [...new Set(metaDadosBrutos.filter(d => d.modo === modoSelecionado).map(d => d.mapa))].filter(Boolean);
-    }
-
-    selectMapa.innerHTML = '<option value="todos">Todos os Mapas</option>';
-    mapas.forEach(mapa => {
-        selectMapa.innerHTML += `<option value="${mapa}">${mapa}</option>`;
-    });
-}
-
-// 5. Aplica o filtro selecionado e envia para a tabela
-function aplicarFiltrosMeta() {
-    let dadosFiltrados = metaDadosBrutos;
-
-    if (modoSelecionado !== 'todos') {
-        dadosFiltrados = dadosFiltrados.filter(d => d.modo === modoSelecionado);
-    }
-    if (mapaSelecionado !== 'todos') {
-        dadosFiltrados = dadosFiltrados.filter(d => d.mapa === mapaSelecionado);
-    }
-
-    // AQUI VOCÊ CHAMA SUA FUNÇÃO QUE MONTA A TABELA
-    // Exemplo: renderizarTabelaMeta(dadosFiltrados);
-    renderizarTabelaMeta(dadosFiltrados);
-}
-
-// 6. Atualização de como você desenha as linhas da tabela (Para incluir as imagens)
-function renderizarTabelaMeta(dadosParaTabela) {
-    const tbody = document.querySelector('#tabela-meta tbody'); // Altere para o ID correto da sua tabela
-    if (!tbody) return;
-
-    tbody.innerHTML = '';
-    dadosParaTabela.forEach(d => {
-        const tr = document.createElement('tr');
-        
-        // A MÁGICA DA IMAGEM ESTÁ AQUI
-        const imgNome = formatarNomeBrawler(d.pick); 
-        
-        tr.innerHTML = `
-            <td>
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <img src="brawlers/${imgNome}.png" 
-                         onerror="this.src='brawlers/default.png'" 
-                         style="width: 35px; height: 35px; border-radius: 6px; object-fit: cover; border: 1px solid var(--borda-suave);">
-                    <span style="font-weight: 900; color: #fff;">${d.pick}</span>
-                </div>
-            </td>
-            <td>${d.vitorias || 0}</td>
-            <td style="color: var(--winrate-color);">${d.win_rate || '0.0%'}</td>
-        `;
-        tbody.appendChild(tr);
-    });
-}
