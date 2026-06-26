@@ -28,7 +28,6 @@ body { background-color: var(--bg-geral); color: var(--texto); min-height: 100vh
 .dropdown-content { display: none; position: absolute; background-color: var(--bg-paineis); min-width: 180px; border: 1px solid var(--borda-destaque); border-radius: 8px; z-index: 100; top: 100%; }
 .dropdown-content a { display: flex; align-items: center; gap: 12px; color: var(--texto); padding: 12px 16px; text-decoration: none; font-size: 13px; font-weight: bold; border-bottom: 1px solid var(--borda-suave);}
 .dropdown-content a:hover { background-color: var(--borda-suave); color: var(--accent-hover); }
-.dropdown.active .dropdown-content { display: block; }
 .dropdown:hover .dropdown-content { display: block !important; }
 .dropdown-content { animation: fadeIn 0.2s ease-in-out; }
 
@@ -45,8 +44,10 @@ body { background-color: var(--bg-geral); color: var(--texto); min-height: 100vh
 .filter-container { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; }
 .filter-select { background-color: var(--bg-paineis); color: var(--texto); border: 1px solid var(--borda-destaque); padding: 10px 20px; border-radius: 8px; font-weight: bold; outline: none; cursor: pointer; }
 
-/* Tabelas Meta */
-.modo-section { background-color: var(--bg-paineis); border: 1px solid var(--borda-suave); border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
+/* Tabelas Meta & Cards Modo */
+.modo-card { background-color: var(--bg-cards); border: 2px solid var(--borda-destaque); border-radius: 8px; padding: 20px; text-align: center; font-size: 20px; font-weight: 900; color: var(--accent-purple); cursor: pointer; margin-bottom: 10px; transition: 0.2s; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 15px;}
+.modo-card:hover { border-color: var(--accent-hover); background-color: var(--bg-paineis); transform: scale(1.01); }
+.modo-section { background-color: var(--bg-paineis); border: 1px solid var(--borda-suave); border-radius: 12px; margin-bottom: 20px; overflow: hidden; display: none; }
 .modo-header { background-color: var(--bg-cards); padding: 15px 20px; font-weight: 900; font-size: 16px; display: flex; justify-content: space-between; color: var(--accent-purple); border-bottom: 1px solid var(--borda-suave); }
 .mapa-content { padding: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
 .excel-table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -54,7 +55,7 @@ body { background-color: var(--bg-geral); color: var(--texto); min-height: 100vh
 .excel-table th { color: var(--texto-secundario); font-weight: 800; cursor: pointer; }
 .winrate-cell { color: var(--winrate-color); font-weight: bold; }
 
-/* Sidebar Layout (Brawlers e Times) */
+/* Sidebar Layout */
 .brawlers-container, .times-container { display: flex; gap: 25px; height: calc(100vh - 160px); }
 .sidebar { width: 280px; background-color: var(--bg-paineis); border: 1px solid var(--borda-suave); border-radius: 12px; display: flex; flex-direction: column; }
 .sidebar-search, .sidebar-header { padding: 15px; background-color: var(--bg-cards); border: none; border-bottom: 1px solid var(--borda-destaque); color: var(--texto); font-weight: bold; text-align: center; outline:none; }
@@ -98,3 +99,10 @@ body { background-color: var(--bg-geral); color: var(--texto); min-height: 100vh
 .synergy-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed var(--borda-suave); }
 .synergy-item:last-child { border-bottom: none; }
 .synergy-item img { width: 28px; height: 28px; border-radius: 4px; margin-right: 10px; vertical-align: middle; }
+
+/* Formulário para Registro de Time */
+.form-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 15px; }
+.form-group label { font-size: 12px; color: var(--texto-secundario); font-weight: bold; }
+.form-group input { background: var(--bg-paineis); border: 1px solid var(--borda-suave); color: #fff; padding: 10px; border-radius: 6px; outline: none; }
+.btn-register { background: var(--accent-purple); color: #fff; border: none; padding: 12px 20px; font-weight: 900; border-radius: 6px; cursor: pointer; text-transform: uppercase; width: 100%; transition: 0.2s;}
+.btn-register:hover { background: var(--accent-hover); }
