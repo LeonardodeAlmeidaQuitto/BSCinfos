@@ -23,9 +23,8 @@
                 <a href="#" onclick="mudarTela('scrims'); return false;">Scrims</a>
             </div>
         </div>
-            </div>
-            <a href="geral.html" class="nav-link">GERAL</a>
         </div>
+        <a href="geral.html" class="nav-link">GERAL</a>
     </nav>
 
     <main class="main-container">
@@ -57,7 +56,7 @@
                     <div class="sidebar-list" id="lista-brawlers-sidebar"></div>
                 </div>
                 <div class="info-panel" id="painel-info-brawler">
-                    <div class="placeholder-text">Selecione um brawler na lateral.</div>
+                    <div class="placeholder-text" style="color:var(--texto-secundario); text-align:center;">Selecione um brawler na lateral para ver sinergias e matchups.</div>
                 </div>
             </div>
         </div>
@@ -66,11 +65,11 @@
         <div id="tela-times" class="tela-secao tela-oculta">
             <div class="times-container">
                 <div class="sidebar">
-                    <div class="sidebar-header">EQUIPES REGISTRADAS</div>
+                    <div class="sidebar-header">EQUIPES DA REGIÃO SA</div>
                     <div class="sidebar-list" id="lista-times-sidebar"></div>
                 </div>
                 <div class="info-panel" id="painel-info-time">
-                    <div class="placeholder-text">Selecione um time na lateral.</div>
+                    <div class="placeholder-text" style="color:var(--texto-secundario); text-align:center;">Selecione um time na lateral para ver os dados de seus players.</div>
                 </div>
             </div>
         </div>
@@ -82,8 +81,6 @@
         </div>
 
     </main>
-
-    <div id="modal-analise-brawler"></div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
