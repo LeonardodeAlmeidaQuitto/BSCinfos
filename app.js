@@ -281,9 +281,199 @@ function popularFiltrosGlobais() {
 
 function processarDadosGlobais() {
     const ano = document.getElementById('select-ano').value;
-    const mes = document.getElementById('select-mes').value;
-    const dia = document.getElementById('select-dia').value;
-    const tipo = document.getElementById('select-tipo').value;
+function carregarTimesSalvosLocal() {
+    let salvos = JSON.parse(localStorage.getItem('customTeams_' + _REGIAO)) || [];
+    if (!CONFIGURACAO_MANUAL_TIMES[_REGIAO]) {
+        CONFIGURACAO_MANUAL_TIMES[_REGIAO] = {};
+    }
+    if (!CONFIGURACAO_MANUAL_TIMES[_REGIAO]["TIMES REGISTRADOS"]) {
+        CONFIGURACAO_MANUAL_TIMES[_REGIAO]["TIMES REGISTRADOS"] = [];
+    }
+    salvos.forEach(t => CONFIGURACAO_MANUAL_TIMES[_REGIAO]["TIMES REGISTRADOS"].push(t));
+}
+carregarTimesSalvosLocal();
+
+const formatImg = n => { if(!n) return 'default'; return n.toLowerCase().replace(/[^a-z0-9]/g, ''); };
+
+const isTimeDaRegiaoAtual = (id) => {
+    let reg = CONFIGURACAO_MANUAL_TIMES[_REGIAO];
+    if(!reg) return false;
+    for(let tier in reg) {
+        if(reg[tier].find(t => t.id_time === id)) return true;
+    }
+    return false;
+};
+
+function encontrarTimePorRoster(tagsArray) {
+    for (let reg in CONFIGURACAO_MANUAL_TIMES) {
+        for (let tier in CONFIGURACAO_MANUAL_TIMES[reg]) {
+            if (tier === "TIER ?") continue;
+            for (let team of CONFIGURACAO_MANUAL_TIMES[reg][tier]) {
+                let matchCount = 0;
+                team.jogadores.forEach(j => {
+                    if (tagsArray.includes(j.tag)) matchCount++;
+                });
+                if (matchCount >= 2) return { id: team.id_time, nome: team.nome_time, regiao: reg };
+            }
+        }
+    }
+    return null;
+}
+
+function parseDateBR(dataStr) {
+    if (!dataStr) return 0;
+    try {
+        let partesEspaco = dataStr.split(' ');
+        let dataPartes = partesEspaco[0].split('/');
+        let day = parseInt(dataPartes[0], 10);
+        let month = parseInt(dataPartes[1], 10) - 1;
+        let year = parseInt(dataPartes[2], 10);
+        
+        let hour = 0, min = 0, sec = 0;
+        if (partesEspaco[1]) {
+            let timePartes = partesEspaco[1].split(':');
+            hour = parseInt(timePartes[0], 10) || 0;
+            min = parseInt(timePartes[1], 10) || 0;
+            sec = parseInt(timePartes[2], 10) || 0;
+        }
+        return new Date(year, month, day, hour, min, sec).getTime();
+    } catch (e) {
+        return 0;
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    carregarCSV();
+});
+
+// ==========================================
+// 2. CARREGAMENTO E PROCESSAMENTO
+// ==========================================
+function carregarCSV() {
+    Papa.parse("historico_bruto.csv", {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+            dadosBrutos = results.data;
+            processarTimesDesconhecidos(dadosBrutos);
+            popularFiltrosGlobais();
+            processarDadosGlobais();
+        }
+    });
+}
+
+function processarTimesDesconhecidos(dados) {
+    if (!CONFIGURACAO_MANUAL_TIMES[_REGIAO]["TIER ?"]) {
+        CONFIGURACAO_MANUAL_TIMES[_REGIAO]["TIER ?"] = [];
+    }
+
+    const mapaTimesDesconhecidos = new Map();
+    let unkCounter = 1;
+
+    let partidasMap = {};
+    dados.forEach(r => {
+        if(!partidasMap[r.id_partida]) partidasMap[r.id_partida] = { tagsA: [], tagsB: [], timeAId: null, timeBId: null };
+        if(partidasMap[r.id_partida].tagsA.length < 3 && (partidasMap[r.id_partida].timeAId === null || partidasMap[r.id_partida].timeAId === r.id_time)) {
+            partidasMap[r.id_partida].tagsA.push(r.player_tag);
+            partidasMap[r.id_partida].timeAId = r.id_time;
+        } else {
+            partidasMap[r.id_partida].tagsB.push(r.player_tag);
+            partidasMap[r.id_partida].timeBId = r.id_time;
+        }
+    });
+
+    dados.forEach(linha => {
+        let isKnown = encontrarTimePorRoster([linha.player_tag]);
+
+        if (!isKnown && linha.id_players && linha.name_players && linha.player_tag) {
+            const idsPlayers = linha.id_players.split(';');
+            const namesPlayers = linha.name_players.split(';');
+            const pIndex = idsPlayers.indexOf(linha.player_tag);
+            
+            if (pIndex !== -1) {
+                const startIndex = pIndex < 3 ? 0 : 3;
+                const timeTags = idsPlayers.slice(startIndex, startIndex + 3);
+                const timeNames = namesPlayers.slice(startIndex, startIndex + 3);
+                
+                if (timeTags.length === 3 && !timeTags.includes("None") && !timeTags.includes("")) {
+                    let timeRegistrado = encontrarTimePorRoster(timeTags);
+                    
+                    if (timeRegistrado) {
+                        linha.id_time = timeRegistrado.id;
+                        linha.nome_time = timeRegistrado.nome;
+                    } else {
+                        let partidaTags = partidasMap[linha.id_partida];
+                        let oponentesTags = (startIndex < 3) ? partidaTags.tagsB : partidaTags.tagsA;
+                        let oponenteTime = encontrarTimePorRoster(oponentesTags);
+                        
+                        if (oponenteTime && oponenteTime.regiao === _REGIAO) {
+                            const assinaturaTime = timeTags.slice().sort().join('_');
+                            
+                            if (!mapaTimesDesconhecidos.has(assinaturaTime)) {
+                                const novoId = `UNK${unkCounter}`;
+                                const novoNome = `Unknow ${unkCounter}`;
+                                mapaTimesDesconhecidos.set(assinaturaTime, { id: novoId, nome: novoNome });
+                                
+                                CONFIGURACAO_MANUAL_TIMES[_REGIAO]["TIER ?"].push({
+                                    id_time: novoId,
+                                    nome_time: novoNome,
+                                    jogadores: [
+                                        { nick: timeNames[0], tag: timeTags[0] },
+                                        { nick: timeNames[1], tag: timeTags[1] },
+                                        { nick: timeNames[2], tag: timeTags[2] }
+                                    ]
+                                });
+                                unkCounter++;
+                            }
+                            
+                            const timeGerado = mapaTimesDesconhecidos.get(assinaturaTime);
+                            linha.id_time = timeGerado.id;
+                            linha.nome_time = timeGerado.nome;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function popularFiltrosGlobais() {
+    let anos = new Set(), meses = new Set(), dias = new Set();
+    dadosBrutos.forEach(row => {
+        if(row.data_adicao) {
+            let partes = row.data_adicao.split(' ')[0].split('/');
+            if(partes.length === 3) {
+                dias.add(partes[0]);
+                meses.add(partes[1]);
+                anos.add(partes[2]);
+            }
+        }
+    });
+
+    const selectAno = document.getElementById('select-ano');
+    const selectMes = document.getElementById('select-mes');
+    const selectDia = document.getElementById('select-dia');
+    
+    if(selectAno) selectAno.innerHTML = '<option value="todos">Todos os Anos</option>';
+    if(selectMes) selectMes.innerHTML = '<option value="todos">Todos os Meses</option>';
+    if(selectDia) selectDia.innerHTML = '<option value="todos">Todos os Dias</option>';
+
+    if(selectAno) Array.from(anos).sort().forEach(a => selectAno.innerHTML += `<option value="${a}">${a}</option>`);
+    if(selectMes) Array.from(meses).sort().forEach(m => selectMes.innerHTML += `<option value="${m}">${m}</option>`);
+    if(selectDia) Array.from(dias).sort().forEach(d => selectDia.innerHTML += `<option value="${d}">${d}</option>`);
+}
+
+function processarDadosGlobais() {
+    const elAno = document.getElementById('select-ano');
+    const elMes = document.getElementById('select-mes');
+    const elDia = document.getElementById('select-dia');
+    const elTipo = document.getElementById('select-tipo');
+
+    const ano = elAno ? elAno.value : 'todos';
+    const mes = elMes ? elMes.value : 'todos';
+    const dia = elDia ? elDia.value : 'todos';
+    const tipo = elTipo ? elTipo.value : 'todos';
 
     let dadosPeriodo = dadosBrutos.filter(row => {
         let matchAno = true, matchMes = true, matchDia = true, matchTipo = true;
@@ -298,8 +488,13 @@ function processarDadosGlobais() {
         return matchAno && matchMes && matchDia && matchTipo;
     });
 
-    // Agora filtra pela Região Dinâmica 
-    dadosFiltrados = dadosPeriodo.filter(row => isTimeDaRegiaoAtual(row.id_time));
+    // Filtra pela região perfeitamente (lê a coluna Regiao se existir, senão usa o banco)
+    dadosFiltrados = dadosPeriodo.filter(row => {
+        if (row.regiao && row.regiao.trim() !== "") {
+            return row.regiao.toUpperCase() === _REGIAO;
+        }
+        return isTimeDaRegiaoAtual(row.id_time);
+    });
 
     renderizarMeta();
     renderizarSidebarBrawlers();
@@ -324,6 +519,8 @@ window.toggleModoMeta = function(idModo) {
 
 function renderizarMeta() {
     const container = document.getElementById('conteudo-meta');
+    if (!container) return;
+
     let statsMap = {};
     let statsAll = {};
 
@@ -424,6 +621,9 @@ function renderizarMeta() {
 // 4. TELA BRAWLERS 
 // ==========================================
 function renderizarSidebarBrawlers() {
+    const sidebar = document.getElementById('lista-brawlers-sidebar');
+    if (!sidebar) return;
+
     let pickCounts = {};
     dadosFiltrados.forEach(r => {
         let b = r.pick.toUpperCase();
@@ -432,7 +632,6 @@ function renderizarSidebarBrawlers() {
 
     listaBrawlers = Object.keys(pickCounts).filter(b => pickCounts[b] >= 1).sort();
     
-    const sidebar = document.getElementById('lista-brawlers-sidebar');
     sidebar.innerHTML = '';
     
     listaBrawlers.forEach(b => {
@@ -460,6 +659,8 @@ function filtrarBrawlersSidebar() {
 
 function renderizarDetalhesBrawler(brawler) {
     const painel = document.getElementById('painel-info-brawler');
+    if (!painel) return;
+
     let partidasDeste = dadosFiltrados.filter(r => r.pick.toUpperCase() === brawler);
     let totalPicks = partidasDeste.length;
     if(totalPicks === 0) return;
@@ -595,6 +796,8 @@ function renderizarDetalhesBrawler(brawler) {
 // ==========================================
 function renderizarSidebarTimes() {
     const sidebar = document.getElementById('lista-times-sidebar');
+    if (!sidebar) return;
+
     sidebar.innerHTML = '';
     
     const timesRegiao = CONFIGURACAO_MANUAL_TIMES[_REGIAO];
@@ -665,6 +868,8 @@ window.registrarTimeCustom = function(oldId) {
 
 function renderizarDetalhesTime(time) {
     const painel = document.getElementById('painel-info-time');
+    if (!painel) return;
+
     let partidasDoTime = dadosFiltrados.filter(r => r.id_time === time.id_time);
     let logoUrl = `element/teams/${time.id_time.toLowerCase()}.png`;
     let isUnknow = time.id_time.startsWith("UNK");
@@ -764,7 +969,7 @@ function renderizarDetalhesTime(time) {
 }
 
 // ==========================================
-// 6. TELA SCRIMS
+// 6. TELA SCRIMS (Apenas 2 Sets+ e Região Correta)
 // ==========================================
 function processarScrimes(dadosPeriodo) {
     let rawMatches = {};
@@ -853,18 +1058,23 @@ function processarScrimes(dadosPeriodo) {
         }
     });
 
-    renderizarListaScrims(scrims.reverse()); 
+    // FILTRO ADICIONADO: Somente scrims com 2 ou mais rounds passam daqui!
+    let scrimsValidas = scrims.filter(s => s.rounds.length >= 2);
+
+    renderizarListaScrims(scrimsValidas.reverse()); 
 }
 
 function renderizarListaScrims(scrims) {
     const lista = document.getElementById('scrims-lista');
     const detalhe = document.getElementById('scrims-detalhe');
+    if (!lista || !detalhe) return;
+    
     lista.style.display = 'grid';
     detalhe.style.display = 'none';
     lista.innerHTML = '';
 
     if(scrims.length === 0) {
-        lista.innerHTML = `<p style="padding:20px; color:var(--texto-secundario); font-weight:bold; grid-column:1/-1; text-align:center;">Nenhuma scrim da ${_REGIAO} encontrada no filtro atual.</p>`;
+        lista.innerHTML = `<p style="padding:20px; color:var(--texto-secundario); font-weight:bold; grid-column:1/-1; text-align:center;">Nenhuma scrim da ${_REGIAO} com 2 ou mais sets encontrada no filtro atual.</p>`;
         return;
     }
 
