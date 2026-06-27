@@ -65,7 +65,7 @@ const DADOS_COUNTERS = {
     "Emz": ["Otis", "Colette", "Griff", "Mina", "Sirius", "Meeple", "Darryl"],
     "Eve": ["Penny", "Janet", "Belle", "Byron", "Carl"],
     "Fang": ["Chester", "Otis"],
-    "Finx": ["Emz", "Edgar", "Ziggy", "Meg", "Pam],
+    "Finx": ["Emz", "Edgar", "Ziggy", "Meg", "Pam"],
     "Frank": ["Colette", "Chester",],
     "Gale": ["Ziggy", "Lola", "Amber"],
     "Gene": ["Mr.P", "Eve", "Belle", "Ruffs"],
