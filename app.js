@@ -524,11 +524,25 @@ function renderizarDetalhesBrawler(brawler) {
         return { nome, matches: s.matches, wins: s.bwWins, losses: s.bwLosses, wr: (s.bwWins / s.matches) * 100, pr: (s.matches / totalPicks) * 100 };
     }).filter(m => m.matches >= 1); 
 
-    let countersTop = [...matchups].sort((a, b) => b.wr - a.wr).slice(0, 5); 
-    let counteradosTop = [...matchups].sort((a, b) => a.wr - b.wr).slice(0, 5); 
+    // BOM CONTRA: Filtra confrontos com 50%+ de Win Rate e ORDENA por quantidade de partidas (PR%)
+    let countersTop = [...matchups]
+        .filter(m => m.wr >= 50)
+        .sort((a, b) => b.matches - a.matches)
+        .slice(0, 5); 
+
+    // RUIM CONTRA: Filtra confrontos com menos de 50% de Win Rate e ORDENA por quantidade de partidas (PR%)
+    let counteradosTop = [...matchups]
+        .filter(m => m.wr < 50)
+        .sort((a, b) => b.matches - a.matches)
+        .slice(0, 5); 
+
+    // TOP 5 SINERGIAS: Apenas ORDENA por quantidade de partidas jogadas juntos
     let sinergiasTop = Object.entries(statsSinergia).map(([nome, s]) => {
         return { nome, matches: s.matches, wins: s.bwWins, wr: (s.bwWins / s.matches) * 100, pr: (s.matches / totalPicks) * 100 };
-    }).filter(m => m.matches >= 1).sort((a,b) => b.wr - a.wr).slice(0,5);
+    })
+    .filter(m => m.matches >= 1)
+    .sort((a, b) => b.matches - a.matches) // Mudança: de b.wr - a.wr para b.matches - a.matches
+    .slice(0,5);
 
     let html = `
         <div class="brawler-profile-header">
