@@ -14,21 +14,23 @@ ARQUIVO_BRUTO = "historico_bruto.csv"
 REGIOES = {
     "SA": {
         "#PLLRJC2V": {"nome": "Wesley", "id_time": "BH", "nome_time": "BH ESPORTS"},
-        "#2GV09VJJP": {"nome": "FireCrow", "id_time": "LOUD", "nome_time": "LOUD"},
-        "#CQLR0Y80": {"nome": "Tufa", "id_time": "OCX", "nome_time": "OCX Division"},
+        "#JQ8LLLY": {"nome": "FireCrow", "id_time": "LOUD", "nome_time": "LOUD"},
+        "#CQLR0Y80": {"nome": "Tufa", "id_time": "OCX", "nome_time": "OCX DIVISION"},
         "#L9PQUV0YC": {"nome": "BrabaoBs", "id_time": "OS", "nome_time": "OLIMPO SQUAD"},
-        "#JQ8LLLY": {"nome": "FireMirillo", "id_time": "AL", "nome_time": "ACRE LOVERS"},
+        "#2GV09VJJP": {"nome": "FireMirillo", "id_time": "AL", "nome_time": "ACRE LOVERS"},
         "#202GJJR28": {"nome": "Doritos", "id_time": "GLXY", "nome_time": "GALAXY"},
         "#PR0P8QVQ": {"nome": "Kr ;)", "id_time": "SKC", "nome_time": "SKCALALAS SA"},
         "#R2LR2QLG": {"nome": "Mohtep", "id_time": "PCNG", "nome_time": "PIZZA CONGELADA F/A"},
         "#80VLPJCCC": {"nome": "Tilo", "id_time": "CB", "nome_time": "CRECHE BRAWL"},
-        "#GJPVYUQG": {"nome": "Deykonn", "id_time": "BLD", "nome_time": "BLD F/A"},
-        "#2P8RVJVUY": {"nome": "Sterixx", "id_time": "FCS", "nome_time": "FCS F/A"},
+        "#GJPVYUQG": {"nome": "Deykonn", "id_time": "LVL", "nome_time": "LEVEL ESPORTS"},
+        "#2P8RVJVUY": {"nome": "Sterixx", "id_time": "OCXA", "nome_time": "OCX DIVISION ACADEMY"},
         "#820JCJJG": {"nome": "Jxcccr", "id_time": "ZRT", "nome_time": "ZURITA GANG"},
-        "#2QCCC29QV": {"nome": "Magic", "id_time": "ENO", "nome_time": "ENOSIS"}
+        "#2QCCC29QV": {"nome": "Magic", "id_time": "ENO", "nome_time": "ENOSIS"},
+        "#2YRRL8GG2": {"nome": "Bebaxo", "id_time": "HAWK", "nome_time": "RED HAWK"},
+        "#VQ8YP9C0": {"nome": "JoeFav", "id_time": "LVLA", "nome_time": "LEVEL ACADEMY"}
     },
     "NA": {
-        "#LVRRYPV": {"nome": "Bobby", "id_time": "RLM", "nome_time": "ONLY REALM"},
+        "#LVRRYPV": {"nome": "Bobby", "id_time": "BOB", "nome_time": "F/A BOBBY"},
         "#82RCQCVG": {"nome": "Lxffy", "id_time": "TRB", "nome_time": "TRIBE GAMING"},
         "#YUJ8PJ0LR": {"nome": "Snoiy", "id_time": "TE", "nome_time": "TEAM ELEKTROS"},
         "#VPVLG2": {"nome": "Tyrant", "id_time": "HML", "nome_time": "F/A HOMELESS"},
@@ -36,7 +38,7 @@ REGIOES = {
         "#QURVLPG": {"nome": "Ezlivi", "id_time": "VTC", "nome_time": "VATIC"},
         "#R9CCLP8Q": {"nome": "Rafiki", "id_time": "LGCY", "nome_time": "LEGACY"},
         "#28LUY98": {"nome": "OG", "id_time": "VIC", "nome_time": "VIC"},
-        "#8UL0U08V": {"nome": "Winq", "id_time": "RLMA", "nome_time": "ONLY REALM Academy"},
+        "#8UL0U08V": {"nome": "Winq", "id_time": "UTP", "nome_time": "UTOPIA"},
         "#JJ09PC0P": {"nome": "Vegeta", "id_time": "VICD", "nome_time": "VIC Day"},
         "#R80QRP0G": {"nome": "Squeezy", "id_time": "PFZ", "nome_time": "PFZ"},
         "#88PL8L2JC": {"nome": "David", "id_time": "ENONA", "nome_time": "ENOSIS NA"}
@@ -54,6 +56,7 @@ REGIOES = {
         "#PLV89CGP": {"nome": "Salty", "id_time": "BIG", "nome_time": "BIG"},
         "#LLV82LQPU": {"nome": "Fayelo", "id_time": "REV", "nome_time": "REVERSO HIVE"},
         "#8RVLRVYYP": {"nome": "Yei Yei", "id_time": "TLB", "nome_time": "TALENTS LAB"},
+        "#82GG2RLQG": {"nome": "ZeyroX", "id_time": "FUTA", "nome_time": "FUT ACADEMY"}
     },
     "EA": {
         "#9ULYPV8": {"nome": "Tensai", "id_time": "CR", "nome_time": "CRAZY RACCOON"},
