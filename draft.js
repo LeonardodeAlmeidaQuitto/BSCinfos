@@ -34,7 +34,7 @@ const DADOS_COUNTERS = {
     "Angelo": ["Eve", "Ruffs", "Charlie", "Belle", "Kenji", "Pierce", "Nani", "Byron", "Kaze", "Mina", "Leon"],
     "Ash": ["Frank", "Trunk", "Edgar", "Rico", "Shade", "Sirius", "Kenji", "Griff"],
     "Barley": ["Mortis", "Kenji", "Edgar", "Cordelius", "Trunk", "Mico", "Colt"],
-    "Bea": ["Charlie", "Ruffs", "Byron", "Najia", "Belle", "Angelo", "Leon", "Piper", "Crow", "Edgar", "Najia", "Mina", "MrP],
+    "Bea": ["Charlie", "Ruffs", "Byron", "Najia", "Belle", "Angelo", "Leon", "Piper", "Crow", "Edgar", "Najia", "Mina", "MrP"],
     "Belle": ["Piper", "Charlie", "Byron", "Nani", "Najia", "Crow", "Mina"],
     "Berry": ["Kaze", "Crow", "Sirius", "Shade", "Trunk", "Clancy", "Edgar", "Mortis", "Alli", "Griff"],
     "Bibi": ["Cordelius", "Otis", "Edgar", "Colette", "Buzz", "Bull", "Pearl"],
