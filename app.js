@@ -95,20 +95,36 @@ const CONFIGURACAO_MANUAL_TIMES = {
 
 function carregarTimesSalvosLocal() {
     let salvos = JSON.parse(localStorage.getItem('customTeams_' + _REGIAO)) || [];
-    if (!CONFIGURACAO_MANUAL_TIMES[_REGIAO]) {
+    if (!CONFIGURACAO_MANUAL_TIMES[_REGIAO] && _REGIAO !== "ALL") {
         CONFIGURACAO_MANUAL_TIMES[_REGIAO] = {};
     }
-    if (!CONFIGURACAO_MANUAL_TIMES[_REGIAO]["TIMES REGISTRADOS"]) {
-        CONFIGURACAO_MANUAL_TIMES[_REGIAO]["TIMES REGISTRADOS"] = [];
+    
+    // Configura a região se for "ALL"
+    if (_REGIAO === "ALL" && !CONFIGURACAO_MANUAL_TIMES["ALL"]) {
+        CONFIGURACAO_MANUAL_TIMES["ALL"] = { "TIER ?": [], "TIMES REGISTRADOS": [] };
     }
-    salvos.forEach(t => CONFIGURACAO_MANUAL_TIMES[_REGIAO]["TIMES REGISTRADOS"].push(t));
+
+    let regAlvo = _REGIAO === "ALL" ? "ALL" : _REGIAO;
+    if (!CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIMES REGISTRADOS"]) {
+        CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIMES REGISTRADOS"] = [];
+    }
+    salvos.forEach(t => CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIMES REGISTRADOS"].push(t));
 }
 carregarTimesSalvosLocal();
 
 const formatImg = n => { if(!n) return 'default'; return n.toLowerCase().replace(/[^a-z0-9]/g, ''); };
 
-// Verifica dinamicamente na região atual
+// Verifica dinamicamente na região atual (Modificado para aceitar TODAS quando for "ALL")
 const isTimeDaRegiaoAtual = (id) => {
+    if (_REGIAO === "ALL") {
+        for (let reg in CONFIGURACAO_MANUAL_TIMES) {
+            for (let tier in CONFIGURACAO_MANUAL_TIMES[reg]) {
+                if (CONFIGURACAO_MANUAL_TIMES[reg][tier].find(t => t.id_time === id)) return true;
+            }
+        }
+        return false;
+    }
+    
     let reg = CONFIGURACAO_MANUAL_TIMES[_REGIAO];
     if(!reg) return false;
     for(let tier in reg) {
@@ -178,8 +194,9 @@ function carregarCSV() {
 }
 
 function processarTimesDesconhecidos(dados) {
-    if (!CONFIGURACAO_MANUAL_TIMES[_REGIAO]["TIER ?"]) {
-        CONFIGURACAO_MANUAL_TIMES[_REGIAO]["TIER ?"] = [];
+    let regAlvo = _REGIAO === "ALL" ? "ALL" : _REGIAO;
+    if (!CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIER ?"]) {
+        CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIER ?"] = [];
     }
 
     const mapaTimesDesconhecidos = new Map();
@@ -221,8 +238,8 @@ function processarTimesDesconhecidos(dados) {
                         let oponentesTags = (startIndex < 3) ? partidaTags.tagsB : partidaTags.tagsA;
                         let oponenteTime = encontrarTimePorRoster(oponentesTags);
                         
-                        // Vincula o time desconhecido apenas se o oponente for da região atual
-                        if (oponenteTime && oponenteTime.regiao === _REGIAO) {
+                        // Vincula o time desconhecido se o oponente for da região atual (ou se a região for ALL)
+                        if (oponenteTime && (_REGIAO === "ALL" || oponenteTime.regiao === _REGIAO)) {
                             const assinaturaTime = timeTags.slice().sort().join('_');
                             
                             if (!mapaTimesDesconhecidos.has(assinaturaTime)) {
@@ -230,7 +247,7 @@ function processarTimesDesconhecidos(dados) {
                                 const novoNome = `Unknow ${unkCounter}`;
                                 mapaTimesDesconhecidos.set(assinaturaTime, { id: novoId, nome: novoNome });
                                 
-                                CONFIGURACAO_MANUAL_TIMES[_REGIAO]["TIER ?"].push({
+                                CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIER ?"].push({
                                     id_time: novoId,
                                     nome_time: novoNome,
                                     jogadores: [
@@ -597,7 +614,26 @@ function renderizarSidebarTimes() {
     const sidebar = document.getElementById('lista-times-sidebar');
     sidebar.innerHTML = '';
     
-    const timesRegiao = CONFIGURACAO_MANUAL_TIMES[_REGIAO];
+    let timesRegiao = {};
+    
+    // Se a região for "ALL", junta os times de todas as regiões configuradas
+    if (_REGIAO === "ALL") {
+        for (let r in CONFIGURACAO_MANUAL_TIMES) {
+            for (let tier in CONFIGURACAO_MANUAL_TIMES[r]) {
+                if (!timesRegiao[tier]) timesRegiao[tier] = [];
+                
+                CONFIGURACAO_MANUAL_TIMES[r][tier].forEach(t => {
+                    // Evita exibir times duplicados se houver conflito de IDs
+                    if (!timesRegiao[tier].find(existente => existente.id_time === t.id_time)) {
+                        timesRegiao[tier].push(t);
+                    }
+                });
+            }
+        }
+    } else {
+        timesRegiao = CONFIGURACAO_MANUAL_TIMES[_REGIAO];
+    }
+
     if(!timesRegiao) return;
 
     for(let tier in timesRegiao) {
@@ -626,9 +662,10 @@ function renderizarSidebarTimes() {
 window.registrarTimeCustom = function(oldId) {
     const newId = document.getElementById('custom-id').value.toUpperCase();
     const newName = document.getElementById('custom-name').value;
+    let regAlvo = _REGIAO === "ALL" ? "ALL" : _REGIAO;
     
     let timeObj = null;
-    CONFIGURACAO_MANUAL_TIMES[_REGIAO]["TIER ?"] = CONFIGURACAO_MANUAL_TIMES[_REGIAO]["TIER ?"].filter(t => {
+    CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIER ?"] = CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIER ?"].filter(t => {
         if(t.id_time === oldId) {
             timeObj = t;
             return false;
@@ -644,8 +681,8 @@ window.registrarTimeCustom = function(oldId) {
         timeObj.jogadores[1].nick = document.getElementById('nick-1').value;
         timeObj.jogadores[2].nick = document.getElementById('nick-2').value;
 
-        if(!CONFIGURACAO_MANUAL_TIMES[_REGIAO]["TIMES REGISTRADOS"]) CONFIGURACAO_MANUAL_TIMES[_REGIAO]["TIMES REGISTRADOS"] = [];
-        CONFIGURACAO_MANUAL_TIMES[_REGIAO]["TIMES REGISTRADOS"].push(timeObj);
+        if(!CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIMES REGISTRADOS"]) CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIMES REGISTRADOS"] = [];
+        CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIMES REGISTRADOS"].push(timeObj);
         
         let salvos = JSON.parse(localStorage.getItem('customTeams_' + _REGIAO)) || [];
         salvos.push(timeObj);
@@ -852,6 +889,11 @@ function processarScrimes(dadosPeriodo) {
             });
         }
     });
+
+    // ----------------------------------------------------------------------
+    // FILTRO ADICIONADO: Não mostrar partidas que acabem com apenas 1 round (1 set)
+    // ----------------------------------------------------------------------
+    scrims = scrims.filter(s => s.rounds.length > 1);
 
     renderizarListaScrims(scrims.reverse()); 
 }
