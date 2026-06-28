@@ -1,16 +1,44 @@
-import brawlstats
+cat > /home/claude/gerador.py << 'PYEOF'
+import requests
 import pandas as pd
 import os
-import json
 from datetime import datetime, timedelta, timezone
 
-# --- CONFIGURAÇÃO ---
-API_KEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjU0ODZlOGQxLTRkNWQtNDJmYy1iOWE3LWU5ODYyMWJhOWI0NSIsImlhdCI6MTc3ODUwODgwOCwic3ViIjoiZGV2ZWxvcGVyLzc0NjFhNGJkLThhZDctNjg2Mi0wOGVkLTJiYmEzMzAxMWE3NiIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiNDUuNzkuMjE4Ljc5Il0sInR5cGUiOiJjbGllbnQifV19.yvcSQalBqNz6Q6DjZWU5IL1XvBjn5DGckYvy2bgl5tjVeRJ2GMhY_I2JP1zdEeLAfEG2hGVJT7OMZro4kkegFA"
-
-client = brawlstats.Client(API_KEY, base_url="https://bsproxy.royaleapi.dev/v1")
-
+# =============================================================================
+# CONFIGURAÇÃO
+# =============================================================================
+API_KEY   = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjU0ODZlOGQxLTRkNWQtNDJmYy1iOWE3LWU5ODYyMWJhOWI0NSIsImlhdCI6MTc3ODUwODgwOCwic3ViIjoiZGV2ZWxvcGVyLzc0NjFhNGJkLThhZDctNjg2Mi0wOGVkLTJiYmEzMzAxMWE3NiIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiNDUuNzkuMjE4Ljc5Il0sInR5cGUiOiJjbGllbnQifV19.yvcSQalBqNz6Q6DjZWU5IL1XvBjn5DGckYvy2bgl5tjVeRJ2GMhY_I2JP1zdEeLAfEG2hGVJT7OMZro4kkegFA"
+PROXY_URL = "https://bsproxy.royaleapi.dev/v1"
 ARQUIVO_BRUTO = "historico_bruto.csv"
+ARQUIVO_BANS  = "bans_matcherino.csv"
 
+# =============================================================================
+# TORNEIOS MATCHERINO
+# =============================================================================
+# Adicione aqui os IDs dos torneios que quer capturar.
+# O ID está na URL: matcherino.com/supercell/tournaments/123456 -> ID = 123456
+#
+# COMO DESCOBRIR OS ENDPOINTS (necessario uma vez por torneio):
+#   1. Abra o torneio no Chrome com F12 aberto
+#   2. Va em Network -> Fetch/XHR
+#   3. Clique num match no bracket para ver as requisicoes
+#   4. Copie as URLs e coloque em 'endpoint_matches' e 'endpoint_game'
+#   5. Se deixar None, o bot tenta os padroes mais comuns automaticamente
+#
+# Formato:
+#   { id_torneio: { 'regiao': 'SA', 'endpoint_matches': None, 'endpoint_game': None } }
+TORNEIOS_MATCHERINO = {
+    # Exemplo (substitua pelo ID e endpoints reais):
+    # ID: {
+    #     'regiao': 'Region',
+    #     'endpoint_matches': None,
+    #     'endpoint_game':    None,
+    # },
+}
+
+# =============================================================================
+# REGIOES
+# =============================================================================
 REGIOES = {
     "SA": {
         "#PLLRJC2V": {"nome": "Wesley", "id_time": "BH", "nome_time": "BH ESPORTS"},
@@ -74,73 +102,328 @@ REGIOES = {
 }
 
 TAG_PARA_REGIAO = {tag: reg for reg, lista in REGIOES.items() for tag in lista}
-MAPA_JOGADORES = {tag: info for reg, lista in REGIOES.items() for tag, info in lista.items()}
+MAPA_JOGADORES  = {tag: info for reg, lista in REGIOES.items() for tag, info in lista.items()}
 
-def minerar_dados():
-    fuso_brasilia = timezone(timedelta(hours=-3))
+MAPA_TIMES_BY_NOME = {}
+for _reg, _jogs in REGIOES.items():
+    for _tag, _info in _jogs.items():
+        MAPA_TIMES_BY_NOME[_info['nome_time'].lower().strip()] = (_info['id_time'], _info['nome_time'], _reg)
+
+def resolver_time(nome_matcherino):
+    key = nome_matcherino.lower().strip()
+    if key in MAPA_TIMES_BY_NOME:
+        return MAPA_TIMES_BY_NOME[key]
+    for k, v in MAPA_TIMES_BY_NOME.items():
+        if key in k or k in key:
+            return v
+    return (f"EXT_{nome_matcherino[:6].upper().replace(' ','_')}", nome_matcherino, "?")
+
+
+def buscar_battle_log(tag):
+    url     = f"{PROXY_URL}/players/{tag.replace('#', '%23')}/battlelog"
+    headers = {"Authorization": f"Bearer {API_KEY}"}
+    try:
+        r = requests.get(url, headers=headers, timeout=15)
+        r.raise_for_status()
+        return r.json().get('items', [])
+    except Exception as e:
+        print(f"  aviso: erro ao buscar {tag}: {e}")
+        return []
+
+
+def tentar_endpoint_matcherino(session, tournament_id, endpoint_custom=None):
+    candidatos = []
+    if endpoint_custom:
+        candidatos.append(endpoint_custom)
+    candidatos += [
+        f"https://matcherino.com/__api/bounties/{tournament_id}/matches",
+        f"https://matcherino.com/__api/bounties/{tournament_id}",
+        f"https://matcherino.com/api/v1/tournaments/{tournament_id}/matches",
+        f"https://matcherino.com/api/v1/bounties/{tournament_id}",
+        f"https://matcherino.com/__api/events/{tournament_id}/bracket",
+    ]
+    for url in candidatos:
+        try:
+            r = session.get(url, timeout=12)
+            if r.status_code == 200:
+                print(f"  endpoint ativo: {url}")
+                return url, r.json()
+        except Exception:
+            pass
+    return None, {}
+
+
+def tentar_endpoint_game(session, match_id, endpoint_custom=None):
+    candidatos = []
+    if endpoint_custom:
+        candidatos.append(endpoint_custom.replace('{match_id}', str(match_id)))
+    candidatos += [
+        f"https://matcherino.com/__api/matches/{match_id}",
+        f"https://matcherino.com/__api/matches/{match_id}/games",
+        f"https://matcherino.com/api/v1/matches/{match_id}",
+    ]
+    for url in candidatos:
+        try:
+            r = session.get(url, timeout=12)
+            if r.status_code == 200:
+                return r.json()
+        except Exception:
+            pass
+    return {}
+
+def minerar_dados_api():
+    fuso_brasilia   = timezone(timedelta(hours=-3))
     momento_revisao = datetime.now(fuso_brasilia).strftime('%d/%m/%Y %H:%M:%S')
-    
-    colunas = ['id_partida', 'regiao', 'id_players', 'name_players', 'pick', 'win', 'win_rate', 'modo', 'mapa', 'data_adicao', 'player_tag', 'player_name', 'id_time', 'nome_time', 'tipo']
-    
+
+    colunas = [
+        'id_partida', 'regiao', 'id_players', 'name_players', 'pick',
+        'win', 'win_rate', 'modo', 'mapa', 'data_adicao',
+        'player_tag', 'player_name', 'id_time', 'nome_time', 'tipo'
+    ]
+
+    ids_registrados = set()
     if os.path.exists(ARQUIVO_BRUTO):
         try:
-            df_existente = pd.read_csv(ARQUIVO_BRUTO, sep=',', dtype=str, keep_default_na=False)
-            if 'tipo' not in df_existente.columns:
-                df_existente['tipo'] = 'scrim'
-                df_existente.to_csv(ARQUIVO_BRUTO, index=False)
-            ids_registrados = set(df_existente['id_partida'].unique())
-        except: ids_registrados = set()
+            df_ex = pd.read_csv(ARQUIVO_BRUTO, dtype=str, keep_default_na=False)
+            if 'tipo' not in df_ex.columns:
+                df_ex['tipo'] = 'scrim'
+                df_ex.to_csv(ARQUIVO_BRUTO, index=False)
+            ids_registrados = set(df_ex['id_partida'].unique())
+        except Exception:
+            ids_registrados = set()
     else:
         pd.DataFrame(columns=colunas).to_csv(ARQUIVO_BRUTO, index=False)
-        ids_registrados = set()
 
     novas_linhas = []
-    total_novas = 0
+    total_novas  = 0
 
     for sigla_busca, jogadores in REGIOES.items():
-        for tag_busca, info_busca in jogadores.items():
-            try:
-                logs = client.get_battle_logs(tag_busca)
-                for entry in logs:
-                    battle = entry.get('battle', {})
-                    if 'ranked' in battle.get('type', '').lower(): continue
-                    teams = battle.get('teams')
-                    if not teams or len(teams) < 2: continue
-                    
-                    t0_tracked = [MAPA_JOGADORES[p['tag']] for p in teams[0] if p['tag'] in MAPA_JOGADORES]
-                    t1_tracked = [MAPA_JOGADORES[p['tag']] for p in teams[1] if p['tag'] in MAPA_JOGADORES]
-                    t0_id = t0_tracked[0]['id_time'] if t0_tracked else "OPONENTE_T0"
-                    t0_nome = t0_tracked[0]['nome_time'] if t0_tracked else "DESCONHECIDO T0"
-                    t1_id = t1_tracked[0]['id_time'] if t1_tracked else "OPONENTE_T1"
-                    t1_nome = t1_tracked[0]['nome_time'] if t1_tracked else "DESCONHECIDO T1"
-                    
-                    all_players = teams[0] + teams[1]
-                    tags_list = [p['tag'] for p in all_players]
-                    brawlers_list = [p['brawler']['name'].upper() for p in all_players]
-                    time_str = str(entry.get('battleTime'))
-                    mapa = entry.get('event', {}).get('map', 'Unknown')
-                    m_id = f"{time_str}_{mapa}_{'_'.join(tags_list)}_{'_'.join(brawlers_list)}"
-                    
-                    if m_id in ids_registrados: continue
-                    nicks_list = [p.get('name', 'Unknown') for p in all_players]
-                    reg_final = "/".join(sorted({TAG_PARA_REGIAO[t] for t in tags_list if t in TAG_PARA_REGIAO} or {sigla_busca}))
-                    res = battle.get('result')
+        for tag_busca in jogadores:
+            for entry in buscar_battle_log(tag_busca):
+                battle = entry.get('battle', {})
 
-                    tipo_raw = battle.get('type', 'friendly').lower()
-                    tipo_final = 'scrim' if 'friendly' in tipo_raw else 'tournament'
+                # WHITELIST — so aceita friendly (scrim) e tournament
+                tipo_raw = battle.get('type', '').lower()
+                if tipo_raw not in ('friendly', 'tournament'):
+                    continue
 
-                    for i in range(6):
-                        venceu = 1 if (i < 3 and res == 'victory') or (i >= 3 and res == 'defeat') else 0
-                        novas_linhas.append([m_id, reg_final, ";".join(tags_list), ";".join(nicks_list), brawlers_list[i], venceu, f"{venceu*100}.0%", battle.get('mode', 'Unknown'), mapa, momento_revisao, tags_list[i], nicks_list[i], t0_id if i < 3 else t1_id, t0_nome if i < 3 else t1_nome, tipo_final])
-                    ids_registrados.add(m_id)
-                    total_novas += 1
-            except: continue
+                teams = battle.get('teams')
+                if not teams or len(teams) < 2:
+                    continue
+
+                t0t = [MAPA_JOGADORES[p['tag']] for p in teams[0] if p['tag'] in MAPA_JOGADORES]
+                t1t = [MAPA_JOGADORES[p['tag']] for p in teams[1] if p['tag'] in MAPA_JOGADORES]
+                t0_id   = t0t[0]['id_time']   if t0t else "OPONENTE_T0"
+                t0_nome = t0t[0]['nome_time'] if t0t else "DESCONHECIDO T0"
+                t1_id   = t1t[0]['id_time']   if t1t else "OPONENTE_T1"
+                t1_nome = t1t[0]['nome_time'] if t1t else "DESCONHECIDO T1"
+
+                all_p    = teams[0] + teams[1]
+                tags     = [p['tag'] for p in all_p]
+                brawlers = [p['brawler']['name'].upper() for p in all_p]
+                nicks    = [p.get('name', '?') for p in all_p]
+
+                # FIX: battleTime direto do JSON (sem conversao snake_case do brawlstats)
+                time_str = entry.get('battleTime', 'UNKNOWN')
+                mapa     = entry.get('event', {}).get('map', 'Unknown')
+                m_id     = f"{time_str}_{mapa}_{'_'.join(tags)}_{'_'.join(brawlers)}"
+
+                if m_id in ids_registrados:
+                    continue
+
+                reg_final  = "/".join(sorted({TAG_PARA_REGIAO[t] for t in tags if t in TAG_PARA_REGIAO} or {sigla_busca}))
+                res        = battle.get('result')
+                tipo_final = 'scrim' if tipo_raw == 'friendly' else 'tournament'
+
+                for i in range(6):
+                    venceu = 1 if (i < 3 and res == 'victory') or (i >= 3 and res == 'defeat') else 0
+                    novas_linhas.append([
+                        m_id, reg_final, ";".join(tags), ";".join(nicks),
+                        brawlers[i], venceu, f"{venceu*100}.0%",
+                        battle.get('mode', 'Unknown'), mapa, momento_revisao,
+                        tags[i], nicks[i],
+                        t0_id if i < 3 else t1_id,
+                        t0_nome if i < 3 else t1_nome,
+                        tipo_final
+                    ])
+                ids_registrados.add(m_id)
+                total_novas += 1
 
     if novas_linhas:
-        df_novos = pd.DataFrame(novas_linhas, columns=colunas)
-        df_novos.to_csv(ARQUIVO_BRUTO, mode='a', header=False, index=False, sep=',', encoding='utf-8')
-        
-    print(f"✅ Sucesso! {total_novas} novas partidas adicionadas ao historico_bruto.csv.")
+        pd.DataFrame(novas_linhas, columns=colunas).to_csv(
+            ARQUIVO_BRUTO, mode='a', header=False, index=False, encoding='utf-8')
+
+    print(f"OK API BS: {total_novas} novas partidas adicionadas a {ARQUIVO_BRUTO}.")
+    return total_novas
+
+def minerar_matcherino():
+    if not TORNEIOS_MATCHERINO:
+        print("INFO: Nenhum torneio em TORNEIOS_MATCHERINO. Adicione os IDs para ativar.")
+        return
+
+    fuso_brasilia = timezone(timedelta(hours=-3))
+    momento       = datetime.now(fuso_brasilia).strftime('%d/%m/%Y %H:%M:%S')
+
+    colunas_picks = [
+        'id_partida', 'regiao', 'id_players', 'name_players', 'pick',
+        'win', 'win_rate', 'modo', 'mapa', 'data_adicao',
+        'player_tag', 'player_name', 'id_time', 'nome_time', 'tipo'
+    ]
+    colunas_bans = [
+        'id_partida', 'regiao', 'mapa', 'modo',
+        'id_time', 'nome_time', 'brawler_banido', 'data_adicao', 'tipo'
+    ]
+
+    ids_picks = set()
+    if os.path.exists(ARQUIVO_BRUTO):
+        try:
+            df = pd.read_csv(ARQUIVO_BRUTO, dtype=str, keep_default_na=False)
+            ids_picks = set(df[df['id_partida'].str.startswith('mtcr_', na=False)]['id_partida'])
+        except Exception:
+            pass
+
+    ids_bans = set()
+    if os.path.exists(ARQUIVO_BANS):
+        try:
+            df_b = pd.read_csv(ARQUIVO_BANS, dtype=str, keep_default_na=False)
+            ids_bans = set(df_b['id_partida'].unique())
+        except Exception:
+            pass
+    else:
+        pd.DataFrame(columns=colunas_bans).to_csv(ARQUIVO_BANS, index=False)
+
+    sess = requests.Session()
+    sess.headers.update({
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "Accept": "application/json",
+        "Referer": "https://matcherino.com"
+    })
+
+    novas_picks = []
+    novos_bans  = []
+    total_jogos = 0
+
+    for t_id, t_cfg in TORNEIOS_MATCHERINO.items():
+        regiao     = t_cfg.get('regiao', 'SA')
+        ep_matches = t_cfg.get('endpoint_matches')
+        ep_game    = t_cfg.get('endpoint_game')
+
+        print(f"\nMatcherino #{t_id} ({regiao})")
+
+        _, data = tentar_endpoint_matcherino(sess, t_id, ep_matches)
+        if not data:
+            print(f"  AVISO: Endpoint nao encontrado. Use DevTools para descobrir a URL.")
+            continue
+
+        matches = data if isinstance(data, list) else \
+                  data.get('matches', data.get('items', data.get('data', data.get('results', []))))
+
+        for match in matches:
+            m_id   = match.get('id') or match.get('matchId') or match.get('match_id')
+            ta_raw = match.get('team1') or match.get('teamA') or (match.get('teams', [{}])[0] if match.get('teams') else {})
+            tb_raw = match.get('team2') or match.get('teamB') or (match.get('teams', [{},{}])[1] if len(match.get('teams', [])) > 1 else {})
+            ta_nome = ta_raw.get('name', 'TIME A') if isinstance(ta_raw, dict) else str(ta_raw)
+            tb_nome = tb_raw.get('name', 'TIME B') if isinstance(tb_raw, dict) else str(tb_raw)
+            ta_id, ta_nome_int, _ = resolver_time(ta_nome)
+            tb_id, tb_nome_int, _ = resolver_time(tb_nome)
+
+            games = match.get('games', match.get('maps', match.get('sets', match.get('rounds', []))))
+            if not games and m_id:
+                gd    = tentar_endpoint_game(sess, m_id, ep_game)
+                games = gd if isinstance(gd, list) else gd.get('games', gd.get('maps', []))
+
+            for g_num, game in enumerate(games, 1):
+                mapa = game.get('map') or game.get('mapName') or game.get('map_name') or 'Unknown'
+                modo = game.get('mode') or game.get('gameMode') or game.get('game_mode') or 'knockout'
+                pid  = f"mtcr_{t_id}_{m_id}_g{g_num}"
+
+                # PICKS
+                if pid not in ids_picks:
+                    picks_a = (game.get('team1Picks') or game.get('picksA') or
+                               (game.get('picks') or {}).get('team1') or
+                               (game.get('picks') or {}).get('a') or [])
+                    picks_b = (game.get('team2Picks') or game.get('picksB') or
+                               (game.get('picks') or {}).get('team2') or
+                               (game.get('picks') or {}).get('b') or [])
+
+                    winner   = str(game.get('winner') or game.get('winnerTeam') or game.get('winning_team') or '').lower()
+                    venceu_a = 1 if winner in ('team1', '1', 'a', ta_nome.lower(), ta_id.lower()) else 0
+                    venceu_b = 1 - venceu_a
+
+                    def parse_player(p):
+                        if isinstance(p, str):
+                            return {'tag': f'MTCR_{p[:6]}', 'name': p, 'brawler': p}
+                        brawler = str(p.get('brawler') or p.get('brawlerName') or p.get('brawler_name') or 'UNKNOWN').upper()
+                        return {
+                            'tag':     p.get('tag') or p.get('playerId') or f"MTCR_{p.get('name','?')[:6]}",
+                            'name':    p.get('name') or p.get('nick') or p.get('playerName') or '?',
+                            'brawler': brawler
+                        }
+
+                    pa = [parse_player(p) for p in picks_a[:3]]
+                    pb = [parse_player(p) for p in picks_b[:3]]
+                    while len(pa) < 3: pa.append({'tag': f'MTCR_A{len(pa)}', 'name': '?', 'brawler': 'UNKNOWN'})
+                    while len(pb) < 3: pb.append({'tag': f'MTCR_B{len(pb)}', 'name': '?', 'brawler': 'UNKNOWN'})
+
+                    all_tags     = [p['tag']     for p in pa + pb]
+                    all_nicks    = [p['name']    for p in pa + pb]
+                    all_brawlers = [p['brawler'] for p in pa + pb]
+
+                    for i in range(6):
+                        v   = venceu_a if i < 3 else venceu_b
+                        t_i = ta_id       if i < 3 else tb_id
+                        n_i = ta_nome_int if i < 3 else tb_nome_int
+                        novas_picks.append([
+                            pid, regiao, ";".join(all_tags), ";".join(all_nicks),
+                            all_brawlers[i], v, f"{v*100}.0%",
+                            modo, mapa, momento,
+                            all_tags[i], all_nicks[i], t_i, n_i, 'tournament'
+                        ])
+                    ids_picks.add(pid)
+                    total_jogos += 1
+
+                # BANS
+                if pid not in ids_bans:
+                    bans_raw = game.get('bans') or game.get('ban_phase') or {}
+
+                    if isinstance(bans_raw, dict):
+                        bans_a_raw = bans_raw.get('team1') or bans_raw.get('a') or bans_raw.get('teamA') or []
+                        bans_b_raw = bans_raw.get('team2') or bans_raw.get('b') or bans_raw.get('teamB') or []
+                    elif isinstance(bans_raw, list):
+                        bans_a_raw = [x for x in bans_raw if str((x.get('team','') if isinstance(x, dict) else '')).lower() in ('team1','a', ta_id.lower())]
+                        bans_b_raw = [x for x in bans_raw if str((x.get('team','') if isinstance(x, dict) else '')).lower() in ('team2','b', tb_id.lower())]
+                    else:
+                        bans_a_raw, bans_b_raw = [], []
+
+                    def nome_brawler(b):
+                        if isinstance(b, str): return b.upper()
+                        return str(b.get('brawler') or b.get('brawlerName') or b.get('name') or 'UNKNOWN').upper()
+
+                    for b in bans_a_raw:
+                        novos_bans.append([pid, regiao, mapa, modo, ta_id, ta_nome_int, nome_brawler(b), momento, 'tournament'])
+                    for b in bans_b_raw:
+                        novos_bans.append([pid, regiao, mapa, modo, tb_id, tb_nome_int, nome_brawler(b), momento, 'tournament'])
+
+                    if bans_a_raw or bans_b_raw:
+                        ids_bans.add(pid)
+
+    if novas_picks:
+        pd.DataFrame(novas_picks, columns=colunas_picks).to_csv(
+            ARQUIVO_BRUTO, mode='a', header=False, index=False, encoding='utf-8')
+        print(f"OK Matcherino: {total_jogos} novos jogos salvos em {ARQUIVO_BRUTO}.")
+
+    if novos_bans:
+        pd.DataFrame(novos_bans, columns=colunas_bans).to_csv(
+            ARQUIVO_BANS, mode='a', header=False, index=False, encoding='utf-8')
+        n_jogos_ban = len({b[0] for b in novos_bans})
+        print(f"OK Matcherino: {n_jogos_ban} jogos com bans salvos em {ARQUIVO_BANS}.")
+
+    if not novas_picks and not novos_bans:
+        print("INFO Matcherino: nenhum dado novo encontrado.")
+
 
 if __name__ == "__main__":
-    minerar_dados()
+    minerar_dados_api()
+    minerar_matcherino()
+PYEOF
+echo "gerador.py criado: $(wc -l < /home/claude/gerador.py) linhas"
