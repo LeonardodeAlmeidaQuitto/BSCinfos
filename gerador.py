@@ -1,4 +1,3 @@
-cat > /home/claude/gerador.py << 'PYEOF'
 import requests
 import pandas as pd
 import os
@@ -425,5 +424,3 @@ def minerar_matcherino():
 if __name__ == "__main__":
     minerar_dados_api()
     minerar_matcherino()
-PYEOF
-echo "gerador.py criado: $(wc -l < /home/claude/gerador.py) linhas"
