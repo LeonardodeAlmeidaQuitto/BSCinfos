@@ -9,10 +9,24 @@ let timeSelecionado = null;
 const _REGIAO = window.REGIAO_ATUAL ? window.REGIAO_ATUAL.toUpperCase() : "SA";
 
 // ========================================================
-// 1. CONFIGURAÇÃO MANUAL DE TIMES, TIERS E ROSTERS
+// 1. CONFIGURAÇÃO DE ROTAÇÃO DE MAPAS (NOVO)
 // ========================================================
-const CONFIGURACAO_MANUAL_TIMES = {
-    "SA": {
+const ROTACAO_MAPAS = {
+    "2026": {
+        "06": { // Exemplo de mês 06
+            "Brawl Ball": ["", "", "], // Substitua pelos mapas reais
+            "GEM GRAB": ["", "", ""]
+        }
+    }
+};
+
+// ========================================================
+// 2. CONFIGURAÇÃO MENSAL DE ROSTERS E TIMES (NOVO)
+// ========================================================
+const ROSTERS_POR_DATA = {
+    "2026": {
+        "06": { // Exemplo para JUNHO
+           "SA": {
         "TIER S": [
             { id_time: "BH", nome_time: "Bounty Hunters", jogadores: [ { nick: "Wesley", tag: "#PLLRJC2V" }, { nick: "Prozy", tag: "#GYCYCLRJL" }, { nick: "Portox", tag: "#YGQYGCR" } ] },
             { id_time: "PIZZA", nome_time: "Pizza Congelado F/A", jogadores: [ { nick: "Jubileubr", tag: "#GVYLVUGR" }, { nick: "CAUEBR", tag: "#JQ8L0YYL" }, { nick: "Mohtep", tag: "#R2LR2QLG" } ] }
@@ -94,9 +108,114 @@ const CONFIGURACAO_MANUAL_TIMES = {
             { id_time: "INS", nome_time: "INSOMNIA", jogadores: [ { nick: "Koga", tag: "#28VP0G808" }, { nick: "Wahochi", tag: "#80YVJGRY" }, { nick: "Jene", tag: "#8GUPLYY" } ] },
             { id_time: "FZ", nome_time: "FRENZY", jogadores: [ { nick: "Toridesu", tag: "#89UUQLJCC" }, { nick: "Danshari", tag: "#99GGUPY2U" }, { nick: "Ferkel", tag: "#CV9Y9VPP" } ] },
             { id_time: "F0", nome_time: "FAZE ZERO", jogadores: [ { nick: "Rennosuke", tag: "#8R0JY2UJ2" }, { nick: "Telpny", tag: "#9GJ8GYCY2" }, { nick: "Mira", tag: "#88LLQGP0Q" } ] }
-        ]
+            ]
+        }
     }
 };
+    // O "PADRAO" será carregado se você selecionar "Todos os meses" ou se não houver um roster cadastrado para o mês específico.
+    "PADRAO": {
+           "SA": {
+        "TIER S": [
+            { id_time: "BH", nome_time: "Bounty Hunters", jogadores: [ { nick: "Wesley", tag: "#PLLRJC2V" }, { nick: "Prozy", tag: "#GYCYCLRJL" }, { nick: "Portox", tag: "#YGQYGCR" } ] },
+            { id_time: "PIZZA", nome_time: "Pizza Congelado F/A", jogadores: [ { nick: "Jubileubr", tag: "#GVYLVUGR" }, { nick: "CAUEBR", tag: "#JQ8L0YYL" }, { nick: "Mohtep", tag: "#R2LR2QLG" } ] }
+        ],
+        "TIER A": [
+            { id_time: "LOUD", nome_time: "LOUD", jogadores: [ { nick: "KaioDog", tag: "#GGUQCG0G" }, { nick: "FireCrow", tag: "#JQ8LLLY" }, { nick: "Edinho", tag: "#QJULVGU" } ] },
+            { id_time: "OS", nome_time: "Olimpo SQUAD", jogadores: [ { nick: "Golden", tag: "#9QCJPL20" }, { nick: "Brabao", tag: "#L9PQUV0YC" }, { nick: "Pekka", tag: "#JVRCVJ9Q" } ] },
+            { id_time: "GLXY", nome_time: "GALAXY", jogadores: [ { nick: "Doritos🐉", tag: "#202GJJR28" }, { nick: "Derpp🐰ᩚ", tag: "#2QG9LQQC8Y" }, { nick: "IceCrow", tag: "#9CPYUCGQC" } ] },
+            { id_time: "SKC", nome_time: "SKCalalas SA", jogadores: [ { nick: "Kr ;)", tag: "#PR0P8QVQ" }, { nick: "Rhz", tag: "#89PVJG9R0" }, { nick: "Juan Carlos", tag: "#PR9U2JL" } ] },
+            { id_time: "ENO", nome_time: "ENOSIS", jogadores: [ { nick: "Magic🎩", tag: "#2QCCC29QV" }, { nick: "REI DO FUT", tag: "#RVL0RPR9" }, { nick: "Fantas🌖", tag: "#PU20LUCQG" } ] },
+            { id_time: "OCX", nome_time: "OCX DIVISION", jogadores: [ { nick: "Tufa", tag: "#CQLR0Y80" }, { nick: "Rdz", tag: "#2JGP0LYV2Q" }, { nick: "Sennin", tag: "#CUGVUYPG" } ] },
+            { id_time: "AL", nome_time: "ACRE LOVERS", jogadores: [ { nick: "FireMirillo", tag: "#2GV09VJJP" }, { nick: "Satisfiyer", tag: "#PLJ8VQY2C" }, { nick: "Star Lipi", tag: "#2UQCCG92VG" } ] }
+        ],
+        "TIER B": [
+            { id_time: "CB", nome_time: "CRECHE BRAWL", jogadores: [ { nick: "Tilo", tag: "#80VLPJCCC" }, { nick: "Bielz", tag: "#9Q22C88V8" }, { nick: "Yichy", tag: "#2LVGCJ2UQR" } ] },
+            { id_time: "ZRT", nome_time: "ZURITA GANG", jogadores: [ { nick: "Jxcccr", tag: "#820JCJJG" }, { nick: "Exic", tag: "#RCYQUJU0" }, { nick: "", tag: "#" } ] },
+            { id_time: "OCXA", nome_time: "OCX DIVISION ACADEMY", jogadores: [ { nick: "Sterixx", tag: "#2P8RVJVUY" }, { nick: "", tag: "#" }, { nick: "", tag: "#" } ] },
+            { id_time: "LVL", nome_time: "LEVEL ESPORTS", jogadores: [ { nick: "Deykonn", tag: "#GJPVYUQG" }, { nick: "B4st", tag: "#2CJ0RCJ" }, { nick: "Todd", tag: "#22PGQU98R" } ] }
+        ],
+        "TIER B-/C+": [
+            { id_time: "HAWK", nome_time: "RED HAWK", jogadores: [ { nick: "BeBaxo", tag: "#2YRRL8GG2" }, { nick: "Marcellus", tag: "#9J0R0GQL" }, { nick: "Migz Labubu", tag: "#82P9JCJV8" } ] },
+            { id_time: "LVLA", nome_time: "LEVEL ESPORTS ACADEMY", jogadores: [ { nick: "JoeFav", tag: "#VQ8YP9C0" }, { nick: "Levi", tag: "#YQVPY0J9" }, { nick: "xJnn", tag: "#GLQG9CU20" } ] }
+        ]
+    },
+    "NA": {
+        "TIER S": [
+            { id_time: "BOB", nome_time: "F/A BOBBY", jogadores: [ { nick: "Bobby", tag: "#LVRRYPV" }, { nick: "Patch", tag: "#RLLRJ2" }, { nick: "Sans", tag: "#QUYCVC2" } ] },
+            { id_time: "TRB", nome_time: "TRIBE GAMING", jogadores: [ { nick: "Lxffy", tag: "#82RCQCVG" }, { nick: "RBM", tag: "#U9GC8G02" }, { nick: "Diegogamer", tag: "#QLCJGQUP" } ] },
+        ],
+        "TIER A": [
+            { id_time: "TE", nome_time: "TEAM ELEKTROS", jogadores: [ { nick: "Snoiy", tag: "#YUJ8PJ0LR" }, { nick: "Memxn", tag: "#PJPPY9LRC" }, { nick: "Doin", tag: "#8CRU0PQRQ" } ] },
+            { id_time: "HML", nome_time: "F/A Homeless", jogadores: [ { nick: "Tyrant", tag: "#VPVLG2" }, { nick: "Xemp", tag: "#2P9CJVGJ8" }, { nick: "Ducky", tag: "#20P2GP99" } ] },
+            { id_time: "NOVA", nome_time: "NOVA", jogadores: [ { nick: "PaiN", tag: "#GVLRUG9Q" }, { nick: "Roledu", tag: "#LPQQLYL2" }, { nick: "Kiritom", tag: "#LU8C9YJU" } ] },
+            { id_time: "VTC", nome_time: "VATIC", jogadores: [ { nick: "Ezlivi", tag: "#QURVLPG" }, { nick: "Belal", tag: "#Q2VCLG9Y9" }, { nick: "Duckie", tag: "#22JR2JLYC" } ] },
+            { id_time: "LGCY", nome_time: "LEGACY", jogadores: [ { nick: "Rafiki", tag: "#R9CCLP8Q" }, { nick: "Zoulan", tag: "#LYR0Q9C" }, { nick: "Zeus", tag: "#2Q028GQQP" } ] },
+            { id_time: "VIC", nome_time: "VIC", jogadores: [ { nick: "OG", tag: "#28LUY98" }, { nick: "Juice", tag: "#RP0UL9QUG" }, { nick: "SecondBest", tag: "#PVQ9QUY" } ] },
+            { id_time: "VICD", nome_time: "VIC Day", jogadores: [ { nick: "Vegeta", tag: "#JJ09PC0P" }, { nick: "Tacos", tag: "#GCJCRVQ8" }, { nick: "Chino", tag: "#VJUQ0Y" } ] }
+        ],
+        "TIER B": [
+            { id_time: "UTP", nome_time: "UTOPIA", jogadores: [ { nick: "Winq", tag: "#8UL0U08V" }, { nick: "Nerf", tag: "#9YYUPGJ2V" }, { nick: "Juni", tag: "#PL0GRVJRJ" } ] },
+            { id_time: "PFZ", nome_time: "PFZ", jogadores: [ { nick: "Squeezy", tag: "#R80QRP0G" }, { nick: "Diegofr", tag: "#8CC2CL8Q" }, { nick: "Alyanys", tag: "#2LQ0RGCRU" } ] },
+            { id_time: "ENONA", nome_time: "ENOSIS NA", jogadores: [ { nick: "David", tag: "#88PL8L2JC" }, { nick: "GN", tag: "#9GPQR8CGL" }, { nick: "Razuen", tag: "#8Q2QUV00J" } ] }
+        ]
+    },
+    "EMEA": {
+        "TIER S": [
+            { id_time: "FUT", nome_time: "FUT ESPORTS", jogadores: [ { nick: "AngelBoy", tag: "#9PCV9L982" }, { nick: "Guesti", tag: "#2R0JLJJ9PP" }, { nick: "Nob", tag: "#P2808PRC" } ] },
+            { id_time: "HMB", nome_time: "HMBLE", jogadores: [ { nick: "Symantec", tag: "#YQUCCJ2"}, { nick: "BosS", tag: "#V89Y2GP0" }, { nick: "Lukii", tag: "#8V92UYCJ" } ] }
+
+        ],
+    "TIER A": [
+            { id_time: "KUMA", nome_time: "KUMA", jogadores: [ { nick: "Dompe", tag: "#2208QGGGL" }, { nick: "Mine", tag: "#V888YPGU" }, { nick: "Nes", tag: "#Q808R2CV" } ] },
+            { id_time: "NAVI", nome_time: "NAVI", jogadores: [ { nick: "Enraged", tag: "#80PVPCC29" }, { nick: "GeRo", tag: "#2VJCCCQGP" }, { nick: "Drage", tag: "#J089RQ" } ] },
+            { id_time: "MZP", nome_time: "MZP", jogadores: [ { nick: "Decaii", tag: "#2Y822YJYJC" }, { nick: "Ćiro", tag: "#2RR2RU8UL" }, { nick: "LeNain", tag: "#20L88L2J" } ] },     
+            { id_time: "SK", nome_time: "SK GAMING", jogadores: [ { nick: "Ope", tag: "#9LVUC2PY" }, { nick: "Yoshi825", tag: "#CJV2PJ0R" }, { nick: "Yoko", tag: "#29VRJU08C" } ] },
+            { id_time: "TH", nome_time: "TEAM HERETICS", jogadores: [ { nick: "IKaoss", tag: "#PCPRPJV" }, { nick: "Marco", tag: "#Q22ULY9JY" }, { nick: "Zimon", tag: "#22CL00PG0" } ] },
+            { id_time: "TTM", nome_time: "REPLY TOTEM", jogadores: [ { nick: "Maru", tag: "#2Q892QVU" }, { nick: "Joker", tag: "#9JCG0VY8U" }, { nick: "Maury", tag: "#82RGU8PR" } ] },
+            { id_time: "NOVO", nome_time: "NOVO ESPORTS", jogadores: [ { nick: "Filippo", tag: "#9PQQ8GQQ" }, { nick: "MeOw", tag: "#90JCYPQU" }, { nick: "Jus", tag: "#JJ92RGPL" } ] },
+            { id_time: "BIG", nome_time: "BIG", jogadores: [ { nick: "Salty", tag: "#PLV89CGP" }, { nick: "Arthur🥥", tag: "#9RVPL0Q0P" }, { nick: "Melih🥥", tag: "#GLPJRCLYL" } ] }
+        ],
+     "TIER B": [
+            { id_time: "FUTA", nome_time: "FUT ACADEMY", jogadores: [ { nick: "ZeyroX", tag: "#82GG2RLQG" }, { nick: "Ferissa", tag: "#2LLRJGPVV8" }, { nick: "DeMaster", tag: "#2GV90L8YP" } ] },
+            { id_time: "REV", nome_time: "REVERSO HIVE", jogadores: [ { nick: "Fayelo", tag: "#LLV82LQPU" }, { nick: "Ethan", tag: "#2Y20JR8CQ" }, { nick: "Natrix", tag: "#CJ9YRGGC" } ] },
+            { id_time: "TLB", nome_time: "TALENTS LAB", jogadores: [ { nick: "Yei Yei", tag: "#8RVLRVYYP" }, { nick: "Agachi", tag: "#YYUG20PQV" }, { nick: "Stas", tag: "#9LYQR9QC" } ] }
+        ],
+    },
+    "EA": {
+        "TIER S": [
+            { id_time: "CR", nome_time: "CRAZY RACCOON", jogadores: [ { nick: "Tensai", tag: "#9ULYPV8" }, { nick: "Milkreo", tag: "#20C0LL00" }, { nick: "Moya", tag: "#UR2UL8YR" } ] },
+            { id_time: "ZETA", nome_time: "ZETA DIVISION", jogadores: [ { nick: "Battoman", tag: "#P0Y8JGL0U" }, { nick: "Sizuku", tag: "#P90RJQ8C" }, { nick: "Sitetampo", tag: "#8Y98Q8U" } ] }
+        ],
+    "TIER A": [
+            { id_time: "SKCEA", nome_time: "SKC EA", jogadores: [ { nick: "Kuru", tag: "#J99YU9QY" }, { nick: "Ghost T", tag: "#2CJJJGUJ20" }, { nick: "Naipishu", tag: "#2P0V0CQQ2" } ] },
+            { id_time: "FG", nome_time: "IGM", jogadores: [ { nick: "Shigemyon", tag: "#2RQQ9PGC" }, { nick: "Drake", tag: "#2CJG2GGCGP" }, { nick: "Nyade", tag: "2UQVY2JL2V#" } ] },
+            { id_time: "AXIS", nome_time: "AXIS", jogadores: [ { nick: "Terry", tag: "#LJ0288PRG" }, { nick: "Yume", tag: "#PJ80QPVL2" }, { nick: "Menmi", tag: "#QCLV9CL" } ] },
+            { id_time: "RVL", nome_time: "RIVAL", jogadores: [ { nick: "Yutapin", tag: "#82CJYJPG2" }, { nick: "Ryohei", tag: "#82PQUPGU0" }, { nick: "Totoro", tag: "#2ULLCRYJ2Y" } ] },
+            { id_time: "RC", nome_time: "REJECT", jogadores: [ { nick: "Melty", tag: "#8J9GUJJVY" }, { nick: "Levi", tag: "#29UGLJV2G" }, { nick: "Shu", tag: "#2G0RRLU2R" } ] },
+            { id_time: "FL", nome_time: "FENNEL", jogadores: [ { nick: "Achapi", tag: "#28PU0P9L0" }, { nick: "Ken-G", tag: "#2282LR0YG" }, { nick: "I see", tag: "#8Y2Y0GYYG" } ] },
+            { id_time: "INS", nome_time: "INSOMNIA", jogadores: [ { nick: "Koga", tag: "#28VP0G808" }, { nick: "Wahochi", tag: "#80YVJGRY" }, { nick: "Jene", tag: "#8GUPLYY" } ] },
+            { id_time: "FZ", nome_time: "FRENZY", jogadores: [ { nick: "Toridesu", tag: "#89UUQLJCC" }, { nick: "Danshari", tag: "#99GGUPY2U" }, { nick: "Ferkel", tag: "#CV9Y9VPP" } ] },
+            { id_time: "F0", nome_time: "FAZE ZERO", jogadores: [ { nick: "Rennosuke", tag: "#8R0JY2UJ2" }, { nick: "Telpny", tag: "#9GJ8GYCY2" }, { nick: "Mira", tag: "#88LLQGP0Q" } ] }
+            ]
+        }
+    }
+};
+
+let CONFIGURACAO_MANUAL_TIMES = {};
+
+function atualizarRostersAtuais() {
+    let selectAno = document.getElementById('select-ano');
+    let selectMes = document.getElementById('select-mes');
+    const ano = selectAno ? selectAno.value : 'todos';
+    const mes = selectMes ? selectMes.value : 'todos';
+
+    if (ano !== 'todos' && mes !== 'todos' && ROSTERS_POR_DATA[ano] && ROSTERS_POR_DATA[ano][mes]) {
+        CONFIGURACAO_MANUAL_TIMES = JSON.parse(JSON.stringify(ROSTERS_POR_DATA[ano][mes]));
+    } else {
+        CONFIGURACAO_MANUAL_TIMES = JSON.parse(JSON.stringify(ROSTERS_POR_DATA["PADRAO"]));
+    }
+    carregarTimesSalvosLocal();
+}
 
 function carregarTimesSalvosLocal() {
     let salvos = JSON.parse(localStorage.getItem('customTeams_' + _REGIAO)) || [];
@@ -112,7 +231,6 @@ function carregarTimesSalvosLocal() {
     }
     salvos.forEach(t => CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIMES REGISTRADOS"].push(t));
 }
-carregarTimesSalvosLocal();
 
 const formatImg = n => { if(!n) return 'default'; return n.toLowerCase().replace(/[^a-z0-9]/g, ''); };
 
@@ -133,14 +251,18 @@ const isTimeDaRegiaoAtual = (id) => {
     return false;
 };
 
+// Procura por time em todos os registros históricos
 function encontrarTimePorRoster(tagsArray) {
-    for (let reg in CONFIGURACAO_MANUAL_TIMES) {
-        for (let tier in CONFIGURACAO_MANUAL_TIMES[reg]) {
-            if (tier === "TIER ?") continue;
-            for (let team of CONFIGURACAO_MANUAL_TIMES[reg][tier]) {
-                let matchCount = 0;
-                team.jogadores.forEach(j => { if (tagsArray.includes(j.tag)) matchCount++; });
-                if (matchCount >= 2) return { id: team.id_time, nome: team.nome_time, regiao: reg };
+    for (let dataKey in ROSTERS_POR_DATA) {
+        let configData = ROSTERS_POR_DATA[dataKey];
+        for (let reg in configData) {
+            for (let tier in configData[reg]) {
+                if (tier === "TIER ?") continue;
+                for (let team of configData[reg][tier]) {
+                    let matchCount = 0;
+                    team.jogadores.forEach(j => { if (tagsArray.includes(j.tag)) matchCount++; });
+                    if (matchCount >= 2) return { id: team.id_time, nome: team.nome_time, regiao: reg };
+                }
             }
         }
     }
@@ -166,10 +288,13 @@ function parseDateBR(dataStr) {
     } catch (e) { return 0; }
 }
 
-document.addEventListener("DOMContentLoaded", () => { carregarCSV(); });
+document.addEventListener("DOMContentLoaded", () => { 
+    atualizarRostersAtuais();
+    carregarCSV(); 
+});
 
 // ==========================================
-// 2. CARREGAMENTO E PROCESSAMENTO
+// 3. CARREGAMENTO E PROCESSAMENTO
 // ==========================================
 function carregarCSV() {
     Papa.parse("historico_bruto.csv", {
@@ -178,7 +303,6 @@ function carregarCSV() {
         skipEmptyLines: true,
         complete: function(results) {
             dadosBrutos = results.data;
-            // Carrega bans do Matcherino em paralelo
             Papa.parse("bans_matcherino.csv", {
                 download: true,
                 header: true,
@@ -191,7 +315,6 @@ function carregarCSV() {
                     processarDadosGlobais();
                 },
                 error: function() {
-                    // bans_matcherino.csv ainda nao existe — ok
                     dadosBans = [];
                     deduplicarMatcherino();
                     processarTimesDesconhecidos(dadosBrutos);
@@ -203,13 +326,7 @@ function carregarCSV() {
     });
 }
 
-/**
- * Remove do dadosBrutos partidas de torneio que o Matcherino ja cobre
- * (mesmos 6 brawlers + mapa). A versao Matcherino tem os bans, entao
- * prevalece.
- */
 function deduplicarMatcherino() {
-    // Assinaturas dos jogos Matcherino (picks ordenados + mapa)
     let mtcrByPartida = {};
     dadosBrutos.filter(r => r.id_partida && r.id_partida.startsWith('mtcr_')).forEach(r => {
         if (!mtcrByPartida[r.id_partida]) mtcrByPartida[r.id_partida] = [];
@@ -225,7 +342,6 @@ function deduplicarMatcherino() {
 
     if (mtcrSigs.size === 0) return;
 
-    // Partidas nao-Matcherino de tipo torneio com mesma assinatura
     let naoMtcr = {};
     dadosBrutos.filter(r => r.id_partida && !r.id_partida.startsWith('mtcr_') && r.tipo === 'tournament').forEach(r => {
         if (!naoMtcr[r.id_partida]) naoMtcr[r.id_partida] = [];
@@ -252,8 +368,8 @@ function processarTimesDesconhecidos(dados) {
 
     const mapaTimesDesconhecidos = new Map();
     let unkCounter = 1;
-
     let partidasMap = {};
+
     dados.forEach(r => {
         if(!partidasMap[r.id_partida]) partidasMap[r.id_partida] = { tagsA: [], tagsB: [], timeAId: null, timeBId: null };
         if(partidasMap[r.id_partida].tagsA.length < 3 && (partidasMap[r.id_partida].timeAId === null || partidasMap[r.id_partida].timeAId === r.id_time)) {
@@ -324,19 +440,69 @@ function popularFiltrosGlobais() {
     const selectAno = document.getElementById('select-ano');
     const selectMes = document.getElementById('select-mes');
     const selectDia = document.getElementById('select-dia');
-    selectAno.innerHTML = '<option value="todos">Todos os Anos</option>';
-    selectMes.innerHTML = '<option value="todos">Todos os Meses</option>';
-    selectDia.innerHTML = '<option value="todos">Todos os Dias</option>';
-    Array.from(anos).sort().forEach(a => selectAno.innerHTML += `<option value="${a}">${a}</option>`);
-    Array.from(meses).sort().forEach(m => selectMes.innerHTML += `<option value="${m}">${m}</option>`);
-    Array.from(dias).sort().forEach(d => selectDia.innerHTML += `<option value="${d}">${d}</option>`);
+    if (selectAno) {
+        selectAno.innerHTML = '<option value="todos">Todos os Anos</option>';
+        Array.from(anos).sort().forEach(a => selectAno.innerHTML += `<option value="${a}">${a}</option>`);
+    }
+    if (selectMes) {
+        selectMes.innerHTML = '<option value="todos">Todos os Meses</option>';
+        Array.from(meses).sort().forEach(m => selectMes.innerHTML += `<option value="${m}">${m}</option>`);
+    }
+    if (selectDia) {
+        selectDia.innerHTML = '<option value="todos">Todos os Dias</option>';
+        Array.from(dias).sort().forEach(d => selectDia.innerHTML += `<option value="${d}">${d}</option>`);
+    }
+
+    // Injetar Filtros Dinâmicos
+    const selectTipo = document.getElementById('select-tipo');
+    if (selectTipo && !document.getElementById('scrims-team-filter')) {
+        // Filtro de Times (Scrims)
+        let selectFiltroScrim = document.createElement('select');
+        selectFiltroScrim.id = 'scrims-team-filter';
+        selectFiltroScrim.className = 'filter-select';
+        selectFiltroScrim.style.display = 'none'; 
+        selectFiltroScrim.innerHTML = '<option value="todos">Todos os Times (Scrims)</option>';
+        selectFiltroScrim.onchange = () => { if (window.currentScrims) renderizarListaScrims(window.currentScrims); };
+        selectTipo.parentNode.insertBefore(selectFiltroScrim, selectTipo.nextSibling);
+
+        // Filtro Sample Picks (Meta)
+        let inputSample = document.createElement('input');
+        inputSample.type = 'number';
+        inputSample.id = 'sample-picks-meta';
+        inputSample.className = 'filter-select';
+        inputSample.style.display = 'none'; 
+        inputSample.value = '1';
+        inputSample.min = '1';
+        inputSample.placeholder = 'Min. Picks';
+        inputSample.title = 'Quantidade Mínima de Picks no Meta';
+        inputSample.onchange = processarDadosGlobais;
+        selectTipo.parentNode.insertBefore(inputSample, selectTipo.nextSibling);
+
+        // Observa os cliques para mostrar apenas na aba correspondente
+        document.body.addEventListener('click', () => {
+            setTimeout(() => {
+                let isScrimsAtiva = document.getElementById('tela-scrims') && !document.getElementById('tela-scrims').classList.contains('tela-oculta');
+                selectFiltroScrim.style.display = isScrimsAtiva ? 'inline-block' : 'none';
+
+                let isMetaAtiva = document.getElementById('tela-meta') && !document.getElementById('tela-meta').classList.contains('tela-oculta');
+                inputSample.style.display = isMetaAtiva ? 'inline-block' : 'none';
+            }, 50);
+        });
+    }
 }
 
 function processarDadosGlobais() {
-    const ano  = document.getElementById('select-ano').value;
-    const mes  = document.getElementById('select-mes').value;
-    const dia  = document.getElementById('select-dia').value;
-    const tipo = document.getElementById('select-tipo').value;
+    atualizarRostersAtuais();
+
+    const selectAno = document.getElementById('select-ano');
+    const selectMes = document.getElementById('select-mes');
+    const selectDia = document.getElementById('select-dia');
+    const selectTipo = document.getElementById('select-tipo');
+
+    const ano = selectAno ? selectAno.value : 'todos';
+    const mes = selectMes ? selectMes.value : 'todos';
+    const dia = selectDia ? selectDia.value : 'todos';
+    const tipo = selectTipo ? selectTipo.value : 'todos';
 
     let dadosPeriodo = dadosBrutos.filter(row => {
         let matchAno = true, matchMes = true, matchDia = true, matchTipo = true;
@@ -352,7 +518,6 @@ function processarDadosGlobais() {
 
     dadosFiltrados = dadosPeriodo.filter(row => isTimeDaRegiaoAtual(row.id_time));
 
-    // Filtra bans com os mesmos criterios de data/tipo/regiao
     dadosBansFiltrados = dadosBans.filter(row => {
         let matchAno = true, matchMes = true, matchDia = true, matchTipo = true;
         if(row.data_adicao) {
@@ -374,7 +539,7 @@ function processarDadosGlobais() {
 }
 
 // ==========================================
-// 3. TELA META
+// 4. TELA META
 // ==========================================
 window.toggleModoMeta = function(idModo) {
     const content = document.getElementById(`modo-content-${idModo}`);
@@ -389,6 +554,14 @@ function renderizarMeta() {
     const container = document.getElementById('conteudo-meta');
     let statsMap = {};
     let statsAll = {};
+
+    let inputSample = document.getElementById('sample-picks-meta');
+    let samplePicks = inputSample ? parseInt(inputSample.value) || 1 : 1;
+
+    let selectAno = document.getElementById('select-ano');
+    let selectMes = document.getElementById('select-mes');
+    const ano = selectAno ? selectAno.value : 'todos';
+    const mes = selectMes ? selectMes.value : 'todos';
 
     dadosFiltrados.forEach(row => {
         let b    = row.pick.toUpperCase();
@@ -406,9 +579,8 @@ function renderizarMeta() {
         if(parseInt(row.win) === 1) statsMap[mode][map][b].wins++;
     });
 
-    // --- Estatisticas de bans ---
-    let bansPorMapa   = {};  // { mode: { mapa: { brawler: count } } }
-    let jogosBanMapa  = {};  // { mode: { mapa: Set(id_partida) } }
+    let bansPorMapa   = {};  
+    let jogosBanMapa  = {};  
     let bansPorBrawlerAll = {};
     let jogosBanTotal = new Set();
 
@@ -435,24 +607,32 @@ function renderizarMeta() {
 
     Object.entries(statsMap).forEach(([mode, mapasDict]) => {
         let cleanMode = formatImg(mode);
-        html += `
-            <div class="modo-card" onclick="toggleModoMeta('${cleanMode}')">
-                <img src="element/modes/${cleanMode}.png" style="width:40px; margin-right:15px;" onerror="this.src='element/modes/default.png'">
-                ${mode}
-            </div>
-            <div id="modo-content-${cleanMode}" class="modo-section" style="display:none; padding:15px;">
-                <div class="mapa-content">
-        `;
-
+        
+        let conteudoMapa = '';
         Object.entries(mapasDict).forEach(([mapa, brawlers]) => {
-            let valid = Object.entries(brawlers).filter(x => x[1].picks >= 1).sort((a,b) => b[1].picks - a[1].picks);
+            
+            // Fazer a validação da rotação do mês
+            let mapaRotacaoValido = true;
+            if (ano !== 'todos' && mes !== 'todos' && ROTACAO_MAPAS[ano] && ROTACAO_MAPAS[ano][mes]) {
+                let mapasDoModo = ROTACAO_MAPAS[ano][mes][mode.toUpperCase()];
+                if (mapasDoModo) {
+                    mapasDoModo = mapasDoModo.map(m => m.toUpperCase());
+                    if (!mapasDoModo.includes(mapa.toUpperCase())) {
+                        mapaRotacaoValido = false;
+                    }
+                }
+            }
+
+            if (!mapaRotacaoValido) return;
+
+            let valid = Object.entries(brawlers).filter(x => x[1].picks >= samplePicks).sort((a,b) => b[1].picks - a[1].picks);
             if(valid.length === 0) return;
 
             let bansNesteMapa   = (bansPorMapa[mode] && bansPorMapa[mode][mapa]) ? bansPorMapa[mode][mapa] : {};
             let totalJogosMapa  = (jogosBanMapa[mode] && jogosBanMapa[mode][mapa]) ? jogosBanMapa[mode][mapa].size : 0;
             let temBansNesteMapa = totalJogosMapa > 0;
 
-            html += `
+            conteudoMapa += `
                 <div style="background:var(--bg-geral); border:1px solid var(--borda-destaque); border-radius:8px; padding:15px;">
                     <div style="text-align:center; font-weight:bold; margin-bottom:10px; color:var(--texto-secundario);">${mapa.toUpperCase()}</div>
                     <table class="excel-table">
@@ -486,11 +666,22 @@ function renderizarMeta() {
             `;
         });
 
-        html += `</div></div>`;
+        if (conteudoMapa !== '') {
+            html += `
+                <div class="modo-card" onclick="toggleModoMeta('${cleanMode}')">
+                    <img src="element/modes/${cleanMode}.png" style="width:40px; margin-right:15px;" onerror="this.src='element/modes/default.png'">
+                    ${mode}
+                </div>
+                <div id="modo-content-${cleanMode}" class="modo-section" style="display:none; padding:15px;">
+                    <div class="mapa-content">
+                        ${conteudoMapa}
+                    </div>
+                </div>
+            `;
+        }
     });
 
-    // --- ALL MAPS ---
-    let brawlersAllValidos = Object.entries(statsAll).filter(x => x[1].picks >= 1).sort((a,b) => b[1].picks - a[1].picks);
+    let brawlersAllValidos = Object.entries(statsAll).filter(x => x[1].picks >= samplePicks).sort((a,b) => b[1].picks - a[1].picks);
     if (brawlersAllValidos.length > 0) {
         html += `
             <div class="modo-card" style="margin-top:40px; border-color:var(--winrate-color); color:var(--winrate-color);" onclick="toggleModoMeta('allmaps')">
@@ -533,7 +724,7 @@ function renderizarMeta() {
 }
 
 // ==========================================
-// 4. TELA BRAWLERS
+// 5. TELA BRAWLERS
 // ==========================================
 function renderizarSidebarBrawlers() {
     let pickCounts = {};
@@ -577,7 +768,6 @@ function renderizarDetalhesBrawler(brawler) {
     let wins = partidasDeste.filter(r => parseInt(r.win) === 1).length;
     let wrGeral = ((wins/totalPicks)*100).toFixed(1) + '%';
 
-    // Estatisticas de ban para este brawler
     let totalBans = dadosBansFiltrados.filter(r => (r.brawler_banido||'').toUpperCase() === brawler).length;
     let totalJogosComBans = new Set(dadosBansFiltrados.map(r => r.id_partida)).size;
     let brPct = totalJogosComBans > 0 ? ((totalBans / totalJogosComBans) * 100).toFixed(1) : '0.0';
@@ -711,7 +901,7 @@ function renderizarDetalhesBrawler(brawler) {
 }
 
 // ==========================================
-// 5. TELA TIMES
+// 6. TELA TIMES
 // ==========================================
 function renderizarSidebarTimes() {
     const sidebar = document.getElementById('lista-times-sidebar');
@@ -805,6 +995,11 @@ function renderizarDetalhesTime(time) {
         return;
     }
 
+    // Calcula total de partidas e data da ultima captura
+    let timestamps = partidasDoTime.map(r => parseDateBR(r.data_adicao));
+    let ultimoDadoTimestamp = timestamps.length > 0 ? Math.max(...timestamps) : 0;
+    let dataFormatadaUltimo = ultimoDadoTimestamp > 0 ? new Date(ultimoDadoTimestamp).toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit', year: '2-digit'}) : 'N/A';
+
     let timeBrawlers = {};
     partidasDoTime.forEach(r => {
         let b = r.pick.toUpperCase();
@@ -816,7 +1011,12 @@ function renderizarDetalhesTime(time) {
     let html = `
         <div style="display:flex; align-items:center; gap:20px; margin-bottom:30px; border-bottom:1px solid var(--borda-destaque); padding-bottom:20px;">
             <img src="${logoUrl}" style="width:80px; height:80px; object-fit:contain; background:var(--bg-cards); border-radius:12px; border:2px solid var(--borda-destaque);" onerror="this.src='element/teams/default.png'">
-            <h2 style="color:var(--accent-purple); font-size:32px; font-weight:900;">${time.nome_time} <span style="font-size:14px; color:var(--texto-secundario)">(${time.id_time})</span></h2>
+            <div>
+                <h2 style="color:var(--accent-purple); font-size:32px; font-weight:900;">${time.nome_time} <span style="font-size:14px; color:var(--texto-secundario)">(${time.id_time})</span></h2>
+                <p style="font-size:11px; color:var(--texto-secundario); font-weight:bold; margin-top:5px;">
+                    PARTIDAS COLETADAS: <span style="color:#fff">${partidasDoTime.length}</span> | ÚLTIMA ATUALIZAÇÃO: <span style="color:#fff">${dataFormatadaUltimo}</span>
+                </p>
+            </div>
         </div>
         <div style="background:var(--bg-cards); padding:20px; border-radius:12px; border:1px solid var(--borda-destaque); margin-bottom:30px;">
             <h3 style="color:var(--texto); margin-bottom:15px; font-size:16px;">TOP 10 BRAWLERS DA EQUIPE</h3>
@@ -872,7 +1072,7 @@ function renderizarDetalhesTime(time) {
 }
 
 // ==========================================
-// 6. TELA SCRIMS
+// 7. TELA SCRIMS
 // ==========================================
 function processarScrimes(dadosPeriodo) {
     let rawMatches = {};
@@ -892,37 +1092,17 @@ function processarScrimes(dadosPeriodo) {
         let t1EhRegiao = isTimeDaRegiaoAtual(t1Id);
         if (!t0EhRegiao && !t1EhRegiao) return;
 
-        if ((t0EhRegiao && !t1EhRegiao) || (!t0EhRegiao && t1EhRegiao)) {
-            let oponenteId = t0EhRegiao ? t1Id : t0Id;
-            let oponenteExiste = false;
-            for (let reg in CONFIGURACAO_MANUAL_TIMES) {
-                for (let tier in CONFIGURACAO_MANUAL_TIMES[reg]) {
-                    if (CONFIGURACAO_MANUAL_TIMES[reg][tier].find(t => t.id_time === oponenteId)) { oponenteExiste = true; break; }
-                }
-                if (oponenteExiste) break;
-            }
-            if (!oponenteExiste) return;
-        }
-
         let dataStr   = linhas[0].data_adicao;
         let timestamp = parseDateBR(dataStr);
         let vencedor  = parseInt(t0[0].win) === 1 ? t0Id : t1Id;
         let isMatcherino = linhas[0].id_partida && linhas[0].id_partida.startsWith('mtcr_');
 
         partidasEstruturadas.push({
-            id: linhas[0].id_partida,
-            modo: linhas[0].modo,
-            mapa: linhas[0].mapa,
-            tAId: t0Id, tBId: t1Id,
-            tANome: t0[0].nome_time, tBNome: t1[0].nome_time,
-            picksA: t0.map(p => p.pick.toUpperCase()),
-            picksB: t1.map(p => p.pick.toUpperCase()),
-            t0Full: t0, t1Full: t1,
-            vencedor: vencedor,
-            timestamp: timestamp,
-            dataFormatada: dataStr,
-            isMatcherino: isMatcherino,
-            tipo: linhas[0].tipo || 'scrim'
+            id: linhas[0].id_partida, modo: linhas[0].modo, mapa: linhas[0].mapa,
+            tAId: t0Id, tBId: t1Id, tANome: t0[0].nome_time, tBNome: t1[0].nome_time,
+            picksA: t0.map(p => p.pick.toUpperCase()), picksB: t1.map(p => p.pick.toUpperCase()),
+            t0Full: t0, t1Full: t1, vencedor: vencedor, timestamp: timestamp,
+            dataFormatada: dataStr, isMatcherino: isMatcherino, tipo: linhas[0].tipo || 'scrim'
         });
     });
 
@@ -940,34 +1120,50 @@ function processarScrimes(dadosPeriodo) {
             if(partida.isMatcherino) scrimExistente.temMatcherino = true;
         } else {
             scrims.push({
-                chave: chaveTimes,
-                tAId: partida.tAId, tBId: partida.tBId,
+                chave: chaveTimes, tAId: partida.tAId, tBId: partida.tBId,
                 tANome: partida.tANome, tBNome: partida.tBNome,
-                scoreA: partida.vencedor === partida.tAId ? 1 : 0,
-                scoreB: partida.vencedor === partida.tBId ? 1 : 0,
-                inicio: partida.timestamp,
-                ultimoUpdate: partida.timestamp,
-                dataFormatada: partida.dataFormatada.split(' ')[0],
-                rounds: [partida],
-                temMatcherino: partida.isMatcherino || false,
-                tipo: partida.tipo
+                scoreA: partida.vencedor === partida.tAId ? 1 : 0, scoreB: partida.vencedor === partida.tBId ? 1 : 0,
+                inicio: partida.timestamp, ultimoUpdate: partida.timestamp,
+                dataFormatada: partida.dataFormatada.split(' ')[0], rounds: [partida],
+                temMatcherino: partida.isMatcherino || false, tipo: partida.tipo
             });
         }
     });
 
-    scrims = scrims.filter(s => s.rounds.length > 1);
-    renderizarListaScrims(scrims.reverse());
+    scrims = scrims.filter(s => s.rounds.length > 1).reverse();
+    window.currentScrims = scrims;
+    
+    // Popular filtro de times das scrims
+    let selectFiltro = document.getElementById('scrims-team-filter');
+    if (selectFiltro) {
+        let timesNaScrim = new Set();
+        scrims.forEach(s => { timesNaScrim.add(s.tANome); timesNaScrim.add(s.tBNome); });
+        let valorAtual = selectFiltro.value || 'todos';
+        selectFiltro.innerHTML = '<option value="todos">Todos os Times (Scrims)</option>';
+        Array.from(timesNaScrim).sort().forEach(t => {
+            selectFiltro.innerHTML += `<option value="${t}" ${t === valorAtual ? 'selected' : ''}>${t}</option>`;
+        });
+    }
+
+    renderizarListaScrims(scrims);
 }
 
-function renderizarListaScrims(scrims) {
+function renderizarListaScrims(scrimsOriginais) {
     const lista   = document.getElementById('scrims-lista');
     const detalhe = document.getElementById('scrims-detalhe');
     lista.style.display  = 'grid';
     detalhe.style.display = 'none';
     lista.innerHTML = '';
 
+    let filtroValor = document.getElementById('scrims-team-filter') ? document.getElementById('scrims-team-filter').value : 'todos';
+    let scrims = scrimsOriginais;
+    
+    if (filtroValor !== 'todos') {
+        scrims = scrimsOriginais.filter(s => s.tANome === filtroValor || s.tBNome === filtroValor);
+    }
+
     if(scrims.length === 0) {
-        lista.innerHTML = `<p style="padding:20px; color:var(--texto-secundario); font-weight:bold; grid-column:1/-1; text-align:center;">Nenhuma scrim da ${_REGIAO} encontrada no filtro atual.</p>`;
+        lista.innerHTML = `<p style="padding:20px; color:var(--texto-secundario); font-weight:bold; grid-column:1/-1; text-align:center;">Nenhuma scrim encontrada no filtro atual.</p>`;
         return;
     }
 
@@ -975,13 +1171,11 @@ function renderizarListaScrims(scrims) {
         let div = document.createElement('div');
         div.className = 'scrim-card';
 
-        // Icone Matcherino para partidas de torneio vindas do Matcherino
         let matcherinoIcon = (scrim.temMatcherino || scrim.tipo === 'tournament')
             ? `<img src="element/play/matcherino.png" 
                     style="position:absolute; top:8px; right:8px; width:22px; height:22px; object-fit:contain;" 
                     onerror="this.style.display='none'" 
-                    title="Fonte: Matcherino">`
-            : '';
+                    title="Fonte: Matcherino">` : '';
 
         div.innerHTML = `
             ${matcherinoIcon}
@@ -1062,7 +1256,6 @@ window.selecionarRound = function(index, btnElement) {
     let playersA = round.t0Full.map(p => p.player_name);
     let playersB = round.t1Full.map(p => p.player_name);
 
-    // Busca bans deste round no CSV de bans (so existe para partidas Matcherino)
     let bansDoRound = dadosBans.filter(r => r.id_partida === round.id);
     let bansTimeA   = bansDoRound.filter(r => r.id_time === round.tAId);
     let bansTimeB   = bansDoRound.filter(r => r.id_time === round.tBId);
@@ -1085,9 +1278,7 @@ window.selecionarRound = function(index, btnElement) {
                     <span style="font-size:10px; font-weight:900; color:#ff5555; letter-spacing:1px; white-space:nowrap;">BANS ▶</span>
                     ${bansTimeA.map(b => `
                         <div style="position:relative; display:inline-block;" title="${b.brawler_banido}">
-                            <img src="brawlers/${formatImg(b.brawler_banido)}.png"
-                                 style="width:32px; height:32px; border-radius:4px; filter:grayscale(80%) brightness(0.5);"
-                                 onerror="this.src='brawlers/default.png'">
+                            <img src="brawlers/${formatImg(b.brawler_banido)}.png" style="width:32px; height:32px; border-radius:4px; filter:grayscale(80%) brightness(0.5);" onerror="this.src='brawlers/default.png'">
                             <span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#ff4444; font-size:16px; font-weight:900; text-shadow:0 0 4px #000;">✕</span>
                         </div>
                     `).join('')}
@@ -1096,9 +1287,7 @@ window.selecionarRound = function(index, btnElement) {
                     <span style="font-size:10px; font-weight:900; color:#ff5555; letter-spacing:1px; white-space:nowrap;">◀ BANS</span>
                     ${bansTimeB.map(b => `
                         <div style="position:relative; display:inline-block;" title="${b.brawler_banido}">
-                            <img src="brawlers/${formatImg(b.brawler_banido)}.png"
-                                 style="width:32px; height:32px; border-radius:4px; filter:grayscale(80%) brightness(0.5);"
-                                 onerror="this.src='brawlers/default.png'">
+                            <img src="brawlers/${formatImg(b.brawler_banido)}.png" style="width:32px; height:32px; border-radius:4px; filter:grayscale(80%) brightness(0.5);" onerror="this.src='brawlers/default.png'">
                             <span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#ff4444; font-size:16px; font-weight:900; text-shadow:0 0 4px #000;">✕</span>
                         </div>
                     `).join('')}
