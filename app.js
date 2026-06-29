@@ -14,8 +14,12 @@ const _REGIAO = window.REGIAO_ATUAL ? window.REGIAO_ATUAL.toUpperCase() : "SA";
 const ROTACAO_MAPAS = {
     "2026": {
         "06": { // Exemplo de mês 06
-            "Brawl Ball": ["", "", "], // Substitua pelos mapas reais
-            "GEM GRAB": ["", "", ""]
+            "Brawl Ball": ["Pinhole Punt", "Sneaky Fields", "Triple Dribble"], 
+            "Gem Grab": ["Hard Rock Mine", "Crystal Arcade", "Gem Fort"],
+            "Hot Zone": ["Dueling Beetles", "Open Business", "Ring of Fire"],
+            "Heist": ["Safe Zone", "Kaboom Canyon", "Pit Stop"],
+            "Bounty": ["Hideout", "Shooting Star", "Layer Cake"],
+            "Knockout": ["Goldarm Gulch", "Out in the Open", "New Horizons"],
         }
     }
 };
