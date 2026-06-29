@@ -202,8 +202,7 @@ const ROSTERS_POR_DATA = {
             { id_time: "F0", nome_time: "FAZE ZERO", jogadores: [ { nick: "Rennosuke", tag: "#8R0JY2UJ2" }, { nick: "Telpny", tag: "#9GJ8GYCY2" }, { nick: "Mira", tag: "#88LLQGP0Q" } ] }
             ]
         }
-    }
-};
+    };
 
 let CONFIGURACAO_MANUAL_TIMES = {};
 
