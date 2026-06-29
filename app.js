@@ -1,11 +1,11 @@
 let dadosBrutos = [];
 let dadosFiltrados = [];
+let dadosBans = [];
+let dadosBansFiltrados = [];
 let listaBrawlers = [];
 let brawlerSelecionado = null;
 let timeSelecionado = null;
 
-// Captura a região atual do HTML (definida no <script> do HTML). 
-// Se por algum motivo não encontrar, usa "SA" como padrão de segurança.
 const _REGIAO = window.REGIAO_ATUAL ? window.REGIAO_ATUAL.toUpperCase() : "SA";
 
 // ========================================================
@@ -103,12 +103,9 @@ function carregarTimesSalvosLocal() {
     if (!CONFIGURACAO_MANUAL_TIMES[_REGIAO] && _REGIAO !== "ALL") {
         CONFIGURACAO_MANUAL_TIMES[_REGIAO] = {};
     }
-    
-    // Configura a região se for "ALL"
     if (_REGIAO === "ALL" && !CONFIGURACAO_MANUAL_TIMES["ALL"]) {
         CONFIGURACAO_MANUAL_TIMES["ALL"] = { "TIER ?": [], "TIMES REGISTRADOS": [] };
     }
-
     let regAlvo = _REGIAO === "ALL" ? "ALL" : _REGIAO;
     if (!CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIMES REGISTRADOS"]) {
         CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIMES REGISTRADOS"] = [];
@@ -119,7 +116,6 @@ carregarTimesSalvosLocal();
 
 const formatImg = n => { if(!n) return 'default'; return n.toLowerCase().replace(/[^a-z0-9]/g, ''); };
 
-// Verifica dinamicamente na região atual (Modificado para aceitar TODAS quando for "ALL")
 const isTimeDaRegiaoAtual = (id) => {
     if (_REGIAO === "ALL") {
         for (let reg in CONFIGURACAO_MANUAL_TIMES) {
@@ -129,7 +125,6 @@ const isTimeDaRegiaoAtual = (id) => {
         }
         return false;
     }
-    
     let reg = CONFIGURACAO_MANUAL_TIMES[_REGIAO];
     if(!reg) return false;
     for(let tier in reg) {
@@ -144,9 +139,7 @@ function encontrarTimePorRoster(tagsArray) {
             if (tier === "TIER ?") continue;
             for (let team of CONFIGURACAO_MANUAL_TIMES[reg][tier]) {
                 let matchCount = 0;
-                team.jogadores.forEach(j => {
-                    if (tagsArray.includes(j.tag)) matchCount++;
-                });
+                team.jogadores.forEach(j => { if (tagsArray.includes(j.tag)) matchCount++; });
                 if (matchCount >= 2) return { id: team.id_time, nome: team.nome_time, regiao: reg };
             }
         }
@@ -154,7 +147,6 @@ function encontrarTimePorRoster(tagsArray) {
     return null;
 }
 
-// Converte a string de data "DD/MM/YYYY HH:MM:SS" em timestamp numérico estável
 function parseDateBR(dataStr) {
     if (!dataStr) return 0;
     try {
@@ -163,23 +155,18 @@ function parseDateBR(dataStr) {
         let day = parseInt(dataPartes[0], 10);
         let month = parseInt(dataPartes[1], 10) - 1;
         let year = parseInt(dataPartes[2], 10);
-        
         let hour = 0, min = 0, sec = 0;
         if (partesEspaco[1]) {
             let timePartes = partesEspaco[1].split(':');
             hour = parseInt(timePartes[0], 10) || 0;
-            min = parseInt(timePartes[1], 10) || 0;
-            sec = parseInt(timePartes[2], 10) || 0;
+            min  = parseInt(timePartes[1], 10) || 0;
+            sec  = parseInt(timePartes[2], 10) || 0;
         }
         return new Date(year, month, day, hour, min, sec).getTime();
-    } catch (e) {
-        return 0;
-    }
+    } catch (e) { return 0; }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    carregarCSV();
-});
+document.addEventListener("DOMContentLoaded", () => { carregarCSV(); });
 
 // ==========================================
 // 2. CARREGAMENTO E PROCESSAMENTO
@@ -191,11 +178,70 @@ function carregarCSV() {
         skipEmptyLines: true,
         complete: function(results) {
             dadosBrutos = results.data;
-            processarTimesDesconhecidos(dadosBrutos);
-            popularFiltrosGlobais();
-            processarDadosGlobais();
+            // Carrega bans do Matcherino em paralelo
+            Papa.parse("bans_matcherino.csv", {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(banResults) {
+                    dadosBans = banResults.data || [];
+                    deduplicarMatcherino();
+                    processarTimesDesconhecidos(dadosBrutos);
+                    popularFiltrosGlobais();
+                    processarDadosGlobais();
+                },
+                error: function() {
+                    // bans_matcherino.csv ainda nao existe — ok
+                    dadosBans = [];
+                    deduplicarMatcherino();
+                    processarTimesDesconhecidos(dadosBrutos);
+                    popularFiltrosGlobais();
+                    processarDadosGlobais();
+                }
+            });
         }
     });
+}
+
+/**
+ * Remove do dadosBrutos partidas de torneio que o Matcherino ja cobre
+ * (mesmos 6 brawlers + mapa). A versao Matcherino tem os bans, entao
+ * prevalece.
+ */
+function deduplicarMatcherino() {
+    // Assinaturas dos jogos Matcherino (picks ordenados + mapa)
+    let mtcrByPartida = {};
+    dadosBrutos.filter(r => r.id_partida && r.id_partida.startsWith('mtcr_')).forEach(r => {
+        if (!mtcrByPartida[r.id_partida]) mtcrByPartida[r.id_partida] = [];
+        mtcrByPartida[r.id_partida].push(r);
+    });
+
+    let mtcrSigs = new Set();
+    Object.entries(mtcrByPartida).forEach(([, rows]) => {
+        if (rows.length < 6) return;
+        let sig = rows.slice(0,6).map(r => (r.pick||'').toUpperCase()).sort().join('|') + '||' + (rows[0].mapa||'');
+        mtcrSigs.add(sig);
+    });
+
+    if (mtcrSigs.size === 0) return;
+
+    // Partidas nao-Matcherino de tipo torneio com mesma assinatura
+    let naoMtcr = {};
+    dadosBrutos.filter(r => r.id_partida && !r.id_partida.startsWith('mtcr_') && r.tipo === 'tournament').forEach(r => {
+        if (!naoMtcr[r.id_partida]) naoMtcr[r.id_partida] = [];
+        naoMtcr[r.id_partida].push(r);
+    });
+
+    let idsRemover = new Set();
+    Object.entries(naoMtcr).forEach(([pid, rows]) => {
+        if (rows.length < 6) return;
+        let sig = rows.slice(0,6).map(r => (r.pick||'').toUpperCase()).sort().join('|') + '||' + (rows[0].mapa||'');
+        if (mtcrSigs.has(sig)) idsRemover.add(pid);
+    });
+
+    if (idsRemover.size > 0) {
+        dadosBrutos = dadosBrutos.filter(r => !idsRemover.has(r.id_partida));
+    }
 }
 
 function processarTimesDesconhecidos(dados) {
@@ -221,52 +267,44 @@ function processarTimesDesconhecidos(dados) {
 
     dados.forEach(linha => {
         let isKnown = encontrarTimePorRoster([linha.player_tag]);
-
         if (!isKnown && linha.id_players && linha.name_players && linha.player_tag) {
             const idsPlayers = linha.id_players.split(';');
             const namesPlayers = linha.name_players.split(';');
             const pIndex = idsPlayers.indexOf(linha.player_tag);
-            
             if (pIndex !== -1) {
                 const startIndex = pIndex < 3 ? 0 : 3;
                 const timeTags = idsPlayers.slice(startIndex, startIndex + 3);
                 const timeNames = namesPlayers.slice(startIndex, startIndex + 3);
-                
                 if (timeTags.length === 3 && !timeTags.includes("None") && !timeTags.includes("")) {
                     let timeRegistrado = encontrarTimePorRoster(timeTags);
-                    
                     if (timeRegistrado) {
                         linha.id_time = timeRegistrado.id;
                         linha.nome_time = timeRegistrado.nome;
                     } else {
                         let partidaTags = partidasMap[linha.id_partida];
-                        let oponentesTags = (startIndex < 3) ? partidaTags.tagsB : partidaTags.tagsA;
-                        let oponenteTime = encontrarTimePorRoster(oponentesTags);
-                        
-                        // Vincula o time desconhecido se o oponente for da região atual (ou se a região for ALL)
-                        if (oponenteTime && (_REGIAO === "ALL" || oponenteTime.regiao === _REGIAO)) {
-                            const assinaturaTime = timeTags.slice().sort().join('_');
-                            
-                            if (!mapaTimesDesconhecidos.has(assinaturaTime)) {
-                                const novoId = `UNK${unkCounter}`;
-                                const novoNome = `Unknow ${unkCounter}`;
-                                mapaTimesDesconhecidos.set(assinaturaTime, { id: novoId, nome: novoNome });
-                                
-                                CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIER ?"].push({
-                                    id_time: novoId,
-                                    nome_time: novoNome,
-                                    jogadores: [
-                                        { nick: timeNames[0], tag: timeTags[0] },
-                                        { nick: timeNames[1], tag: timeTags[1] },
-                                        { nick: timeNames[2], tag: timeTags[2] }
-                                    ]
-                                });
-                                unkCounter++;
+                        if (partidaTags) {
+                            let oponentesTags = (startIndex < 3) ? partidaTags.tagsB : partidaTags.tagsA;
+                            let oponenteTime = encontrarTimePorRoster(oponentesTags);
+                            if (oponenteTime && (_REGIAO === "ALL" || oponenteTime.regiao === _REGIAO)) {
+                                const assinaturaTime = timeTags.slice().sort().join('_');
+                                if (!mapaTimesDesconhecidos.has(assinaturaTime)) {
+                                    const novoId = `UNK${unkCounter}`;
+                                    const novoNome = `Unknow ${unkCounter}`;
+                                    mapaTimesDesconhecidos.set(assinaturaTime, { id: novoId, nome: novoNome });
+                                    CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIER ?"].push({
+                                        id_time: novoId, nome_time: novoNome,
+                                        jogadores: [
+                                            { nick: timeNames[0], tag: timeTags[0] },
+                                            { nick: timeNames[1], tag: timeTags[1] },
+                                            { nick: timeNames[2], tag: timeTags[2] }
+                                        ]
+                                    });
+                                    unkCounter++;
+                                }
+                                const timeGerado = mapaTimesDesconhecidos.get(assinaturaTime);
+                                linha.id_time = timeGerado.id;
+                                linha.nome_time = timeGerado.nome;
                             }
-                            
-                            const timeGerado = mapaTimesDesconhecidos.get(assinaturaTime);
-                            linha.id_time = timeGerado.id;
-                            linha.nome_time = timeGerado.nome;
                         }
                     }
                 }
@@ -280,31 +318,24 @@ function popularFiltrosGlobais() {
     dadosBrutos.forEach(row => {
         if(row.data_adicao) {
             let partes = row.data_adicao.split(' ')[0].split('/');
-            if(partes.length === 3) {
-                dias.add(partes[0]);
-                meses.add(partes[1]);
-                anos.add(partes[2]);
-            }
+            if(partes.length === 3) { dias.add(partes[0]); meses.add(partes[1]); anos.add(partes[2]); }
         }
     });
-
     const selectAno = document.getElementById('select-ano');
     const selectMes = document.getElementById('select-mes');
     const selectDia = document.getElementById('select-dia');
-    
     selectAno.innerHTML = '<option value="todos">Todos os Anos</option>';
     selectMes.innerHTML = '<option value="todos">Todos os Meses</option>';
     selectDia.innerHTML = '<option value="todos">Todos os Dias</option>';
-
     Array.from(anos).sort().forEach(a => selectAno.innerHTML += `<option value="${a}">${a}</option>`);
     Array.from(meses).sort().forEach(m => selectMes.innerHTML += `<option value="${m}">${m}</option>`);
     Array.from(dias).sort().forEach(d => selectDia.innerHTML += `<option value="${d}">${d}</option>`);
 }
 
 function processarDadosGlobais() {
-    const ano = document.getElementById('select-ano').value;
-    const mes = document.getElementById('select-mes').value;
-    const dia = document.getElementById('select-dia').value;
+    const ano  = document.getElementById('select-ano').value;
+    const mes  = document.getElementById('select-mes').value;
+    const dia  = document.getElementById('select-dia').value;
     const tipo = document.getElementById('select-tipo').value;
 
     let dadosPeriodo = dadosBrutos.filter(row => {
@@ -316,24 +347,34 @@ function processarDadosGlobais() {
             if(dia !== 'todos') matchDia = partes[0] === dia;
         }
         if(tipo !== 'todos') matchTipo = (row.tipo === tipo);
-        
         return matchAno && matchMes && matchDia && matchTipo;
     });
 
-    // Agora filtra pela Região Dinâmica 
     dadosFiltrados = dadosPeriodo.filter(row => isTimeDaRegiaoAtual(row.id_time));
+
+    // Filtra bans com os mesmos criterios de data/tipo/regiao
+    dadosBansFiltrados = dadosBans.filter(row => {
+        let matchAno = true, matchMes = true, matchDia = true, matchTipo = true;
+        if(row.data_adicao) {
+            let partes = row.data_adicao.split(' ')[0].split('/');
+            if(ano !== 'todos') matchAno = partes[2] === ano;
+            if(mes !== 'todos') matchMes = partes[1] === mes;
+            if(dia !== 'todos') matchDia = partes[0] === dia;
+        }
+        if(tipo !== 'todos') matchTipo = (row.tipo === tipo);
+        return matchAno && matchMes && matchDia && matchTipo && isTimeDaRegiaoAtual(row.id_time);
+    });
 
     renderizarMeta();
     renderizarSidebarBrawlers();
     if(brawlerSelecionado) renderizarDetalhesBrawler(brawlerSelecionado);
     renderizarSidebarTimes();
     if(timeSelecionado) renderizarDetalhesTime(timeSelecionado);
-    
     processarScrimes(dadosPeriodo);
 }
 
 // ==========================================
-// 3. TELA META 
+// 3. TELA META
 // ==========================================
 window.toggleModoMeta = function(idModo) {
     const content = document.getElementById(`modo-content-${idModo}`);
@@ -350,21 +391,45 @@ function renderizarMeta() {
     let statsAll = {};
 
     dadosFiltrados.forEach(row => {
-        let b = row.pick.toUpperCase();
-        let map = row.mapa || "Desconhecido";
-        let mode = row.modo || "Desconhecido";
-        
+        let b    = row.pick.toUpperCase();
+        let map  = row.mapa  || "Desconhecido";
+        let mode = row.modo  || "Desconhecido";
+
         if(!statsAll[b]) statsAll[b] = { picks: 0, wins: 0 };
         statsAll[b].picks++;
         if(parseInt(row.win) === 1) statsAll[b].wins++;
-        
+
         if(!statsMap[mode]) statsMap[mode] = {};
         if(!statsMap[mode][map]) statsMap[mode][map] = {};
         if(!statsMap[mode][map][b]) statsMap[mode][map][b] = { picks: 0, wins: 0 };
-        
         statsMap[mode][map][b].picks++;
         if(parseInt(row.win) === 1) statsMap[mode][map][b].wins++;
     });
+
+    // --- Estatisticas de bans ---
+    let bansPorMapa   = {};  // { mode: { mapa: { brawler: count } } }
+    let jogosBanMapa  = {};  // { mode: { mapa: Set(id_partida) } }
+    let bansPorBrawlerAll = {};
+    let jogosBanTotal = new Set();
+
+    dadosBansFiltrados.forEach(row => {
+        let b    = (row.brawler_banido || '').toUpperCase();
+        let mapa = row.mapa || 'Unknown';
+        let mode = row.modo || 'Unknown';
+        if (!b) return;
+
+        if (!bansPorMapa[mode]) bansPorMapa[mode] = {};
+        if (!bansPorMapa[mode][mapa]) bansPorMapa[mode][mapa] = {};
+        bansPorMapa[mode][mapa][b] = (bansPorMapa[mode][mapa][b] || 0) + 1;
+
+        if (!jogosBanMapa[mode]) jogosBanMapa[mode] = {};
+        if (!jogosBanMapa[mode][mapa]) jogosBanMapa[mode][mapa] = new Set();
+        jogosBanMapa[mode][mapa].add(row.id_partida);
+
+        bansPorBrawlerAll[b] = (bansPorBrawlerAll[b] || 0) + 1;
+        jogosBanTotal.add(row.id_partida);
+    });
+    let totalJogosComBans = jogosBanTotal.size;
 
     let html = ``;
 
@@ -372,24 +437,36 @@ function renderizarMeta() {
         let cleanMode = formatImg(mode);
         html += `
             <div class="modo-card" onclick="toggleModoMeta('${cleanMode}')">
-                <img src="element/modes/${cleanMode}.png" style="width:40px; margin-right:15px;" onerror="this.src='element/modes/default.png'"> 
+                <img src="element/modes/${cleanMode}.png" style="width:40px; margin-right:15px;" onerror="this.src='element/modes/default.png'">
                 ${mode}
             </div>
             <div id="modo-content-${cleanMode}" class="modo-section" style="display:none; padding:15px;">
                 <div class="mapa-content">
         `;
-        
+
         Object.entries(mapasDict).forEach(([mapa, brawlers]) => {
             let valid = Object.entries(brawlers).filter(x => x[1].picks >= 1).sort((a,b) => b[1].picks - a[1].picks);
             if(valid.length === 0) return;
+
+            let bansNesteMapa   = (bansPorMapa[mode] && bansPorMapa[mode][mapa]) ? bansPorMapa[mode][mapa] : {};
+            let totalJogosMapa  = (jogosBanMapa[mode] && jogosBanMapa[mode][mapa]) ? jogosBanMapa[mode][mapa].size : 0;
+            let temBansNesteMapa = totalJogosMapa > 0;
 
             html += `
                 <div style="background:var(--bg-geral); border:1px solid var(--borda-destaque); border-radius:8px; padding:15px;">
                     <div style="text-align:center; font-weight:bold; margin-bottom:10px; color:var(--texto-secundario);">${mapa.toUpperCase()}</div>
                     <table class="excel-table">
-                        <thead><tr><th style="text-align:left;">BRAWLER</th><th>P</th><th>PR%</th><th>W</th><th>WR%</th></tr></thead>
+                        <thead><tr>
+                            <th style="text-align:left;">BRAWLER</th>
+                            <th>P</th><th>PR%</th><th>W</th><th>WR%</th>
+                            <th style="color:#b06aff;">B</th>
+                            <th style="color:#b06aff;">BR%</th>
+                        </tr></thead>
                         <tbody>
-                            ${valid.map(([b, s]) => `
+                            ${valid.map(([b, s]) => {
+                                let bansCount = bansNesteMapa[b] || 0;
+                                let brPct = temBansNesteMapa ? ((bansCount / totalJogosMapa) * 100).toFixed(1) : '0.0';
+                                return `
                                 <tr>
                                     <td style="text-align:left; font-weight:bold; color:var(--accent-hover)">
                                         <img src="brawlers/${formatImg(b)}.png" style="width:24px; vertical-align:middle; margin-right:5px; border-radius:4px;" onerror="this.src='brawlers/default.png'">
@@ -399,29 +476,40 @@ function renderizarMeta() {
                                     <td style="color:var(--texto-secundario);">${((s.picks/dadosFiltrados.length)*100).toFixed(1)}%</td>
                                     <td>${s.wins}</td>
                                     <td class="winrate-cell">${((s.wins/s.picks)*100).toFixed(1)}%</td>
-                                </tr>
-                            `).join('')}
+                                    <td style="color:#b06aff; font-weight:bold;">${bansCount}</td>
+                                    <td style="color:#b06aff; font-weight:bold;">${brPct}%</td>
+                                </tr>`;
+                            }).join('')}
                         </tbody>
                     </table>
                 </div>
             `;
         });
-        
+
         html += `</div></div>`;
     });
 
+    // --- ALL MAPS ---
     let brawlersAllValidos = Object.entries(statsAll).filter(x => x[1].picks >= 1).sort((a,b) => b[1].picks - a[1].picks);
     if (brawlersAllValidos.length > 0) {
         html += `
-            <div class="modo-card" style="margin-top: 40px; border-color:var(--winrate-color); color:var(--winrate-color);" onclick="toggleModoMeta('allmaps')">
+            <div class="modo-card" style="margin-top:40px; border-color:var(--winrate-color); color:var(--winrate-color);" onclick="toggleModoMeta('allmaps')">
                 ALL MAPS (GERAL)
             </div>
             <div id="modo-content-allmaps" class="modo-section" style="display:none; padding:15px;">
                 <div class="mapa-content" style="display:block;">
                     <table class="excel-table">
-                        <thead><tr><th style="text-align:left;">BRAWLER</th><th>P</th><th>W</th><th>WR%</th></tr></thead>
+                        <thead><tr>
+                            <th style="text-align:left;">BRAWLER</th>
+                            <th>P</th><th>W</th><th>WR%</th>
+                            <th style="color:#b06aff;">B</th>
+                            <th style="color:#b06aff;">BR%</th>
+                        </tr></thead>
                         <tbody>
-                            ${brawlersAllValidos.map(([b, s]) => `
+                            ${brawlersAllValidos.map(([b, s]) => {
+                                let bansCount = bansPorBrawlerAll[b] || 0;
+                                let brPct = totalJogosComBans > 0 ? ((bansCount / totalJogosComBans) * 100).toFixed(1) : '0.0';
+                                return `
                                 <tr>
                                     <td style="text-align:left; font-weight:bold; color:var(--winrate-color)">
                                         <img src="brawlers/${formatImg(b)}.png" style="width:28px; vertical-align:middle; margin-right:10px; border-radius:4px;" onerror="this.src='brawlers/default.png'">
@@ -430,8 +518,10 @@ function renderizarMeta() {
                                     <td>${s.picks}</td>
                                     <td>${s.wins}</td>
                                     <td class="winrate-cell">${((s.wins/s.picks)*100).toFixed(1)}%</td>
-                                </tr>
-                            `).join('')}
+                                    <td style="color:#b06aff; font-weight:bold;">${bansCount}</td>
+                                    <td style="color:#b06aff; font-weight:bold;">${brPct}%</td>
+                                </tr>`;
+                            }).join('')}
                         </tbody>
                     </table>
                 </div>
@@ -443,7 +533,7 @@ function renderizarMeta() {
 }
 
 // ==========================================
-// 4. TELA BRAWLERS 
+// 4. TELA BRAWLERS
 // ==========================================
 function renderizarSidebarBrawlers() {
     let pickCounts = {};
@@ -451,12 +541,10 @@ function renderizarSidebarBrawlers() {
         let b = r.pick.toUpperCase();
         pickCounts[b] = (pickCounts[b] || 0) + 1;
     });
-
     listaBrawlers = Object.keys(pickCounts).filter(b => pickCounts[b] >= 1).sort();
-    
+
     const sidebar = document.getElementById('lista-brawlers-sidebar');
     sidebar.innerHTML = '';
-    
     listaBrawlers.forEach(b => {
         let div = document.createElement('div');
         div.className = 'sidebar-item';
@@ -485,10 +573,15 @@ function renderizarDetalhesBrawler(brawler) {
     let partidasDeste = dadosFiltrados.filter(r => r.pick.toUpperCase() === brawler);
     let totalPicks = partidasDeste.length;
     if(totalPicks === 0) return;
-    
+
     let wins = partidasDeste.filter(r => parseInt(r.win) === 1).length;
     let wrGeral = ((wins/totalPicks)*100).toFixed(1) + '%';
-    
+
+    // Estatisticas de ban para este brawler
+    let totalBans = dadosBansFiltrados.filter(r => (r.brawler_banido||'').toUpperCase() === brawler).length;
+    let totalJogosComBans = new Set(dadosBansFiltrados.map(r => r.id_partida)).size;
+    let brPct = totalJogosComBans > 0 ? ((totalBans / totalJogosComBans) * 100).toFixed(1) : '0.0';
+
     let mapasStats = {};
     partidasDeste.forEach(r => {
         let m = r.mapa;
@@ -501,22 +594,20 @@ function renderizarDetalhesBrawler(brawler) {
     let statsContra = {};
     let statsSinergia = {};
     let idsPartidas = [...new Set(partidasDeste.map(r => r.id_partida))];
-    
+
     idsPartidas.forEach(id => {
         let todosNaPartida = dadosFiltrados.filter(r => r.id_partida === id);
         let brawlerRows = todosNaPartida.filter(r => r.pick.toUpperCase() === brawler);
-        
         brawlerRows.forEach(meRow => {
             let timeDoBrawler = meRow.id_time;
             let ganhou = parseInt(meRow.win) === 1;
-            
             todosNaPartida.forEach(p => {
                 let pName = p.pick.toUpperCase();
-                if(p.id_time !== timeDoBrawler) { 
+                if(p.id_time !== timeDoBrawler) {
                     if(!statsContra[pName]) statsContra[pName] = { matches: 0, bwWins: 0, bwLosses: 0 };
                     statsContra[pName].matches++;
                     if(ganhou) statsContra[pName].bwWins++; else statsContra[pName].bwLosses++;
-                } else if(p.id_time === timeDoBrawler && pName !== brawler) { 
+                } else if(p.id_time === timeDoBrawler && pName !== brawler) {
                     if(!statsSinergia[pName]) statsSinergia[pName] = { matches: 0, bwWins: 0 };
                     statsSinergia[pName].matches++;
                     if(ganhou) statsSinergia[pName].bwWins++;
@@ -525,50 +616,43 @@ function renderizarDetalhesBrawler(brawler) {
         });
     });
 
-    let matchups = Object.entries(statsContra).map(([nome, s]) => {
-        return { nome, matches: s.matches, wins: s.bwWins, losses: s.bwLosses, wr: (s.bwWins / s.matches) * 100, pr: (s.matches / totalPicks) * 100 };
-    }).filter(m => m.matches >= 1); 
+    let matchups = Object.entries(statsContra).map(([nome, s]) => ({
+        nome, matches: s.matches, wins: s.bwWins, losses: s.bwLosses,
+        wr: (s.bwWins / s.matches) * 100, pr: (s.matches / totalPicks) * 100
+    })).filter(m => m.matches >= 1);
 
-    // BOM CONTRA: Filtra confrontos com 50%+ de Win Rate e ORDENA por quantidade de partidas (PR%)
-    let countersTop = [...matchups]
-        .filter(m => m.wr >= 50)
-        .sort((a, b) => b.matches - a.matches)
-        .slice(0, 5); 
-
-    // RUIM CONTRA: Filtra confrontos com menos de 50% de Win Rate e ORDENA por quantidade de partidas (PR%)
-    let counteradosTop = [...matchups]
-        .filter(m => m.wr < 50)
-        .sort((a, b) => b.matches - a.matches)
-        .slice(0, 5); 
-
-    // TOP 5 SINERGIAS: Apenas ORDENA por quantidade de partidas jogadas juntos
-    let sinergiasTop = Object.entries(statsSinergia).map(([nome, s]) => {
-        return { nome, matches: s.matches, wins: s.bwWins, wr: (s.bwWins / s.matches) * 100, pr: (s.matches / totalPicks) * 100 };
-    })
-    .filter(m => m.matches >= 1)
-    .sort((a, b) => b.matches - a.matches) // Mudança: de b.wr - a.wr para b.matches - a.matches
-    .slice(0,5);
+    let countersTop    = [...matchups].filter(m => m.wr >= 50).sort((a,b) => b.matches - a.matches).slice(0,5);
+    let counteradosTop = [...matchups].filter(m => m.wr < 50).sort((a,b) => b.matches - a.matches).slice(0,5);
+    let sinergiasTop   = Object.entries(statsSinergia).map(([nome, s]) => ({
+        nome, matches: s.matches, wins: s.bwWins,
+        wr: (s.bwWins / s.matches) * 100, pr: (s.matches / totalPicks) * 100
+    })).filter(m => m.matches >= 1).sort((a,b) => b.matches - a.matches).slice(0,5);
 
     let html = `
         <div class="brawler-profile-header">
             <img src="brawlers/${formatImg(brawler)}.png" class="brawler-large-avatar" onerror="this.src='brawlers/default.png'">
             <div>
                 <h2 style="font-size:28px;">${brawler}</h2>
-                <p style="color:var(--texto-secundario); font-size:14px; font-weight:bold; margin-top:5px;">PICKS: <span style="color:#fff">${totalPicks}</span> | W: <span style="color:#fff">${wins}</span> | WR%: <span class="winrate-cell">${wrGeral}</span></p>
+                <p style="color:var(--texto-secundario); font-size:14px; font-weight:bold; margin-top:5px;">
+                    PICKS: <span style="color:#fff">${totalPicks}</span> |
+                    W: <span style="color:#fff">${wins}</span> |
+                    WR%: <span class="winrate-cell">${wrGeral}</span>
+                    ${totalJogosComBans > 0 ? ` | B: <span style="color:#b06aff">${totalBans}</span> | BR%: <span style="color:#b06aff">${brPct}%</span>` : ''}
+                </p>
             </div>
         </div>
-        
+
         <h3 style="color:var(--accent-purple); font-size:16px; margin-bottom:15px;">TOP 3 MAPAS (DO BRAWLER)</h3>
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:15px; margin-bottom: 30px;">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:15px; margin-bottom:30px;">
             ${topMapas.map(([m, s]) => `
                 <div style="background:var(--bg-cards); padding:15px; border-radius:8px; border:1px solid var(--borda-destaque); text-align:center;">
                     <div style="font-weight:900; font-size:14px; margin-bottom:8px;">${m}</div>
                     <div style="font-size:13px; color:var(--texto-secundario); display:flex; justify-content:center; gap:10px;">
-                        <span>P: <strong style="color:#fff">${s.picks}</strong></span> 
+                        <span>P: <strong style="color:#fff">${s.picks}</strong></span>
                         <span>PR: <strong style="color:#fff">${((s.picks/totalPicks)*100).toFixed(1)}%</strong></span>
                     </div>
                     <div style="font-size:13px; color:var(--texto-secundario); display:flex; justify-content:center; gap:10px; margin-top:5px;">
-                        <span>W: <strong style="color:#fff">${s.wins}</strong></span> 
+                        <span>W: <strong style="color:#fff">${s.wins}</strong></span>
                         <span>WR: <strong class="winrate-cell">${((s.wins/s.picks)*100).toFixed(1)}%</strong></span>
                     </div>
                 </div>
@@ -632,37 +716,28 @@ function renderizarDetalhesBrawler(brawler) {
 function renderizarSidebarTimes() {
     const sidebar = document.getElementById('lista-times-sidebar');
     sidebar.innerHTML = '';
-    
     let timesRegiao = {};
-    
-    // Se a região for "ALL", junta os times de todas as regiões configuradas
+
     if (_REGIAO === "ALL") {
         for (let r in CONFIGURACAO_MANUAL_TIMES) {
             for (let tier in CONFIGURACAO_MANUAL_TIMES[r]) {
                 if (!timesRegiao[tier]) timesRegiao[tier] = [];
-                
                 CONFIGURACAO_MANUAL_TIMES[r][tier].forEach(t => {
-                    // Evita exibir times duplicados se houver conflito de IDs
-                    if (!timesRegiao[tier].find(existente => existente.id_time === t.id_time)) {
-                        timesRegiao[tier].push(t);
-                    }
+                    if (!timesRegiao[tier].find(e => e.id_time === t.id_time)) timesRegiao[tier].push(t);
                 });
             }
         }
     } else {
         timesRegiao = CONFIGURACAO_MANUAL_TIMES[_REGIAO];
     }
-
     if(!timesRegiao) return;
 
     for(let tier in timesRegiao) {
         if(timesRegiao[tier].length === 0) continue;
-        
         let tierHeader = document.createElement('div');
         tierHeader.className = 'sidebar-header';
         tierHeader.innerText = tier;
         sidebar.appendChild(tierHeader);
-
         timesRegiao[tier].forEach(t => {
             let div = document.createElement('div');
             div.className = 'sidebar-item';
@@ -679,41 +754,25 @@ function renderizarSidebarTimes() {
 }
 
 window.registrarTimeCustom = function(oldId) {
-    const newId = document.getElementById('custom-id').value.toUpperCase();
+    const newId   = document.getElementById('custom-id').value.toUpperCase();
     const newName = document.getElementById('custom-name').value;
     let regAlvo = _REGIAO === "ALL" ? "ALL" : _REGIAO;
-    
     let timeObj = null;
     CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIER ?"] = CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIER ?"].filter(t => {
-        if(t.id_time === oldId) {
-            timeObj = t;
-            return false;
-        }
-        return true;
+        if(t.id_time === oldId) { timeObj = t; return false; } return true;
     });
-
     if(timeObj) {
-        timeObj.id_time = newId;
+        timeObj.id_time  = newId;
         timeObj.nome_time = newName;
-        
         timeObj.jogadores[0].nick = document.getElementById('nick-0').value;
         timeObj.jogadores[1].nick = document.getElementById('nick-1').value;
         timeObj.jogadores[2].nick = document.getElementById('nick-2').value;
-
         if(!CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIMES REGISTRADOS"]) CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIMES REGISTRADOS"] = [];
         CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIMES REGISTRADOS"].push(timeObj);
-        
         let salvos = JSON.parse(localStorage.getItem('customTeams_' + _REGIAO)) || [];
         salvos.push(timeObj);
         localStorage.setItem('customTeams_' + _REGIAO, JSON.stringify(salvos));
-        
-        dadosBrutos.forEach(r => {
-            if(r.id_time === oldId) {
-                r.id_time = newId;
-                r.nome_time = newName;
-            }
-        });
-        
+        dadosBrutos.forEach(r => { if(r.id_time === oldId) { r.id_time = newId; r.nome_time = newName; } });
         alert("Time Registrado com Sucesso!");
         processarDadosGlobais();
     }
@@ -729,10 +788,8 @@ function renderizarDetalhesTime(time) {
         painel.innerHTML = `
             <div style="background:var(--bg-cards); padding:30px; border-radius:12px; border:2px dashed var(--accent-purple);">
                 <h2 style="color:var(--accent-hover); margin-bottom:20px;">Registrar Equipe Desconhecida</h2>
-                
                 <div class="form-group"><label>SIGLA DO TIME (ID)</label><input type="text" id="custom-id" value="${time.id_time}"></div>
                 <div class="form-group"><label>NOME COMPLETO</label><input type="text" id="custom-name" value="${time.nome_time}"></div>
-                
                 <h4 style="margin:20px 0 10px; color:#fff;">Roster Detectado:</h4>
                 <div style="display:flex; gap:10px; margin-bottom:25px;">
                     ${time.jogadores.map((j, idx) => `
@@ -754,14 +811,13 @@ function renderizarDetalhesTime(time) {
         if(!timeBrawlers[b]) timeBrawlers[b] = 0;
         timeBrawlers[b]++;
     });
-    let top10Time = Object.entries(timeBrawlers).sort((a,b) => b[1] - a[1]).slice(0, 10);
+    let top10Time = Object.entries(timeBrawlers).sort((a,b) => b[1] - a[1]).slice(0,10);
 
     let html = `
         <div style="display:flex; align-items:center; gap:20px; margin-bottom:30px; border-bottom:1px solid var(--borda-destaque); padding-bottom:20px;">
             <img src="${logoUrl}" style="width:80px; height:80px; object-fit:contain; background:var(--bg-cards); border-radius:12px; border:2px solid var(--borda-destaque);" onerror="this.src='element/teams/default.png'">
-            <h2 style="color: var(--accent-purple); font-size: 32px; font-weight:900;">${time.nome_time} <span style="font-size:14px; color:var(--texto-secundario)">(${time.id_time})</span></h2>
+            <h2 style="color:var(--accent-purple); font-size:32px; font-weight:900;">${time.nome_time} <span style="font-size:14px; color:var(--texto-secundario)">(${time.id_time})</span></h2>
         </div>
-
         <div style="background:var(--bg-cards); padding:20px; border-radius:12px; border:1px solid var(--borda-destaque); margin-bottom:30px;">
             <h3 style="color:var(--texto); margin-bottom:15px; font-size:16px;">TOP 10 BRAWLERS DA EQUIPE</h3>
             <div style="display:flex; flex-wrap:wrap; gap:10px;">
@@ -774,31 +830,27 @@ function renderizarDetalhesTime(time) {
                 `).join('') : '<span style="color:var(--texto-secundario); font-size:13px;">Sem dados suficientes no filtro.</span>'}
             </div>
         </div>
-
         <h3 style="color:var(--texto); margin-bottom:15px; font-size:16px;">JOGADORES (ROSTER OFICIAL)</h3>
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:20px;">
     `;
 
     time.jogadores.forEach(jogador => {
         let partidasJogador = partidasDoTime.filter(r => r.player_tag === jogador.tag);
         let picksTotal = partidasJogador.length;
-        
         let brawlersJogador = {};
         partidasJogador.forEach(r => {
             let b = r.pick.toUpperCase();
             if(!brawlersJogador[b]) brawlersJogador[b] = 0;
             brawlersJogador[b]++;
         });
-        
-        let top5Brawlers = Object.entries(brawlersJogador).sort((a,b) => b[1] - a[1]).slice(0, 5);
-
+        let top5Brawlers = Object.entries(brawlersJogador).sort((a,b) => b[1] - a[1]).slice(0,5);
         html += `
-            <div style="background: var(--bg-cards); padding: 20px; border-radius: 12px; border: 1px solid var(--borda-destaque);">
+            <div style="background:var(--bg-cards); padding:20px; border-radius:12px; border:1px solid var(--borda-destaque);">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
                     <h4 style="color:var(--accent-purple); font-size:18px;">${jogador.nick}</h4>
                     <span style="font-size:10px; background:#000; padding:3px 6px; border-radius:4px; color:var(--texto-secundario);">${jogador.tag}</span>
                 </div>
-                <p style="color: var(--texto-secundario); font-size: 12px; margin-bottom: 20px; font-weight:bold;">Total de Picks: ${picksTotal}</p>
+                <p style="color:var(--texto-secundario); font-size:12px; margin-bottom:20px; font-weight:bold;">Total de Picks: ${picksTotal}</p>
                 <div style="display:flex; flex-direction:column; gap:8px;">
                     ${top5Brawlers.length > 0 ? top5Brawlers.map(([b, qtd], idx) => `
                         <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-paineis); padding:8px 12px; border-radius:6px; border:1px solid var(--borda-suave);">
@@ -831,16 +883,13 @@ function processarScrimes(dadosPeriodo) {
 
     let partidasEstruturadas = [];
     Object.values(rawMatches).forEach(linhas => {
-        if(linhas.length < 6) return; 
-        let t0 = linhas.slice(0, 3);
-        let t1 = linhas.slice(3, 6);
-        
+        if(linhas.length < 6) return;
+        let t0 = linhas.slice(0,3);
+        let t1 = linhas.slice(3,6);
         let t0Id = t0[0].id_time;
         let t1Id = t1[0].id_time;
-
         let t0EhRegiao = isTimeDaRegiaoAtual(t0Id);
         let t1EhRegiao = isTimeDaRegiaoAtual(t1Id);
-
         if (!t0EhRegiao && !t1EhRegiao) return;
 
         if ((t0EhRegiao && !t1EhRegiao) || (!t0EhRegiao && t1EhRegiao)) {
@@ -848,35 +897,32 @@ function processarScrimes(dadosPeriodo) {
             let oponenteExiste = false;
             for (let reg in CONFIGURACAO_MANUAL_TIMES) {
                 for (let tier in CONFIGURACAO_MANUAL_TIMES[reg]) {
-                    if (CONFIGURACAO_MANUAL_TIMES[reg][tier].find(t => t.id_time === oponenteId)) {
-                        oponenteExiste = true;
-                        break;
-                    }
+                    if (CONFIGURACAO_MANUAL_TIMES[reg][tier].find(t => t.id_time === oponenteId)) { oponenteExiste = true; break; }
                 }
                 if (oponenteExiste) break;
             }
-            if (!oponenteExiste) return; 
+            if (!oponenteExiste) return;
         }
 
-        let dataStr = linhas[0].data_adicao; 
+        let dataStr   = linhas[0].data_adicao;
         let timestamp = parseDateBR(dataStr);
-        let vencedor = parseInt(t0[0].win) === 1 ? t0Id : t1Id;
+        let vencedor  = parseInt(t0[0].win) === 1 ? t0Id : t1Id;
+        let isMatcherino = linhas[0].id_partida && linhas[0].id_partida.startsWith('mtcr_');
 
         partidasEstruturadas.push({
             id: linhas[0].id_partida,
             modo: linhas[0].modo,
             mapa: linhas[0].mapa,
-            tAId: t0Id,
-            tBId: t1Id,
-            tANome: t0[0].nome_time,
-            tBNome: t1[0].nome_time,
+            tAId: t0Id, tBId: t1Id,
+            tANome: t0[0].nome_time, tBNome: t1[0].nome_time,
             picksA: t0.map(p => p.pick.toUpperCase()),
             picksB: t1.map(p => p.pick.toUpperCase()),
-            t0Full: t0,
-            t1Full: t1,
+            t0Full: t0, t1Full: t1,
             vencedor: vencedor,
             timestamp: timestamp,
-            dataFormatada: dataStr
+            dataFormatada: dataStr,
+            isMatcherino: isMatcherino,
+            tipo: linhas[0].tipo || 'scrim'
         });
     });
 
@@ -886,41 +932,37 @@ function processarScrimes(dadosPeriodo) {
     partidasEstruturadas.forEach(partida => {
         let chaveTimes = [partida.tAId, partida.tBId].sort().join(' VS ');
         let scrimExistente = scrims.find(s => s.chave === chaveTimes && (partida.timestamp - s.ultimoUpdate) <= (2 * 60 * 60 * 1000));
-
         if(scrimExistente) {
             scrimExistente.rounds.push(partida);
             scrimExistente.ultimoUpdate = partida.timestamp;
             if(partida.vencedor === partida.tAId) scrimExistente.scoreA++;
             if(partida.vencedor === partida.tBId) scrimExistente.scoreB++;
+            if(partida.isMatcherino) scrimExistente.temMatcherino = true;
         } else {
             scrims.push({
                 chave: chaveTimes,
-                tAId: partida.tAId,
-                tBId: partida.tBId,
-                tANome: partida.tANome,
-                tBNome: partida.tBNome,
+                tAId: partida.tAId, tBId: partida.tBId,
+                tANome: partida.tANome, tBNome: partida.tBNome,
                 scoreA: partida.vencedor === partida.tAId ? 1 : 0,
                 scoreB: partida.vencedor === partida.tBId ? 1 : 0,
                 inicio: partida.timestamp,
                 ultimoUpdate: partida.timestamp,
-                dataFormatada: partida.dataFormatada.split(' ')[0], 
-                rounds: [partida]
+                dataFormatada: partida.dataFormatada.split(' ')[0],
+                rounds: [partida],
+                temMatcherino: partida.isMatcherino || false,
+                tipo: partida.tipo
             });
         }
     });
 
-    // ----------------------------------------------------------------------
-    // FILTRO ADICIONADO: Não mostrar partidas que acabem com apenas 1 round (1 set)
-    // ----------------------------------------------------------------------
     scrims = scrims.filter(s => s.rounds.length > 1);
-
-    renderizarListaScrims(scrims.reverse()); 
+    renderizarListaScrims(scrims.reverse());
 }
 
 function renderizarListaScrims(scrims) {
-    const lista = document.getElementById('scrims-lista');
+    const lista   = document.getElementById('scrims-lista');
     const detalhe = document.getElementById('scrims-detalhe');
-    lista.style.display = 'grid';
+    lista.style.display  = 'grid';
     detalhe.style.display = 'none';
     lista.innerHTML = '';
 
@@ -932,13 +974,23 @@ function renderizarListaScrims(scrims) {
     scrims.forEach((scrim) => {
         let div = document.createElement('div');
         div.className = 'scrim-card';
+
+        // Icone Matcherino para partidas de torneio vindas do Matcherino
+        let matcherinoIcon = (scrim.temMatcherino || scrim.tipo === 'tournament')
+            ? `<img src="element/play/matcherino.png" 
+                    style="position:absolute; top:8px; right:8px; width:22px; height:22px; object-fit:contain;" 
+                    onerror="this.style.display='none'" 
+                    title="Fonte: Matcherino">`
+            : '';
+
         div.innerHTML = `
+            ${matcherinoIcon}
             <div class="scrim-team-info">
                 <img src="element/teams/${scrim.tAId.toLowerCase()}.png" class="scrim-team-logo" onerror="this.src='element/teams/default.png'">
                 <span style="font-weight:900; font-size:14px;">${scrim.tANome}</span>
             </div>
             <div class="scrim-score">${scrim.scoreA} - ${scrim.scoreB}</div>
-            <div class="scrim-team-info" style="flex-direction: row-reverse;">
+            <div class="scrim-team-info" style="flex-direction:row-reverse;">
                 <img src="element/teams/${scrim.tBId.toLowerCase()}.png" class="scrim-team-logo" onerror="this.src='element/teams/default.png'">
                 <span style="font-weight:900; font-size:14px;">${scrim.tBNome}</span>
             </div>
@@ -951,31 +1003,29 @@ function renderizarListaScrims(scrims) {
 }
 
 function renderizarDetalheScrim(scrim) {
-    const lista = document.getElementById('scrims-lista');
+    const lista   = document.getElementById('scrims-lista');
     const detalhe = document.getElementById('scrims-detalhe');
-    lista.style.display = 'none';
+    lista.style.display  = 'none';
     detalhe.style.display = 'block';
 
     let playersA = [...new Set(scrim.rounds.flatMap(r => r.t0Full.map(p => p.player_name)))].slice(0,3);
     let playersB = [...new Set(scrim.rounds.flatMap(r => r.t1Full.map(p => p.player_name)))].slice(0,3);
 
     let html = `
-        <button onclick="document.getElementById('scrims-lista').style.display='grid'; document.getElementById('scrims-detalhe').style.display='none';" 
-                style="background: transparent; border: 2px solid var(--accent-purple); color: var(--accent-purple); padding: 8px 20px; font-weight:bold; border-radius: 6px; cursor:pointer; margin-bottom: 30px;">
+        <button onclick="document.getElementById('scrims-lista').style.display='grid'; document.getElementById('scrims-detalhe').style.display='none';"
+                style="background:transparent; border:2px solid var(--accent-purple); color:var(--accent-purple); padding:8px 20px; font-weight:bold; border-radius:6px; cursor:pointer; margin-bottom:30px;">
             ← VOLTAR
         </button>
 
         <div class="scrim-detail-header">
-            <div style="display: flex; justify-content: center; align-items: flex-start; gap: 40px;">
+            <div style="display:flex; justify-content:center; align-items:flex-start; gap:40px;">
                 <div style="text-align:center;">
                     <img src="element/teams/${scrim.tAId.toLowerCase()}.png" style="height:80px; object-fit:contain; background:var(--bg-cards); border-radius:8px; border:2px solid var(--borda-destaque);" onerror="this.src='element/teams/default.png'">
                     <div style="font-size:11px; color:var(--texto-secundario); display:flex; gap:8px; justify-content:center; margin-top:8px; font-weight:bold;">
                         ${playersA.map(p => `<span>${p}</span>`).join('')}
                     </div>
                 </div>
-                
-                <div style="font-size: 42px; font-weight: 900; color: #fff; line-height:80px;">${scrim.scoreA} <span style="color:var(--accent-purple)">-</span> ${scrim.scoreB}</div>
-                
+                <div style="font-size:42px; font-weight:900; color:#fff; line-height:80px;">${scrim.scoreA} <span style="color:var(--accent-purple)">-</span> ${scrim.scoreB}</div>
                 <div style="text-align:center;">
                     <img src="element/teams/${scrim.tBId.toLowerCase()}.png" style="height:80px; object-fit:contain; background:var(--bg-cards); border-radius:8px; border:2px solid var(--borda-destaque);" onerror="this.src='element/teams/default.png'">
                     <div style="font-size:11px; color:var(--texto-secundario); display:flex; gap:8px; justify-content:center; margin-top:8px; font-weight:bold;">
@@ -1008,20 +1058,53 @@ window.selecionarRound = function(index, btnElement) {
 
     let round = window.scrimAtual.rounds[index];
     const container = document.getElementById('round-view-container');
-    
+
     let playersA = round.t0Full.map(p => p.player_name);
     let playersB = round.t1Full.map(p => p.player_name);
+
+    // Busca bans deste round no CSV de bans (so existe para partidas Matcherino)
+    let bansDoRound = dadosBans.filter(r => r.id_partida === round.id);
+    let bansTimeA   = bansDoRound.filter(r => r.id_time === round.tAId);
+    let bansTimeB   = bansDoRound.filter(r => r.id_time === round.tBId);
+    let temBans     = bansTimeA.length > 0 || bansTimeB.length > 0;
 
     container.innerHTML = `
         <div class="round-details-view">
             <div style="text-align:center;">
-                <p style="font-size:12px; color:var(--texto-secundario); font-weight:bold;">${round.dataFormatada.split(' ')[1]} | ${round.modo.toUpperCase()}</p>
+                <p style="font-size:12px; color:var(--texto-secundario); font-weight:bold;">${round.dataFormatada.split(' ')[1] || ''} | ${round.modo.toUpperCase()}</p>
             </div>
-            
-            <div class="player-names-scrim" style="justify-content: space-around;">
+
+            <div class="player-names-scrim" style="justify-content:space-around;">
                 <div style="display:flex; gap:35px;">${playersA.map(p => `<span>${p}</span>`).join('')}</div>
                 <div style="display:flex; gap:35px;">${playersB.map(p => `<span>${p}</span>`).join('')}</div>
             </div>
+
+            ${temBans ? `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin:12px 0; padding:10px 20px; background:rgba(176,0,0,0.08); border-radius:8px; border:1px solid rgba(200,50,50,0.35);">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:10px; font-weight:900; color:#ff5555; letter-spacing:1px; white-space:nowrap;">BANS ▶</span>
+                    ${bansTimeA.map(b => `
+                        <div style="position:relative; display:inline-block;" title="${b.brawler_banido}">
+                            <img src="brawlers/${formatImg(b.brawler_banido)}.png"
+                                 style="width:32px; height:32px; border-radius:4px; filter:grayscale(80%) brightness(0.5);"
+                                 onerror="this.src='brawlers/default.png'">
+                            <span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#ff4444; font-size:16px; font-weight:900; text-shadow:0 0 4px #000;">✕</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; flex-direction:row-reverse;">
+                    <span style="font-size:10px; font-weight:900; color:#ff5555; letter-spacing:1px; white-space:nowrap;">◀ BANS</span>
+                    ${bansTimeB.map(b => `
+                        <div style="position:relative; display:inline-block;" title="${b.brawler_banido}">
+                            <img src="brawlers/${formatImg(b.brawler_banido)}.png"
+                                 style="width:32px; height:32px; border-radius:4px; filter:grayscale(80%) brightness(0.5);"
+                                 onerror="this.src='brawlers/default.png'">
+                            <span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#ff4444; font-size:16px; font-weight:900; text-shadow:0 0 4px #000;">✕</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            ` : ''}
 
             <div class="scrim-picks-container">
                 <div class="team-picks-scrim" style="flex-direction:row; justify-content:flex-end;">
