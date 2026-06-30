@@ -9,6 +9,7 @@ import re
 # CONFIGURAÇÃO GERAL
 # =============================================================================
 API_KEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjU0ODZlOGQxLTRkNWQtNDJmYy1iOWE3LWU5ODYyMWJhOWI0NSIsImlhdCI6MTc3ODUwODgwOCwic3ViIjoiZGV2ZWxvcGVyLzc0NjFhNGJkLThhZDctNjg2Mi0wOGVkLTJiYmEzMzAxMWE3NiIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiNDUuNzkuMjE4Ljc5Il0sInR5cGUiOiJjbGllbnQifV19.yvcSQalBqNz6Q6DjZWU5IL1XvBjn5DGck"
+PROXY_URL = "https://bsproxy.royaleapi.dev/v1"
 
 ARQUIVO_BRUTO = "historico_bruto.csv"
 ARQUIVO_BANS = "bans_matcherino.csv"
@@ -145,7 +146,6 @@ def minerar_dados():
         try:
             resp = requests.get(url, headers=headers_api, timeout=10)
             if resp.status_code != 200: continue
-            
             for item in resp.json().get("items", []):
                 try:
                     battle = item.get("battle", {})
