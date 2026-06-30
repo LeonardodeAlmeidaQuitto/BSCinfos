@@ -75,7 +75,6 @@ MAPEAMENTO_PLAYERS = {
         "#8R0JY2UJ2": {"nome": "Rennosuke", "id_time": "F0", "nome_time": "FAZE ZERO"}
 
 }
-
 def obter_fuso_brasilia():
     return timezone(timedelta(hours=-3))
 
@@ -96,6 +95,9 @@ def minerar_dados():
     tags_torneio = set()
     
     # Automatização do Matcherino via arquivo 'torneios.txt'
+    # Cada linha do arquivo = um ID de torneio/bounty do Matcherino.
+    # O bot busca os participantes daquele torneio e extrai as tags de
+    # Brawl Stars vinculadas a cada um, passando a rastreá-los.
     if os.path.exists('torneios.txt'):
         with open('torneios.txt', 'r') as f:
             for linha in f:
@@ -115,7 +117,9 @@ def minerar_dados():
                     except Exception as e:
                         print(f"Erro Matcherino {t_id}: {e}")
 
-    TAG_PARA_REGIAO = {t: i["regiao"] for t, i in MAPEAMENTO_PLAYERS.items()}
+    # .get() com fallback "SA": se algum player for adicionado manualmente
+    # no futuro e esquecerem de incluir "regiao", o bot não quebra mais.
+    TAG_PARA_REGIAO = {t: i.get("regiao", "SA") for t, i in MAPEAMENTO_PLAYERS.items()}
 
     ids_registrados, ids_bans = set(), set()
     if os.path.exists(ARQUIVO_BRUTO):
@@ -134,9 +138,9 @@ def minerar_dados():
     headers_api = {"Authorization": f"Bearer {API_KEY}"}
 
     for tag_busca, info_busca in list(MAPEAMENTO_PLAYERS.items()):
-        sigla_busca = info_busca["regiao"]
+        sigla_busca = info_busca.get("regiao", "SA")
         tag_url = tag_busca.replace("#", "%23")
-        url = f"https://api.brawlstars.com/v1/players/{tag_url}/battlelog"
+        url = f"{PROXY_URL}/players/{tag_url}/battlelog"
         
         try:
             resp = requests.get(url, headers=headers_api, timeout=10)
@@ -168,22 +172,25 @@ def minerar_dados():
                     time_str = b_time.split(".")[0] if b_time else "00000000T000000"
                     pid = f"{time_str}_{mapa}_{'_'.join(tags_list)}_{'_'.join(brawlers_list)}"
                     
-                    if pid not in ids_registrados:
-                        res = battle.get('result')
-                        reg_final = "/".join(sorted({TAG_PARA_REGIAO.get(t, sigla_busca) for t in tags_list}))
-                        
-                        t0_id, t0_nome = "OPONENTE_T0", "DESCONHECIDO T0"
-                        t1_id, t1_nome = "OPONENTE_T1", "DESCONHECIDO T1"
-                        
-                        for p in teams[0]:
-                            if p.get('tag') in MAPEAMENTO_PLAYERS:
-                                t0_id, t0_nome = MAPEAMENTO_PLAYERS[p['tag']]["id_time"], MAPEAMENTO_PLAYERS[p['tag']]["nome_time"]
-                                break
-                        for p in teams[1]:
-                            if p.get('tag') in MAPEAMENTO_PLAYERS:
-                                t1_id, t1_nome = MAPEAMENTO_PLAYERS[p['tag']]["id_time"], MAPEAMENTO_PLAYERS[p['tag']]["nome_time"]
-                                break
+                    # reg_final / t0_* / t1_* ficam disponíveis tanto para o
+                    # bloco de picks quanto para o de bans abaixo, mesmo que
+                    # só um dos dois precise rodar nesta passada.
+                    res = battle.get('result')
+                    reg_final = "/".join(sorted({TAG_PARA_REGIAO.get(t, sigla_busca) for t in tags_list}))
 
+                    t0_id, t0_nome = "OPONENTE_T0", "DESCONHECIDO T0"
+                    t1_id, t1_nome = "OPONENTE_T1", "DESCONHECIDO T1"
+
+                    for p in teams[0]:
+                        if p.get('tag') in MAPEAMENTO_PLAYERS:
+                            t0_id, t0_nome = MAPEAMENTO_PLAYERS[p['tag']]["id_time"], MAPEAMENTO_PLAYERS[p['tag']]["nome_time"]
+                            break
+                    for p in teams[1]:
+                        if p.get('tag') in MAPEAMENTO_PLAYERS:
+                            t1_id, t1_nome = MAPEAMENTO_PLAYERS[p['tag']]["id_time"], MAPEAMENTO_PLAYERS[p['tag']]["nome_time"]
+                            break
+
+                    if pid not in ids_registrados:
                         for i in range(6):
                             venceu = 1 if (i < 3 and res == 'victory') or (i >= 3 and res == 'defeat') else 0
                             id_t, nm_t = (t0_id, t0_nome) if i < 3 else (t1_id, t1_nome)
