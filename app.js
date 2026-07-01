@@ -223,13 +223,70 @@ function carregarTimesSalvosLocal() {
     let salvos = JSON.parse(localStorage.getItem('customTeams_' + _REGIAO)) || [];
     if (!CONFIGURACAO_MANUAL_TIMES[_REGIAO] && _REGIAO !== "ALL") CONFIGURACAO_MANUAL_TIMES[_REGIAO] = {};
     if (_REGIAO === "ALL" && !CONFIGURACAO_MANUAL_TIMES["ALL"]) CONFIGURACAO_MANUAL_TIMES["ALL"] = { "TIER ?": [], "TIMES REGISTRADOS": [] };
-    
+
     let regAlvo = _REGIAO === "ALL" ? "ALL" : _REGIAO;
     if (!CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIMES REGISTRADOS"]) CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIMES REGISTRADOS"] = [];
-    salvos.forEach(t => CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIMES REGISTRADOS"].push(t));
+
+    // Cada time salvo carrega consigo o tier escolhido no cadastro (campo "tier").
+    // Times salvos antes dessa funcionalidade existir caem em "TIMES REGISTRADOS" (comportamento antigo).
+    salvos.forEach(t => {
+        let tierAlvo = t.tier && t.tier.trim() !== '' ? t.tier : 'TIMES REGISTRADOS';
+        if (!CONFIGURACAO_MANUAL_TIMES[regAlvo][tierAlvo]) CONFIGURACAO_MANUAL_TIMES[regAlvo][tierAlvo] = [];
+        CONFIGURACAO_MANUAL_TIMES[regAlvo][tierAlvo].push(t);
+    });
+
+    // Tenta também mesclar os times salvos dentro de ROSTERS_POR_DATA (PADRAO + mês/ano atual),
+    // para que fiquem disponíveis automaticamente em "const ROSTERS_POR_DATA" durante a sessão.
+    mesclarTimesSalvosEmRostersPorData();
+}
+
+// Mantém os times cadastrados manualmente também dentro de ROSTERS_POR_DATA (em memória),
+// assim eles "aparecem" automaticamente na constante sem precisar editar o arquivo na mão.
+function mesclarTimesSalvosEmRostersPorData() {
+    if (_REGIAO === "ALL") return; // "ALL" é agregador, não existe como chave própria em ROSTERS_POR_DATA
+    let salvos = JSON.parse(localStorage.getItem('customTeams_' + _REGIAO)) || [];
+    if (salvos.length === 0) return;
+
+    let selectAno = document.getElementById('select-ano');
+    let selectMes = document.getElementById('select-mes');
+    const ano = selectAno ? selectAno.value : 'todos';
+    const mes = selectMes ? selectMes.value : 'todos';
+
+    let alvos = [ROSTERS_POR_DATA["PADRAO"]];
+    if (ano !== 'todos' && mes !== 'todos' && ROSTERS_POR_DATA[ano] && ROSTERS_POR_DATA[ano][mes]) {
+        alvos.push(ROSTERS_POR_DATA[ano][mes]);
+    }
+
+    alvos.forEach(alvo => {
+        if (!alvo[_REGIAO]) alvo[_REGIAO] = {};
+        salvos.forEach(t => {
+            let tierAlvo = t.tier && t.tier.trim() !== '' ? t.tier : 'TIMES REGISTRADOS';
+            if (!alvo[_REGIAO][tierAlvo]) alvo[_REGIAO][tierAlvo] = [];
+            if (!alvo[_REGIAO][tierAlvo].find(e => e.id_time === t.id_time)) {
+                alvo[_REGIAO][tierAlvo].push({ id_time: t.id_time, nome_time: t.nome_time, jogadores: t.jogadores });
+            }
+        });
+    });
+}
+
+// Lista os tiers já existentes na região atual (para popular o <select> de cadastro)
+function obterTiersDisponiveis() {
+    let regAlvo = _REGIAO === "ALL" ? "ALL" : _REGIAO;
+    let base = CONFIGURACAO_MANUAL_TIMES[regAlvo] || {};
+    let tiers = Object.keys(base).filter(t => t !== 'TIER ?');
+    let padrao = ['TIER S', 'TIER A', 'TIER B', 'TIER B-/C+', 'TIER C', 'TIMES REGISTRADOS'];
+    padrao.forEach(p => { if (!tiers.includes(p)) tiers.push(p); });
+    return tiers;
 }
 
 const formatImg = n => { if(!n) return 'default'; return n.toLowerCase().replace(/[^a-z0-9]/g, ''); };
+
+// ========================================================
+// HELPERS DE LOGO DE TIME (com fallback inteligente p/ Unknow)
+// ========================================================
+const teamLogoUrl = (id) => `element/teams/${(id || '').toLowerCase()}.png`;
+const teamLogoFallback = (id) => (id && id.toUpperCase().startsWith('UNK')) ? 'element/teams/unknow.png' : 'element/teams/default.png';
+const teamLogoOnError = (id) => `this.onerror=null; this.src='${teamLogoFallback(id)}';`;
 
 const isTimeDaRegiaoAtual = (id) => {
     if (_REGIAO === "ALL") {
@@ -382,21 +439,104 @@ function popularFiltrosGlobais() {
         fScrim.onchange = () => { if (window.currentScrims) renderizarListaScrims(window.currentScrims); };
         sTipo.parentNode.insertBefore(fScrim, sTipo.nextSibling);
 
+        // Dropdown visual customizado (com a logo do time ao lado esquerdo do nome).
+        // O <select> nativo acima continua existindo como "fonte da verdade" (mesmo id/valor),
+        // só que escondido — todo o resto do código que lê scrims-team-filter.value continua igual.
+        let customWrap = document.createElement('div');
+        customWrap.id = 'scrims-team-filter-custom';
+        customWrap.style.cssText = 'position:relative; display:none; min-width:230px; user-select:none;';
+        customWrap.innerHTML = `
+            <div id="scrims-team-filter-trigger" class="filter-select" style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <img id="scrims-team-filter-trigger-logo" src="" style="width:20px; height:20px; object-fit:contain; border-radius:4px; display:none;">
+                <span id="scrims-team-filter-trigger-label" style="flex:1; text-align:left;">Todos os Times (Scrims)</span>
+                <span style="font-size:10px; opacity:0.7;">▼</span>
+            </div>
+            <div id="scrims-team-filter-options" style="display:none; position:absolute; top:108%; left:0; right:0; min-width:230px; max-height:300px; overflow-y:auto; background:var(--bg-cards, #181820); border:1px solid var(--borda-destaque, #3a3a45); border-radius:8px; z-index:1000; box-shadow:0 8px 24px rgba(0,0,0,0.4);"></div>
+        `;
+        sTipo.parentNode.insertBefore(customWrap, fScrim.nextSibling);
+
+        customWrap.querySelector('#scrims-team-filter-trigger').onclick = (e) => {
+            e.stopPropagation();
+            let box = document.getElementById('scrims-team-filter-options');
+            box.style.display = box.style.display === 'none' ? 'block' : 'none';
+        };
+        document.addEventListener('click', () => {
+            let box = document.getElementById('scrims-team-filter-options');
+            if (box) box.style.display = 'none';
+        });
+
         let iSample = document.createElement('input');
         iSample.type = 'number'; iSample.id = 'sample-picks-meta'; iSample.className = 'filter-select'; iSample.style.display = 'none'; 
         iSample.value = '1'; iSample.min = '1'; iSample.placeholder = 'Sample Picks';
         iSample.onchange = processarDadosGlobais;
-        sTipo.parentNode.insertBefore(iSample, sTipo.nextSibling);
+        sTipo.parentNode.insertBefore(iSample, customWrap.nextSibling);
 
         document.body.addEventListener('click', () => {
             setTimeout(() => {
                 let eS = document.getElementById('tela-scrims'), eM = document.getElementById('tela-meta');
-                fScrim.style.display = (eS && !eS.classList.contains('tela-oculta')) ? 'inline-block' : 'none';
+                customWrap.style.display = (eS && !eS.classList.contains('tela-oculta')) ? 'inline-block' : 'none';
                 iSample.style.display = (eM && !eM.classList.contains('tela-oculta')) ? 'inline-block' : 'none';
             }, 50);
         });
     }
 }
+
+// Monta o dropdown visual de filtro de times das scrims, com a logo de cada time
+// ao lado esquerdo do nome (tanto no botão quanto na lista de opções).
+function atualizarDropdownTimesScrims(timesNaScrimMap, valorAtual) {
+    const selectFiltro = document.getElementById('scrims-team-filter');
+    const optionsBox = document.getElementById('scrims-team-filter-options');
+    const triggerLabel = document.getElementById('scrims-team-filter-trigger-label');
+    const triggerLogo = document.getElementById('scrims-team-filter-trigger-logo');
+    if (!selectFiltro || !optionsBox) return;
+
+    const aplicarSelecao = (nome, id) => {
+        selectFiltro.value = nome;
+        if (triggerLabel) triggerLabel.innerText = nome === 'todos' ? 'Todos os Times (Scrims)' : nome;
+        if (triggerLogo) {
+            if (id) { triggerLogo.src = teamLogoUrl(id); triggerLogo.onerror = () => { triggerLogo.onerror = null; triggerLogo.src = teamLogoFallback(id); }; triggerLogo.style.display = 'inline-block'; }
+            else triggerLogo.style.display = 'none';
+        }
+        optionsBox.style.display = 'none';
+        if (window.currentScrims) renderizarListaScrims(window.currentScrims);
+    };
+
+    optionsBox.innerHTML = '';
+    let optTodos = document.createElement('div');
+    optTodos.style.cssText = 'display:flex; align-items:center; gap:8px; padding:9px 14px; cursor:pointer; font-weight:bold;';
+    optTodos.innerText = 'Todos os Times (Scrims)';
+    optTodos.onmouseenter = () => optTodos.style.background = 'rgba(255,255,255,0.06)';
+    optTodos.onmouseleave = () => optTodos.style.background = 'transparent';
+    optTodos.onclick = (e) => { e.stopPropagation(); aplicarSelecao('todos', null); };
+    optionsBox.appendChild(optTodos);
+
+    Array.from(timesNaScrimMap.entries()).sort((a, b) => a[0].localeCompare(b[0])).forEach(([nome, id]) => {
+        let opt = document.createElement('div');
+        opt.style.cssText = 'display:flex; align-items:center; gap:8px; padding:9px 14px; cursor:pointer; font-weight:bold;';
+        let img = document.createElement('img');
+        img.src = teamLogoUrl(id); img.style.cssText = 'width:20px; height:20px; object-fit:contain; border-radius:4px;';
+        img.onerror = () => { img.onerror = null; img.src = teamLogoFallback(id); };
+        let span = document.createElement('span'); span.innerText = nome;
+        opt.appendChild(img); opt.appendChild(span);
+        opt.onmouseenter = () => opt.style.background = 'rgba(255,255,255,0.06)';
+        opt.onmouseleave = () => opt.style.background = 'transparent';
+        opt.onclick = (e) => { e.stopPropagation(); aplicarSelecao(nome, id); };
+        optionsBox.appendChild(opt);
+    });
+
+    if (valorAtual === 'todos') {
+        if (triggerLabel) triggerLabel.innerText = 'Todos os Times (Scrims)';
+        if (triggerLogo) triggerLogo.style.display = 'none';
+    } else {
+        let id = timesNaScrimMap.get(valorAtual);
+        if (triggerLabel) triggerLabel.innerText = valorAtual;
+        if (triggerLogo) {
+            if (id) { triggerLogo.src = teamLogoUrl(id); triggerLogo.onerror = () => { triggerLogo.onerror = null; triggerLogo.src = teamLogoFallback(id); }; triggerLogo.style.display = 'inline-block'; }
+            else triggerLogo.style.display = 'none';
+        }
+    }
+}
+
 
 function processarDadosGlobais() {
     atualizarRostersAtuais();
@@ -438,12 +578,28 @@ window.toggleModoMeta = function(idModo) {
     if(c) c.style.display = (c.style.display === 'none' || !c.style.display) ? 'block' : 'none';
 }
 
+// Pega a rotação de mapas (Modo -> [3 mapas]) a ser usada na tela META: a configurada para o
+// ano/mês filtrado, ou, se "Todos os Anos/Meses" estiver selecionado, a configuração mais recente
+// cadastrada em ROTACAO_MAPAS (assim a tela nunca mostra mapas fora da rotação atual).
+function obterRotacaoAtiva(ano, mes) {
+    if (ano !== 'todos' && mes !== 'todos' && ROTACAO_MAPAS[ano] && ROTACAO_MAPAS[ano][mes]) {
+        return ROTACAO_MAPAS[ano][mes];
+    }
+    let anos = Object.keys(ROTACAO_MAPAS).sort().reverse();
+    for (let a of anos) {
+        let meses = Object.keys(ROTACAO_MAPAS[a]).sort().reverse();
+        for (let m of meses) return ROTACAO_MAPAS[a][m];
+    }
+    return null;
+}
+
 function renderizarMeta() {
     const container = document.getElementById('conteudo-meta');
     let sMap = {}, sAll = {}, bMap = {}, bAll = {}, mSet = new Set(), pMap = {}, tPU = 0, jBMap = {}, jBT = new Set();
     let iS = document.getElementById('sample-picks-meta'), samplePicks = iS ? parseInt(iS.value) || 1 : 1;
     const ano = document.getElementById('select-ano') ? document.getElementById('select-ano').value : 'todos';
     const mes = document.getElementById('select-mes') ? document.getElementById('select-mes').value : 'todos';
+    const rotacaoAtiva = obterRotacaoAtiva(ano, mes);
 
     dadosFiltrados.forEach(row => {
         let b = (row.pick || '').toUpperCase(), map = row.mapa || "Desconhecido", mode = row.modo || "Desconhecido";
@@ -471,45 +627,62 @@ function renderizarMeta() {
         bAll[b] = (bAll[b] || 0) + 1; jBT.add(row.id_partida);
     });
 
+    const montarCardMapa = (modeKeyReal, mapaConfig) => {
+        let mapaKeyReal = (modeKeyReal && sMap[modeKeyReal]) ? Object.keys(sMap[modeKeyReal]).find(m => m.toLowerCase() === mapaConfig.toLowerCase()) : null;
+        let brawlers = mapaKeyReal ? sMap[modeKeyReal][mapaKeyReal] : null;
+        let valid = brawlers ? Object.entries(brawlers).filter(x => x[1].picks >= samplePicks).sort((a,b) => b[1].picks - a[1].picks) : [];
+        let bNMap = (modeKeyReal && mapaKeyReal && bMap[modeKeyReal] && bMap[modeKeyReal][mapaKeyReal]) ? bMap[modeKeyReal][mapaKeyReal] : {};
+        let tJM = (modeKeyReal && mapaKeyReal && jBMap[modeKeyReal] && jBMap[modeKeyReal][mapaKeyReal]) ? jBMap[modeKeyReal][mapaKeyReal].size : 0, tBM = tJM > 0;
+
+        return `
+            <div style="background:var(--bg-geral); border:1px solid var(--borda-destaque); border-radius:8px; padding:15px; min-width:0;">
+                <div style="text-align:center; font-weight:bold; margin-bottom:10px; color:var(--texto-secundario);">${mapaConfig.toUpperCase()}</div>
+                ${valid.length > 0 ? `
+                <div style="overflow-x:auto;">
+                <table class="excel-table" style="width:100%; table-layout:auto; border-collapse:collapse;">
+                    <thead><tr>
+                        <th style="text-align:left; white-space:nowrap; padding:5px 8px;">BRAWLER</th>
+                        <th style="white-space:nowrap; padding:5px 8px;">P</th>
+                        <th style="white-space:nowrap; padding:5px 8px;">PR%</th>
+                        <th style="white-space:nowrap; padding:5px 8px;">W</th>
+                        <th style="white-space:nowrap; padding:5px 8px;">WR%</th>
+                        <th style="white-space:nowrap; padding:5px 8px; color:#b06aff;">B</th>
+                        <th style="white-space:nowrap; padding:5px 8px; color:#b06aff;">BR%</th>
+                    </tr></thead>
+                    <tbody>
+                        ${valid.map(([b, s]) => {
+                            let bc = bNMap[b] || 0, brPct = tBM ? ((bc / tJM) * 100).toFixed(1) : '0.0';
+                            return `<tr>
+                                <td style="text-align:left; font-weight:bold; color:var(--accent-hover); white-space:nowrap; padding:5px 8px;"><img src="brawlers/${formatImg(b)}.png" style="width:24px; vertical-align:middle; margin-right:5px; border-radius:4px;" onerror="this.src='brawlers/default.png'">${b}</td>
+                                <td style="padding:5px 8px;">${s.picks}</td><td style="color:var(--texto-secundario); padding:5px 8px;">${((s.picks/(dadosFiltrados.length||1))*100).toFixed(1)}%</td><td style="padding:5px 8px;">${s.wins}</td><td class="winrate-cell" style="padding:5px 8px;">${((s.wins/s.picks)*100).toFixed(1)}%</td>
+                                <td style="color:#b06aff; font-weight:bold; padding:5px 8px;">${bc}</td><td style="color:#b06aff; font-weight:bold; padding:5px 8px;">${brPct}%</td>
+                            </tr>`;
+                        }).join('')}
+                    </tbody>
+                </table>
+                </div>` : `<p style="text-align:center; color:var(--texto-secundario); font-size:12px; font-weight:bold; padding:25px 0;">Sem dados suficientes no filtro atual.</p>`}
+            </div>`;
+    };
+
     let html = ``;
-    Object.entries(sMap).forEach(([mode, mapasDict]) => {
-        let cleanMode = formatImg(mode), conteudoMapa = '';
-        Object.entries(mapasDict).forEach(([mapa, brawlers]) => {
-            let mapaRotacaoValido = true;
-            if (ano !== 'todos' && mes !== 'todos' && ROTACAO_MAPAS[ano] && ROTACAO_MAPAS[ano][mes]) {
-                let mDM = Object.keys(ROTACAO_MAPAS[ano][mes]).find(k => k.toLowerCase() === mode.toLowerCase());
-                if (mDM) {
-                    let lst = ROTACAO_MAPAS[ano][mes][mDM].map(m => m.toUpperCase());
-                    if (!lst.includes(mapa.toUpperCase())) mapaRotacaoValido = false;
-                }
-            }
-            if (!mapaRotacaoValido) return;
 
-            let valid = Object.entries(brawlers).filter(x => x[1].picks >= samplePicks).sort((a,b) => b[1].picks - a[1].picks);
-            if(valid.length === 0) return;
-            let bNMap = (bMap[mode] && bMap[mode][mapa]) ? bMap[mode][mapa] : {};
-            let tJM = (jBMap[mode] && jBMap[mode][mapa]) ? jBMap[mode][mapa].size : 0, tBM = tJM > 0;
-
-            conteudoMapa += `
-                <div style="background:var(--bg-geral); border:1px solid var(--borda-destaque); border-radius:8px; padding:15px;">
-                    <div style="text-align:center; font-weight:bold; margin-bottom:10px; color:var(--texto-secundario);">${mapa.toUpperCase()}</div>
-                    <table class="excel-table">
-                        <thead><tr><th style="text-align:left;">BRAWLER</th><th>P</th><th>PR%</th><th>W</th><th>WR%</th><th style="color:#b06aff;">B</th><th style="color:#b06aff;">BR%</th></tr></thead>
-                        <tbody>
-                            ${valid.map(([b, s]) => {
-                                let bc = bNMap[b] || 0, brPct = tBM ? ((bc / tJM) * 100).toFixed(1) : '0.0';
-                                return `<tr>
-                                    <td style="text-align:left; font-weight:bold; color:var(--accent-hover)"><img src="brawlers/${formatImg(b)}.png" style="width:24px; vertical-align:middle; margin-right:5px; border-radius:4px;" onerror="this.src='brawlers/default.png'">${b}</td>
-                                    <td>${s.picks}</td><td style="color:var(--texto-secundario);">${((s.picks/dadosFiltrados.length)*100).toFixed(1)}%</td><td>${s.wins}</td><td class="winrate-cell">${((s.wins/s.picks)*100).toFixed(1)}%</td>
-                                    <td style="color:#b06aff; font-weight:bold;">${bc}</td><td style="color:#b06aff; font-weight:bold;">${brPct}%</td>
-                                </tr>`;
-                            }).join('')}
-                        </tbody>
-                    </table>
-                </div>`;
+    if (rotacaoAtiva) {
+        // Mostra SOMENTE os modos/mapas configurados em ROTACAO_MAPAS, com os 3 mapas
+        // de cada modo lado a lado (em linha horizontal), nessa ordem.
+        Object.entries(rotacaoAtiva).forEach(([modoConfig, mapasConfig]) => {
+            let modeKeyReal = Object.keys(sMap).find(m => m.toLowerCase() === modoConfig.toLowerCase()) || null;
+            let cleanMode = formatImg(modoConfig);
+            let conteudoMapa = mapasConfig.map(mapaConfig => montarCardMapa(modeKeyReal, mapaConfig)).join('');
+            html += `<div class="modo-card" onclick="toggleModoMeta('${cleanMode}')"><img src="element/modes/${cleanMode}.png" style="width:40px; margin-right:15px;" onerror="this.src='element/modes/default.png'">${modoConfig}</div><div id="modo-content-${cleanMode}" class="modo-section" style="display:none; padding:15px;"><div class="mapa-content" style="display:grid; grid-template-columns:repeat(3, minmax(300px, 1fr)); gap:15px; align-items:start;">${conteudoMapa}</div></div>`;
         });
-        if (conteudoMapa !== '') html += `<div class="modo-card" onclick="toggleModoMeta('${cleanMode}')"><img src="element/modes/${cleanMode}.png" style="width:40px; margin-right:15px;" onerror="this.src='element/modes/default.png'">${mode}</div><div id="modo-content-${cleanMode}" class="modo-section" style="display:none; padding:15px;"><div class="mapa-content">${conteudoMapa}</div></div>`;
-    });
+    } else {
+        // Fallback de segurança: nenhuma rotação cadastrada em ROTACAO_MAPAS para nenhum período.
+        Object.entries(sMap).forEach(([mode, mapasDict]) => {
+            let cleanMode = formatImg(mode);
+            let conteudoMapa = Object.keys(mapasDict).map(mapa => montarCardMapa(mode, mapa)).join('');
+            if (conteudoMapa !== '') html += `<div class="modo-card" onclick="toggleModoMeta('${cleanMode}')"><img src="element/modes/${cleanMode}.png" style="width:40px; margin-right:15px;" onerror="this.src='element/modes/default.png'">${mode}</div><div id="modo-content-${cleanMode}" class="modo-section" style="display:none; padding:15px;"><div class="mapa-content" style="display:grid; grid-template-columns:repeat(3, minmax(300px, 1fr)); gap:15px; align-items:start;">${conteudoMapa}</div></div>`;
+        });
+    }
 
     let bAllVal = Object.entries(sAll).filter(x => x[1].picks >= samplePicks).sort((a,b) => b[1].picks - a[1].picks);
     if (bAllVal.length > 0) {
@@ -644,7 +817,7 @@ function renderizarSidebarTimes() {
         let tierHeader = document.createElement('div'); tierHeader.className = 'sidebar-header'; tierHeader.innerText = tier; sidebar.appendChild(tierHeader);
         timesRegiao[tier].forEach(t => {
             let div = document.createElement('div'); div.className = 'sidebar-item';
-            div.innerHTML = `<img src="element/teams/${t.id_time.toLowerCase()}.png" style="width:24px; height:24px; object-fit:contain; border-radius:4px;" onerror="this.src='element/teams/default.png'"> <span style="font-weight:bold;">${t.nome_time}</span>`;
+            div.innerHTML = `<img src="${teamLogoUrl(t.id_time)}" style="width:24px; height:24px; object-fit:contain; border-radius:4px;" onerror="${teamLogoOnError(t.id_time)}"> <span style="font-weight:bold;">${t.nome_time}</span>`;
             div.onclick = () => { document.querySelectorAll('#lista-times-sidebar .sidebar-item').forEach(i => i.classList.remove('active')); div.classList.add('active'); timeSelecionado = t; renderizarDetalhesTime(t); };
             sidebar.appendChild(div);
         });
@@ -654,10 +827,32 @@ function renderizarSidebarTimes() {
 function renderizarDetalhesTime(time) {
     const painel = document.getElementById('painel-info-time');
     let partidasDoTime = dadosFiltrados.filter(r => r.id_time === time.id_time);
-    let logoUrl = `element/teams/${time.id_time.toLowerCase()}.png`;
+    let logoUrl = teamLogoUrl(time.id_time);
 
     if (time.id_time.startsWith("UNK")) {
-        if(painel) painel.innerHTML = `<div style="background:var(--bg-cards); padding:30px; border-radius:12px; border:2px dashed var(--accent-purple);"><h2 style="color:var(--accent-hover); margin-bottom:20px;">Registrar Equipe Desconhecida</h2><div class="form-group"><label>SIGLA DO TIME (ID)</label><input type="text" id="custom-id" value="${time.id_time}"></div><div class="form-group"><label>NOME COMPLETO</label><input type="text" id="custom-name" value="${time.nome_time}"></div><h4 style="margin:20px 0 10px; color:#fff;">Roster Detectado:</h4><div style="display:flex; gap:10px; margin-bottom:25px;">${time.jogadores.map((j, idx) => `<div style="flex:1; background:var(--bg-paineis); padding:10px; border-radius:6px; border:1px solid var(--borda-suave);"><label style="font-size:11px; color:var(--texto-secundario); display:block; margin-bottom:5px;">${j.tag}</label><input type="text" id="nick-${idx}" value="${j.nick}" style="width:100%; background:transparent; border:none; border-bottom:1px solid var(--borda-destaque); color:#fff; font-weight:bold; outline:none;"></div>`).join('')}</div><button class="btn-register" onclick="registrarTimeCustom('${time.id_time}')">SALVAR E REGISTRAR TIME</button></div>`;
+        let tiersDisponiveis = obterTiersDisponiveis();
+        if(painel) painel.innerHTML = `<div style="background:var(--bg-cards); padding:30px; border-radius:12px; border:2px dashed var(--accent-purple);">
+            <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
+                <img src="element/teams/unknow.png" style="width:48px; height:48px; object-fit:contain; border-radius:8px; background:var(--bg-paineis); border:1px solid var(--borda-suave);" onerror="this.style.display='none'">
+                <h2 style="color:var(--accent-hover); margin:0;">Registrar Equipe Desconhecida</h2>
+            </div>
+            <div class="form-group"><label>SIGLA DO TIME (ID)</label><input type="text" id="custom-id" value="${time.id_time}"></div>
+            <div class="form-group"><label>NOME COMPLETO</label><input type="text" id="custom-name" value="${time.nome_time}"></div>
+            <div class="form-group">
+                <label>TIER</label>
+                <select id="custom-tier" style="width:100%; padding:8px; background:var(--bg-paineis); color:#fff; border:1px solid var(--borda-suave); border-radius:6px; font-weight:bold;" onchange="document.getElementById('custom-tier-novo-wrap').style.display = this.value === '__NOVO__' ? 'block' : 'none';">
+                    ${tiersDisponiveis.map(t => `<option value="${t}">${t}</option>`).join('')}
+                    <option value="__NOVO__">+ Criar novo tier...</option>
+                </select>
+                <div id="custom-tier-novo-wrap" style="display:none; margin-top:8px;">
+                    <input type="text" id="custom-tier-novo" placeholder="Nome do novo tier (ex: TIER C)" style="width:100%;">
+                </div>
+            </div>
+            <h4 style="margin:20px 0 10px; color:#fff;">Roster Detectado:</h4>
+            <div style="display:flex; gap:10px; margin-bottom:25px;">${time.jogadores.map((j, idx) => `<div style="flex:1; background:var(--bg-paineis); padding:10px; border-radius:6px; border:1px solid var(--borda-suave);"><label style="font-size:11px; color:var(--texto-secundario); display:block; margin-bottom:5px;">${j.tag}</label><input type="text" id="nick-${idx}" value="${j.nick}" style="width:100%; background:transparent; border:none; border-bottom:1px solid var(--borda-destaque); color:#fff; font-weight:bold; outline:none;"></div>`).join('')}</div>
+            <button class="btn-register" onclick="registrarTimeCustom('${time.id_time}')">SALVAR E REGISTRAR TIME</button>
+            <div id="custom-team-export-box" style="display:none; margin-top:20px;"></div>
+        </div>`;
         return;
     }
 
@@ -671,7 +866,7 @@ function renderizarDetalhesTime(time) {
 
     let html = `
         <div style="display:flex; align-items:center; gap:20px; margin-bottom:30px; border-bottom:1px solid var(--borda-destaque); padding-bottom:20px;">
-            <img src="${logoUrl}" style="width:80px; height:80px; object-fit:contain; background:var(--bg-cards); border-radius:12px; border:2px solid var(--borda-destaque);" onerror="this.src='element/teams/default.png'">
+            <img src="${logoUrl}" style="width:80px; height:80px; object-fit:contain; background:var(--bg-cards); border-radius:12px; border:2px solid var(--borda-destaque);" onerror="${teamLogoOnError(time.id_time)}">
             <div>
                 <h2 style="color:var(--accent-purple); font-size:32px; font-weight:900;">${time.nome_time} <span style="font-size:14px; color:var(--texto-secundario)">(${time.id_time})</span></h2>
                 <p style="font-size:11px; color:var(--texto-secundario); font-weight:bold; margin-top:5px;">PARTIDAS COLETADAS: <span style="color:#fff">${partidasDoTime.length}</span> | ÚLTIMA ATUALIZAÇÃO: <span style="color:#fff">${dataFormatadaUltimo}</span></p>
@@ -681,6 +876,7 @@ function renderizarDetalhesTime(time) {
         <h3 style="color:var(--texto); margin-bottom:15px; font-size:16px;">JOGADORES (ROSTER OFICIAL)</h3><div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:20px;">
     `;
 
+
     time.jogadores.forEach(jogador => {
         let pJ = partidasDoTime.filter(r => r.player_tag === jogador.tag), pT = pJ.length, bJ = {};
         pJ.forEach(r => { let b = (r.pick||'').toUpperCase(); if(b) bJ[b] = (bJ[b] || 0) + 1; });
@@ -689,6 +885,71 @@ function renderizarDetalhesTime(time) {
     });
     if(painel) painel.innerHTML = html + `</div>`;
 }
+
+// Registra um time que estava em "TIER ?" (desconhecido) com um nome/sigla/tier definitivos.
+window.registrarTimeCustom = function(idAntigo) {
+    let inputId = document.getElementById('custom-id'), inputName = document.getElementById('custom-name'), selectTier = document.getElementById('custom-tier');
+    if (!inputId || !inputName) return;
+
+    let novoId = (inputId.value || idAntigo).trim().toUpperCase();
+    let novoNome = (inputName.value || '').trim();
+    if (!novoNome) { alert('Informe o nome completo do time.'); return; }
+
+    let tierEscolhido = selectTier ? selectTier.value : 'TIMES REGISTRADOS';
+    if (tierEscolhido === '__NOVO__') {
+        let novoTierInput = document.getElementById('custom-tier-novo');
+        tierEscolhido = novoTierInput && novoTierInput.value.trim() !== '' ? novoTierInput.value.trim() : 'TIMES REGISTRADOS';
+    }
+
+    // Pega o roster original (tags reais) a partir do time que estava selecionado em "TIER ?"
+    let timeOriginal = timeSelecionado && timeSelecionado.id_time === idAntigo ? timeSelecionado : null;
+    let jogadoresFinais = (timeOriginal ? timeOriginal.jogadores : []).map((j, idx) => {
+        let inputNick = document.getElementById(`nick-${idx}`);
+        return { nick: inputNick ? inputNick.value : j.nick, tag: j.tag };
+    });
+
+    let novoTime = { id_time: novoId, nome_time: novoNome, jogadores: jogadoresFinais, tier: tierEscolhido };
+
+    // Persiste no localStorage da região atual (sobrevive a reload)
+    let salvos = JSON.parse(localStorage.getItem('customTeams_' + _REGIAO)) || [];
+    salvos = salvos.filter(t => t.id_time !== novoId && t.id_time !== idAntigo);
+    salvos.push(novoTime);
+    localStorage.setItem('customTeams_' + _REGIAO, JSON.stringify(salvos));
+
+    // Atualiza a configuração em memória imediatamente (CONFIGURACAO_MANUAL_TIMES + ROSTERS_POR_DATA)
+    let regAlvo = _REGIAO === "ALL" ? "ALL" : _REGIAO;
+    if (CONFIGURACAO_MANUAL_TIMES[regAlvo] && CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIER ?"]) {
+        CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIER ?"] = CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIER ?"].filter(t => t.id_time !== idAntigo);
+    }
+    if (!CONFIGURACAO_MANUAL_TIMES[regAlvo][tierEscolhido]) CONFIGURACAO_MANUAL_TIMES[regAlvo][tierEscolhido] = [];
+    CONFIGURACAO_MANUAL_TIMES[regAlvo][tierEscolhido].push(novoTime);
+    mesclarTimesSalvosEmRostersPorData();
+
+    // Mostra um snippet pronto para colar em gerador.py (MAPEAMENTO_PLAYERS), já que o navegador
+    // não tem permissão para editar arquivos no servidor/repositório automaticamente.
+    let exportBox = document.getElementById('custom-team-export-box');
+    if (exportBox) {
+        let regiaoPy = _REGIAO === "ALL" ? "SA" : _REGIAO;
+        let linhasPy = jogadoresFinais.filter(j => j.tag && j.tag !== '#').map(j =>
+            `        "${j.tag}": {"nome": "${j.nick}", "id_time": "${novoId}", "nome_time": "${novoNome.toUpperCase()}", "regiao": "${regiaoPy}"},`
+        ).join('\n');
+        exportBox.style.display = 'block';
+        exportBox.innerHTML = `
+            <div style="background:rgba(176,0,255,0.07); border:1px dashed var(--accent-purple); border-radius:8px; padding:15px;">
+                <p style="font-size:12px; color:var(--texto-secundario); font-weight:bold; margin-bottom:10px;">
+                    Time registrado! Para que o GERADOR.PY também reconheça este time nas próximas mineradas,
+                    copie as linhas abaixo e cole dentro de <strong>MAPEAMENTO_PLAYERS</strong> em gerador.py:
+                </p>
+                <textarea readonly style="width:100%; min-height:90px; background:#000; color:#0f0; font-family:monospace; font-size:11px; padding:10px; border-radius:6px; border:1px solid var(--borda-suave);">${linhasPy}</textarea>
+                <button type="button" style="margin-top:8px; background:transparent; border:1px solid var(--accent-purple); color:var(--accent-purple); padding:6px 14px; border-radius:6px; cursor:pointer; font-weight:bold;" onclick="this.previousElementSibling.select(); document.execCommand('copy');">COPIAR</button>
+            </div>`;
+    }
+
+    processarDadosGlobais();
+    renderizarSidebarTimes();
+    let novoSelecionado = CONFIGURACAO_MANUAL_TIMES[regAlvo][tierEscolhido].find(t => t.id_time === novoId);
+    if (novoSelecionado) { timeSelecionado = novoSelecionado; renderizarDetalhesTime(novoSelecionado); }
+};
 
 // ==========================================
 // 7. TELA SCRIMS
@@ -735,11 +996,12 @@ function processarScrimes(dadosPeriodo) {
     
     let selectFiltro = document.getElementById('scrims-team-filter');
     if (selectFiltro) {
-        let timesNaScrim = new Set();
-        scrims.forEach(s => { timesNaScrim.add(s.tANome); timesNaScrim.add(s.tBNome); });
+        let timesNaScrim = new Map();
+        scrims.forEach(s => { timesNaScrim.set(s.tANome, s.tAId); timesNaScrim.set(s.tBNome, s.tBId); });
         let valorAtual = selectFiltro.value || 'todos';
         selectFiltro.innerHTML = '<option value="todos">Todos os Times (Scrims)</option>';
-        Array.from(timesNaScrim).sort().forEach(t => { selectFiltro.innerHTML += `<option value="${t}" ${t === valorAtual ? 'selected' : ''}>${t}</option>`; });
+        Array.from(timesNaScrim.keys()).sort().forEach(t => { selectFiltro.innerHTML += `<option value="${t}" ${t === valorAtual ? 'selected' : ''}>${t}</option>`; });
+        atualizarDropdownTimesScrims(timesNaScrim, valorAtual);
     }
     renderizarListaScrims(scrims);
 }
@@ -747,7 +1009,7 @@ function processarScrimes(dadosPeriodo) {
 function renderizarListaScrims(scrimsOriginais) {
     const lista = document.getElementById('scrims-lista'), detalhe = document.getElementById('scrims-detalhe');
     if(!lista || !detalhe) return;
-    lista.style.display  = 'grid'; detalhe.style.display = 'none'; lista.innerHTML = '';
+    lista.style.display  = 'grid'; lista.style.gridTemplateColumns = 'repeat(auto-fill, minmax(420px, 1fr))'; lista.style.gap = '18px'; detalhe.style.display = 'none'; lista.innerHTML = '';
 
     let filtroValor = document.getElementById('scrims-team-filter') ? document.getElementById('scrims-team-filter').value : 'todos';
     let scrims = filtroValor !== 'todos' ? scrimsOriginais.filter(s => s.tANome === filtroValor || s.tBNome === filtroValor) : scrimsOriginais;
@@ -759,14 +1021,28 @@ function renderizarListaScrims(scrimsOriginais) {
     scrims.forEach((scrim) => {
         let div = document.createElement('div'); div.className = 'scrim-card';
         let isTournament = scrim.rounds.some(r => r.tipo === 'tournament') || scrim.temMatcherino;
-        let icon = isTournament ? `<img src="element/play/matcherino.png" style="position:absolute; top:8px; right:8px; width:22px; height:22px; object-fit:contain;" onerror="this.style.display='none'" title="Torneio">` : '';
+        let icon = isTournament ? `<img src="element/play/matcherino.png" style="position:absolute; top:10px; right:12px; width:22px; height:22px; object-fit:contain;" onerror="this.style.display='none'" title="Torneio">` : '';
+
+        let aGanhou = scrim.scoreA > scrim.scoreB, bGanhou = scrim.scoreB > scrim.scoreA;
+        let corA = aGanhou ? 'var(--winrate-color, #2ecc71)' : '#fff';
+        let corB = bGanhou ? 'var(--winrate-color, #2ecc71)' : '#fff';
+
+        // Layout 100% inline (grid de 3 colunas) para não depender do CSS externo e nunca
+        // "quebrar" para layout vertical, mesmo com nomes de time longos.
+        div.style.cssText = 'position:relative; display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:14px; min-height:120px; padding:22px 20px 34px; cursor:pointer;';
 
         div.innerHTML = `
             ${icon}
-            <div class="scrim-team-info"><img src="element/teams/${scrim.tAId.toLowerCase()}.png" class="scrim-team-logo" onerror="this.src='element/teams/default.png'"><span style="font-weight:900; font-size:14px;">${scrim.tANome}</span></div>
-            <div class="scrim-score">${scrim.scoreA} - ${scrim.scoreB}</div>
-            <div class="scrim-team-info" style="flex-direction:row-reverse;"><img src="element/teams/${scrim.tBId.toLowerCase()}.png" class="scrim-team-logo" onerror="this.src='element/teams/default.png'"><span style="font-weight:900; font-size:14px;">${scrim.tBNome}</span></div>
-            <div style="position:absolute; bottom:8px; left:15px; font-size:11px; color:var(--texto-secundario); font-weight:bold;">${scrim.dataFormatada}</div><div style="position:absolute; bottom:8px; right:15px; font-size:11px; color:var(--texto-secundario); font-weight:bold;">Rounds: ${scrim.rounds.length}</div>
+            <div class="scrim-team-info" style="display:flex; align-items:center; gap:10px; min-width:0;">
+                <img src="${teamLogoUrl(scrim.tAId)}" class="scrim-team-logo" style="width:42px; height:42px; object-fit:contain; border-radius:6px; flex-shrink:0;" onerror="${teamLogoOnError(scrim.tAId)}">
+                <span style="font-weight:900; font-size:15px; color:${corA}; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${scrim.tANome}">${scrim.tANome}</span>
+            </div>
+            <div class="scrim-score" style="font-size:26px; font-weight:900; white-space:nowrap; text-align:center;"><span style="color:${corA};">${scrim.scoreA}</span> <span style="color:var(--texto-secundario);">-</span> <span style="color:${corB};">${scrim.scoreB}</span></div>
+            <div class="scrim-team-info" style="display:flex; flex-direction:row-reverse; align-items:center; gap:10px; min-width:0;">
+                <img src="${teamLogoUrl(scrim.tBId)}" class="scrim-team-logo" style="width:42px; height:42px; object-fit:contain; border-radius:6px; flex-shrink:0;" onerror="${teamLogoOnError(scrim.tBId)}">
+                <span style="font-weight:900; font-size:15px; color:${corB}; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${scrim.tBNome}">${scrim.tBNome}</span>
+            </div>
+            <div style="position:absolute; bottom:10px; left:18px; font-size:11px; color:var(--texto-secundario); font-weight:bold;">${scrim.dataFormatada}</div><div style="position:absolute; bottom:10px; right:18px; font-size:11px; color:var(--texto-secundario); font-weight:bold;">Rounds: ${scrim.rounds.length}</div>
         `;
         div.onclick = () => renderizarDetalheScrim(scrim);
         lista.appendChild(div);
@@ -780,10 +1056,23 @@ function renderizarDetalheScrim(scrim) {
     let playersA = [...new Set(scrim.rounds.flatMap(r => r.t0Full.map(p => p.player_name)))].slice(0,3);
     let playersB = [...new Set(scrim.rounds.flatMap(r => r.t1Full.map(p => p.player_name)))].slice(0,3);
 
+    let aGanhou = scrim.scoreA > scrim.scoreB, bGanhou = scrim.scoreB > scrim.scoreA;
+    let corA = aGanhou ? 'var(--winrate-color, #2ecc71)' : '#fff';
+    let corB = bGanhou ? 'var(--winrate-color, #2ecc71)' : '#fff';
+
     detalhe.innerHTML = `
         <button onclick="document.getElementById('scrims-lista').style.display='grid'; document.getElementById('scrims-detalhe').style.display='none';" style="background:transparent; border:2px solid var(--accent-purple); color:var(--accent-purple); padding:8px 20px; font-weight:bold; border-radius:6px; cursor:pointer; margin-bottom:30px;">← VOLTAR</button>
-        <div class="scrim-detail-header"><div style="display:flex; justify-content:center; align-items:flex-start; gap:40px;"><div style="text-align:center;"><img src="element/teams/${scrim.tAId.toLowerCase()}.png" style="height:80px; object-fit:contain; background:var(--bg-cards); border-radius:8px; border:2px solid var(--borda-destaque);" onerror="this.src='element/teams/default.png'"><div style="font-size:11px; color:var(--texto-secundario); display:flex; gap:8px; justify-content:center; margin-top:8px; font-weight:bold;">${playersA.map(p => `<span>${p}</span>`).join('')}</div></div><div style="font-size:42px; font-weight:900; color:#fff; line-height:80px;">${scrim.scoreA} <span style="color:var(--accent-purple)">-</span> ${scrim.scoreB}</div><div style="text-align:center;"><img src="element/teams/${scrim.tBId.toLowerCase()}.png" style="height:80px; object-fit:contain; background:var(--bg-cards); border-radius:8px; border:2px solid var(--borda-destaque);" onerror="this.src='element/teams/default.png'"><div style="font-size:11px; color:var(--texto-secundario); display:flex; gap:8px; justify-content:center; margin-top:8px; font-weight:bold;">${playersB.map(p => `<span>${p}</span>`).join('')}</div></div></div></div>
-        <div class="scrim-rounds-container" id="rounds-scroll">${scrim.rounds.map((r, i) => `<div class="scrim-round-btn ${i === 0 ? 'active' : ''}" onclick="selecionarRound(${i}, this)"><span style="font-size:11px; font-weight:900; color:var(--accent-purple); display:block; margin-bottom:5px;">SET ${i+1}</span><img src="element/modes/${formatImg(r.modo)}.png" onerror="this.src='element/modes/default.png'"></div>`).join('')}</div>
+        <div class="scrim-detail-header"><div style="display:flex; justify-content:center; align-items:flex-start; gap:40px;"><div style="text-align:center;"><img src="${teamLogoUrl(scrim.tAId)}" style="height:80px; object-fit:contain; background:var(--bg-cards); border-radius:8px; border:2px solid var(--borda-destaque);" onerror="${teamLogoOnError(scrim.tAId)}"><div style="font-size:11px; color:var(--texto-secundario); display:flex; gap:8px; justify-content:center; margin-top:8px; font-weight:bold;">${playersA.map(p => `<span>${p}</span>`).join('')}</div></div><div style="font-size:42px; font-weight:900; line-height:80px;"><span style="color:${corA};">${scrim.scoreA}</span> <span style="color:var(--accent-purple)">-</span> <span style="color:${corB};">${scrim.scoreB}</span></div><div style="text-align:center;"><img src="${teamLogoUrl(scrim.tBId)}" style="height:80px; object-fit:contain; background:var(--bg-cards); border-radius:8px; border:2px solid var(--borda-destaque);" onerror="${teamLogoOnError(scrim.tBId)}"><div style="font-size:11px; color:var(--texto-secundario); display:flex; gap:8px; justify-content:center; margin-top:8px; font-weight:bold;">${playersB.map(p => `<span>${p}</span>`).join('')}</div></div></div></div>
+        <div class="scrim-rounds-container" id="rounds-scroll" style="display:flex; flex-wrap:wrap; gap:10px; overflow:visible; max-height:none; width:100%;">${scrim.rounds.map((r, i) => {
+            let venceuA = r.vencedor === r.tAId;
+            let corSet = venceuA ? 'var(--winrate-color, #2ecc71)' : 'var(--loss-color, #e74c3c)';
+            let nomeVencedorSet = venceuA ? r.tANome : r.tBNome;
+            return `<div class="scrim-round-btn ${i === 0 ? 'active' : ''}" onclick="selecionarRound(${i}, this)" style="flex:0 0 auto;">
+                <span style="font-size:11px; font-weight:900; color:var(--accent-purple); display:block; margin-bottom:5px;">SET ${i+1}</span>
+                <img src="element/modes/${formatImg(r.modo)}.png" onerror="this.src='element/modes/default.png'">
+                <span style="display:block; margin-top:4px; font-size:9px; font-weight:900; color:${corSet}; max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${nomeVencedorSet}">${nomeVencedorSet}</span>
+            </div>`;
+        }).join('')}</div>
         <div id="round-view-container"></div>
     `;
     window.scrimAtual = scrim; selecionarRound(0, detalhe.querySelector('.scrim-round-btn'));
@@ -796,6 +1085,10 @@ window.selecionarRound = function(index, btnElement) {
     let round = window.scrimAtual.rounds[index];
     const container = document.getElementById('round-view-container');
 
+    let venceuA = round.vencedor === round.tAId, venceuB = round.vencedor === round.tBId;
+    let corSetA = venceuA ? 'var(--winrate-color, #2ecc71)' : '#fff';
+    let corSetB = venceuB ? 'var(--winrate-color, #2ecc71)' : '#fff';
+
     let playersA = round.t0Full.map(p => p.player_name), playersB = round.t1Full.map(p => p.player_name);
     let bansDoRound = dadosBans.filter(r => r.id_partida === round.id);
     let bansTimeA   = bansDoRound.filter(r => r.id_time === round.tAId), bansTimeB   = bansDoRound.filter(r => r.id_time === round.tBId);
@@ -804,7 +1097,7 @@ window.selecionarRound = function(index, btnElement) {
     container.innerHTML = `
         <div class="round-details-view">
             <div style="text-align:center;"><p style="font-size:12px; color:var(--texto-secundario); font-weight:bold;">${round.dataFormatada.split(' ')[1] || ''} | ${round.modo.toUpperCase()}</p></div>
-            <div class="player-names-scrim" style="justify-content:space-around;"><div style="display:flex; gap:35px;">${playersA.map(p => `<span>${p}</span>`).join('')}</div><div style="display:flex; gap:35px;">${playersB.map(p => `<span>${p}</span>`).join('')}</div></div>
+            <div class="player-names-scrim" style="justify-content:space-around;"><div style="display:flex; gap:35px; color:${corSetA}; font-weight:900;">${playersA.map(p => `<span>${p}</span>`).join('')}</div><div style="display:flex; gap:35px; color:${corSetB}; font-weight:900;">${playersB.map(p => `<span>${p}</span>`).join('')}</div></div>
             ${temBans ? `<div style="display:flex; justify-content:space-between; align-items:center; margin:12px 0; padding:10px 20px; background:rgba(176,0,0,0.08); border-radius:8px; border:1px solid rgba(200,50,50,0.35);"><div style="display:flex; align-items:center; gap:8px;"><span style="font-size:10px; font-weight:900; color:#ff5555; letter-spacing:1px; white-space:nowrap;">BANS ▶</span>${bansTimeA.map(b => `<div style="position:relative; display:inline-block;" title="${b.brawler_banido}"><img src="brawlers/${formatImg(b.brawler_banido)}.png" style="width:32px; height:32px; border-radius:4px; filter:grayscale(80%) brightness(0.5);" onerror="this.src='brawlers/default.png'"><span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#ff4444; font-size:16px; font-weight:900; text-shadow:0 0 4px #000;">✕</span></div>`).join('')}</div><div style="display:flex; align-items:center; gap:8px; flex-direction:row-reverse;"><span style="font-size:10px; font-weight:900; color:#ff5555; letter-spacing:1px; white-space:nowrap;">◀ BANS</span>${bansTimeB.map(b => `<div style="position:relative; display:inline-block;" title="${b.brawler_banido}"><img src="brawlers/${formatImg(b.brawler_banido)}.png" style="width:32px; height:32px; border-radius:4px; filter:grayscale(80%) brightness(0.5);" onerror="this.src='brawlers/default.png'"><span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#ff4444; font-size:16px; font-weight:900; text-shadow:0 0 4px #000;">✕</span></div>`).join('')}</div></div>` : ''}
             <div class="scrim-picks-container">
                 <div class="team-picks-scrim" style="flex-direction:row; justify-content:flex-end;">${round.picksA.map(pick => `<div class="pick-row"><img src="brawlers/${formatImg(pick)}.png" onerror="this.src='brawlers/default.png'"></div>`).join('')}</div>
