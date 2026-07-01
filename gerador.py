@@ -22,6 +22,12 @@ COLUNAS_PICKS = ["id_partida", "regiao", "id_players", "name_players", "pick", "
 COLUNAS_BANS = ["id_partida", "regiao", "mapa", "modo", "id_time", "nome_time", "brawler_banido", "data_adicao", "tipo"]
 
 # Mapeamento de Tags para identificação automática de Região, Time e Nick
+#
+# OBS: quando um time "Unknow" é registrado pelo site (aba TIMES -> Registrar Equipe Desconhecida),
+# o app.js gera automaticamente um botão "COPIAR" com as linhas prontas no formato abaixo para você
+# colar aqui dentro de MAPEAMENTO_PLAYERS. Isso é necessário porque o navegador não tem permissão
+# para escrever em arquivos do servidor/repositório — então a sincronização desse arquivo .py
+# (que roda separadamente, minerando dados via API) precisa desse passo manual de copiar/colar.
 MAPEAMENTO_PLAYERS = {
 # SA  
         "#PLLRJC2V": {"nome": "Wesley", "id_time": "BH", "nome_time": "BH ESPORTS", "regiao": "SA"},
