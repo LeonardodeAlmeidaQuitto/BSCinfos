@@ -10,9 +10,7 @@ import re
 # =============================================================================
 API_KEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjU0ODZlOGQxLTRkNWQtNDJmYy1iOWE3LWU5ODYyMWJhOWI0NSIsImlhdCI6MTc3ODUwODgwOCwic3ViIjoiZGV2ZWxvcGVyLzc0NjFhNGJkLThhZDctNjg2Mi0wOGVkLTJiYmEzMzAxMWE3NiIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiNDUuNzkuMjE4Ljc5Il0sInR5cGUiOiJjbGllbnQifV19.yvcSQalBqNz6Q6DjZWU5IL1XvBjn5DGckYvy2bgl5tjVeRJ2GMhY_I2JP1zdEeLAfEG2hGVJT7OMZro4kkegFA"
 
-# Proxy da RoyaleAPI: tentado primeiro (contorna o IP fixo travado no token).
 PROXY_URL = "https://bsproxy.royaleapi.dev/v1"
-# API oficial da Supercell: usada como fallback automático se o proxy falhar.
 API_OFICIAL_URL = "https://api.brawlstars.com/v1"
 
 ARQUIVO_BRUTO = "historico_bruto.csv"
@@ -21,7 +19,6 @@ ARQUIVO_BANS = "bans_matcherino.csv"
 COLUNAS_PICKS = ["id_partida", "regiao", "id_players", "name_players", "pick", "win", "win_rate", "modo", "mapa", "data_adicao", "player_tag", "player_name", "id_time", "nome_time", "tipo"]
 COLUNAS_BANS = ["id_partida", "regiao", "mapa", "modo", "id_time", "nome_time", "brawler_banido", "data_adicao", "tipo"]
 
-# Mapeamento de Tags para identificação automática de Região, Time e Nick
 MAPEAMENTO_PLAYERS = {
 # SA  
         "#PLLRJC2V": {"nome": "Wesley", "id_time": "BH", "nome_time": "BH ESPORTS", "regiao": "SA"},
@@ -78,8 +75,19 @@ MAPEAMENTO_PLAYERS = {
         "#28VP0G808": {"nome": "Koga", "id_time": "INS", "nome_time": "INSOMNIA", "regiao": "EA"},
         "#89UUQLJCC": {"nome": "Toridesu", "id_time": "FZ", "nome_time": "FRENZY", "regiao": "EA"},
         "#8R0JY2UJ2": {"nome": "Rennosuke", "id_time": "F0", "nome_time": "FAZE ZERO", "regiao": "EA"}
-
 }
+
+# Integração com as atualizações exportadas pelo APP.JS
+if os.path.exists("novos_times.json"):
+    try:
+        with open("novos_times.json", "r", encoding="utf-8") as f:
+            times_custom = json.load(f)
+            # O json deve estar no formato que permite injetar as tags e os times no MAPEAMENTO_PLAYERS
+            if isinstance(times_custom, dict):
+                MAPEAMENTO_PLAYERS.update(times_custom)
+                print(f"Sucesso: {len(times_custom)} novos jogadores carregados do novos_times.json")
+    except Exception as e:
+        print(f"Erro ao carregar novos_times.json: {e}")
 
 def obter_fuso_brasilia():
     return timezone(timedelta(hours=-3))
@@ -97,12 +105,6 @@ def nome_brawler(b):
     return 'UNKNOWN'
 
 def buscar_battlelog(tag_url, headers_api):
-    """
-    Tenta buscar o battlelog primeiro via proxy RoyaleAPI, e se falhar
-    (qualquer erro de conexão ou status != 200), tenta de novo via API
-    oficial da Supercell direto. Retorna (resposta, origem, erro).
-    Se as duas tentativas falharem, resposta vem None e erro tem o motivo.
-    """
     tentativas = [
         (f"{PROXY_URL}/players/{tag_url}/battlelog", "proxy"),
         (f"{API_OFICIAL_URL}/players/{tag_url}/battlelog", "direto"),
@@ -122,7 +124,6 @@ def minerar_dados():
     global MAPEAMENTO_PLAYERS
     tags_torneio = set()
 
-    # Automatização do Matcherino via arquivo 'torneios.txt'
     if os.path.exists('torneios.txt'):
         with open('torneios.txt', 'r') as f:
             for linha in f:
@@ -160,7 +161,6 @@ def minerar_dados():
     novas_picks, novos_bans = [], []
     headers_api = {"Authorization": f"Bearer {API_KEY}"}
 
-    # --- Contadores de diagnóstico ---
     stats = {
         'total_players': 0, 'status_ok': 0, 'falhas_conexao': 0,
         'origem_sucesso': {}, 'total_items_lidos': 0, 'items_nao_3v3': 0,
