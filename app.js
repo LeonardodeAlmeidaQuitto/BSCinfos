@@ -24,18 +24,6 @@ const ROTACAO_MAPAS = {
     }
 };
 
-// Array auxiliar para o filtro estrito de mapas
-let mapasValidosRotacao = [];
-for (let y in ROTACAO_MAPAS) {
-    for (let m in ROTACAO_MAPAS[y]) {
-        for (let mode in ROTACAO_MAPAS[y][m]) {
-            ROTACAO_MAPAS[y][m][mode].forEach(map => {
-                mapasValidosRotacao.push(`${mode.toLowerCase()}_${map.toLowerCase()}`);
-            });
-        }
-    }
-}
-
 // ========================================================
 // 2. CONFIGURAÇÃO DE ROSTERS MENSAIS
 // ========================================================
@@ -127,11 +115,93 @@ const ROSTERS_POR_DATA = {
         }
         }
     },
+    // PADRÃO DE SEGURANÇA (Se a pessoa filtrar "Todos" ou um mês não cadastrado)
     "PADRAO": {
-        // ... (Dados default seguem exatamente iguais ao bloco SA/NA/EMEA/EA acima, omitido aqui para manter o fluxo exato original)
+        "SA": {
+            "TIER S": [
+                { id_time: "BH", nome_time: "Bounty Hunters", jogadores: [ { nick: "Wesley", tag: "#PLLRJC2V" }, { nick: "Prozy", tag: "#GYCYCLRJL" }, { nick: "Portox", tag: "#YGQYGCR" } ] },
+                { id_time: "PIZZA", nome_time: "Pizza Congelado F/A", jogadores: [ { nick: "Jubileubr", tag: "#GVYLVUGR" }, { nick: "CAUEBR", tag: "#JQ8L0YYL" }, { nick: "Mohtep", tag: "#R2LR2QLG" } ] }
+            ],
+            "TIER A": [
+                { id_time: "LOUD", nome_time: "LOUD", jogadores: [ { nick: "KaioDog", tag: "#GGUQCG0G" }, { nick: "FireCrow", tag: "#JQ8LLLY" }, { nick: "Edinho", tag: "#QJULVGU" } ] },
+                { id_time: "OS", nome_time: "Olimpo SQUAD", jogadores: [ { nick: "Golden", tag: "#9QCJPL20" }, { nick: "Brabao", tag: "#L9PQUV0YC" }, { nick: "Pekka", tag: "#JVRCVJ9Q" } ] },
+                { id_time: "GLXY", nome_time: "GALAXY", jogadores: [ { nick: "Doritos", tag: "#202GJJR28" }, { nick: "Derpp", tag: "#2QG9LQQC8Y" }, { nick: "IceCrow", tag: "#9CPYUCGQC" } ] },
+                { id_time: "SKC", nome_time: "SKCalalas SA", jogadores: [ { nick: "Kr", tag: "#PR0P8QVQ" }, { nick: "Rhz", tag: "#89PVJG9R0" }, { nick: "Juan Carlos", tag: "#PR9U2JL" } ] },
+                { id_time: "ENO", nome_time: "ENOSIS", jogadores: [ { nick: "Magic", tag: "#2QCCC29QV" }, { nick: "REI DO FUT", tag: "#RVL0RPR9" }, { nick: "Fantas", tag: "#PU20LUCQG" } ] },
+                { id_time: "OCX", nome_time: "OCX DIVISION", jogadores: [ { nick: "Tufa", tag: "#CQLR0Y80" }, { nick: "Rdz", tag: "#2JGP0LYV2Q" }, { nick: "Sennin", tag: "#CUGVUYPG" } ] },
+                { id_time: "AL", nome_time: "ACRE LOVERS", jogadores: [ { nick: "FireMirillo", tag: "#2GV09VJJP" }, { nick: "Satisfiyer", tag: "#PLJ8VQY2C" }, { nick: "Star Lipi", tag: "#2UQCCG92VG" } ] }
+            ],
+            "TIER B": [
+                { id_time: "CB", nome_time: "CRECHE BRAWL", jogadores: [ { nick: "Tilo", tag: "#80VLPJCCC" }, { nick: "Bielz", tag: "#9Q22C88V8" }, { nick: "Yichy", tag: "#2LVGCJ2UQR" } ] },
+                { id_time: "ZRT", nome_time: "ZURITA GANG", jogadores: [ { nick: "Jxcccr", tag: "#820JCJJG" }, { nick: "Exic", tag: "#RCYQUJU0" }, { nick: "", tag: "#" } ] },
+                { id_time: "OCXA", nome_time: "OCX DIVISION ACADEMY", jogadores: [ { nick: "Sterixx", tag: "#2P8RVJVUY" }, { nick: "", tag: "#" }, { nick: "", tag: "#" } ] },
+                { id_time: "LVL", nome_time: "LEVEL ESPORTS", jogadores: [ { nick: "Deykonn", tag: "#GJPVYUQG" }, { nick: "B4st", tag: "#2CJ0RCJ" }, { nick: "Todd", tag: "#22PGQU98R" } ] }
+            ],
+            "TIER B-/C+": [
+                { id_time: "HAWK", nome_time: "RED HAWK", jogadores: [ { nick: "BeBaxo", tag: "#2YRRL8GG2" }, { nick: "Marcellus", tag: "#9J0R0GQL" }, { nick: "Migz Labubu", tag: "#82P9JCJV8" } ] },
+                { id_time: "LVLA", nome_time: "LEVEL ESPORTS ACADEMY", jogadores: [ { nick: "JoeFav", tag: "#VQ8YP9C0" }, { nick: "Levi", tag: "#YQVPY0J9" }, { nick: "xJnn", tag: "#GLQG9CU20" } ] }
+            ]
+        },
+        "NA": {
+            "TIER S": [
+                { id_time: "BOB", nome_time: "F/A BOBBY", jogadores: [ { nick: "Bobby", tag: "#LVRRYPV" }, { nick: "Patch", tag: "#RLLRJ2" }, { nick: "Sans", tag: "#QUYCVC2" } ] },
+                { id_time: "TRB", nome_time: "TRIBE GAMING", jogadores: [ { nick: "Lxffy", tag: "#82RCQCVG" }, { nick: "RBM", tag: "#U9GC8G02" }, { nick: "Diegogamer", tag: "#QLCJGQUP" } ] }
+            ],
+            "TIER A": [
+                { id_time: "TE", nome_time: "TEAM ELEKTROS", jogadores: [ { nick: "Snoiy", tag: "#YUJ8PJ0LR" }, { nick: "Memxn", tag: "#PJPPY9LRC" }, { nick: "Doin", tag: "#8CRU0PQRQ" } ] },
+                { id_time: "HML", nome_time: "F/A Homeless", jogadores: [ { nick: "Tyrant", tag: "#VPVLG2" }, { nick: "Xemp", tag: "#2P9CJVGJ8" }, { nick: "Ducky", tag: "#20P2GP99" } ] },
+                { id_time: "NOVA", nome_time: "NOVA", jogadores: [ { nick: "PaiN", tag: "#GVLRUG9Q" }, { nick: "Roledu", tag: "#LPQQLYL2" }, { nick: "Kiritom", tag: "#LU8C9YJU" } ] },
+                { id_time: "VTC", nome_time: "VATIC", jogadores: [ { nick: "Ezlivi", tag: "#QURVLPG" }, { nick: "Belal", tag: "#Q2VCLG9Y9" }, { nick: "Duckie", tag: "#22JR2JLYC" } ] },
+                { id_time: "LGCY", nome_time: "LEGACY", jogadores: [ { nick: "Rafiki", tag: "#R9CCLP8Q" }, { nick: "Zoulan", tag: "#LYR0Q9C" }, { nick: "Zeus", tag: "#2Q028GQQP" } ] },
+                { id_time: "VIC", nome_time: "VIC", jogadores: [ { nick: "OG", tag: "#28LUY98" }, { nick: "Juice", tag: "#RP0UL9QUG" }, { nick: "SecondBest", tag: "#PVQ9QUY" } ] },
+                { id_time: "VICD", nome_time: "VIC Day", jogadores: [ { nick: "Vegeta", tag: "#JJ09PC0P" }, { nick: "Tacos", tag: "#GCJCRVQ8" }, { nick: "Chino", tag: "#VJUQ0Y" } ] }
+            ],
+            "TIER B": [
+                { id_time: "UTP", nome_time: "UTOPIA", jogadores: [ { nick: "Winq", tag: "#8UL0U08V" }, { nick: "Nerf", tag: "#9YYUPGJ2V" }, { nick: "Juni", tag: "#PL0GRVJRJ" } ] },
+                { id_time: "PFZ", nome_time: "PFZ", jogadores: [ { nick: "Squeezy", tag: "#R80QRP0G" }, { nick: "Diegofr", tag: "#8CC2CL8Q" }, { nick: "Alyanys", tag: "#2LQ0RGCRU" } ] },
+                { id_time: "ENONA", nome_time: "ENOSIS NA", jogadores: [ { nick: "David", tag: "#88PL8L2JC" }, { nick: "GN", tag: "#9GPQR8CGL" }, { nick: "Razuen", tag: "#8Q2QUV00J" } ] }
+            ]
+        },
+        "EMEA": {
+            "TIER S": [
+                { id_time: "FUT", nome_time: "FUT ESPORTS", jogadores: [ { nick: "AngelBoy", tag: "#9PCV9L982" }, { nick: "Guesti", tag: "#2R0JLJJ9PP" }, { nick: "Nob", tag: "#P2808PRC" } ] },
+                { id_time: "HMBLE", nome_time: "HMBLE", jogadores: [ { nick: "Symantec", tag: "#YQUCCJ2"}, { nick: "BosS", tag: "#V89Y2GP0" }, { nick: "Lukii", tag: "#8V92UYCJ" } ] }
+            ],
+            "TIER A": [
+                { id_time: "KUMA", nome_time: "KUMA", jogadores: [ { nick: "Dompe", tag: "#2208QGGGL" }, { nick: "Mine", tag: "#V888YPGU" }, { nick: "Nes", tag: "#Q808R2CV" } ] },
+                { id_time: "NAVI", nome_time: "NAVI", jogadores: [ { nick: "Enraged", tag: "#80PVPCC29" }, { nick: "GeRo", tag: "#2VJCCCQGP" }, { nick: "Drage", tag: "#J089RQ" } ] },
+                { id_time: "MZP", nome_time: "MZP", jogadores: [ { nick: "Decaii", tag: "#2Y822YJYJC" }, { nick: "Ćiro", tag: "#2RR2RU8UL" }, { nick: "LeNain", tag: "#20L88L2J" } ] },     
+                { id_time: "SK", nome_time: "SK GAMING", jogadores: [ { nick: "Ope", tag: "#9LVUC2PY" }, { nick: "Yoshi825", tag: "#CJV2PJ0R" }, { nick: "Yoko", tag: "#29VRJU08C" } ] },
+                { id_time: "TH", nome_time: "TEAM HERETICS", jogadores: [ { nick: "IKaoss", tag: "#PCPRPJV" }, { nick: "Marco", tag: "#Q22ULY9JY" }, { nick: "Zimon", tag: "#22CL00PG0" } ] },
+                { id_time: "TTM", nome_time: "REPLY TOTEM", jogadores: [ { nick: "Maru", tag: "#2Q892QVU" }, { nick: "Joker", tag: "#9JCG0VY8U" }, { nick: "Maury", tag: "#82RGU8PR" } ] },
+                { id_time: "NOVO", nome_time: "NOVO ESPORTS", jogadores: [ { nick: "Filippo", tag: "#9PQQ8GQQ" }, { nick: "MeOw", tag: "#90JCYPQU" }, { nick: "Jus", tag: "#JJ92RGPL" } ] },
+                { id_time: "BIG", nome_time: "BIG", jogadores: [ { nick: "Salty", tag: "#PLV89CGP" }, { nick: "Arthur", tag: "#9RVPL0Q0P" }, { nick: "Melih", tag: "#GLPJRCLYL" } ] }
+            ],
+            "TIER B": [
+                { id_time: "FUTA", nome_time: "FUT ACADEMY", jogadores: [ { nick: "ZeyroX", tag: "#82GG2RLQG" }, { nick: "Ferissa", tag: "#2LLRJGPVV8" }, { nick: "DeMaster", tag: "#2GV90L8YP" } ] },
+                { id_time: "REV", nome_time: "REVERSO HIVE", jogadores: [ { nick: "Fayelo", tag: "#LLV82LQPU" }, { nick: "Ethan", tag: "#2Y20JR8CQ" }, { nick: "Natrix", tag: "#CJ9YRGGC" } ] },
+                { id_time: "TLB", nome_time: "TALENTS LAB", jogadores: [ { nick: "Yei Yei", tag: "#8RVLRVYYP" }, { nick: "Agachi", tag: "#YYUG20PQV" }, { nick: "Stas", tag: "#9LYQR9QC" } ] }
+            ]
+        },
+        "EA": {
+            "TIER S": [
+                { id_time: "CR", nome_time: "CRAZY RACCOON", jogadores: [ { nick: "Tensai", tag: "#9ULYPV8" }, { nick: "Milkreo", tag: "#20C0LL00" }, { nick: "Moya", tag: "#UR2UL8YR" } ] },
+                { id_time: "ZETA", nome_time: "ZETA DIVISION", jogadores: [ { nick: "Battoman", tag: "#P0Y8JGL0U" }, { nick: "Sizuku", tag: "#P90RJQ8C" }, { nick: "Sitetampo", tag: "#8Y98Q8U" } ] }
+            ],
+            "TIER A": [
+                { id_time: "SKCEA", nome_time: "SKC EA", jogadores: [ { nick: "Kuru", tag: "#J99YU9QY" }, { nick: "Ghost T", tag: "#2CJJJGUJ20" }, { nick: "Naipishu", tag: "#2P0V0CQQ2" } ] },
+                { id_time: "IGM", nome_time: "IGNUM", jogadores: [ { nick: "Shigemyon", tag: "#2RQQ9PGC" }, { nick: "Drake", tag: "#2CJG2GGCGP" }, { nick: "Nyade", tag: "#2UQVY2JL2V" } ] },
+                { id_time: "AXIS", nome_time: "AXIS", jogadores: [ { nick: "Terry", tag: "#LJ0288PRG" }, { nick: "Yume", tag: "#PJ80QPVL2" }, { nick: "Menmi", tag: "#QCLV9CL" } ] },
+                { id_time: "RVL", nome_time: "RIVAL", jogadores: [ { nick: "Yutapin", tag: "#82CJYJPG2" }, { nick: "Ryohei", tag: "#82PQUPGU0" }, { nick: "Totoro", tag: "#2ULLCRYJ2Y" } ] },
+                { id_time: "RC", nome_time: "REJECT", jogadores: [ { nick: "Melty", tag: "#8J9GUJJVY" }, { nick: "Levi", tag: "#29UGLJV2G" }, { nick: "Shu", tag: "#2G0RRLU2R" } ] },
+                { id_time: "FL", nome_time: "FENNEL", jogadores: [ { nick: "Achapi", tag: "#28PU0P9L0" }, { nick: "Ken-G", tag: "#2282LR0YG" }, { nick: "I see", tag: "#8Y2Y0GYYG" } ] },
+                { id_time: "INS", nome_time: "INSOMNIA", jogadores: [ { nick: "Koga", tag: "#28VP0G808" }, { nick: "Wahochi", tag: "#80YVJGRY" }, { nick: "Jene", tag: "#8GUPLYY" } ] },
+                { id_time: "FZ", nome_time: "FRENZY", jogadores: [ { nick: "Toridesu", tag: "#89UUQLJCC" }, { nick: "Danshari", tag: "#99GGUPY2U" }, { nick: "Ferkel", tag: "#CV9Y9VPP" } ] },
+                { id_time: "F0", nome_time: "FAZE ZERO", jogadores: [ { nick: "Rennosuke", tag: "#8R0JY2UJ2" }, { nick: "Telpny", tag: "#9GJ8GYCY2" }, { nick: "Mira", tag: "#88LLQGP0Q" } ] }
+            ]
+        }
     }
 };
-ROSTERS_POR_DATA["PADRAO"] = JSON.parse(JSON.stringify(ROSTERS_POR_DATA["2026"]["06"]));
 
 let CONFIGURACAO_MANUAL_TIMES = {};
 
@@ -154,15 +224,9 @@ function carregarTimesSalvosLocal() {
     if (!CONFIGURACAO_MANUAL_TIMES[_REGIAO] && _REGIAO !== "ALL") CONFIGURACAO_MANUAL_TIMES[_REGIAO] = {};
     if (_REGIAO === "ALL" && !CONFIGURACAO_MANUAL_TIMES["ALL"]) CONFIGURACAO_MANUAL_TIMES["ALL"] = { "TIER ?": [], "TIMES REGISTRADOS": [] };
     
-    // Injeta os times salvos de volta no objeto
-    salvos.forEach(t => {
-        let regAlvo = _REGIAO === "ALL" ? "ALL" : _REGIAO;
-        if (!CONFIGURACAO_MANUAL_TIMES[regAlvo][t.tier]) CONFIGURACAO_MANUAL_TIMES[regAlvo][t.tier] = [];
-        // Evita duplicatas
-        if(!CONFIGURACAO_MANUAL_TIMES[regAlvo][t.tier].find(tm => tm.id_time === t.team.id_time)){
-            CONFIGURACAO_MANUAL_TIMES[regAlvo][t.tier].push(t.team);
-        }
-    });
+    let regAlvo = _REGIAO === "ALL" ? "ALL" : _REGIAO;
+    if (!CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIMES REGISTRADOS"]) CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIMES REGISTRADOS"] = [];
+    salvos.forEach(t => CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIMES REGISTRADOS"].push(t));
 }
 
 const formatImg = n => { if(!n) return 'default'; return n.toLowerCase().replace(/[^a-z0-9]/g, ''); };
@@ -297,87 +361,6 @@ function processarTimesDesconhecidos(dados) {
     });
 }
 
-// DROPDOWN CUSTOMIZADO COM LOGOS (Contorno para a limitação do select nativo)
-function criarDropdownScrimsCustomizado() {
-    let oldSelect = document.getElementById('scrims-team-filter');
-    if(oldSelect) oldSelect.remove();
-
-    let sTipoContainer = document.getElementById('select-tipo').parentNode;
-    let customDrop = document.createElement('div');
-    customDrop.id = 'custom-scrim-dropdown';
-    customDrop.className = 'filter-select custom-dropdown';
-    customDrop.style.cssText = 'display:none; position:relative; cursor:pointer; min-width:200px; padding:8px; border:1px solid var(--borda-destaque); border-radius:6px; background:var(--bg-cards); color:#fff; align-items:center;';
-    
-    customDrop.innerHTML = `
-        <div id="scrim-drop-selected" style="display:flex; align-items:center; gap:10px;">
-            <img src="element/teams/default.png" style="width:20px; height:20px; object-fit:contain; border-radius:4px; display:none;">
-            <span>Todos os Times (Scrims)</span>
-        </div>
-        <div id="scrim-drop-list" style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--bg-paineis); border:1px solid var(--borda-destaque); border-radius:6px; max-height:250px; overflow-y:auto; z-index:1000; margin-top:5px; box-shadow:0px 4px 12px rgba(0,0,0,0.5);">
-        </div>
-    `;
-
-    customDrop.onclick = (e) => {
-        let list = document.getElementById('scrim-drop-list');
-        list.style.display = list.style.display === 'none' ? 'block' : 'none';
-        e.stopPropagation();
-    };
-
-    document.body.addEventListener('click', () => { 
-        let list = document.getElementById('scrim-drop-list');
-        if(list) list.style.display = 'none'; 
-    });
-
-    sTipoContainer.insertBefore(customDrop, document.getElementById('select-tipo').nextSibling);
-    window.scrimFilterValue = 'todos';
-}
-
-function atualizarDropdownScrims(scrims) {
-    let customDrop = document.getElementById('custom-scrim-dropdown');
-    let list = document.getElementById('scrim-drop-list');
-    let selected = document.getElementById('scrim-drop-selected');
-    if(!customDrop || !list) return;
-
-    let timesMap = new Map();
-    scrims.forEach(s => { 
-        timesMap.set(s.tANome, s.tAId); 
-        timesMap.set(s.tBNome, s.tBId); 
-    });
-
-    let timesOrdenados = Array.from(timesMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
-    
-    list.innerHTML = `<div class="scrim-drop-item" data-val="todos" data-id="" style="padding:10px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--borda-suave);">Todos os Times (Scrims)</div>`;
-    
-    timesOrdenados.forEach(([nome, id]) => {
-        let logo = id.startsWith("UNK") ? "element/teams/unknow.png" : `element/teams/${id.toLowerCase()}.png`;
-        list.innerHTML += `<div class="scrim-drop-item" data-val="${nome}" data-id="${id}" data-logo="${logo}" style="padding:10px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--borda-suave);">
-            <img src="${logo}" style="width:20px; height:20px; object-fit:contain; border-radius:4px;" onerror="this.src='element/teams/default.png'">
-            <span>${nome}</span>
-        </div>`;
-    });
-
-    // Eventos de clique nos itens
-    list.querySelectorAll('.scrim-drop-item').forEach(item => {
-        item.onclick = (e) => {
-            window.scrimFilterValue = item.getAttribute('data-val');
-            let logoSrc = item.getAttribute('data-logo');
-            
-            if(window.scrimFilterValue === 'todos') {
-                selected.innerHTML = `<span>Todos os Times (Scrims)</span>`;
-            } else {
-                selected.innerHTML = `<img src="${logoSrc}" style="width:20px; height:20px; object-fit:contain; border-radius:4px;" onerror="this.src='element/teams/default.png'"> <span>${window.scrimFilterValue}</span>`;
-            }
-            
-            if (window.currentScrims) renderizarListaScrims(window.currentScrims);
-            e.stopPropagation();
-            list.style.display = 'none';
-        };
-        // Efeito de hover por JS caso o CSS externo não tenha
-        item.onmouseover = () => item.style.background = 'var(--borda-destaque)';
-        item.onmouseout = () => item.style.background = 'transparent';
-    });
-}
-
 function popularFiltrosGlobais() {
     let anos = new Set(), meses = new Set(), dias = new Set();
     dadosBrutos.forEach(row => {
@@ -392,8 +375,12 @@ function popularFiltrosGlobais() {
     if (sDia) { sDia.innerHTML = '<option value="todos">Todos os Dias</option>'; Array.from(dias).sort().forEach(d => sDia.innerHTML += `<option value="${d}">${d}</option>`); }
 
     const sTipo = document.getElementById('select-tipo');
-    if (sTipo && !document.getElementById('custom-scrim-dropdown')) {
-        criarDropdownScrimsCustomizado();
+    if (sTipo && !document.getElementById('scrims-team-filter')) {
+        let fScrim = document.createElement('select');
+        fScrim.id = 'scrims-team-filter'; fScrim.className = 'filter-select'; fScrim.style.display = 'none'; 
+        fScrim.innerHTML = '<option value="todos">Todos os Times (Scrims)</option>';
+        fScrim.onchange = () => { if (window.currentScrims) renderizarListaScrims(window.currentScrims); };
+        sTipo.parentNode.insertBefore(fScrim, sTipo.nextSibling);
 
         let iSample = document.createElement('input');
         iSample.type = 'number'; iSample.id = 'sample-picks-meta'; iSample.className = 'filter-select'; iSample.style.display = 'none'; 
@@ -404,8 +391,7 @@ function popularFiltrosGlobais() {
         document.body.addEventListener('click', () => {
             setTimeout(() => {
                 let eS = document.getElementById('tela-scrims'), eM = document.getElementById('tela-meta');
-                let customDrop = document.getElementById('custom-scrim-dropdown');
-                if (customDrop) customDrop.style.display = (eS && !eS.classList.contains('tela-oculta')) ? 'flex' : 'none';
+                fScrim.style.display = (eS && !eS.classList.contains('tela-oculta')) ? 'inline-block' : 'none';
                 iSample.style.display = (eM && !eM.classList.contains('tela-oculta')) ? 'inline-block' : 'none';
             }, 50);
         });
@@ -456,14 +442,12 @@ function renderizarMeta() {
     const container = document.getElementById('conteudo-meta');
     let sMap = {}, sAll = {}, bMap = {}, bAll = {}, mSet = new Set(), pMap = {}, tPU = 0, jBMap = {}, jBT = new Set();
     let iS = document.getElementById('sample-picks-meta'), samplePicks = iS ? parseInt(iS.value) || 1 : 1;
-    
-    // Filtro restrito aos mapas configurados no bloco global
+    const ano = document.getElementById('select-ano') ? document.getElementById('select-ano').value : 'todos';
+    const mes = document.getElementById('select-mes') ? document.getElementById('select-mes').value : 'todos';
+
     dadosFiltrados.forEach(row => {
         let b = (row.pick || '').toUpperCase(), map = row.mapa || "Desconhecido", mode = row.modo || "Desconhecido";
         if(!b) return;
-        
-        let comboMapa = `${mode.toLowerCase()}_${map.toLowerCase()}`;
-        if(!mapasValidosRotacao.includes(comboMapa)) return;
         
         if(!sAll[b]) sAll[b] = { picks: 0, wins: 0 };
         sAll[b].picks++; if(parseInt(row.win) === 1) sAll[b].wins++;
@@ -480,10 +464,6 @@ function renderizarMeta() {
     dadosBansFiltrados.forEach(row => {
         let b = (row.brawler_banido || '').toUpperCase(), map = row.mapa || 'Unknown', mode = row.modo || 'Unknown';
         if (!b) return;
-        
-        let comboMapa = `${mode.toLowerCase()}_${map.toLowerCase()}`;
-        if(!mapasValidosRotacao.includes(comboMapa)) return;
-
         if (!bMap[mode]) bMap[mode] = {}; if (!bMap[mode][map]) bMap[mode][map] = {};
         bMap[mode][map][b] = (bMap[mode][map][b] || 0) + 1;
         if (!jBMap[mode]) jBMap[mode] = {}; if (!jBMap[mode][map]) jBMap[mode][map] = new Set();
@@ -495,6 +475,16 @@ function renderizarMeta() {
     Object.entries(sMap).forEach(([mode, mapasDict]) => {
         let cleanMode = formatImg(mode), conteudoMapa = '';
         Object.entries(mapasDict).forEach(([mapa, brawlers]) => {
+            let mapaRotacaoValido = true;
+            if (ano !== 'todos' && mes !== 'todos' && ROTACAO_MAPAS[ano] && ROTACAO_MAPAS[ano][mes]) {
+                let mDM = Object.keys(ROTACAO_MAPAS[ano][mes]).find(k => k.toLowerCase() === mode.toLowerCase());
+                if (mDM) {
+                    let lst = ROTACAO_MAPAS[ano][mes][mDM].map(m => m.toUpperCase());
+                    if (!lst.includes(mapa.toUpperCase())) mapaRotacaoValido = false;
+                }
+            }
+            if (!mapaRotacaoValido) return;
+
             let valid = Object.entries(brawlers).filter(x => x[1].picks >= samplePicks).sort((a,b) => b[1].picks - a[1].picks);
             if(valid.length === 0) return;
             let bNMap = (bMap[mode] && bMap[mode][mapa]) ? bMap[mode][mapa] : {};
@@ -504,13 +494,13 @@ function renderizarMeta() {
                 <div style="background:var(--bg-geral); border:1px solid var(--borda-destaque); border-radius:8px; padding:15px;">
                     <div style="text-align:center; font-weight:bold; margin-bottom:10px; color:var(--texto-secundario);">${mapa.toUpperCase()}</div>
                     <table class="excel-table">
-                        <thead><tr><th style="text-align:left;">BRAWLER</th><th>P</th><th>PR%</th><th>W</th><th>WR%</th><th style="color:#b06aff; min-width:35px;">B</th><th style="color:#b06aff; min-width:45px;">BR%</th></tr></thead>
+                        <thead><tr><th style="text-align:left;">BRAWLER</th><th>P</th><th>PR%</th><th>W</th><th>WR%</th><th style="color:#b06aff;">B</th><th style="color:#b06aff;">BR%</th></tr></thead>
                         <tbody>
                             ${valid.map(([b, s]) => {
                                 let bc = bNMap[b] || 0, brPct = tBM ? ((bc / tJM) * 100).toFixed(1) : '0.0';
                                 return `<tr>
                                     <td style="text-align:left; font-weight:bold; color:var(--accent-hover)"><img src="brawlers/${formatImg(b)}.png" style="width:24px; vertical-align:middle; margin-right:5px; border-radius:4px;" onerror="this.src='brawlers/default.png'">${b}</td>
-                                    <td>${s.picks}</td><td style="color:var(--texto-secundario);">${((s.picks/tPU)*100).toFixed(1)}%</td><td>${s.wins}</td><td class="winrate-cell">${((s.wins/s.picks)*100).toFixed(1)}%</td>
+                                    <td>${s.picks}</td><td style="color:var(--texto-secundario);">${((s.picks/dadosFiltrados.length)*100).toFixed(1)}%</td><td>${s.wins}</td><td class="winrate-cell">${((s.wins/s.picks)*100).toFixed(1)}%</td>
                                     <td style="color:#b06aff; font-weight:bold;">${bc}</td><td style="color:#b06aff; font-weight:bold;">${brPct}%</td>
                                 </tr>`;
                             }).join('')}
@@ -518,11 +508,9 @@ function renderizarMeta() {
                     </table>
                 </div>`;
         });
-        // Modificado display:grid para manter 3 lado a lado
-        if (conteudoMapa !== '') html += `<div class="modo-card" onclick="toggleModoMeta('${cleanMode}')"><img src="element/modes/${cleanMode}.png" style="width:40px; margin-right:15px;" onerror="this.src='element/modes/default.png'">${mode}</div><div id="modo-content-${cleanMode}" class="modo-section" style="display:none; padding:15px;"><div class="mapa-content" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:15px; overflow-x:auto;">${conteudoMapa}</div></div>`;
+        if (conteudoMapa !== '') html += `<div class="modo-card" onclick="toggleModoMeta('${cleanMode}')"><img src="element/modes/${cleanMode}.png" style="width:40px; margin-right:15px;" onerror="this.src='element/modes/default.png'">${mode}</div><div id="modo-content-${cleanMode}" class="modo-section" style="display:none; padding:15px;"><div class="mapa-content">${conteudoMapa}</div></div>`;
     });
 
-    // ... (restante da renderização do ALL MAPS igual)
     let bAllVal = Object.entries(sAll).filter(x => x[1].picks >= samplePicks).sort((a,b) => b[1].picks - a[1].picks);
     if (bAllVal.length > 0) {
         html += `<div class="modo-card" style="margin-top:40px; border-color:var(--winrate-color); color:var(--winrate-color);" onclick="toggleModoMeta('allmaps')">ALL MAPS (GERAL)</div><div id="modo-content-allmaps" class="modo-section" style="display:none; padding:15px;"><div class="mapa-content" style="display:block;">
@@ -545,7 +533,6 @@ function renderizarMeta() {
 // ==========================================
 // 5. TELA BRAWLERS
 // ==========================================
-// (Funções inalteradas, exceto a base, mantendo tudo)
 function renderizarSidebarBrawlers() {
     let pickCounts = {};
     dadosFiltrados.forEach(r => { let b = (r.pick||'').toUpperCase(); if(b) pickCounts[b] = (pickCounts[b] || 0) + 1; });
@@ -565,11 +552,13 @@ function renderizarSidebarBrawlers() {
         });
     }
 }
+
 function filtrarBrawlersSidebar() {
     const termo = document.getElementById('search-brawler-sidebar').value.toLowerCase();
     const items = document.getElementById('lista-brawlers-sidebar').children;
     Array.from(items).forEach(item => { item.style.display = item.querySelector('span').innerText.toLowerCase().includes(termo) ? 'flex' : 'none'; });
 }
+
 function renderizarDetalhesBrawler(brawler) {
     const painel = document.getElementById('painel-info-brawler');
     let partidasDeste = dadosFiltrados.filter(r => (r.pick||'').toUpperCase() === brawler);
@@ -634,41 +623,6 @@ function renderizarDetalhesBrawler(brawler) {
 // ==========================================
 // 6. TELA TIMES
 // ==========================================
-// LOGICA DE EXPORTAÇÃO PARA O GERADOR.PY
-window.registrarTimeCustom = function(oldId) {
-    let newId = document.getElementById('custom-id').value;
-    let newName = document.getElementById('custom-name').value;
-    let newTier = document.getElementById('custom-tier').value;
-    
-    let teamObj = {
-        id_time: newId, nome_time: newName,
-        jogadores: [
-            { nick: document.getElementById('nick-0').value, tag: document.getElementById('tag-0').value },
-            { nick: document.getElementById('nick-1').value, tag: document.getElementById('tag-1').value },
-            { nick: document.getElementById('nick-2').value, tag: document.getElementById('tag-2').value }
-        ]
-    };
-
-    let salvos = JSON.parse(localStorage.getItem('customTeams_' + _REGIAO)) || [];
-    salvos.push({ tier: newTier, team: teamObj });
-    localStorage.setItem('customTeams_' + _REGIAO, JSON.stringify(salvos));
-
-    // Gera o dict pro Python e força o download
-    let pythonDict = {};
-    teamObj.jogadores.forEach(j => {
-        pythonDict[j.tag] = { "nome": j.nick, "id_time": newId, "nome_time": newName, "regiao": _REGIAO === "ALL" ? "SA" : _REGIAO };
-    });
-
-    let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(pythonDict, null, 4));
-    let dlAnchorElem = document.createElement('a');
-    dlAnchorElem.setAttribute("href", dataStr);
-    dlAnchorElem.setAttribute("download", "novos_times.json");
-    dlAnchorElem.click();
-
-    alert("Time salvo localmente com sucesso!\nO arquivo 'novos_times.json' foi baixado. Coloque-o na mesma pasta do GERADOR.PY para que ele leia na próxima extração.");
-    processarDadosGlobais();
-};
-
 function renderizarSidebarTimes() {
     const sidebar = document.getElementById('lista-times-sidebar');
     if(!sidebar) return;
@@ -690,8 +644,7 @@ function renderizarSidebarTimes() {
         let tierHeader = document.createElement('div'); tierHeader.className = 'sidebar-header'; tierHeader.innerText = tier; sidebar.appendChild(tierHeader);
         timesRegiao[tier].forEach(t => {
             let div = document.createElement('div'); div.className = 'sidebar-item';
-            let logoDefault = t.id_time.startsWith("UNK") ? "element/teams/unknow.png" : `element/teams/${t.id_time.toLowerCase()}.png`;
-            div.innerHTML = `<img src="${logoDefault}" style="width:24px; height:24px; object-fit:contain; border-radius:4px;" onerror="this.src='element/teams/unknow.png'"> <span style="font-weight:bold;">${t.nome_time}</span>`;
+            div.innerHTML = `<img src="element/teams/${t.id_time.toLowerCase()}.png" style="width:24px; height:24px; object-fit:contain; border-radius:4px;" onerror="this.src='element/teams/default.png'"> <span style="font-weight:bold;">${t.nome_time}</span>`;
             div.onclick = () => { document.querySelectorAll('#lista-times-sidebar .sidebar-item').forEach(i => i.classList.remove('active')); div.classList.add('active'); timeSelecionado = t; renderizarDetalhesTime(t); };
             sidebar.appendChild(div);
         });
@@ -701,36 +654,10 @@ function renderizarSidebarTimes() {
 function renderizarDetalhesTime(time) {
     const painel = document.getElementById('painel-info-time');
     let partidasDoTime = dadosFiltrados.filter(r => r.id_time === time.id_time);
-    let logoUrl = time.id_time.startsWith("UNK") ? "element/teams/unknow.png" : `element/teams/${time.id_time.toLowerCase()}.png`;
+    let logoUrl = `element/teams/${time.id_time.toLowerCase()}.png`;
 
     if (time.id_time.startsWith("UNK")) {
-        if(painel) painel.innerHTML = `
-            <div style="background:var(--bg-cards); padding:30px; border-radius:12px; border:2px dashed var(--accent-purple);">
-                <h2 style="color:var(--accent-hover); margin-bottom:20px;">Registrar Equipe Desconhecida</h2>
-                <div style="display:flex; gap:20px; margin-bottom:15px;">
-                    <div class="form-group" style="flex:1;"><label>SIGLA (ID)</label><input type="text" id="custom-id" value="${time.id_time}"></div>
-                    <div class="form-group" style="flex:2;"><label>NOME COMPLETO</label><input type="text" id="custom-name" value="${time.nome_time}"></div>
-                    <div class="form-group" style="flex:1;">
-                        <label>TIER DO TIME</label>
-                        <select id="custom-tier" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--borda-destaque); background:var(--bg-paineis); color:#fff; outline:none;">
-                            <option value="TIER S">TIER S</option>
-                            <option value="TIER A">TIER A</option>
-                            <option value="TIER B">TIER B</option>
-                            <option value="TIER B-/C+">TIER B-/C+</option>
-                        </select>
-                    </div>
-                </div>
-                <h4 style="margin:20px 0 10px; color:#fff;">Roster Detectado:</h4>
-                <div style="display:flex; gap:10px; margin-bottom:25px;">
-                    ${time.jogadores.map((j, idx) => `
-                        <div style="flex:1; background:var(--bg-paineis); padding:10px; border-radius:6px; border:1px solid var(--borda-suave);">
-                            <input type="hidden" id="tag-${idx}" value="${j.tag}">
-                            <label style="font-size:11px; color:var(--texto-secundario); display:block; margin-bottom:5px;">${j.tag}</label>
-                            <input type="text" id="nick-${idx}" value="${j.nick}" style="width:100%; background:transparent; border:none; border-bottom:1px solid var(--borda-destaque); color:#fff; font-weight:bold; outline:none;">
-                        </div>`).join('')}
-                </div>
-                <button class="btn-register" onclick="registrarTimeCustom('${time.id_time}')" style="background:var(--accent-purple); color:#fff; padding:12px 24px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">SALVAR E EXPORTAR TIME</button>
-            </div>`;
+        if(painel) painel.innerHTML = `<div style="background:var(--bg-cards); padding:30px; border-radius:12px; border:2px dashed var(--accent-purple);"><h2 style="color:var(--accent-hover); margin-bottom:20px;">Registrar Equipe Desconhecida</h2><div class="form-group"><label>SIGLA DO TIME (ID)</label><input type="text" id="custom-id" value="${time.id_time}"></div><div class="form-group"><label>NOME COMPLETO</label><input type="text" id="custom-name" value="${time.nome_time}"></div><h4 style="margin:20px 0 10px; color:#fff;">Roster Detectado:</h4><div style="display:flex; gap:10px; margin-bottom:25px;">${time.jogadores.map((j, idx) => `<div style="flex:1; background:var(--bg-paineis); padding:10px; border-radius:6px; border:1px solid var(--borda-suave);"><label style="font-size:11px; color:var(--texto-secundario); display:block; margin-bottom:5px;">${j.tag}</label><input type="text" id="nick-${idx}" value="${j.nick}" style="width:100%; background:transparent; border:none; border-bottom:1px solid var(--borda-destaque); color:#fff; font-weight:bold; outline:none;"></div>`).join('')}</div><button class="btn-register" onclick="registrarTimeCustom('${time.id_time}')">SALVAR E REGISTRAR TIME</button></div>`;
         return;
     }
 
@@ -744,7 +671,7 @@ function renderizarDetalhesTime(time) {
 
     let html = `
         <div style="display:flex; align-items:center; gap:20px; margin-bottom:30px; border-bottom:1px solid var(--borda-destaque); padding-bottom:20px;">
-            <img src="${logoUrl}" style="width:80px; height:80px; object-fit:contain; background:var(--bg-cards); border-radius:12px; border:2px solid var(--borda-destaque);" onerror="this.src='element/teams/unknow.png'">
+            <img src="${logoUrl}" style="width:80px; height:80px; object-fit:contain; background:var(--bg-cards); border-radius:12px; border:2px solid var(--borda-destaque);" onerror="this.src='element/teams/default.png'">
             <div>
                 <h2 style="color:var(--accent-purple); font-size:32px; font-weight:900;">${time.nome_time} <span style="font-size:14px; color:var(--texto-secundario)">(${time.id_time})</span></h2>
                 <p style="font-size:11px; color:var(--texto-secundario); font-weight:bold; margin-top:5px;">PARTIDAS COLETADAS: <span style="color:#fff">${partidasDoTime.length}</span> | ÚLTIMA ATUALIZAÇÃO: <span style="color:#fff">${dataFormatadaUltimo}</span></p>
@@ -806,18 +733,23 @@ function processarScrimes(dadosPeriodo) {
     scrims = scrims.filter(s => s.rounds.length > 1).reverse();
     window.currentScrims = scrims;
     
-    atualizarDropdownScrims(scrims);
+    let selectFiltro = document.getElementById('scrims-team-filter');
+    if (selectFiltro) {
+        let timesNaScrim = new Set();
+        scrims.forEach(s => { timesNaScrim.add(s.tANome); timesNaScrim.add(s.tBNome); });
+        let valorAtual = selectFiltro.value || 'todos';
+        selectFiltro.innerHTML = '<option value="todos">Todos os Times (Scrims)</option>';
+        Array.from(timesNaScrim).sort().forEach(t => { selectFiltro.innerHTML += `<option value="${t}" ${t === valorAtual ? 'selected' : ''}>${t}</option>`; });
+    }
     renderizarListaScrims(scrims);
 }
 
 function renderizarListaScrims(scrimsOriginais) {
     const lista = document.getElementById('scrims-lista'), detalhe = document.getElementById('scrims-detalhe');
     if(!lista || !detalhe) return;
-    lista.style.display  = 'flex'; // Mudança para flex direction column (mais responsivo para o layout fixo em horizontal)
-    lista.style.flexDirection = 'column';
-    detalhe.style.display = 'none'; lista.innerHTML = '';
+    lista.style.display  = 'grid'; detalhe.style.display = 'none'; lista.innerHTML = '';
 
-    let filtroValor = window.scrimFilterValue || 'todos';
+    let filtroValor = document.getElementById('scrims-team-filter') ? document.getElementById('scrims-team-filter').value : 'todos';
     let scrims = filtroValor !== 'todos' ? scrimsOriginais.filter(s => s.tANome === filtroValor || s.tBNome === filtroValor) : scrimsOriginais;
 
     if(scrims.length === 0) {
@@ -826,33 +758,15 @@ function renderizarListaScrims(scrimsOriginais) {
 
     scrims.forEach((scrim) => {
         let div = document.createElement('div'); div.className = 'scrim-card';
-        // Forçando CSS inline para impedir a quebra na vertical (layout bugado corrigido)
-        div.style.cssText = 'position:relative; display:flex; align-items:center; justify-content:space-between; padding:25px; margin-bottom:15px; background:var(--bg-cards); border:1px solid var(--borda-destaque); border-radius:12px; cursor:pointer; min-height:80px;';
-        
         let isTournament = scrim.rounds.some(r => r.tipo === 'tournament') || scrim.temMatcherino;
         let icon = isTournament ? `<img src="element/play/matcherino.png" style="position:absolute; top:8px; right:8px; width:22px; height:22px; object-fit:contain;" onerror="this.style.display='none'" title="Torneio">` : '';
-        
-        let logoA = scrim.tAId.startsWith("UNK") ? "element/teams/unknow.png" : `element/teams/${scrim.tAId.toLowerCase()}.png`;
-        let logoB = scrim.tBId.startsWith("UNK") ? "element/teams/unknow.png" : `element/teams/${scrim.tBId.toLowerCase()}.png`;
-
-        let colorA = scrim.scoreA > scrim.scoreB ? '#00ff00' : (scrim.scoreA < scrim.scoreB ? '#ff5555' : '#fff');
-        let colorB = scrim.scoreB > scrim.scoreA ? '#00ff00' : (scrim.scoreB < scrim.scoreA ? '#ff5555' : '#fff');
 
         div.innerHTML = `
             ${icon}
-            <div class="scrim-team-info" style="display:flex; align-items:center; gap:15px; flex:1;">
-                <img src="${logoA}" style="width:45px; height:45px; object-fit:contain; border-radius:6px;" onerror="this.src='element/teams/unknow.png'">
-                <span style="font-weight:900; font-size:16px;">${scrim.tANome}</span>
-            </div>
-            <div class="scrim-score" style="font-size:24px; font-weight:900; background:var(--bg-paineis); padding:5px 20px; border-radius:8px; border:1px solid var(--borda-suave);">
-                <span style="color:${colorA}">${scrim.scoreA}</span> - <span style="color:${colorB}">${scrim.scoreB}</span>
-            </div>
-            <div class="scrim-team-info" style="display:flex; align-items:center; gap:15px; flex:1; flex-direction:row-reverse; text-align:right;">
-                <img src="${logoB}" style="width:45px; height:45px; object-fit:contain; border-radius:6px;" onerror="this.src='element/teams/unknow.png'">
-                <span style="font-weight:900; font-size:16px;">${scrim.tBNome}</span>
-            </div>
-            <div style="position:absolute; bottom:8px; left:25px; font-size:11px; color:var(--texto-secundario); font-weight:bold;">${scrim.dataFormatada}</div>
-            <div style="position:absolute; bottom:8px; right:25px; font-size:11px; color:var(--texto-secundario); font-weight:bold;">Rounds Jogados: ${scrim.rounds.length}</div>
+            <div class="scrim-team-info"><img src="element/teams/${scrim.tAId.toLowerCase()}.png" class="scrim-team-logo" onerror="this.src='element/teams/default.png'"><span style="font-weight:900; font-size:14px;">${scrim.tANome}</span></div>
+            <div class="scrim-score">${scrim.scoreA} - ${scrim.scoreB}</div>
+            <div class="scrim-team-info" style="flex-direction:row-reverse;"><img src="element/teams/${scrim.tBId.toLowerCase()}.png" class="scrim-team-logo" onerror="this.src='element/teams/default.png'"><span style="font-weight:900; font-size:14px;">${scrim.tBNome}</span></div>
+            <div style="position:absolute; bottom:8px; left:15px; font-size:11px; color:var(--texto-secundario); font-weight:bold;">${scrim.dataFormatada}</div><div style="position:absolute; bottom:8px; right:15px; font-size:11px; color:var(--texto-secundario); font-weight:bold;">Rounds: ${scrim.rounds.length}</div>
         `;
         div.onclick = () => renderizarDetalheScrim(scrim);
         lista.appendChild(div);
@@ -866,35 +780,18 @@ function renderizarDetalheScrim(scrim) {
     let playersA = [...new Set(scrim.rounds.flatMap(r => r.t0Full.map(p => p.player_name)))].slice(0,3);
     let playersB = [...new Set(scrim.rounds.flatMap(r => r.t1Full.map(p => p.player_name)))].slice(0,3);
 
-    let logoA = scrim.tAId.startsWith("UNK") ? "element/teams/unknow.png" : `element/teams/${scrim.tAId.toLowerCase()}.png`;
-    let logoB = scrim.tBId.startsWith("UNK") ? "element/teams/unknow.png" : `element/teams/${scrim.tBId.toLowerCase()}.png`;
-
-    let colorA = scrim.scoreA > scrim.scoreB ? '#00ff00' : (scrim.scoreA < scrim.scoreB ? '#ff5555' : '#fff');
-    let colorB = scrim.scoreB > scrim.scoreA ? '#00ff00' : (scrim.scoreB < scrim.scoreA ? '#ff5555' : '#fff');
-
     detalhe.innerHTML = `
-        <button onclick="document.getElementById('scrims-lista').style.display='flex'; document.getElementById('scrims-detalhe').style.display='none';" style="background:transparent; border:2px solid var(--accent-purple); color:var(--accent-purple); padding:8px 20px; font-weight:bold; border-radius:6px; cursor:pointer; margin-bottom:30px;">← VOLTAR</button>
-        <div class="scrim-detail-header"><div style="display:flex; justify-content:center; align-items:flex-start; gap:40px;"><div style="text-align:center;"><img src="${logoA}" style="height:80px; object-fit:contain; background:var(--bg-cards); border-radius:8px; border:2px solid var(--borda-destaque);" onerror="this.src='element/teams/unknow.png'"><div style="font-size:11px; color:var(--texto-secundario); display:flex; gap:8px; justify-content:center; margin-top:8px; font-weight:bold;">${playersA.map(p => `<span>${p}</span>`).join('')}</div></div><div style="font-size:42px; font-weight:900; color:#fff; line-height:80px;"><span style="color:${colorA}">${scrim.scoreA}</span> <span style="color:var(--accent-purple)">-</span> <span style="color:${colorB}">${scrim.scoreB}</span></div><div style="text-align:center;"><img src="${logoB}" style="height:80px; object-fit:contain; background:var(--bg-cards); border-radius:8px; border:2px solid var(--borda-destaque);" onerror="this.src='element/teams/unknow.png'"><div style="font-size:11px; color:var(--texto-secundario); display:flex; gap:8px; justify-content:center; margin-top:8px; font-weight:bold;">${playersB.map(p => `<span>${p}</span>`).join('')}</div></div></div></div>
-        
-        <!-- flex-wrap:wrap garante que você consiga ver TODOS os sets se houver muitos -->
-        <div class="scrim-rounds-container" id="rounds-scroll" style="display:flex; flex-wrap:wrap; gap:10px; margin:20px 0;">
-            ${scrim.rounds.map((r, i) => `<div class="scrim-round-btn ${i === 0 ? 'active' : ''}" style="cursor:pointer; padding:10px; background:var(--bg-paineis); border:1px solid var(--borda-suave); border-radius:8px; text-align:center;" onclick="selecionarRound(${i}, this)"><span style="font-size:11px; font-weight:900; color:var(--accent-purple); display:block; margin-bottom:5px;">SET ${i+1}</span><img src="element/modes/${formatImg(r.modo)}.png" style="width:25px;" onerror="this.src='element/modes/default.png'"></div>`).join('')}
-        </div>
-        
+        <button onclick="document.getElementById('scrims-lista').style.display='grid'; document.getElementById('scrims-detalhe').style.display='none';" style="background:transparent; border:2px solid var(--accent-purple); color:var(--accent-purple); padding:8px 20px; font-weight:bold; border-radius:6px; cursor:pointer; margin-bottom:30px;">← VOLTAR</button>
+        <div class="scrim-detail-header"><div style="display:flex; justify-content:center; align-items:flex-start; gap:40px;"><div style="text-align:center;"><img src="element/teams/${scrim.tAId.toLowerCase()}.png" style="height:80px; object-fit:contain; background:var(--bg-cards); border-radius:8px; border:2px solid var(--borda-destaque);" onerror="this.src='element/teams/default.png'"><div style="font-size:11px; color:var(--texto-secundario); display:flex; gap:8px; justify-content:center; margin-top:8px; font-weight:bold;">${playersA.map(p => `<span>${p}</span>`).join('')}</div></div><div style="font-size:42px; font-weight:900; color:#fff; line-height:80px;">${scrim.scoreA} <span style="color:var(--accent-purple)">-</span> ${scrim.scoreB}</div><div style="text-align:center;"><img src="element/teams/${scrim.tBId.toLowerCase()}.png" style="height:80px; object-fit:contain; background:var(--bg-cards); border-radius:8px; border:2px solid var(--borda-destaque);" onerror="this.src='element/teams/default.png'"><div style="font-size:11px; color:var(--texto-secundario); display:flex; gap:8px; justify-content:center; margin-top:8px; font-weight:bold;">${playersB.map(p => `<span>${p}</span>`).join('')}</div></div></div></div>
+        <div class="scrim-rounds-container" id="rounds-scroll">${scrim.rounds.map((r, i) => `<div class="scrim-round-btn ${i === 0 ? 'active' : ''}" onclick="selecionarRound(${i}, this)"><span style="font-size:11px; font-weight:900; color:var(--accent-purple); display:block; margin-bottom:5px;">SET ${i+1}</span><img src="element/modes/${formatImg(r.modo)}.png" onerror="this.src='element/modes/default.png'"></div>`).join('')}</div>
         <div id="round-view-container"></div>
     `;
     window.scrimAtual = scrim; selecionarRound(0, detalhe.querySelector('.scrim-round-btn'));
 }
 
 window.selecionarRound = function(index, btnElement) {
-    document.querySelectorAll('.scrim-round-btn').forEach(b => {
-        b.classList.remove('active');
-        b.style.borderColor = 'var(--borda-suave)';
-    });
-    if(btnElement) {
-        btnElement.classList.add('active');
-        btnElement.style.borderColor = 'var(--accent-purple)';
-    }
+    document.querySelectorAll('.scrim-round-btn').forEach(b => b.classList.remove('active'));
+    if(btnElement) btnElement.classList.add('active');
 
     let round = window.scrimAtual.rounds[index];
     const container = document.getElementById('round-view-container');
@@ -904,24 +801,15 @@ window.selecionarRound = function(index, btnElement) {
     let bansTimeA   = bansDoRound.filter(r => r.id_time === round.tAId), bansTimeB   = bansDoRound.filter(r => r.id_time === round.tBId);
     let temBans     = bansTimeA.length > 0 || bansTimeB.length > 0;
 
-    let titleColorA = round.vencedor === round.tAId ? '#00ff00' : '#fff';
-    let titleColorB = round.vencedor === round.tBId ? '#00ff00' : '#fff';
-
     container.innerHTML = `
-        <div class="round-details-view" style="background:var(--bg-cards); border:1px solid var(--borda-destaque); border-radius:12px; padding:20px;">
-            <div style="text-align:center;"><p style="font-size:12px; color:var(--texto-secundario); font-weight:bold;">${round.dataFormatada.split(' ')[1] || ''} | ${round.modo.toUpperCase()} - ${round.mapa}</p></div>
-            
-            <div class="player-names-scrim" style="display:flex; justify-content:space-around; margin:15px 0;">
-                <div style="display:flex; gap:35px; color:${titleColorA}; font-weight:bold;">${playersA.map(p => `<span>${p}</span>`).join('')}</div>
-                <div style="display:flex; gap:35px; color:${titleColorB}; font-weight:bold;">${playersB.map(p => `<span>${p}</span>`).join('')}</div>
+        <div class="round-details-view">
+            <div style="text-align:center;"><p style="font-size:12px; color:var(--texto-secundario); font-weight:bold;">${round.dataFormatada.split(' ')[1] || ''} | ${round.modo.toUpperCase()}</p></div>
+            <div class="player-names-scrim" style="justify-content:space-around;"><div style="display:flex; gap:35px;">${playersA.map(p => `<span>${p}</span>`).join('')}</div><div style="display:flex; gap:35px;">${playersB.map(p => `<span>${p}</span>`).join('')}</div></div>
+            ${temBans ? `<div style="display:flex; justify-content:space-between; align-items:center; margin:12px 0; padding:10px 20px; background:rgba(176,0,0,0.08); border-radius:8px; border:1px solid rgba(200,50,50,0.35);"><div style="display:flex; align-items:center; gap:8px;"><span style="font-size:10px; font-weight:900; color:#ff5555; letter-spacing:1px; white-space:nowrap;">BANS ▶</span>${bansTimeA.map(b => `<div style="position:relative; display:inline-block;" title="${b.brawler_banido}"><img src="brawlers/${formatImg(b.brawler_banido)}.png" style="width:32px; height:32px; border-radius:4px; filter:grayscale(80%) brightness(0.5);" onerror="this.src='brawlers/default.png'"><span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#ff4444; font-size:16px; font-weight:900; text-shadow:0 0 4px #000;">✕</span></div>`).join('')}</div><div style="display:flex; align-items:center; gap:8px; flex-direction:row-reverse;"><span style="font-size:10px; font-weight:900; color:#ff5555; letter-spacing:1px; white-space:nowrap;">◀ BANS</span>${bansTimeB.map(b => `<div style="position:relative; display:inline-block;" title="${b.brawler_banido}"><img src="brawlers/${formatImg(b.brawler_banido)}.png" style="width:32px; height:32px; border-radius:4px; filter:grayscale(80%) brightness(0.5);" onerror="this.src='brawlers/default.png'"><span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#ff4444; font-size:16px; font-weight:900; text-shadow:0 0 4px #000;">✕</span></div>`).join('')}</div></div>` : ''}
+            <div class="scrim-picks-container">
+                <div class="team-picks-scrim" style="flex-direction:row; justify-content:flex-end;">${round.picksA.map(pick => `<div class="pick-row"><img src="brawlers/${formatImg(pick)}.png" onerror="this.src='brawlers/default.png'"></div>`).join('')}</div>
+                <div class="map-middle-scrim"><img src="element/maps/${formatImg(round.mapa)}.png" onerror="this.src='element/maps/default.png'"><p style="font-size:12px; font-weight:900; margin-top:8px;">${round.mapa}</p></div>
+                <div class="team-picks-scrim" style="flex-direction:row; justify-content:flex-start;">${round.picksB.map(pick => `<div class="pick-row"><img src="brawlers/${formatImg(pick)}.png" onerror="this.src='brawlers/default.png'"></div>`).join('')}</div>
             </div>
-
-            ${temBans ? `<div style="display:flex; justify-content:space-between; align-items:center; margin:12px 0; padding:10px 20px; background:rgba(176,0,0,0.08); border-radius:8px; border:1px solid rgba(200,50,50,0.35);"><div style="display:flex; align-items:center; gap:8px;"><span style="font-size:10px; font-weight:900; color:#ff5555; letter-spacing:1px; white-space:nowrap;">BANS ▶</span>${bansTimeA.map(b => `<img src="brawlers/${formatImg(b.brawler_banido)}.png" style="width:24px; border-radius:4px; filter: grayscale(100%);" onerror="this.src='brawlers/default.png'" title="${b.brawler_banido}">`).join('')}</div><div style="display:flex; align-items:center; gap:8px;">${bansTimeB.map(b => `<img src="brawlers/${formatImg(b.brawler_banido)}.png" style="width:24px; border-radius:4px; filter: grayscale(100%);" onerror="this.src='brawlers/default.png'" title="${b.brawler_banido}">`).join('')}<span style="font-size:10px; font-weight:900; color:#ff5555; letter-spacing:1px; white-space:nowrap;">◀ BANS</span></div></div>` : ''}
-            
-            <div style="display:flex; justify-content:space-between; margin-top:20px;">
-                <div style="display:flex; gap:35px;">${round.picksA.map(p => `<img src="brawlers/${formatImg(p)}.png" style="width:50px; border-radius:8px; border:2px solid ${titleColorA};" onerror="this.src='brawlers/default.png'" title="${p}">`).join('')}</div>
-                <div style="display:flex; gap:35px;">${round.picksB.map(p => `<img src="brawlers/${formatImg(p)}.png" style="width:50px; border-radius:8px; border:2px solid ${titleColorB};" onerror="this.src='brawlers/default.png'" title="${p}">`).join('')}</div>
-            </div>
-        </div>
-    `;
+        </div>`;
 };
