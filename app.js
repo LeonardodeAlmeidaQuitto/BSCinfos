@@ -628,7 +628,7 @@ function renderizarMeta() {
     });
 
     const montarCardMapa = (modeKeyReal, mapaConfig) => {
-        let mapaKeyReal = (modeKeyReal && sMap[modeKeyReal]) ? Object.keys(sMap[modeKeyReal]).find(m => m.toLowerCase() === mapaConfig.toLowerCase()) : null;
+        let modeKeyReal = Object.keys(sMap).find(m => m.toLowerCase() === modoConfig.toLowerCase()) || null;
         let brawlers = mapaKeyReal ? sMap[modeKeyReal][mapaKeyReal] : null;
         let valid = brawlers ? Object.entries(brawlers).filter(x => x[1].picks >= samplePicks).sort((a,b) => b[1].picks - a[1].picks) : [];
         let bNMap = (modeKeyReal && mapaKeyReal && bMap[modeKeyReal] && bMap[modeKeyReal][mapaKeyReal]) ? bMap[modeKeyReal][mapaKeyReal] : {};
