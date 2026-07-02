@@ -259,7 +259,13 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function configurarEstruturaFiltros() {
-    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTshw8w1_uM-EuhgS86gZq-06w8S1wO6k0hUuK8O-b0aXgB0rM8Sg/pub?gid=1506543973&output=csv";
+    // ----------------------------------------------------
+    // ALTERAÇÃO AQUI: Link do Google Docs substituído pelo arquivo local
+    // ----------------------------------------------------
+    const csvUrl = "HISTORICO_BRUTO.CSV";
+    
+    // NOTA: Manti o link original de Bans. Se ele também estiver offline, 
+    // substitua por "BANS.CSV" ou o nome do seu arquivo local correspondente.
     const bansUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTshw8w1_uM-EuhgS86gZq-06w8S1wO6k0hUuK8O-b0aXgB0rM8Sg/pub?gid=2074360341&output=csv";
 
     Papa.parse(csvUrl, {
