@@ -6,7 +6,8 @@
     <title>SOUTH AMÉRICA Infos</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <script>window.REGIAO_ATUAL = "SA";</script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
+    <script>window.REGIAO_ATUAL = "SA";</script>
     <script src="app.js" defer></script>
 </head>
 <body>
@@ -28,7 +29,8 @@
         <div class="dropdown">
             <a href="#" class="nav-link">OUTROS ▼</a>
             <div class="dropdown-content">
-                </div>
+                <!-- Links de outros menus podem entrar aqui -->
+            </div>
         </div>
     </nav>
 
@@ -41,17 +43,47 @@
 
     <main class="container-principal">
         
+        <!-- CABEÇALHO E FILTROS RESTAURADOS AQUI -->
+        <div class="page-header">
+            <h1>SOUTH AMÉRICA <span class="accent">INFOS</span></h1>
+        </div>
+        
+        <div class="filter-container">
+            <select id="select-ano" class="filter-select" onchange="processarDadosGlobais()">
+                <option value="todos">Todos os Anos</option>
+            </select>
+            <select id="select-mes" class="filter-select" onchange="processarDadosGlobais()">
+                <option value="todos">Todos os Meses</option>
+            </select>
+            <select id="select-dia" class="filter-select" onchange="processarDadosGlobais()">
+                <option value="todos">Todos os Dias</option>
+            </select>
+            <select id="select-tipo" class="filter-select" onchange="processarDadosGlobais()">
+                <option value="todos">Overhaul</option>
+                <option value="treino">Scrim</option>
+                <option value="competitivo">Tounament</option>
+            </select>
+        </div>
+        <!-- ==================================== -->
+
         <div id="tela-meta" class="tela-secao tela-ativa">
-            <div id="tabela-meta-container"></div>
+            <div id="conteudo-meta"></div>
         </div>
 
         <div id="tela-brawlers" class="tela-secao tela-oculta">
-             <div id="brawlers-container"></div>
+            <div class="brawlers-container">
+                <div class="sidebar">
+                    <input type="text" id="search-brawler-sidebar" class="sidebar-search" placeholder="Buscar Brawler..." onkeyup="filtrarBrawlersSidebar()">
+                    <div class="sidebar-list" id="lista-brawlers-sidebar"></div>
+                </div>
+                <div class="info-panel" id="painel-info-brawler">
+                    <div class="placeholder-text" style="color:var(--texto-secundario); text-align:center;">Selecione um Brawler na lateral.</div>
+                </div>
+            </div>
         </div>
 
         <div id="tela-modos" class="tela-secao tela-oculta">
-            <div id="filtros-modos" class="painel-filtros">
-                </div>
+            <div id="filtros-modos" class="painel-filtros"></div>
             <div id="modos-lista-mapas"></div>
         </div>
 
@@ -63,7 +95,7 @@
         </div>
 
         <div id="tela-times" class="tela-secao tela-oculta">
-            <div class="layout-times">
+            <div class="times-container">
                 <div class="sidebar">
                     <div class="sidebar-header">EQUIPES DA REGIÃO SA</div>
                     <div class="sidebar-list" id="lista-times-sidebar"></div>
@@ -98,8 +130,8 @@
                 };
                 document.getElementById('sa-menu-btn').textContent = titulos[tela];
                 
-                // Gatilhos de renderização
-                if(tela === 'modos') renderizarTelaModos();
+                // Gatilhos de renderização se aplicável
+                if(tela === 'modos' && typeof renderizarTelaModos === 'function') renderizarTelaModos();
             };
         });
 
