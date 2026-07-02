@@ -1,4 +1,4 @@
-:root {
+root {
     --bg-geral: #0b0c10;
     --bg-paineis: #111217;
     --bg-cards: #16171d;
@@ -110,20 +110,20 @@ body { background-color: var(--bg-geral); color: var(--texto); min-height: 100vh
 /* --- SCRIMS HORIZONTAL SCROLL --- */
 .scrims-wrapper {
     width: 100%;
-    overflow-x: auto; /* Rolagem horizontal */
+    overflow-x: auto;
     padding-bottom: 20px;
 }
 .scrins-grid-horizontal {
     display: flex;
-    flex-wrap: nowrap; /* Impede de quebrar linha */
+    flex-wrap: nowrap;
     gap: 20px;
 }
 .scrim-card {
-    min-width: 450px; /* Garante que os sets não fiquem espremidos */
+    min-width: 450px;
     flex-shrink: 0;
 }
 .map-middle-scrim img {
-    width: 120px; /* Aumento da foto do mapa */
+    width: 120px;
     height: auto;
 }
 .scrim-picks-container {
@@ -136,12 +136,12 @@ body { background-color: var(--bg-geral); color: var(--texto); min-height: 100vh
 }
 .pick-row-vertical {
     display: flex;
-    flex-direction: column; /* Picks alinhados verticalmente */
+    flex-direction: column; 
     align-items: center;
     gap: 5px;
 }
 .pick-row-vertical img {
-    width: 48px; /* Picks maiores */
+    width: 48px;
     height: 48px;
 }
 .player-name-link {
