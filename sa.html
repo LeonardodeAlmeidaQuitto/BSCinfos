@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SOUTH AMÉRICA Infos</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
+    
     <script>window.REGIAO_ATUAL = "SA";</script>
+    
     <script src="app.js" defer></script>
 </head>
 <body>
@@ -15,85 +16,73 @@
     <nav class="navbar">
         <a href="index.html" class="nav-link">MENU</a>
         <div class="nav-links">
-            <div class="dropdown">
-                <a href="#" class="nav-link" id="sa-menu-btn">SA ▼ (META)</a>
-                <div class="dropdown-content">
-                    <a href="#" onclick="mudarTela('meta'); return false;">Meta</a>
-                    <a href="#" onclick="mudarTela('brawlers'); return false;">Brawlers</a>
-                    <a href="#" onclick="mudarTela('times'); return false;">Times</a>
-                    <a href="#" onclick="mudarTela('modos'); return false;">Modos</a> 
-                    <a href="#" onclick="mudarTela('scrims'); return false;">Scrims</a>
-                </div>
+        <div class="dropdown">
+            <a href="#" class="nav-link" id="ea-menu-btn">SA ▼ (META)</a>
+            <div class="dropdown-content">
+                <a href="#" onclick="mudarTela('meta'); return false;">Meta</a>
+                <a href="#" onclick="mudarTela('brawlers'); return false;">Brawlers</a>
+                <a href="#" onclick="mudarTela('times'); return false;">Times</a>
+                <a href="#" onclick="mudarTela('scrims'); return false;">Scrims</a>
             </div>
+        </div>
         </div>
         <div class="dropdown">
-            <a href="#" class="nav-link">OUTROS ▼</a>
-            <div class="dropdown-content">
-                <!-- Links de outros menus podem entrar aqui -->
+                <a href="#" class="nav-link">OUTROS ▼</a>
+                <div class="dropdown-content">
+                    <a href="sa.html" style="display: flex; align-items: center; gap: 8px;">
+                        <img src="element/ea.png" style="width: 20px; height: 20px; object-fit: contain; border-radius: 2px;" onerror="this.style.display='none'"> 
+                        EA
+                    </a>
+                    <a href="emea.html" style="display: flex; align-items: center; gap: 8px;">
+                        <img src="element/emea.png" style="width: 20px; height: 20px; object-fit: contain; border-radius: 2px;" onerror="this.style.display='none'"> 
+                        EMEA
+                    </a>
+                    <a href="na.html" style="display: flex; align-items: center; gap: 8px;">
+                        <img src="element/na.png" style="width: 20px; height: 20px; object-fit: contain; border-radius: 2px;" onerror="this.style.display='none'"> 
+                        NA
+                    </a>
+                </div>
             </div>
-        </div>
+         <a href="geral.html" class="nav-link">GERAL</a>
+
     </nav>
 
-    <div id="modal-jogador" class="modal-oculto">
-        <div class="modal-conteudo">
-            <span class="fechar-modal" onclick="fecharModalJogador()">&times;</span>
-            <div id="info-jogador-conteudo"></div>
-        </div>
-    </div>
+    <main class="main-container">
+        <header class="page-header">
+            <h1>SOUTH AMÉRICA INFOS <span class="accent">ANALYSIS</span></h1>
+        </header>
 
-    <main class="container-principal">
-        
-        <!-- CABEÇALHO E FILTROS RESTAURADOS AQUI -->
-        <div class="page-header">
-            <h1>SOUTH AMÉRICA <span class="accent">INFOS</span></h1>
-        </div>
-        
+        <!-- Filtros Globais (Dia adicionado entre Mês e Tipo) -->
         <div class="filter-container">
-            <select id="select-ano" class="filter-select" onchange="processarDadosGlobais()">
-                <option value="todos">Todos os Anos</option>
-            </select>
-            <select id="select-mes" class="filter-select" onchange="processarDadosGlobais()">
-                <option value="todos">Todos os Meses</option>
-            </select>
-            <select id="select-dia" class="filter-select" onchange="processarDadosGlobais()">
-                <option value="todos">Todos os Dias</option>
-            </select>
+            <select id="select-ano" class="filter-select" onchange="processarDadosGlobais()"></select>
+            <select id="select-mes" class="filter-select" onchange="processarDadosGlobais()"></select>
+            <select id="select-dia" class="filter-select" onchange="processarDadosGlobais()"></select>
             <select id="select-tipo" class="filter-select" onchange="processarDadosGlobais()">
-                <option value="todos">Overhaul</option>
-                <option value="treino">Scrim</option>
-                <option value="competitivo">Tounament</option>
+                <option value="todos">Overhaul (Todos)</option>
+                <option value="scrim">Scrim</option>
+                <option value="tournament">Tournament</option>
             </select>
         </div>
-        <!-- ==================================== -->
 
+        <!-- Tela META -->
         <div id="tela-meta" class="tela-secao tela-ativa">
-            <div id="conteudo-meta"></div>
+            <div id="conteudo-meta"></div> 
         </div>
 
+        <!-- Tela BRAWLERS -->
         <div id="tela-brawlers" class="tela-secao tela-oculta">
             <div class="brawlers-container">
                 <div class="sidebar">
-                    <input type="text" id="search-brawler-sidebar" class="sidebar-search" placeholder="Buscar Brawler..." onkeyup="filtrarBrawlersSidebar()">
+                    <input type="text" id="search-brawler-sidebar" class="sidebar-search" placeholder="Buscar Brawler..." oninput="filtrarBrawlersSidebar()">
                     <div class="sidebar-list" id="lista-brawlers-sidebar"></div>
                 </div>
                 <div class="info-panel" id="painel-info-brawler">
-                    <div class="placeholder-text" style="color:var(--texto-secundario); text-align:center;">Selecione um Brawler na lateral.</div>
+                    <div class="placeholder-text" style="color:var(--texto-secundario); text-align:center;">Selecione um brawler na lateral para ver sinergias e matchups.</div>
                 </div>
             </div>
         </div>
 
-        <div id="tela-modos" class="tela-secao tela-oculta">
-            <div id="filtros-modos" class="painel-filtros"></div>
-            <div id="modos-lista-mapas"></div>
-        </div>
-
-        <div id="tela-scrims" class="tela-secao tela-oculta">
-            <div class="scrims-wrapper">
-                <div id="scrims-lista" class="scrins-grid-horizontal"></div>
-            </div>
-            <div id="scrims-detalhe" style="display:none;"></div>
-        </div>
-
+        <!-- Tela TIMES -->
         <div id="tela-times" class="tela-secao tela-oculta">
             <div class="times-container">
                 <div class="sidebar">
@@ -101,16 +90,15 @@
                     <div class="sidebar-list" id="lista-times-sidebar"></div>
                 </div>
                 <div class="info-panel" id="painel-info-time">
-                    <div class="placeholder-text" style="color:var(--texto-secundario); text-align:center;">
-                        Selecione um time na lateral para ver os dados.
-                    </div>
-                    <div id="graficos-time-container" style="display:none;">
-                        <canvas id="grafico-linhas-time"></canvas>
-                        <canvas id="grafico-barras-modos"></canvas>
-                        <div id="melhores-comps-time"></div>
-                    </div>
+                    <div class="placeholder-text" style="color:var(--texto-secundario); text-align:center;">Selecione um time na lateral para ver os dados de seus players.</div>
                 </div>
             </div>
+        </div>
+
+        <!-- Tela SCRIMS -->
+        <div id="tela-scrims" class="tela-secao tela-oculta">
+            <div id="scrims-lista" class="scrins-grid"></div>
+            <div id="scrims-detalhe" style="display:none;"></div>
         </div>
 
     </main>
@@ -121,23 +109,11 @@
                 document.querySelectorAll('.tela-secao').forEach(sec => sec.classList.replace('tela-ativa', 'tela-oculta'));
                 document.getElementById(`tela-${tela}`).classList.replace('tela-oculta', 'tela-ativa');
                 
-                const titulos = {
-                    'meta': 'SA ▼ (META)', 
-                    'brawlers': 'SA ▼ (BRAWLERS)', 
-                    'modos': 'SA ▼ (MODOS)',
-                    'scrims': 'SA ▼ (SCRIMS)',
-                    'times': 'SA ▼ (TIMES)' 
-                };
+                const titulos = {'meta': 'SA ▼ (META)', 'brawlers': 'SA ▼ (BRAWLERS)', 'times': 'SA ▼ (TIMES)', 'scrims': 'SA ▼ (SCRIMS)'};
                 document.getElementById('sa-menu-btn').textContent = titulos[tela];
-                
-                // Gatilhos de renderização se aplicável
-                if(tela === 'modos' && typeof renderizarTelaModos === 'function') renderizarTelaModos();
+                document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('active'));
             };
         });
-
-        function fecharModalJogador() {
-            document.getElementById('modal-jogador').style.display = 'none';
-        }
     </script>
 </body>
 </html>
