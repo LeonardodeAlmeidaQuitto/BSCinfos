@@ -262,7 +262,7 @@ function configurarEstruturaFiltros() {
     // ----------------------------------------------------
     // ALTERAÇÃO AQUI: Link do Google Docs substituído pelo arquivo local
     // ----------------------------------------------------
-    const csvUrl = "HISTORICO_BRUTO.CSV";
+    const csvUrl = "historico_bruto.csv";
     
     // NOTA: Manti o link original de Bans. Se ele também estiver offline, 
     // substitua por "BANS.CSV" ou o nome do seu arquivo local correspondente.
