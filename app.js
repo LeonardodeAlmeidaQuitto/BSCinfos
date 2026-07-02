@@ -1109,6 +1109,187 @@ window.selecionarRound = function(index, btnElement) {
             </div>
         </div>`;
 };
+
+// =======================================================
+// ORDENAÇÃO DO META (Clique no Cabeçalho da Tabela)
+// =======================================================
+let direcaoOrdenacao = {};
+
+function ordenarTabelaMeta(coluna, idTabela) {
+    // Alterne entre ASC e DESC
+    direcaoOrdenacao[coluna] = !direcaoOrdenacao[coluna]; 
+    const dir = direcaoOrdenacao[coluna] ? 1 : -1;
+
+    // Supõe que seus dados do meta estejam em uma variável global ou possam ser recalculados.
+    // Adapte 'dadosMetaAtuais' para a variável de estado que guarda as linhas da sua tabela.
+    dadosMetaAtuais.sort((a, b) => {
+        let valA = a[coluna];
+        let valB = b[coluna];
+        
+        if (typeof valA === 'string') valA = valA.toLowerCase();
+        if (typeof valB === 'string') valB = valB.toLowerCase();
+
+        if (valA < valB) return -1 * dir;
+        if (valA > valB) return 1 * dir;
+        return 0;
+    });
+
+    renderizarTabelaMeta(); // Re-chame sua função de renderização
+}
+
+// =======================================================
+// RENDERIZAÇÃO DA NOVA TELA "MODOS"
+// =======================================================
+function renderizarTelaModos() {
+    const container = document.getElementById('modos-lista-mapas');
+    container.innerHTML = '';
+
+    // Agrupar dados por mapa (aplicando filtros globais)
+    const dadosPorMapa = agruparPorChave(dadosFiltrados, 'mapa');
+
+    for (const mapa in dadosPorMapa) {
+        const partidas = dadosPorMapa[mapa];
+        
+        // Cálculos
+        const picksMap = calcularOcorrencias(partidas, ['p1', 'p2', 'p3', 'p4', 'p5', 'p6']);
+        const top3Picks = Object.entries(picksMap).sort((a, b) => b[1] - a[1]).slice(0, 3);
+        const sinergias = calcularSinergias(partidas); // Função que conta pares
+        const comps = calcularComps(partidas); // Função que conta trios
+
+        container.innerHTML += `
+            <div class="mapa-card" style="border:1px solid #444; padding:15px; margin-bottom:15px;">
+                <h3>${mapa}</h3>
+                <div style="display:flex; gap:20px;">
+                    <div>
+                        <h4>Top Picks</h4>
+                        ${top3Picks.map(p => `<p><img src="brawlers/${formatImg(p[0])}.png" width="24"> ${p[0]} (${p[1]})</p>`).join('')}
+                    </div>
+                    <div>
+                        <h4>Melhor Sinergia (Duo)</h4>
+                        <p>${sinergias.length ? sinergias[0].join(' + ') : 'N/D'}</p>
+                    </div>
+                    <div>
+                        <h4>Melhor Comp (Trio)</h4>
+                        <p>${comps.length ? comps[0].join(' + ') : 'N/D'}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Funções auxiliares para calcular duos e trios
+function calcularSinergias(partidas) { return []; /* Implemente a extração de pares de jogadores do mesmo time */ }
+function calcularComps(partidas) { return []; /* Implemente a extração de trios do mesmo time */ }
+function agruparPorChave(array, chave) {
+    return array.reduce((acc, curr) => { (acc[curr[chave]] = acc[curr[chave]] || []).push(curr); return acc; }, {});
+}
+
+// =======================================================
+// RENDERIZAÇÃO DE SCRIMS (Horizontal + Vertical Picks)
+// =======================================================
+function renderizarScrims() {
+    const container = document.getElementById('scrims-lista');
+    // ... sua lógica de agrupar sets ...
+    
+    // Na hora de montar o HTML de cada set (round):
+    let htmlPicksA = round.picksA.map((pick, i) => `
+        <div class="pick-row-vertical">
+            <img src="brawlers/${formatImg(pick)}.png" onerror="this.src='brawlers/default.png'">
+            <span class="player-name-link" onclick="abrirModalJogador('${round.jogadoresA[i]}')">
+                ${round.jogadoresA[i]}
+            </span>
+        </div>
+    `).join('');
+
+    // Adicione o htmlPicksA dentro da sua <div class="team-picks-scrim">
+}
+
+// =======================================================
+// MODAL DE INFORMAÇÕES DO JOGADOR
+// =======================================================
+function abrirModalJogador(nick) {
+    const jogadorDocs = dadosBrutos.filter(d => 
+        [d.t0_p1, d.t0_p2, d.t0_p3, d.t1_p1, d.t1_p2, d.t1_p3].includes(nick)
+    );
+    
+    if (jogadorDocs.length === 0) return;
+
+    // Pega a partida mais recente
+    const ultimaPartida = jogadorDocs.sort((a, b) => new Date(b.data) - new Date(a.data))[0];
+    
+    // Descobre o time
+    const time = [ultimaPartida.t0_p1, ultimaPartida.t0_p2, ultimaPartida.t0_p3].includes(nick) 
+        ? ultimaPartida.t0_nome : ultimaPartida.t1_nome;
+
+    document.getElementById('info-jogador-conteudo').innerHTML = `
+        <h2>${nick}</h2>
+        <p><strong>Último Time:</strong> ${time}</p>
+        <p><strong>Partidas Registradas:</strong> ${jogadorDocs.length}</p>
+        <p><strong>Última Atividade:</strong> ${ultimaPartida.data}</p>
+    `;
+    
+    document.getElementById('modal-jogador').style.display = 'block';
+}
+
+// =======================================================
+// GRÁFICOS DOS TIMES (TELA TIMES)
+// =======================================================
+let graficoLinhasInstance = null;
+let graficoBarrasInstance = null;
+
+function renderizarGraficosTime(nomeTime, dadosDoTime) {
+    document.getElementById('graficos-time-container').style.display = 'flex';
+
+    // 1. Processar dados para Gráfico de Linhas (Vitórias x Derrotas por Data)
+    const datasAgrupadas = agruparPorChave(dadosDoTime, 'data'); // Simplificado
+    const labelsData = Object.keys(datasAgrupadas).sort();
+    const vitoriasLinha = labelsData.map(d => datasAgrupadas[d].filter(p => p.vencedor === nomeTime).length);
+    const derrotasLinha = labelsData.map(d => datasAgrupadas[d].filter(p => p.vencedor !== nomeTime).length);
+
+    if (graficoLinhasInstance) graficoLinhasInstance.destroy();
+    graficoLinhasInstance = new Chart(document.getElementById('grafico-linhas-time'), {
+        type: 'line',
+        data: {
+            labels: labelsData,
+            datasets: [
+                { label: 'Vitórias', data: vitoriasLinha, borderColor: '#4CAF50', backgroundColor: '#4CAF50', tension: 0.1 },
+                { label: 'Derrotas', data: derrotasLinha, borderColor: '#F44336', backgroundColor: '#F44336', tension: 0.1 }
+            ]
+        },
+        options: { responsive: true, plugins: { title: { display: true, text: 'Desempenho ao Longo do Tempo', color: 'white' } } }
+    });
+
+    // 2. Processar dados para Gráfico de Barras Horizontal (Modos)
+    const modosAgrupados = agruparPorChave(dadosDoTime, 'modo');
+    const labelsModos = Object.keys(modosAgrupados);
+    const vitModos = labelsModos.map(m => modosAgrupados[m].filter(p => p.vencedor === nomeTime).length);
+    const derModos = labelsModos.map(m => modosAgrupados[m].filter(p => p.vencedor !== nomeTime).length);
+    const totalModos = labelsModos.map(m => modosAgrupados[m].length);
+
+    if (graficoBarrasInstance) graficoBarrasInstance.destroy();
+    graficoBarrasInstance = new Chart(document.getElementById('grafico-barras-modos'), {
+        type: 'bar',
+        data: {
+            labels: labelsModos,
+            datasets: [
+                { label: 'Total', data: totalModos, backgroundColor: '#2196F3', barPercentage: 1.0, categoryPercentage: 0.8 }, // Azul (fundo)
+                { label: 'Derrotas', data: derModos, backgroundColor: '#F44336', barPercentage: 0.7, categoryPercentage: 0.8 }, // Vermelho (meio)
+                { label: 'Vitórias', data: vitModos, backgroundColor: '#4CAF50', barPercentage: 0.4, categoryPercentage: 0.8 } // Verde (frente)
+            ]
+        },
+        options: {
+            indexAxis: 'y', // Barra horizontal
+            responsive: true,
+            grouped: false, // Isso faz as barras SOBREPorem umas às outras no mesmo eixo Y
+            scales: {
+                x: { stacked: false },
+                y: { stacked: false }
+            },
+            plugins: { title: { display: true, text: 'Vitórias por Modo', color: 'white' } }
+        }
+    });
+}
  
 
 
