@@ -1,3 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOUTH AMÉRICA Infos</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    
+    <script>window.REGIAO_ATUAL = "SA";</script>
+    
+    <script src="app.js" defer></script>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="nav-link">MENU</a>
+        <div class="nav-links">
+        <div class="dropdown">
+            <a href="#" class="nav-link" id="ea-menu-btn">SA ▼ (META)</a>
+            <div class="dropdown-content">
+                <a href="#" onclick="mudarTela('meta'); return false;">Meta</a>
+                <a href="#" onclick="mudarTela('brawlers'); return false;">Brawlers</a>
+                <a href="#" onclick="mudarTela('times'); return false;">Times</a>
+                <a href="#" onclick="mudarTela('scrims'); return false;">Scrims</a>
+            </div>
+        </div>
+        </div>
+        <div class="dropdown">
+                <a href="#" class="nav-link">OUTROS ▼</a>
+                <div class="dropdown-content">
+                    <a href="sa.html" style="display: flex; align-items: center; gap: 8px;">
+                        <img src="element/ea.png" style="width: 20px; height: 20px; object-fit: contain; border-radius: 2px;" onerror="this.style.display='none'"> 
+                        EA
+                    </a>
+                    <a href="emea.html" style="display: flex; align-items: center; gap: 8px;">
+                        <img src="element/emea.png" style="width: 20px; height: 20px; object-fit: contain; border-radius: 2px;" onerror="this.style.display='none'"> 
+                        EMEA
+                    </a>
+                    <a href="na.html" style="display: flex; align-items: center; gap: 8px;">
+                        <img src="element/na.png" style="width: 20px; height: 20px; object-fit: contain; border-radius: 2px;" onerror="this.style.display='none'"> 
+                        NA
                     </a>
                 </div>
             </div>
