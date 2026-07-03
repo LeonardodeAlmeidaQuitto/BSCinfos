@@ -1,48 +1,8 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SOUTH AMÉRICA Infos</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <script>window.REGIAO_ATUAL = "SA";</script>
-    <script src="app.js" defer></script>
-</head>
-<body>
-
-    <nav class="navbar">
-        <a href="index.html" class="nav-link">MENU</a>
-        <div class="nav-links">
-            <div class="dropdown">
-                <a href="#" class="nav-link" id="sa-menu-btn">SA ▼ (META)</a>
-                <div class="dropdown-content">
-                    <a href="#" onclick="mudarTela('meta'); return false;">Meta</a>
-                    <a href="#" onclick="mudarTela('brawlers'); return false;">Brawlers</a>
-                    <a href="#" onclick="mudarTela('modos'); return false;">Modos</a>
-                    <a href="#" onclick="mudarTela('times'); return false;">Times</a>
-                    <a href="#" onclick="mudarTela('scrims'); return false;">Scrims</a>
+                    </a>
                 </div>
             </div>
-        </div>
-        <div class="dropdown">
-            <a href="#" class="nav-link">OUTROS ▼</a>
-            <div class="dropdown-content">
-                <a href="sa.html" style="display: flex; align-items: center; gap: 8px;">
-                    <img src="element/ea.png" style="width: 20px; height: 20px; object-fit: contain; border-radius: 2px;" onerror="this.style.display='none'"> 
-                    EA
-                </a>
-                <a href="emea.html" style="display: flex; align-items: center; gap: 8px;">
-                    <img src="element/emea.png" style="width: 20px; height: 20px; object-fit: contain; border-radius: 2px;" onerror="this.style.display='none'"> 
-                    EMEA
-                </a>
-                <a href="na.html" style="display: flex; align-items: center; gap: 8px;">
-                    <img src="element/na.png" style="width: 20px; height: 20px; object-fit: contain; border-radius: 2px;" onerror="this.style.display='none'"> 
-                    NA
-                </a>
-            </div>
-        </div>
-        <a href="geral.html" class="nav-link">GERAL</a>
+         <a href="geral.html" class="nav-link">GERAL</a>
+
     </nav>
 
     <main class="main-container">
@@ -50,7 +10,7 @@
             <h1>SOUTH AMÉRICA INFOS <span class="accent">ANALYSIS</span></h1>
         </header>
 
-        <!-- Filtros Globais -->
+        <!-- Filtros Globais (Dia adicionado entre Mês e Tipo) -->
         <div class="filter-container">
             <select id="select-ano" class="filter-select" onchange="processarDadosGlobais()"></select>
             <select id="select-mes" class="filter-select" onchange="processarDadosGlobais()"></select>
@@ -80,11 +40,6 @@
             </div>
         </div>
 
-        <!-- Tela MODOS -->
-        <div id="tela-modos" class="tela-secao tela-oculta">
-            <div id="conteudo-modos"></div>
-        </div>
-
         <!-- Tela TIMES -->
         <div id="tela-times" class="tela-secao tela-oculta">
             <div class="times-container">
@@ -100,20 +55,11 @@
 
         <!-- Tela SCRIMS -->
         <div id="tela-scrims" class="tela-secao tela-oculta">
-            <div class="scrims-wrapper">
-                <div id="scrims-lista" class="scrins-grid-horizontal"></div>
-            </div>
+            <div id="scrims-lista" class="scrins-grid"></div>
             <div id="scrims-detalhe" style="display:none;"></div>
         </div>
-    </main>
 
-    <!-- Modal do Jogador -->
-    <div id="modal-jogador" class="modal-jogador">
-        <div class="modal-conteudo">
-            <span class="fechar-modal" onclick="fecharModalJogador()">&times;</span>
-            <div id="conteudo-modal-jogador"></div>
-        </div>
-    </div>
+    </main>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -121,19 +67,9 @@
                 document.querySelectorAll('.tela-secao').forEach(sec => sec.classList.replace('tela-ativa', 'tela-oculta'));
                 document.getElementById(`tela-${tela}`).classList.replace('tela-oculta', 'tela-ativa');
                 
-                const titulos = {
-                    'meta': 'SA ▼ (META)', 
-                    'brawlers': 'SA ▼ (BRAWLERS)', 
-                    'modos': 'SA ▼ (MODOS)', 
-                    'times': 'SA ▼ (TIMES)', 
-                    'scrims': 'SA ▼ (SCRIMS)'
-                };
+                const titulos = {'meta': 'SA ▼ (META)', 'brawlers': 'SA ▼ (BRAWLERS)', 'times': 'SA ▼ (TIMES)', 'scrims': 'SA ▼ (SCRIMS)'};
                 document.getElementById('sa-menu-btn').textContent = titulos[tela];
                 document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('active'));
-                
-                if(tela === 'modos') {
-                    renderizarModos();
-                }
             };
         });
     </script>
