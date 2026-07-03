@@ -210,6 +210,8 @@ const ROSTERS_POR_DATA = {
     }
 }
 
+
+
 let CONFIGURACAO_MANUAL_TIMES = {};
 
 function obterConfigRosterAtual() {
@@ -255,14 +257,20 @@ function obterNickPlayer(tag) {
 }
 
 // ========================================================
-// 3. INICIALIZAÃ‡ÃƒO E CARREGAMENTO DE DADOS
+// 3. INICIALIZAÇÃO E CARREGAMENTO DE DADOS
 // ========================================================
 document.addEventListener('DOMContentLoaded', () => {
     configurarEstruturaFiltros();
 });
 
 function configurarEstruturaFiltros() {
-    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTshw8w1_uM-EuhgS86gZq-06w8S1wO6k0hUuK8O-b0aXgB0rM8Sg/pub?gid=1506543973&output=csv";
+    // ----------------------------------------------------
+    // ALTERAÇÃO AQUI: Link do Google Docs substituído pelo arquivo local
+    // ----------------------------------------------------
+    const csvUrl = "historico_bruto.csv";
+    
+    // NOTA: Manti o link original de Bans. Se ele também estiver offline, 
+    // substitua por "BANS.CSV" ou o nome do seu arquivo local correspondente.
     const bansUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTshw8w1_uM-EuhgS86gZq-06w8S1wO6k0hUuK8O-b0aXgB0rM8Sg/pub?gid=2074360341&output=csv";
 
     Papa.parse(csvUrl, {
@@ -350,7 +358,7 @@ function processarDadosGlobais() {
         return true;
     });
 
-    // Mapeamento Ãºnico de brawlers cadastrados
+    // Mapeamento único de brawlers cadastrados
     let bset = new Set();
     dadosBrutos.forEach(r => { if(r.pick) bset.add(r.pick.toUpperCase().trim()); });
     listaBrawlers = Array.from(bset).sort();
@@ -367,11 +375,11 @@ function processarDadosGlobais() {
 
 function formatImg(str) {
     if(!str) return "default";
-    return str.toLowerCase().trim().replace(/[\s\.\-\'\â€™]/g, '_');
+    return str.toLowerCase().trim().replace(/[\s\.\-\'\’]/g, '_');
 }
 
 // ========================================================
-// 4. SISTEMA DA TELA META (COM FILTROS DE ORDENAÃ‡ÃƒO)
+// 4. SISTEMA DA TELA META (COM FILTROS DE ORDENAÇÃO)
 // ========================================================
 window.ordenarMeta = function(coluna) {
     if(window.colunaOrdenacaoMeta === coluna) {
@@ -450,7 +458,7 @@ function renderizarMeta() {
 
             let valid = Object.entries(brawlers);
             
-            // AplicaÃ§Ã£o dinÃ¢mica da ordenaÃ§Ã£o com filtros interativos
+            // Aplicação dinâmica da ordenação com filtros interativos
             valid.sort((xA, xB) => {
                 let bA = xA[0], sA = xA[1];
                 let bB = xB[0], sB = xB[1];
@@ -622,7 +630,7 @@ function renderizarDetalhesBrawler(bname) {
 function renderizarModos() {
     const container = document.getElementById('conteudo-modos');
     if(!container) return;
-    container.innerHTML = `<h2 style="color:var(--accent-purple); margin-bottom:20px; font-size:22px; font-weight:900;">ANÃLISE ESTRUTURAL DE MODOS E MAPAS</h2>`;
+    container.innerHTML = `<h2 style="color:var(--accent-purple); margin-bottom:20px; font-size:22px; font-weight:900;">ANÁLISE ESTRUTURAL DE MODOS E MAPAS</h2>`;
 
     let mapaModoAgrupado = {};
     dadosFiltrados.forEach(r => {
@@ -723,7 +731,7 @@ function renderizarModos() {
 }
 
 // ========================================================
-// 7. SISTEMA DA TELA TIMES (COM GRÃFICOS PERSONALIZADOS)
+// 7. SISTEMA DA TELA TIMES (COM GRÁFICOS PERSONALIZADOS)
 // ========================================================
 function renderizarSidebarTimes() {
     const listDiv = document.getElementById('lista-times-sidebar');
@@ -764,7 +772,7 @@ function renderizarDetalhesTime(timeObj) {
 
     let tData = dadosFiltrados.filter(r => r.id_time && r.id_time.toUpperCase().trim() === timeObj.id_time.toUpperCase().trim());
     
-    // Agrupamento de partidas Ãºnicas para os grÃ¡ficos e comps do time
+    // Agrupamento de partidas únicas para os gráficos e comps do time
     let partidasUnicas = {};
     tData.forEach(r => {
         if(!partidasUnicas[r.id_partida]) {
@@ -774,10 +782,10 @@ function renderizarDetalhesTime(timeObj) {
     });
     let listPartidas = Object.values(partidasUnicas);
 
-    // 1. CÃ¡lculos do GrÃ¡fico de Linhas (VitÃ³rias x Derrotas acumuladas cronologicamente)
+    // 1. Cálculos do Gráfico de Linhas (Vitórias x Derrotas acumuladas cronologicamente)
     listPartidas.sort((a,b) => parseDateBR(a.data) - parseDateBR(b.data));
 
-    // 2. CÃ¡lculos do GrÃ¡fico de Barras Sobrepostas por Modo
+    // 2. Cálculos do Gráfico de Barras Sobrepostas por Modo
     let statsModos = {};
     listPartidas.forEach(p => {
         let m = p.modo || "Outros";
@@ -788,7 +796,7 @@ function renderizarDetalhesTime(timeObj) {
     });
     let maxTotalPartidasModo = Math.max(...Object.values(statsModos).map(x => x.total), 1);
 
-    // 3. CÃ¡lculo das Melhores Comps por Modo do Time
+    // 3. Cálculo das Melhores Comps por Modo do Time
     let compsPorModo = {};
     listPartidas.forEach(p => {
         if(p.brawlers.length === 3) {
@@ -805,7 +813,7 @@ function renderizarDetalhesTime(timeObj) {
             <img class="brawler-large-avatar" src="element/teams/${formatImg(timeObj.id_time)}.png" style="object-fit:contain;" onerror="this.src='element/teams/default.png'">
             <div>
                 <h2 style="font-size:24px; font-weight:900;">${timeObj.nome_time}</h2>
-                <p style="color:var(--texto-secundario); font-size:13px; font-weight:bold; margin-top:4px;">Elenco Registrado no MÃªs</p>
+                <p style="color:var(--texto-secundario); font-size:13px; font-weight:bold; margin-top:4px;">Elenco Registrado no Mês</p>
             </div>
         </div>
 
@@ -820,12 +828,12 @@ function renderizarDetalhesTime(timeObj) {
 
         <div id="graficos-time-container">
             <div>
-                <h4 style="font-size:13px; color:var(--texto-secundario); text-transform:uppercase; margin-bottom:10px; font-weight:800;">HistÃ³rico de Desempenho (EvoluÃ§Ã£o de Partidas)</h4>
+                <h4 style="font-size:13px; color:var(--texto-secundario); text-transform:uppercase; margin-bottom:10px; font-weight:800;">Histórico de Desempenho (Evolução de Partidas)</h4>
                 <canvas id="canvas-linhas-time" width="600" height="180" style="background:var(--bg-paineis); border-radius:6px; border:1px solid var(--borda-suave);"></canvas>
             </div>
 
             <div>
-                <h4 style="font-size:13px; color:var(--texto-secundario); text-transform:uppercase; margin-bottom:15px; font-weight:800;">VitÃ³rias por Modo (Barras Sobrepostas: <span style="color:#00ff66;">Verde=V</span>, <span style="color:#ff3333;">Vermelho=D</span>, <span style="color:#00ccff;">Azul=Total</span>)</h4>
+                <h4 style="font-size:13px; color:var(--texto-secundario); text-transform:uppercase; margin-bottom:15px; font-weight:800;">Vitórias por Modo (Barras Sobrepostas: <span style="color:#00ff66;">Verde=V</span>, <span style="color:#ff3333;">Vermelho=D</span>, <span style="color:#00ccff;">Azul=Total</span>)</h4>
                 <div style="display:flex; flex-direction:column; gap:12px;">
                     ${Object.entries(statsModos).map(([modo, s]) => {
                         let pctTotal = (s.total / maxTotalPartidasModo) * 100;
@@ -839,9 +847,9 @@ function renderizarDetalhesTime(timeObj) {
                                 <div style="flex:1; position:relative; height:22px; background:rgba(255,255,255,0.02); border-radius:4px; overflow:hidden; border:1px solid var(--borda-suave);">
                                     <!-- Azul (Quantidade total) - Fundo inferior -->
                                     <div style="position:absolute; left:0; top:0; height:100%; width:${pctTotal}%; background:#00ccff; opacity:0.3; border-radius:3px;"></div>
-                                    <!-- Vermelho (Derrotas) - Camada IntermediÃ¡ria -->
+                                    <!-- Vermelho (Derrotas) - Camada Intermediária -->
                                     <div style="position:absolute; left:0; top:0; height:100%; width:${pctLosses}%; background:#ff3333; opacity:0.6; border-radius:3px;"></div>
-                                    <!-- Verde (VitÃ³rias) - Camada Superior PrimÃ¡ria -->
+                                    <!-- Verde (Vitórias) - Camada Superior Primária -->
                                     <div style="position:absolute; left:0; top:0; height:100%; width:${pctWins}%; background:#00ff66; border-radius:3px;"></div>
                                     
                                     <span style="position:absolute; right:8px; top:3px; font-size:11px; font-weight:900; color:#fff; text-shadow:1px 1px 2px #000;">
@@ -868,7 +876,7 @@ function renderizarDetalhesTime(timeObj) {
                                 <span style="font-weight:bold; font-size:13px; color:var(--accent-hover);">${melhorComp ? melhorComp[0] : 'Nenhuma comp registrada'}</span>
                             </div>
                             <div style="font-size:12px; font-weight:bold;">
-                                ${melhorComp ? `<span class="winrate-cell">${melhorComp[1].wins} VitÃ³rias</span> / ${melhorComp[1].picks} Jogos` : ''}
+                                ${melhorComp ? `<span class="winrate-cell">${melhorComp[1].wins} Vitórias</span> / ${melhorComp[1].picks} Jogos` : ''}
                             </div>
                         </div>
                     `;
@@ -879,7 +887,7 @@ function renderizarDetalhesTime(timeObj) {
 
     panel.innerHTML = html;
 
-    // RenderizaÃ§Ã£o nativa do GrÃ¡fico de Linhas do Time via HTML5 Canvas API
+    // Renderização nativa do Gráfico de Linhas do Time via HTML5 Canvas API
     setTimeout(() => {
         let canvas = document.getElementById('canvas-linhas-time');
         if(!canvas) return;
@@ -910,7 +918,7 @@ function renderizarDetalhesTime(timeObj) {
         const obterX = (idx) => pad + (idx / (totalPontos - 1 || 1)) * (canvas.width - 2 * pad);
         const obterY = (val) => canvas.height - pad - (val / maxValor) * (canvas.height - 2 * pad);
 
-        // Linha Verde de VitÃ³rias
+        // Linha Verde de Vitórias
         if(totalPontos > 0) {
             ctx.strokeStyle = "#00ff66";
             ctx.lineWidth = 3;
@@ -947,13 +955,13 @@ window.abrirModalJogador = function(tag) {
         return;
     }
 
-    // IdentificaÃ§Ã£o de equipe baseada na data de inserÃ§Ã£o mais recente
+    // Identificação de equipe baseada na data de inserção mais recente
     let ordenadoPorData = [...pRows].sort((a,b) => parseDateBR(b.data_adicao) - parseDateBR(a.data_adicao));
     let registroMaisRecente = ordenadoPorData[0];
     let nick = obterNickPlayer(cleanTag);
     let equipeMaisRecente = `${registroMaisRecente.nome_time} (${registroMaisRecente.id_time})`;
 
-    // Processamento agregado de estatÃ­sticas exclusivas do jogador (MÃ³dulo TIMES)
+    // Processamento agregado de estatísticas exclusivas do jogador (Módulo TIMES)
     let totalPartidas = pRows.length;
     let vCont = pRows.filter(r => parseInt(r.win) === 1).length;
     let wr = totalPartidas > 0 ? ((vCont / totalPartidas) * 100).toFixed(1) + '%' : '0%';
@@ -976,12 +984,12 @@ window.abrirModalJogador = function(tag) {
             <div><strong>Equipe Ativa (Mais Recente):</strong> <span style="font-weight:bold; color:#fff;">${equipeMaisRecente}</span></div>
         </div>
 
-        <h3 style="font-size:12px; color:var(--texto-secundario); text-transform:uppercase; margin-bottom:12px; font-weight:800; border-top:1px solid var(--borda-suave); padding-top:15px;">MÃ©tricas Globais Armazenadas (TIMES)</h3>
+        <h3 style="font-size:12px; color:var(--texto-secundario); text-transform:uppercase; margin-bottom:12px; font-weight:800; border-top:1px solid var(--borda-suave); padding-top:15px;">Métricas Globais Armazenadas (TIMES)</h3>
         <div style="font-size:14px; margin-bottom:20px; font-weight:bold;">
-            Total de Partidas Gravadas: <span style="color:#fff;">${totalPartidas}</span> | Taxa de VitÃ³ria Geral: <span class="winrate-cell">${wr}</span>
+            Total de Partidas Gravadas: <span style="color:#fff;">${totalPartidas}</span> | Taxa de Vitória Geral: <span class="winrate-cell">${wr}</span>
         </div>
 
-        <h4 style="font-size:11px; color:var(--accent-purple); text-transform:uppercase; margin-bottom:10px; font-weight:800;">Top Brawlers de PreferÃªncia:</h4>
+        <h4 style="font-size:11px; color:var(--accent-purple); text-transform:uppercase; margin-bottom:10px; font-weight:800;">Top Brawlers de Preferência:</h4>
         <div style="display:flex; flex-direction:column; gap:8px;">
             ${topBrawlers.map(([b, count]) => `
                 <div style="display:flex; justify-content:between; align-items:center; background:var(--bg-cards); padding:8px 15px; border-radius:6px; border:1px solid var(--borda-suave);">
@@ -1039,7 +1047,7 @@ function processarScrims() {
 
     Object.values(partidasMap).forEach(scrim => {
         let tKeys = Object.keys(scrim.times);
-        if(tKeys.length < 2) return; // Filtro de integridade estrutural (mÃ­nimo de 2 elencos contrapostos)
+        if(tKeys.length < 2) return; // Filtro de integridade estrutural (mínimo de 2 elencos contrapostos)
 
         let t1 = scrim.times[tKeys[0]];
         let t2 = scrim.times[tKeys[1]];
