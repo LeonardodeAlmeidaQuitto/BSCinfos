@@ -6,10 +6,6 @@ let listaBrawlers = [];
 let brawlerSelecionado = null;
 let timeSelecionado = null;
 
-// Configuração Global de Filtro de Ordenação na aba META
-window.colunaOrdenacaoMeta = 'pick';
-window.direcaoOrdenacaoMeta = 'desc';
-
 const _REGIAO = window.REGIAO_ATUAL ? window.REGIAO_ATUAL.toUpperCase() : "SA";
 // ========================================================
 // 1. CONFIGURAÇÃO DE ROTAÇÃO DE MAPAS MENSAL
@@ -287,6 +283,9 @@ function obterTiersDisponiveis() {
 }
 
 const formatImg = n => { if(!n) return 'default'; return n.toLowerCase().replace(/[^a-z0-9]/g, ''); };
+// Normaliza nomes de modo/mapa para comparação, ignorando espaços, maiúsculas/minúsculas
+// e diferenças de camelCase (ex: "brawlBall" === "Brawl Ball" === "brawl ball").
+const normalizarChave = n => { if(!n) return ''; return n.toLowerCase().replace(/[^a-z0-9]/g, ''); };
 
 // ========================================================
 // HELPERS DE LOGO DE TIME (com fallback inteligente p/ Unknow)
@@ -635,7 +634,7 @@ function renderizarMeta() {
     });
 
     const montarCardMapa = (modeKeyReal, mapaConfig) => {
-        let mapaKeyReal = modeKeyReal && sMap[modeKeyReal] ? Object.keys(sMap[modeKeyReal]).find(m => m.toLowerCase() === mapaConfig.toLowerCase()) : null;
+        let mapaKeyReal = modeKeyReal && sMap[modeKeyReal] ? Object.keys(sMap[modeKeyReal]).find(m => normalizarChave(m) === normalizarChave(mapaConfig)) : null;
         let brawlers = mapaKeyReal ? sMap[modeKeyReal][mapaKeyReal] : null;
         let valid = brawlers ? Object.entries(brawlers).filter(x => x[1].picks >= samplePicks).sort((a,b) => b[1].picks - a[1].picks) : [];
         let bNMap = (modeKeyReal && mapaKeyReal && bMap[modeKeyReal] && bMap[modeKeyReal][mapaKeyReal]) ? bMap[modeKeyReal][mapaKeyReal] : {};
@@ -677,7 +676,7 @@ function renderizarMeta() {
         // Mostra SOMENTE os modos/mapas configurados em ROTACAO_MAPAS, com os 3 mapas
         // de cada modo lado a lado (em linha horizontal), nessa ordem.
         Object.entries(rotacaoAtiva).forEach(([modoConfig, mapasConfig]) => {
-            let modeKeyReal = Object.keys(sMap).find(m => m.toLowerCase() === modoConfig.toLowerCase()) || null;
+            let modeKeyReal = Object.keys(sMap).find(m => normalizarChave(m) === normalizarChave(modoConfig)) || null;
             let cleanMode = formatImg(modoConfig);
             let conteudoMapa = mapasConfig.map(mapaConfig => montarCardMapa(modeKeyReal, mapaConfig)).join('');
             html += `<div class="modo-card" onclick="toggleModoMeta('${cleanMode}')"><img src="element/modes/${cleanMode}.png" style="width:40px; margin-right:15px;" onerror="this.src='element/modes/default.png'">${modoConfig}</div><div id="modo-content-${cleanMode}" class="modo-section" style="display:none; padding:15px;"><div class="mapa-content" style="display:grid; grid-template-columns:repeat(3, minmax(300px, 1fr)); gap:15px; align-items:start;">${conteudoMapa}</div></div>`;
