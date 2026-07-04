@@ -106,3 +106,39 @@ body { background-color: var(--bg-geral); color: var(--texto); min-height: 100vh
 .form-group input { background: var(--bg-paineis); border: 1px solid var(--borda-suave); color: #fff; padding: 10px; border-radius: 6px; outline: none; }
 .btn-register { background: var(--accent-purple); color: #fff; border: none; padding: 12px 20px; font-weight: 900; border-radius: 6px; cursor: pointer; text-transform: uppercase; width: 100%; transition: 0.2s;}
 .btn-register:hover { background: var(--accent-hover); }
+
+/* --- Barra de navegação horizontal "arrastável" (Scrims: Partidas e Sets) --- */
+        .drag-scroll-x {
+            cursor: grab;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-purple, #b026ff) rgba(255,255,255,0.08);
+        }
+        .drag-scroll-x.dragging { cursor: grabbing; scroll-behavior: auto; }
+        .drag-scroll-x::-webkit-scrollbar { height: 9px; }
+        .drag-scroll-x::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
+        .drag-scroll-x::-webkit-scrollbar-thumb { background: var(--accent-purple, #b026ff); border-radius: 10px; }
+        .drag-scroll-x::-webkit-scrollbar-thumb:hover { background: var(--accent-hover, #d17bff); }
+
+        /* --- Nome do player abaixo de cada pick (Scrims) --- */
+        .pick-player-name {
+            font-size: 11px; font-weight: 900; color: var(--texto-secundario, #999);
+            cursor: pointer; max-width: 100px; overflow: hidden; text-overflow: ellipsis;
+            white-space: nowrap; text-align: center;
+        }
+        .pick-player-name:hover { color: var(--accent-hover, #d17bff); text-decoration: underline; }
+
+        /* --- Modal de perfil do jogador --- */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+            z-index: 9999; align-items: center; justify-content: center; padding: 20px;
+        }
+        .modal-jogador-card {
+            position: relative; width: 100%; max-width: 420px; max-height: 85vh; overflow-y: auto;
+            background: var(--bg-cards, #181820); border: 1px solid var(--borda-destaque, #3a3a45);
+            border-radius: 14px; padding: 26px; box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+        }
+        .modal-close-btn {
+            position: absolute; top: 14px; right: 14px; background: transparent; border: none;
+            color: var(--texto-secundario, #999); font-size: 18px; font-weight: 900; cursor: pointer; line-height: 1;
+        }
+        .modal-close-btn:hover { color: #fff; }
