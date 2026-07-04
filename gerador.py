@@ -45,7 +45,7 @@ MAPEAMENTO_PLAYERS = {
         "#2QCCC29QV": {"nome": "Magic", "id_time": "ENO", "nome_time": "ENOSIS", "regiao": "SA"},
         "#2YRRL8GG2": {"nome": "Bebaxo", "id_time": "HAWK", "nome_time": "RED HAWK", "regiao": "SA"},
         "#VQ8YP9C0": {"nome": "JoeFav", "id_time": "LVLA", "nome_time": "LEVEL ACADEMY", "regiao": "SA"},
-        "#8OYUV29GR": {"nome": "Lion", "id_time": "AG", "nome_time": "AG ESPORTS", "regiao": "SA"},
+        "#80YUV29GR": {"nome": "Lion", "id_time": "AG", "nome_time": "AG ESPORTS", "regiao": "SA"},
         "#YCUGURU89": {"nome": "Azuri", "id_time": "JPFC", "nome_time": "JAPÃO FC ESPORTS", "regiao": "SA"},
 # NA
         "#LVRRYPV": {"nome": "Bobby", "id_time": "BOB", "nome_time": "F/A BOBBY", "regiao": "NA"},
