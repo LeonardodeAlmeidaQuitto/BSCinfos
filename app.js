@@ -13,11 +13,19 @@ const _REGIAO = window.REGIAO_ATUAL ? window.REGIAO_ATUAL.toUpperCase() : "SA";
 const ROTACAO_MAPAS = {
     "2026": {
         "06": { 
-            "Brawl Ball": ["Pinhole Punt", "Sneaky Fields", "Triple Dribble"], 
+            "Brawl Ball": ["Pinhole Punt", "Pinball Dreams", "Triple Dribble"], 
             "Gem Grab": ["Hard Rock Mine", "Crystal Arcade", "Gem Fort"],
             "Hot Zone": ["Dueling Beetles", "Open Business", "Ring of Fire"],
             "Heist": ["Safe Zone", "Kaboom Canyon", "Pit Stop"],
-            "Bounty": ["Hideout", "Shooting Star", "Layer Cake"],
+            "Bounty": ["Hideout", "Dry Season", "Layer Cake"],
+            "Knockout": ["Goldarm Gulch", "Out in the Open", "New Horizons"]
+        }
+        "07": { 
+            "Brawl Ball": ["Pinhole Punt", "Pinball Dreams", "Triple Dribble"], 
+            "Gem Grab": ["Hard Rock Mine", "Crystal Arcade", "Gem Fort"],
+            "Hot Zone": ["Dueling Beetles", "Open Business", "Ring of Fire"],
+            "Heist": ["Safe Zone", "Kaboom Canyon", "Pit Stop"],
+            "Bounty": ["Hideout", "Dry Season", "Layer Cake"],
             "Knockout": ["Goldarm Gulch", "Out in the Open", "New Horizons"]
         }
     }
