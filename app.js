@@ -573,8 +573,10 @@ function processarDadosGlobais() {
         return mA && mM && mD && mT && isTimeDaRegiaoAtual(row.id_time);
     };
 
-    dadosFiltrados = dadosBrutos.filter(filterFn);
+dadosFiltrados = dadosBrutos.filter(filterFn);
     dadosBansFiltrados = dadosBans.filter(filterFn);
+
+    dadosFiltrados = converterDadosParaMD3(dadosFiltrados);
 
     renderizarMeta();
     renderizarSidebarBrawlers();
@@ -1009,6 +1011,15 @@ function processarScrimes(dadosPeriodo) {
     });
 
     scrims = scrims.filter(s => s.rounds.length > 1).reverse();
+    
+    // BLOCO ADICIONADO PARA CALCULAR A MD3:
+    scrims.forEach(scrim => {
+        scrim.roundsMD3 = agruparSetsEmRoundsMD3(scrim.rounds);
+        // Atualiza os placares para contar vitórias de Rounds MD3
+        scrim.scoreA = scrim.roundsMD3.filter(r => r.vencedor === scrim.tAId).length;
+        scrim.scoreB = scrim.roundsMD3.filter(r => r.vencedor === scrim.tBId).length;
+    });
+
     window.currentScrims = scrims;
     
     let selectFiltro = document.getElementById('scrims-team-filter');
@@ -1080,46 +1091,62 @@ function renderizarDetalheScrim(scrim) {
     detalhe.innerHTML = `
         <button onclick="document.getElementById('scrims-lista').style.display='grid'; document.getElementById('scrims-detalhe').style.display='none';" style="background:transparent; border:2px solid var(--accent-purple); color:var(--accent-purple); padding:8px 20px; font-weight:bold; border-radius:6px; cursor:pointer; margin-bottom:30px;">← VOLTAR</button>
         <div class="scrim-detail-header"><div style="display:flex; justify-content:center; align-items:flex-start; gap:40px;"><div style="text-align:center;"><img src="${teamLogoUrl(scrim.tAId)}" style="height:80px; object-fit:contain; background:var(--bg-cards); border-radius:8px; border:2px solid var(--borda-destaque);" onerror="${teamLogoOnError(scrim.tAId)}"><div style="font-size:11px; color:var(--texto-secundario); display:flex; gap:8px; justify-content:center; margin-top:8px; font-weight:bold;">${playersA.map(p => `<span>${p}</span>`).join('')}</div></div><div style="font-size:42px; font-weight:900; line-height:80px;"><span style="color:${corA};">${scrim.scoreA}</span> <span style="color:var(--accent-purple)">-</span> <span style="color:${corB};">${scrim.scoreB}</span></div><div style="text-align:center;"><img src="${teamLogoUrl(scrim.tBId)}" style="height:80px; object-fit:contain; background:var(--bg-cards); border-radius:8px; border:2px solid var(--borda-destaque);" onerror="${teamLogoOnError(scrim.tBId)}"><div style="font-size:11px; color:var(--texto-secundario); display:flex; gap:8px; justify-content:center; margin-top:8px; font-weight:bold;">${playersB.map(p => `<span>${p}</span>`).join('')}</div></div></div></div>
-        <div class="scrim-rounds-container" id="rounds-scroll" style="display:flex; flex-wrap:wrap; gap:10px; overflow:visible; max-height:none; width:100%;">${scrim.rounds.map((r, i) => {
+        
+        <!-- Renderiza os ROUNDS na barra de seleção -->
+        <div class="scrim-rounds-container" id="rounds-scroll" style="display:flex; flex-wrap:wrap; gap:10px; overflow:visible; max-height:none; width:100%;">
+        ${scrim.roundsMD3.map((r, i) => {
             let venceuA = r.vencedor === r.tAId;
-            let corSet = venceuA ? 'var(--winrate-color, #2ecc71)' : 'var(--loss-color, #e74c3c)';
-            let nomeVencedorSet = venceuA ? r.tANome : r.tBNome;
-            return `<div class="scrim-round-btn ${i === 0 ? 'active' : ''}" onclick="selecionarRound(${i}, this)" style="flex:0 0 auto;">
-                <span style="font-size:11px; font-weight:900; color:var(--accent-purple); display:block; margin-bottom:5px;">SET ${i+1}</span>
+            let corRound = venceuA ? 'var(--winrate-color, #2ecc71)' : 'var(--loss-color, #e74c3c)';
+            let nomeVencedorRound = venceuA ? r.tANome : r.tBNome;
+            return `<div class="scrim-round-btn ${i === 0 ? 'active' : ''}" onclick="selecionarRoundMD3(${i}, this)" style="flex:0 0 auto;">
+                <span style="font-size:11px; font-weight:900; color:var(--accent-purple); display:block; margin-bottom:5px;">ROUND ${i+1}</span>
                 <img src="element/modes/${formatImg(r.modo)}.png" onerror="this.src='element/modes/default.png'">
-                <span style="display:block; margin-top:4px; font-size:9px; font-weight:900; color:${corSet}; max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${nomeVencedorSet}">${nomeVencedorSet}</span>
+                <span style="display:block; margin-top:4px; font-size:9px; font-weight:900; color:${corRound}; max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${nomeVencedorRound}">${nomeVencedorRound}</span>
             </div>`;
-        }).join('')}</div>
+        }).join('')}
+        </div>
         <div id="round-view-container"></div>
     `;
-    window.scrimAtual = scrim; selecionarRound(0, detalhe.querySelector('.scrim-round-btn'));
+    window.scrimAtual = scrim; 
+    selecionarRoundMD3(0, detalhe.querySelector('.scrim-round-btn'));
 }
 
-window.selecionarRound = function(index, btnElement) {
+window.selecionarRoundMD3 = function(index, btnElement) {
     document.querySelectorAll('.scrim-round-btn').forEach(b => b.classList.remove('active'));
     if(btnElement) btnElement.classList.add('active');
 
-    let round = window.scrimAtual.rounds[index];
+    let roundMD3 = window.scrimAtual.roundsMD3[index];
+    let firstSet = roundMD3.sets[0]; 
     const container = document.getElementById('round-view-container');
 
-    let venceuA = round.vencedor === round.tAId, venceuB = round.vencedor === round.tBId;
+    let venceuA = roundMD3.vencedor === window.scrimAtual.tAId;
     let corSetA = venceuA ? 'var(--winrate-color, #2ecc71)' : '#fff';
-    let corSetB = venceuB ? 'var(--winrate-color, #2ecc71)' : '#fff';
+    let corSetB = !venceuA ? 'var(--winrate-color, #2ecc71)' : '#fff';
 
-    let playersA = round.t0Full.map(p => p.player_name), playersB = round.t1Full.map(p => p.player_name);
-    let bansDoRound = dadosBans.filter(r => r.id_partida === round.id);
-    let bansTimeA   = bansDoRound.filter(r => r.id_time === round.tAId), bansTimeB   = bansDoRound.filter(r => r.id_time === round.tBId);
+    let playersA = firstSet.t0Full.map(p => p.player_name), playersB = firstSet.t1Full.map(p => p.player_name);
+    let bansDoRound = dadosBans.filter(r => r.id_partida === firstSet.id);
+    let bansTimeA   = bansDoRound.filter(r => r.id_time === window.scrimAtual.tAId), bansTimeB   = bansDoRound.filter(r => r.id_time === window.scrimAtual.tBId);
     let temBans     = bansTimeA.length > 0 || bansTimeB.length > 0;
 
     container.innerHTML = `
         <div class="round-details-view">
-            <div style="text-align:center;"><p style="font-size:12px; color:var(--texto-secundario); font-weight:bold;">${round.dataFormatada.split(' ')[1] || ''} | ${round.modo.toUpperCase()}</p></div>
-            <div class="player-names-scrim" style="justify-content:space-around;"><div style="display:flex; gap:35px; color:${corSetA}; font-weight:900;">${playersA.map(p => `<span>${p}</span>`).join('')}</div><div style="display:flex; gap:35px; color:${corSetB}; font-weight:900;">${playersB.map(p => `<span>${p}</span>`).join('')}</div></div>
+            <div style="text-align:center; margin-bottom: 15px;">
+                <p style="font-size:15px; color:#fff; font-weight:900; margin-bottom: 4px; background: rgba(255,255,255,0.06); padding: 6px 14px; border-radius: 6px; display: inline-block;">
+                    Sets no Modo: <span style="color:var(--winrate-color);">${roundMD3.scoreA}</span> - <span style="color:var(--winrate-color);">${roundMD3.scoreB}</span>
+                </p>
+                <p style="font-size:12px; color:var(--texto-secundario); font-weight:bold; margin-top:4px;">
+                    ${firstSet.dataFormatada.split(' ')[1] || ''} | ${roundMD3.modo.toUpperCase()}
+                </p>
+            </div>
+            <div class="player-names-scrim" style="justify-content:space-around;">
+                <div style="display:flex; gap:35px; color:${corSetA}; font-weight:900;">${playersA.map(p => `<span>${p}</span>`).join('')}</div>
+                <div style="display:flex; gap:35px; color:${corSetB}; font-weight:900;">${playersB.map(p => `<span>${p}</span>`).join('')}</div>
+            </div>
             ${temBans ? `<div style="display:flex; justify-content:space-between; align-items:center; margin:12px 0; padding:10px 20px; background:rgba(176,0,0,0.08); border-radius:8px; border:1px solid rgba(200,50,50,0.35);"><div style="display:flex; align-items:center; gap:8px;"><span style="font-size:10px; font-weight:900; color:#ff5555; letter-spacing:1px; white-space:nowrap;">BANS ▶</span>${bansTimeA.map(b => `<div style="position:relative; display:inline-block;" title="${b.brawler_banido}"><img src="brawlers/${formatImg(b.brawler_banido)}.png" style="width:32px; height:32px; border-radius:4px; filter:grayscale(80%) brightness(0.5);" onerror="this.src='brawlers/default.png'"><span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#ff4444; font-size:16px; font-weight:900; text-shadow:0 0 4px #000;">✕</span></div>`).join('')}</div><div style="display:flex; align-items:center; gap:8px; flex-direction:row-reverse;"><span style="font-size:10px; font-weight:900; color:#ff5555; letter-spacing:1px; white-space:nowrap;">◀ BANS</span>${bansTimeB.map(b => `<div style="position:relative; display:inline-block;" title="${b.brawler_banido}"><img src="brawlers/${formatImg(b.brawler_banido)}.png" style="width:32px; height:32px; border-radius:4px; filter:grayscale(80%) brightness(0.5);" onerror="this.src='brawlers/default.png'"><span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#ff4444; font-size:16px; font-weight:900; text-shadow:0 0 4px #000;">✕</span></div>`).join('')}</div></div>` : ''}
             <div class="scrim-picks-container">
-                <div class="team-picks-scrim" style="flex-direction:row; justify-content:flex-end;">${round.picksA.map(pick => `<div class="pick-row"><img src="brawlers/${formatImg(pick)}.png" onerror="this.src='brawlers/default.png'"></div>`).join('')}</div>
-                <div class="map-middle-scrim"><img src="element/maps/${formatImg(round.mapa)}.png" onerror="this.src='element/maps/default.png'"><p style="font-size:12px; font-weight:900; margin-top:8px;">${round.mapa}</p></div>
-                <div class="team-picks-scrim" style="flex-direction:row; justify-content:flex-start;">${round.picksB.map(pick => `<div class="pick-row"><img src="brawlers/${formatImg(pick)}.png" onerror="this.src='brawlers/default.png'"></div>`).join('')}</div>
+                <div class="team-picks-scrim" style="flex-direction:row; justify-content:flex-end;">${firstSet.picksA.map(pick => `<div class="pick-row"><img src="brawlers/${formatImg(pick)}.png" onerror="this.src='brawlers/default.png'"></div>`).join('')}</div>
+                <div class="map-middle-scrim"><img src="element/maps/${formatImg(roundMD3.mapa)}.png" onerror="this.src='element/maps/default.png'"><p style="font-size:12px; font-weight:900; margin-top:8px;">${roundMD3.mapa}</p></div>
+                <div class="team-picks-scrim" style="flex-direction:row; justify-content:flex-start;">${firstSet.picksB.map(pick => `<div class="pick-row"><img src="brawlers/${formatImg(pick)}.png" onerror="this.src='brawlers/default.png'"></div>`).join('')}</div>
             </div>
         </div>`;
 };
