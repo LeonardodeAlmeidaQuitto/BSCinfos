@@ -13,19 +13,11 @@ const _REGIAO = window.REGIAO_ATUAL ? window.REGIAO_ATUAL.toUpperCase() : "SA";
 const ROTACAO_MAPAS = {
     "2026": {
         "06": { 
-            "Brawl Ball": ["Pinhole Punt", "Pinball Dreams", "Triple Dribble"], 
+            "Brawl Ball": ["Pinhole Punt", "Sneaky Fields", "Triple Dribble"], 
             "Gem Grab": ["Hard Rock Mine", "Crystal Arcade", "Gem Fort"],
             "Hot Zone": ["Dueling Beetles", "Open Business", "Ring of Fire"],
             "Heist": ["Safe Zone", "Kaboom Canyon", "Pit Stop"],
-            "Bounty": ["Hideout", "Dry Season", "Layer Cake"],
-            "Knockout": ["Goldarm Gulch", "Out in the Open", "New Horizons"]
-        },
-        "07": { 
-            "Brawl Ball": ["Pinhole Punt", "Pinball Dreams", "Triple Dribble"], 
-            "Gem Grab": ["Hard Rock Mine", "Crystal Arcade", "Gem Fort"],
-            "Hot Zone": ["Dueling Beetles", "Open Business", "Ring of Fire"],
-            "Heist": ["Safe Zone", "Kaboom Canyon", "Pit Stop"],
-            "Bounty": ["Hideout", "Dry Season", "Layer Cake"],
+            "Bounty": ["Hideout", "Shooting Star", "Layer Cake"],
             "Knockout": ["Goldarm Gulch", "Out in the Open", "New Horizons"]
         }
     }
@@ -44,8 +36,8 @@ const ROSTERS_POR_DATA = {
         ],
         "TIER A": [
             { id_time: "LOUD", nome_time: "LOUD", jogadores: [ { nick: "KaioDog", tag: "#GGUQCG0G" }, { nick: "FireCrow", tag: "#2GV09VJJP" }, { nick: "Edinho", tag: "#QJULVGU" } ] },
-            { id_time: "OS", nome_time: "OLIMPO SQUAD", jogadores: [ { nick: "Golden", tag: "#9QCJPL20" }, { nick: "Brabao", tag: "#L9PQUV0YC" }, { nick: "Pekka", tag: "#QJULVGU" } ] },
-            { id_time: "GLXY", nome_time: "GALAXY", jogadores: [ { nick: "Doritos🐉", tag: "#202GJJR28" }, { nick: "Derpp🐰", tag: "#2QG9LQQC8Y" }, { nick: "IceCrow", tag: "#9CPYUCGQC" } ] },
+            { id_time: "OS", nome_time: "Olimpo Squad", jogadores: [ { nick: "Golden", tag: "#9QCJPL20" }, { nick: "Brabao", tag: "#L9PQUV0YC" }, { nick: "Pekka", tag: "#QJULVGU" } ] },
+            { id_time: "GLXY", nome_time: "GALAXY", jogadores: [ { nick: "Doritos🐉", tag: "#202GJJR28" }, { nick: "Derpp🐰ᩚ", tag: "#2QG9LQQC8Y" }, { nick: "IceCrow", tag: "#9CPYUCGQC" } ] },
             { id_time: "SKC", nome_time: "SKCalalas SA", jogadores: [ { nick: "Kr ;)", tag: "#PR0P8QVQ" }, { nick: "Rhz", tag: "#89PVJG9R0" }, { nick: "Juan Carlos", tag: "#PR9U2JL" } ] },
             { id_time: "ENO", nome_time: "ENOSIS", jogadores: [ { nick: "Magic🎩", tag: "#2QCCC29QV" }, { nick: "REI DO FUT", tag: "#RVL0RPR9" }, { nick: "Fantas🌖", tag: "#PU20LUCQG" } ] },
             { id_time: "OCX", nome_time: "OCX Division", jogadores: [ { nick: "Tufa", tag: "#CQLR0Y80" }, { nick: "Enid", tag: "#2JGP0LYV2Q" }, { nick: "Red Eyes", tag: "#CUGVUYPG" } ] },
@@ -54,13 +46,13 @@ const ROSTERS_POR_DATA = {
        "TIER B": [
                 { id_time: "CB", nome_time: "CRECHE BRAWL", jogadores: [ { nick: "Tilo", tag: "#80VLPJCCC" }, { nick: "Bielz", tag: "#9Q22C88V8" }, { nick: "Yichy", tag: "#2LVGCJ2UQR" } ] },
                 { id_time: "ZRT", nome_time: "ZURITA GANG", jogadores: [ { nick: "Jxcccr", tag: "#820JCJJG" }, { nick: "Exic", tag: "#RCYQUJU0" }, { nick: "", tag: "#" } ] },
-                { id_time: "OCXA", nome_time: "OCX DIVISION ACADEMY", jogadores: [ { nick: "Sterixx", tag: "#2P8RVJVUY" }, { nick: "Foxy", tag: "#QPLGP8LL" }, { nick: "RQCROW", tag: "#28P9CGYP" } ] },
+                { id_time: "OCXA", nome_time: "OCX DIVISION ACADEMY", jogadores: [ { nick: "Sterixx", tag: "#2P8RVJVUY" }, { nick: "", tag: "#" }, { nick: "", tag: "#" } ] },
                 { id_time: "LVL", nome_time: "LEVEL ESPORTS", jogadores: [ { nick: "Deykonn", tag: "#GJPVYUQG" }, { nick: "B4st", tag: "#2CJ0RCJ" }, { nick: "Todd", tag: "#22PGQU98R" } ] }
          ],
             "TIER B-/C+": [
                 { id_time: "HAWK", nome_time: "RED HAWK", jogadores: [ { nick: "BeBaxo", tag: "#2YRRL8GG2" }, { nick: "Marcellus", tag: "#9J0R0GQL" }, { nick: "Migz Labubu", tag: "#82P9JCJV8" } ] },
                 { id_time: "LVLA", nome_time: "LEVEL ESPORTS ACADEMY", jogadores: [ { nick: "JoeFav", tag: "#VQ8YP9C0" }, { nick: "Levi", tag: "#YQVPY0J9" }, { nick: "xJnn", tag: "#GLQG9CU20" } ] },
-                { id_time: "AG", nome_time: "AG ESPORTS", jogadores: [ { nick: "Lion🐐", tag: "#80YUV29GR" }, { nick: "Bieel", tag: "#9JVUGR2JG" }, { nick: "Brennox🎩", tag: "#LLCURQVY2" }, { nick: "Puda", tag: "#829QUYGP0" } ] },
+                { id_time: "AG", nome_time: "AG ESPORTS", jogadores: [ { nick: "Lion", tag: "#8OYUV29GR" }, { nick: "Bieel", tag: "#9JVUGR2JG" }, { nick: "Brennox🎩", tag: "#LLCURQVY2" }, { nick: "Puda", tag: "#829QUYGP0" } ] },
                 { id_time: "JPFC", nome_time: "JAPÃO FC ESPORTS", jogadores: [ { nick: "Azuri", tag: "#YCUGURU89" }, { nick: "Raze", tag: "#2GP98PQOG" }, { nick: "Esoteric", tag: "#8C8988222" } ] }
         ]
     },
@@ -143,13 +135,13 @@ const ROSTERS_POR_DATA = {
         "TIER B": [
                 { id_time: "CB", nome_time: "CRECHE BRAWL", jogadores: [ { nick: "Tilo", tag: "#80VLPJCCC" }, { nick: "Bielz", tag: "#9Q22C88V8" }, { nick: "Yichy", tag: "#2LVGCJ2UQR" } ] },
                 { id_time: "ZRT", nome_time: "ZURITA GANG", jogadores: [ { nick: "Jxcccr", tag: "#820JCJJG" }, { nick: "Exic", tag: "#RCYQUJU0" }, { nick: "", tag: "#" } ] },
-                { id_time: "OCXA", nome_time: "OCX DIVISION ACADEMY", jogadores: [ { nick: "Sterixx", tag: "#2P8RVJVUY" }, { nick: "Foxy", tag: "#QPLGP8LL" }, { nick: "RQCROW", tag: "#28P9CGYP" } ] },
+                { id_time: "OCXA", nome_time: "OCX DIVISION ACADEMY", jogadores: [ { nick: "Sterixx", tag: "#2P8RVJVUY" }, { nick: "", tag: "#" }, { nick: "", tag: "#" } ] },
                 { id_time: "LVL", nome_time: "LEVEL ESPORTS", jogadores: [ { nick: "Deykonn", tag: "#GJPVYUQG" }, { nick: "B4st", tag: "#2CJ0RCJ" }, { nick: "Todd", tag: "#22PGQU98R" } ] }
          ],
             "TIER B-/C+": [
                 { id_time: "HAWK", nome_time: "RED HAWK", jogadores: [ { nick: "BeBaxo", tag: "#2YRRL8GG2" }, { nick: "Marcellus", tag: "#9J0R0GQL" }, { nick: "Migz Labubu", tag: "#82P9JCJV8" } ] },
                 { id_time: "LVLA", nome_time: "LEVEL ESPORTS ACADEMY", jogadores: [ { nick: "JoeFav", tag: "#VQ8YP9C0" }, { nick: "Levi", tag: "#YQVPY0J9" }, { nick: "xJnn", tag: "#GLQG9CU20" } ] },
-                { id_time: "AG", nome_time: "AG ESPORTS", jogadores: [ { nick: "Lion", tag: "#80YUV29GR" }, { nick: "Bieel", tag: "#9JVUGR2JG" }, { nick: "Brennox🎩", tag: "#LLCURQVY2" }, { nick: "Puda", tag: "#829QUYGP0" } ] },
+                { id_time: "AG", nome_time: "AG ESPORTS", jogadores: [ { nick: "Lion", tag: "#8OYUV29GR" }, { nick: "Bieel", tag: "#9JVUGR2JG" }, { nick: "Brennox🎩", tag: "#LLCURQVY2" }, { nick: "Puda", tag: "#829QUYGPO" } ] },
                 { id_time: "JPFC", nome_time: "JAPÃO FC ESPORTS", jogadores: [ { nick: "Azuri", tag: "#YCUGURU89" }, { nick: "Raze", tag: "#2GP98PQOG" }, { nick: "Esoteric", tag: "#8C8988222" } ] }
         ]
     },
@@ -573,10 +565,8 @@ function processarDadosGlobais() {
         return mA && mM && mD && mT && isTimeDaRegiaoAtual(row.id_time);
     };
 
-dadosFiltrados = dadosBrutos.filter(filterFn);
+    dadosFiltrados = dadosBrutos.filter(filterFn);
     dadosBansFiltrados = dadosBans.filter(filterFn);
-
-    dadosFiltrados = converterDadosParaMD3(dadosFiltrados);
 
     renderizarMeta();
     renderizarSidebarBrawlers();
@@ -716,10 +706,7 @@ function renderizarMeta() {
                 </tbody>
             </table></div></div>`;
     }
-   if (container) container.innerHTML = html || `<p style="padding:20px; text-align:center;">Nenhum dado encontrado para os filtros atuais na ${_REGIAO}.</p>`;
-    
-    // CHAME A FUNÇÃO AQUI:
-    tornarTabelasOrdenaveis();
+    if (container) container.innerHTML = html || `<p style="padding:20px; text-align:center;">Nenhum dado encontrado para os filtros atuais na ${_REGIAO}.</p>`;
 }
 
 // ==========================================
@@ -1011,15 +998,6 @@ function processarScrimes(dadosPeriodo) {
     });
 
     scrims = scrims.filter(s => s.rounds.length > 1).reverse();
-    
-    // BLOCO ADICIONADO PARA CALCULAR A MD3:
-    scrims.forEach(scrim => {
-        scrim.roundsMD3 = agruparSetsEmRoundsMD3(scrim.rounds);
-        // Atualiza os placares para contar vitórias de Rounds MD3
-        scrim.scoreA = scrim.roundsMD3.filter(r => r.vencedor === scrim.tAId).length;
-        scrim.scoreB = scrim.roundsMD3.filter(r => r.vencedor === scrim.tBId).length;
-    });
-
     window.currentScrims = scrims;
     
     let selectFiltro = document.getElementById('scrims-team-filter');
@@ -1091,119 +1069,46 @@ function renderizarDetalheScrim(scrim) {
     detalhe.innerHTML = `
         <button onclick="document.getElementById('scrims-lista').style.display='grid'; document.getElementById('scrims-detalhe').style.display='none';" style="background:transparent; border:2px solid var(--accent-purple); color:var(--accent-purple); padding:8px 20px; font-weight:bold; border-radius:6px; cursor:pointer; margin-bottom:30px;">← VOLTAR</button>
         <div class="scrim-detail-header"><div style="display:flex; justify-content:center; align-items:flex-start; gap:40px;"><div style="text-align:center;"><img src="${teamLogoUrl(scrim.tAId)}" style="height:80px; object-fit:contain; background:var(--bg-cards); border-radius:8px; border:2px solid var(--borda-destaque);" onerror="${teamLogoOnError(scrim.tAId)}"><div style="font-size:11px; color:var(--texto-secundario); display:flex; gap:8px; justify-content:center; margin-top:8px; font-weight:bold;">${playersA.map(p => `<span>${p}</span>`).join('')}</div></div><div style="font-size:42px; font-weight:900; line-height:80px;"><span style="color:${corA};">${scrim.scoreA}</span> <span style="color:var(--accent-purple)">-</span> <span style="color:${corB};">${scrim.scoreB}</span></div><div style="text-align:center;"><img src="${teamLogoUrl(scrim.tBId)}" style="height:80px; object-fit:contain; background:var(--bg-cards); border-radius:8px; border:2px solid var(--borda-destaque);" onerror="${teamLogoOnError(scrim.tBId)}"><div style="font-size:11px; color:var(--texto-secundario); display:flex; gap:8px; justify-content:center; margin-top:8px; font-weight:bold;">${playersB.map(p => `<span>${p}</span>`).join('')}</div></div></div></div>
-        
-        <!-- Renderiza os ROUNDS na barra de seleção -->
-        <div class="scrim-rounds-container" id="rounds-scroll" style="display:flex; flex-wrap:wrap; gap:10px; overflow:visible; max-height:none; width:100%;">
-        ${scrim.roundsMD3.map((r, i) => {
+        <div class="scrim-rounds-container" id="rounds-scroll" style="display:flex; flex-wrap:wrap; gap:10px; overflow:visible; max-height:none; width:100%;">${scrim.rounds.map((r, i) => {
             let venceuA = r.vencedor === r.tAId;
-            let corRound = venceuA ? 'var(--winrate-color, #2ecc71)' : 'var(--loss-color, #e74c3c)';
-            let nomeVencedorRound = venceuA ? r.tANome : r.tBNome;
-            return `<div class="scrim-round-btn ${i === 0 ? 'active' : ''}" onclick="selecionarRoundMD3(${i}, this)" style="flex:0 0 auto;">
-                <span style="font-size:11px; font-weight:900; color:var(--accent-purple); display:block; margin-bottom:5px;">ROUND ${i+1}</span>
+            let corSet = venceuA ? 'var(--winrate-color, #2ecc71)' : 'var(--loss-color, #e74c3c)';
+            let nomeVencedorSet = venceuA ? r.tANome : r.tBNome;
+            return `<div class="scrim-round-btn ${i === 0 ? 'active' : ''}" onclick="selecionarRound(${i}, this)" style="flex:0 0 auto;">
+                <span style="font-size:11px; font-weight:900; color:var(--accent-purple); display:block; margin-bottom:5px;">SET ${i+1}</span>
                 <img src="element/modes/${formatImg(r.modo)}.png" onerror="this.src='element/modes/default.png'">
-                <span style="display:block; margin-top:4px; font-size:9px; font-weight:900; color:${corRound}; max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${nomeVencedorRound}">${nomeVencedorRound}</span>
+                <span style="display:block; margin-top:4px; font-size:9px; font-weight:900; color:${corSet}; max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${nomeVencedorSet}">${nomeVencedorSet}</span>
             </div>`;
-        }).join('')}
-        </div>
+        }).join('')}</div>
         <div id="round-view-container"></div>
     `;
-    window.scrimAtual = scrim; 
-    selecionarRoundMD3(0, detalhe.querySelector('.scrim-round-btn'));
+    window.scrimAtual = scrim; selecionarRound(0, detalhe.querySelector('.scrim-round-btn'));
 }
 
-window.selecionarRoundMD3 = function(index, btnElement) {
+window.selecionarRound = function(index, btnElement) {
     document.querySelectorAll('.scrim-round-btn').forEach(b => b.classList.remove('active'));
     if(btnElement) btnElement.classList.add('active');
 
-    let roundMD3 = window.scrimAtual.roundsMD3[index];
-    let firstSet = roundMD3.sets[0]; 
+    let round = window.scrimAtual.rounds[index];
     const container = document.getElementById('round-view-container');
 
-    let venceuA = roundMD3.vencedor === window.scrimAtual.tAId;
+    let venceuA = round.vencedor === round.tAId, venceuB = round.vencedor === round.tBId;
     let corSetA = venceuA ? 'var(--winrate-color, #2ecc71)' : '#fff';
-    let corSetB = !venceuA ? 'var(--winrate-color, #2ecc71)' : '#fff';
+    let corSetB = venceuB ? 'var(--winrate-color, #2ecc71)' : '#fff';
 
-    let playersA = firstSet.t0Full.map(p => p.player_name), playersB = firstSet.t1Full.map(p => p.player_name);
-    let bansDoRound = dadosBans.filter(r => r.id_partida === firstSet.id);
-    let bansTimeA   = bansDoRound.filter(r => r.id_time === window.scrimAtual.tAId), bansTimeB   = bansDoRound.filter(r => r.id_time === window.scrimAtual.tBId);
+    let playersA = round.t0Full.map(p => p.player_name), playersB = round.t1Full.map(p => p.player_name);
+    let bansDoRound = dadosBans.filter(r => r.id_partida === round.id);
+    let bansTimeA   = bansDoRound.filter(r => r.id_time === round.tAId), bansTimeB   = bansDoRound.filter(r => r.id_time === round.tBId);
     let temBans     = bansTimeA.length > 0 || bansTimeB.length > 0;
 
     container.innerHTML = `
         <div class="round-details-view">
-            <div style="text-align:center; margin-bottom: 15px;">
-                <p style="font-size:15px; color:#fff; font-weight:900; margin-bottom: 4px; background: rgba(255,255,255,0.06); padding: 6px 14px; border-radius: 6px; display: inline-block;">
-                    Sets no Modo: <span style="color:var(--winrate-color);">${roundMD3.scoreA}</span> - <span style="color:var(--winrate-color);">${roundMD3.scoreB}</span>
-                </p>
-                <p style="font-size:12px; color:var(--texto-secundario); font-weight:bold; margin-top:4px;">
-                    ${firstSet.dataFormatada.split(' ')[1] || ''} | ${roundMD3.modo.toUpperCase()}
-                </p>
-            </div>
-            <div class="player-names-scrim" style="justify-content:space-around;">
-                <div style="display:flex; gap:35px; color:${corSetA}; font-weight:900;">${playersA.map(p => `<span>${p}</span>`).join('')}</div>
-                <div style="display:flex; gap:35px; color:${corSetB}; font-weight:900;">${playersB.map(p => `<span>${p}</span>`).join('')}</div>
-            </div>
+            <div style="text-align:center;"><p style="font-size:12px; color:var(--texto-secundario); font-weight:bold;">${round.dataFormatada.split(' ')[1] || ''} | ${round.modo.toUpperCase()}</p></div>
+            <div class="player-names-scrim" style="justify-content:space-around;"><div style="display:flex; gap:35px; color:${corSetA}; font-weight:900;">${playersA.map(p => `<span>${p}</span>`).join('')}</div><div style="display:flex; gap:35px; color:${corSetB}; font-weight:900;">${playersB.map(p => `<span>${p}</span>`).join('')}</div></div>
             ${temBans ? `<div style="display:flex; justify-content:space-between; align-items:center; margin:12px 0; padding:10px 20px; background:rgba(176,0,0,0.08); border-radius:8px; border:1px solid rgba(200,50,50,0.35);"><div style="display:flex; align-items:center; gap:8px;"><span style="font-size:10px; font-weight:900; color:#ff5555; letter-spacing:1px; white-space:nowrap;">BANS ▶</span>${bansTimeA.map(b => `<div style="position:relative; display:inline-block;" title="${b.brawler_banido}"><img src="brawlers/${formatImg(b.brawler_banido)}.png" style="width:32px; height:32px; border-radius:4px; filter:grayscale(80%) brightness(0.5);" onerror="this.src='brawlers/default.png'"><span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#ff4444; font-size:16px; font-weight:900; text-shadow:0 0 4px #000;">✕</span></div>`).join('')}</div><div style="display:flex; align-items:center; gap:8px; flex-direction:row-reverse;"><span style="font-size:10px; font-weight:900; color:#ff5555; letter-spacing:1px; white-space:nowrap;">◀ BANS</span>${bansTimeB.map(b => `<div style="position:relative; display:inline-block;" title="${b.brawler_banido}"><img src="brawlers/${formatImg(b.brawler_banido)}.png" style="width:32px; height:32px; border-radius:4px; filter:grayscale(80%) brightness(0.5);" onerror="this.src='brawlers/default.png'"><span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#ff4444; font-size:16px; font-weight:900; text-shadow:0 0 4px #000;">✕</span></div>`).join('')}</div></div>` : ''}
             <div class="scrim-picks-container">
-                <div class="team-picks-scrim" style="flex-direction:row; justify-content:flex-end;">${firstSet.picksA.map(pick => `<div class="pick-row"><img src="brawlers/${formatImg(pick)}.png" onerror="this.src='brawlers/default.png'"></div>`).join('')}</div>
-                <div class="map-middle-scrim"><img src="element/maps/${formatImg(roundMD3.mapa)}.png" onerror="this.src='element/maps/default.png'"><p style="font-size:12px; font-weight:900; margin-top:8px;">${roundMD3.mapa}</p></div>
-                <div class="team-picks-scrim" style="flex-direction:row; justify-content:flex-start;">${firstSet.picksB.map(pick => `<div class="pick-row"><img src="brawlers/${formatImg(pick)}.png" onerror="this.src='brawlers/default.png'"></div>`).join('')}</div>
+                <div class="team-picks-scrim" style="flex-direction:row; justify-content:flex-end;">${round.picksA.map(pick => `<div class="pick-row"><img src="brawlers/${formatImg(pick)}.png" onerror="this.src='brawlers/default.png'"></div>`).join('')}</div>
+                <div class="map-middle-scrim"><img src="element/maps/${formatImg(round.mapa)}.png" onerror="this.src='element/maps/default.png'"><p style="font-size:12px; font-weight:900; margin-top:8px;">${round.mapa}</p></div>
+                <div class="team-picks-scrim" style="flex-direction:row; justify-content:flex-start;">${round.picksB.map(pick => `<div class="pick-row"><img src="brawlers/${formatImg(pick)}.png" onerror="this.src='brawlers/default.png'"></div>`).join('')}</div>
             </div>
         </div>`;
 };
-
-// ==========================================
-// 8. FUNÇÃO PARA ORDENAR TABELAS (META)
-// ==========================================
-function tornarTabelasOrdenaveis() {
-    // Seleciona todas as tabelas geradas na tela Meta
-    document.querySelectorAll('table.excel-table').forEach(table => {
-        const headers = table.querySelectorAll('th');
-        
-        headers.forEach((th, index) => {
-            // Estiliza o cabeçalho para parecer clicável
-            th.style.cursor = 'pointer';
-            th.title = "Clique para ordenar";
-
-            th.addEventListener('click', () => {
-                const tbody = table.querySelector('tbody');
-                if (!tbody) return;
-
-                const rows = Array.from(tbody.querySelectorAll('tr'));
-                const isAscending = th.classList.contains('asc');
-
-                // Reseta a classe de todos os cabeçalhos
-                headers.forEach(h => h.classList.remove('asc', 'desc'));
-
-                // Define a nova direção da ordenação
-                th.classList.add(isAscending ? 'desc' : 'asc');
-
-                rows.sort((rowA, rowB) => {
-                    // Pega o texto da célula (ignorando a tag <img> do Brawler)
-                    let cellA = rowA.children[index].innerText.trim();
-                    let cellB = rowB.children[index].innerText.trim();
-
-                    // Função auxiliar para converter strings (ex: "50.5%", "15") em números, ou manter texto
-                    const parseCell = (val) => {
-                        let num = parseFloat(val.replace('%', '').replace(',', '.'));
-                        return isNaN(num) ? val : num;
-                    };
-
-                    let valA = parseCell(cellA);
-                    let valB = parseCell(cellB);
-
-                    // Se for texto (Nome do Brawler), ordena em ordem alfabética
-                    if (typeof valA === 'string' && typeof valB === 'string') {
-                        return isAscending ? valB.localeCompare(valA) : valA.localeCompare(valB);
-                    } 
-                    // Se for número (Picks, Wins, Taxas %), ordena numericamente
-                    else {
-                        return isAscending ? valA - valB : valB - valA;
-                    }
-                });
-
-                // Reinjeta as linhas reordenadas no corpo da tabela
-                tbody.append(...rows);
-            });
-        });
-    });
-}
