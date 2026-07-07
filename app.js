@@ -706,7 +706,9 @@ function renderizarMeta() {
                 </tbody>
             </table></div></div>`;
     }
-    if (container) container.innerHTML = html || `<p style="padding:20px; text-align:center;">Nenhum dado encontrado para os filtros atuais na ${_REGIAO}.</p>`;
+   if (container) container.innerHTML = html || `<p style="padding:20px; text-align:center;">Nenhum dado encontrado para os filtros atuais na ${_REGIAO}.</p>`;
+
+    tornarTabelasOrdenaveis();
 }
 
 // ==========================================
@@ -1112,3 +1114,61 @@ window.selecionarRound = function(index, btnElement) {
             </div>
         </div>`;
 };
+
+
+// ==========================================
+// 8. FUNÇÃO PARA ORDENAR TABELAS (META)
+// ==========================================
+function tornarTabelasOrdenaveis() {
+    // Seleciona todas as tabelas geradas na tela Meta
+    document.querySelectorAll('table.excel-table').forEach(table => {
+        const headers = table.querySelectorAll('th');
+        
+        headers.forEach((th, index) => {
+            // Estiliza o cabeçalho para parecer clicável
+            th.style.cursor = 'pointer';
+            th.title = "Clique para ordenar";
+
+            th.addEventListener('click', () => {
+                const tbody = table.querySelector('tbody');
+                if (!tbody) return;
+
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                const isAscending = th.classList.contains('asc');
+
+                // Reseta a classe de todos os cabeçalhos
+                headers.forEach(h => h.classList.remove('asc', 'desc'));
+
+                // Define a nova direção da ordenação
+                th.classList.add(isAscending ? 'desc' : 'asc');
+
+                rows.sort((rowA, rowB) => {
+                    // Pega o texto da célula (ignorando a tag <img> do Brawler)
+                    let cellA = rowA.children[index].innerText.trim();
+                    let cellB = rowB.children[index].innerText.trim();
+
+                    // Função auxiliar para converter strings (ex: "50.5%", "15") em números, ou manter texto
+                    const parseCell = (val) => {
+                        let num = parseFloat(val.replace('%', '').replace(',', '.'));
+                        return isNaN(num) ? val : num;
+                    };
+
+                    let valA = parseCell(cellA);
+                    let valB = parseCell(cellB);
+
+                    // Se for texto (Nome do Brawler), ordena em ordem alfabética
+                    if (typeof valA === 'string' && typeof valB === 'string') {
+                        return isAscending ? valB.localeCompare(valA) : valA.localeCompare(valB);
+                    } 
+                    // Se for número (Picks, Wins, Taxas %), ordena numericamente
+                    else {
+                        return isAscending ? valA - valB : valB - valA;
+                    }
+                });
+
+                // Reinjeta as linhas reordenadas no corpo da tabela
+                tbody.append(...rows);
+            });
+        });
+    });
+}
