@@ -374,14 +374,24 @@ window.filtrar = function() {
 };
  
 function inicializarSistema() {
-    popularMapas(); gerarRoster(); resetDraft();
+    popularMapas(); 
+    gerarRoster(); 
+    resetDraft();
+window.atualizarMapaVisual = function() {
     const mapSelect = document.getElementById('map-select');
-    if (mapSelect) {
-        mapSelect.addEventListener('change', () => { window.atualizarMeta(); window.atualizarMapaVisual(); });
+    const mapPreview = document.getElementById('map-preview');
+    
+    if (mapSelect && mapPreview && mapSelect.value) {
+        let nomeDoMapa = mapSelect.value;
+        
+        // Função para formatar o nome do mapa (remove espaços e aspas, deixa minúsculo)
+        // Se você já tiver uma função formatImg global, pode usar ela diretamente: formatImg(nomeDoMapa)
+        let nomeFormatado = nomeDoMapa.toLowerCase().replace(/[\s\.]+/g, '_').replace(/[']/g, '');
+        
+        // Atualiza o src da imagem com o caminho correto
+        mapPreview.src = `element/maps/${nomeFormatado}.png`;
     }
-    const searchInput = document.getElementById('search');
-    if (searchInput) { searchInput.removeAttribute('oninput'); searchInput.addEventListener('input', window.filtrar); }
-}
+};
  
 if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', inicializarSistema); } 
 else { inicializarSistema(); }
