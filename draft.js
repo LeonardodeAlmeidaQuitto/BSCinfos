@@ -4,7 +4,8 @@ const MAPAS_ALVO = {
     "Bounty": ["Shooting Star", "Hideout", "Layer Cake", "Dry Season"],
     "Heist": ["Hot Potato", "Safe Zone", "Bridge Too Far", "Pit Stop", "Kaboom Canyon"],
     "Knockout": ["Goldarm Gulch", "Belle's Rock", "Out in the Open", "New Horizons"],
-    "Gem Grab": ["Hard Rock Mine", "Double Swoosh", "Deathcap Trap", "Ring of Fire", "Dueling Beetles", "Open Business"]
+    "Hot Zone": ["Ring of Fire", "Dueling Beetles", "Open Business"],
+    "Gem Grab": ["Hard Rock Mine", "Double Swoosh", "Deathcap Trap"]
 };
 
 // SUBSTITUA PELOS SEUS DADOS DA PLANILHA (META)
@@ -147,8 +148,6 @@ function criarConteudoSlot(nome, id) {
     return `<div class="slot-assets"><img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="slot-fallback-text">${nome}</div></div>`;
 }
 
-const formatarNomeMapa = (m) => `element/maps/${m.toLowerCase().replace(/[^a-z0-9]/g, "")}.png`;
-
 function popularMapas() {
     const select = document.getElementById('map-select');
     if (!select) return;
@@ -179,15 +178,23 @@ function gerarRoster() {
     });
 }
 
+// -----------------------------------------------------
+// FUNÇÃO ATUALIZADA DO MAPA (Aponta para element/maps/)
+// -----------------------------------------------------
 window.atualizarMapaVisual = function() {
     const select = document.getElementById('map-select');
-    const mapImg = document.getElementById('center-map-img');
+    const mapImg = document.getElementById('map-img');
     const placeholder = document.getElementById('map-placeholder');
     
     if (select && select.value && mapImg) {
         mapImg.style.display = 'block';
         if (placeholder) placeholder.style.display = 'none';
-        mapImg.src = `mapas/${select.value}.png`; 
+        
+        let nomeDoMapa = select.value;
+        let nomeFormatado = nomeDoMapa.toLowerCase().replace(/[\s\.]+/g, '').replace(/[']/g, '');
+        
+        mapImg.src = `element/maps/${nomeFormatado}.png`; 
+        
         mapImg.onerror = function() {
             this.style.display = 'none';
             if (placeholder) { placeholder.style.display = 'block'; placeholder.innerHTML = 'IMAGEM<br>NÃO<br>ENCONTRADA'; }
@@ -374,24 +381,14 @@ window.filtrar = function() {
 };
  
 function inicializarSistema() {
-    popularMapas(); 
-    gerarRoster(); 
-    resetDraft();
-window.atualizarMapaVisual = function() {
+    popularMapas(); gerarRoster(); resetDraft();
     const mapSelect = document.getElementById('map-select');
-    const mapPreview = document.getElementById('map-preview');
-    
-    if (mapSelect && mapPreview && mapSelect.value) {
-        let nomeDoMapa = mapSelect.value;
-        
-        // Função para formatar o nome do mapa (remove espaços e aspas, deixa minúsculo)
-        // Se você já tiver uma função formatImg global, pode usar ela diretamente: formatImg(nomeDoMapa)
-        let nomeFormatado = nomeDoMapa.toLowerCase().replace(/[\s\.]+/g, '_').replace(/[']/g, '');
-        
-        // Atualiza o src da imagem com o caminho correto
-        mapPreview.src = `element/maps/${nomeFormatado}.png`;
+    if (mapSelect) {
+        mapSelect.addEventListener('change', () => { window.atualizarMeta(); window.atualizarMapaVisual(); });
     }
-};
+    const searchInput = document.getElementById('search');
+    if (searchInput) { searchInput.removeAttribute('oninput'); searchInput.addEventListener('input', window.filtrar); }
+}
  
 if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', inicializarSistema); } 
 else { inicializarSistema(); }
