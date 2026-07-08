@@ -1167,52 +1167,41 @@ window.selecionarRoundMD3 = function(index, btnElement) {
     let bansTimeA   = bansDoRound.filter(r => r.id_time === window.scrimAtual.tAId), bansTimeB   = bansDoRound.filter(r => r.id_time === window.scrimAtual.tBId);
     let temBans     = bansTimeA.length > 0 || bansTimeB.length > 0;
 
-    container.innerHTML = `
-        <div class="round-details-view" style="background: var(--bg-cards); padding: 25px; border-radius: 12px; border: 1px solid var(--borda-destaque);">
+container.innerHTML = `
+    <div class="round-details-view" style="background: var(--bg-cards); padding: 25px; border-radius: 12px; border: 1px solid var(--borda-destaque);">
+        
+        <div class="picks-container" style="display:flex; justify-content:center; align-items:center; gap: 40px; margin-top: 15px;">
             
-            <div style="text-align:center; margin-bottom: 25px;">
-                <!-- Imagem do mapa aumentada significativamente -->
-                <img src="element/maps/${formatImg(roundMD3.mapa)}.png" style="width: 280px; border-radius: 10px; margin-bottom: 12px; object-fit: cover;" onerror="this.src='element/maps/default.png'">
-                <p style="font-size:14px; color:var(--texto-secundario); font-weight:bold;">
-                    ${firstSet.dataFormatada.split(' ')[1] || ''} | ${roundMD3.modo.toUpperCase()} - ${roundMD3.mapa.toUpperCase()}
+            <div style="display:flex; flex-direction:column; gap:15px; color:${corSetA};">
+                ${playersA.map((p, index) => {
+                    let pickBrawler = firstSet.picksA ? firstSet.picksA[index] : '';
+                    return `<div style="display:flex; flex-direction:column; align-items:center; gap:5px;">
+                        <img src="brawlers/${formatImg(pickBrawler)}.png" style="width: 75px; height: 75px; border-radius: 8px; object-fit: cover; border: 2px solid ${venceuA ? 'var(--winrate-color, #2ecc71)' : 'var(--borda-suave, #555)'};" onerror="this.src='brawlers/default.png'">
+                        <span style="font-size:12px; font-weight:900;">${p}</span>
+                    </div>`;
+                }).join('')}
+            </div>
+            
+            <div style="text-align:center;">
+                <img src="element/maps/${formatImg(roundMD3.mapa)}.png" style="width: 250px; border-radius: 10px; object-fit: cover; border: 2px solid var(--borda-destaque);" onerror="this.src='element/maps/default.png'">
+                <p style="margin-top:10px; font-size:14px; color:var(--texto-secundario); font-weight:bold;">
+                    ${roundMD3.mapa.toUpperCase()}
                 </p>
             </div>
 
-            ${temBans ? `<div style="display:flex; justify-content:space-between; align-items:center; margin:12px 0 25px; padding:10px 20px; background:rgba(176,0,0,0.08); border-radius:8px; border:1px solid rgba(200,50,50,0.35);"><div style="display:flex; align-items:center; gap:8px;"><span style="font-size:10px; font-weight:900; color:#ff5555; letter-spacing:1px; white-space:nowrap;">BANS ▶</span>${bansTimeA.map(b => `<div style="position:relative; display:inline-block;" title="${b.brawler_banido}"><img src="brawlers/${formatImg(b.brawler_banido)}.png" style="width:30px; border-radius:4px; filter:grayscale(100%); border:1px solid #ff5555;" onerror="this.src='brawlers/default.png'"></div>`).join('')}</div><div style="display:flex; align-items:center; gap:8px;">${bansTimeB.map(b => `<div style="position:relative; display:inline-block;" title="${b.brawler_banido}"><img src="brawlers/${formatImg(b.brawler_banido)}.png" style="width:30px; border-radius:4px; filter:grayscale(100%); border:1px solid #ff5555;" onerror="this.src='brawlers/default.png'"></div>`).join('')}<span style="font-size:10px; font-weight:900; color:#ff5555; letter-spacing:1px; white-space:nowrap;">◀ BANS</span></div></div>` : ''}
-
-            <!-- Container de Picks com disposição em linha central, mas os picks em si na vertical -->
-            <div class="picks-container" style="display:flex; justify-content:space-between; align-items:flex-start; margin-top: 15px;">
-                
-                <!-- Picks do Time A -->
-                <div style="display:flex; gap:25px; color:${corSetA};">
-                    ${playersA.map((p, index) => {
-                        let pickBrawler = firstSet.picksA ? firstSet.picksA[index] : '';
-                        return `<div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
-                            <!-- Imagens dos Picks consideravelmente maiores -->
-                            <img src="brawlers/${formatImg(pickBrawler)}.png" style="width: 75px; height: 75px; border-radius: 8px; object-fit: cover; border: 2px solid ${venceuA ? 'var(--winrate-color, #2ecc71)' : 'var(--borda-suave, #555)'};" onerror="this.src='brawlers/default.png'">
-                            <!-- Nicks reposicionados abaixo de cada pick -->
-                            <span style="font-size:13px; font-weight:900;">${p}</span>
-                        </div>`;
-                    }).join('')}
-                </div>
-                
-                <div style="font-size: 20px; font-weight: 900; color: var(--texto-secundario); align-self: center; margin: 0 15px;">VS</div>
-
-                <!-- Picks do Time B -->
-                <div style="display:flex; gap:25px; color:${corSetB};">
-                    ${playersB.map((p, index) => {
-                        let pickBrawler = firstSet.picksB ? firstSet.picksB[index] : '';
-                        return `<div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
-                            <!-- Imagens dos Picks consideravelmente maiores -->
-                            <img src="brawlers/${formatImg(pickBrawler)}.png" style="width: 75px; height: 75px; border-radius: 8px; object-fit: cover; border: 2px solid ${!venceuA ? 'var(--winrate-color, #2ecc71)' : 'var(--borda-suave, #555)'};" onerror="this.src='brawlers/default.png'">
-                            <!-- Nicks reposicionados abaixo de cada pick -->
-                            <span style="font-size:13px; font-weight:900;">${p}</span>
-                        </div>`;
-                    }).join('')}
-                </div>
+            <div style="display:flex; flex-direction:column; gap:15px; color:${corSetB};">
+                ${playersB.map((p, index) => {
+                    let pickBrawler = firstSet.picksB ? firstSet.picksB[index] : '';
+                    return `<div style="display:flex; flex-direction:column; align-items:center; gap:5px;">
+                        <img src="brawlers/${formatImg(pickBrawler)}.png" style="width: 75px; height: 75px; border-radius: 8px; object-fit: cover; border: 2px solid ${!venceuA ? 'var(--winrate-color, #2ecc71)' : 'var(--borda-suave, #555)'};" onerror="this.src='brawlers/default.png'">
+                        <span style="font-size:12px; font-weight:900;">${p}</span>
+                    </div>`;
+                }).join('')}
             </div>
+
         </div>
-    `;
+    </div>
+`;
 };
 
 // ==========================================
