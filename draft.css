@@ -82,8 +82,9 @@ body { background-color: var(--bg-geral); color: #ffffff; height: 100vh; display
 
 /* ── MAPA CENTRAL GIGANTE E DOMINANTE ────────────────── */
 .map-col {
-    width: 500px !important;       /* Expansão de largura drástica */
-    height: 660px !important;      /* Ocupa quase toda a extensão vertical do draft */
+    width: 400px !important;       /* Reduzi um pouco para ficar mais elegante */
+    height: 600px !important;      
+    background-color: var(--bg-paineis); /* Usa a mesma cor do painel ao redor */
     border: 2px solid var(--borda-destaque);
     border-radius: 16px;
     display: flex;
@@ -91,10 +92,7 @@ body { background-color: var(--bg-geral); color: #ffffff; height: 100vh; display
     justify-content: center;
     overflow: hidden;
     position: relative;
-    margin: 0 4px;
-    flex-shrink: 0;
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
-    background-color: #0b0c10;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); /* Sombra mais suave */
 }
 .map-col img { 
     width: 100%; 
