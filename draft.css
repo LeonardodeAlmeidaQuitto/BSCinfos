@@ -84,7 +84,6 @@ body { background-color: var(--bg-geral); color: #ffffff; height: 100vh; display
 .map-col {
     width: 500px !important;       /* Expansão de largura drástica */
     height: 660px !important;      /* Ocupa quase toda a extensão vertical do draft */
-    background-color: var(--bg-slots);
     border: 2px solid var(--borda-destaque);
     border-radius: 16px;
     display: flex;
@@ -95,6 +94,7 @@ body { background-color: var(--bg-geral); color: #ffffff; height: 100vh; display
     margin: 0 4px;
     flex-shrink: 0;
     box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+    background-color: #0b0c10;
 }
 .map-col img { 
     width: 100%; 
@@ -102,7 +102,9 @@ body { background-color: var(--bg-geral); color: #ffffff; height: 100vh; display
     object-fit: contain; /* ALTERADO: 'contain' mostra a imagem inteira sem cortar */
     display: none; 
     z-index: 2; 
-    image-rendering: pixelated; /* DICA: Melhora a qualidade de imagens estilo pixel-art */
+
+    image-rendering: -webkit-optimize-contrast; /* Para navegadores baseados em Chrome/Edge */
+    image-rendering: crisp-edges;
 }
 #map-placeholder { position: absolute; z-index: 1; color: #555; text-align: center; font-size: 16px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
 
