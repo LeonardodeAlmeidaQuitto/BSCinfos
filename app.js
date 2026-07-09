@@ -207,7 +207,6 @@ const ROSTERS_POR_DATA = {
 }
 
 let CONFIGURACAO_MANUAL_TIMES = {};
-let CONFIGURACAO_MANUAL_TIMES = {};
 
 function atualizarRostersAtuais() {
     let selectAno = document.getElementById('select-ano');
