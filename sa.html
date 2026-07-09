@@ -64,55 +64,65 @@
             </select>
         </div>
 
-        <!-- Tela META -->
-        <div id="tela-meta" class="tela-secao tela-ativa">
-            <div id="conteudo-meta"></div> 
+<main>
+    <div id="tela-meta" class="tela-secao tela-ativa">
         </div>
 
-        <!-- Tela BRAWLERS -->
-        <div id="tela-brawlers" class="tela-secao tela-oculta">
-            <div class="brawlers-container">
-                <div class="sidebar">
-                    <input type="text" id="search-brawler-sidebar" class="sidebar-search" placeholder="Buscar Brawler..." oninput="filtrarBrawlersSidebar()">
-                    <div class="sidebar-list" id="lista-brawlers-sidebar"></div>
-                </div>
-                <div class="info-panel" id="painel-info-brawler">
-                    <div class="placeholder-text" style="color:var(--texto-secundario); text-align:center;">Selecione um brawler na lateral para ver sinergias e matchups.</div>
-                </div>
+    <div id="tela-brawlers" class="tela-secao tela-oculta">
+        </div>
+
+    <div id="tela-times" class="tela-secao tela-oculta">
+        <div class="times-container">
+            <div class="times-sidebar">
+                <div class="sidebar-header">EQUIPES DA REGIÃO SA</div>
+                <div class="sidebar-list" id="lista-times-sidebar"></div>
+            </div>
+            <div class="info-panel" id="painel-info-time">
+                <div class="placeholder-text" style="color:var(--texto-secundario); text-align:center;">Selecione um time na lateral para ver os dados de seus players.</div>
             </div>
         </div>
+    </div>
 
-        <!-- Tela TIMES -->
-        <div id="tela-times" class="tela-secao tela-oculta">
-            <div class="times-container">
-                <div class="sidebar">
-                    <div class="sidebar-header">EQUIPES DA REGIÃO SA</div>
-                    <div class="sidebar-list" id="lista-times-sidebar"></div>
-                </div>
-                <div class="info-panel" id="painel-info-time">
-                    <div class="placeholder-text" style="color:var(--texto-secundario); text-align:center;">Selecione um time na lateral para ver os dados de seus players.</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tela SCRIMS -->
-        <div id="tela-scrims" class="tela-secao tela-oculta">
-            <div id="scrims-lista" class="scrins-grid"></div>
-            <div id="scrims-detalhe" style="display:none;"></div>
-        </div>
-
-    </main>
+    <div id="tela-scrims" class="tela-secao tela-oculta">
+        <div id="scrims-lista" class="scrins-grid"></div>
+        <div id="scrims-detalhe" style="display:none;"></div>
+    </div>
+</main>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             window.mudarTela = function(tela) {
-                document.querySelectorAll('.tela-secao').forEach(sec => sec.classList.replace('tela-ativa', 'tela-oculta'));
-                document.getElementById(`tela-${tela}`).classList.replace('tela-oculta', 'tela-ativa');
+                // 1. Oculta todas as seções
+                document.querySelectorAll('.tela-secao').forEach(sec => {
+                    sec.classList.remove('tela-ativa');
+                    sec.classList.add('tela-oculta');
+                });
+
+                // 2. Tenta encontrar a tela alvo
+                const telaAlvo = document.getElementById(`tela-${tela}`);
                 
-                const titulos = {'meta': 'SA ▼ (META)', 'brawlers': 'SA ▼ (BRAWLERS)', 'times': 'SA ▼ (TIMES)', 'scrims': 'SA ▼ (SCRIMS)'};
-                document.getElementById('sa-menu-btn').textContent = titulos[tela];
-                document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('active'));
-            };
+                // 3. Só aplica a classe se a tela existir (evita o erro no console)
+                if (telaAlvo) {
+                    telaAlvo.classList.remove('tela-oculta');
+                    telaAlvo.classList.add('tela-ativa');
+                } else {
+                    console.warn(`Aviso: A tela com ID 'tela-${tela}' não foi encontrada no HTML.`);
+                }
+    
+                // 4. Atualiza o título do botão do menu
+                const titulos = {
+                    'meta': 'SA ▼ (META)', 
+                    'brawlers': 'SA ▼ (BRAWLERS)', 
+                    'times': 'SA ▼ (TIMES)', 
+                    'scrims': 'SA ▼ (SCRIMS)'
+                };
+        
+                // OBS: O id no seu HTML estava como 'ea-menu-btn' na Navbar, mudei para buscar qualquer um dos dois para evitar erros
+                const menuBtn = document.getElementById('sa-menu-btn') || document.getElementById('ea-menu-btn');
+                if (menuBtn && titulos[tela]) {
+                    menuBtn.textContent = titulos[tela];
+                }
+            };        
         });
     </script>
 </body>
