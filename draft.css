@@ -103,8 +103,8 @@ body { background-color: var(--bg-geral); color: #ffffff; height: 100vh; display
     display: none; 
     z-index: 2; 
 
-    image-rendering: -webkit-optimize-contrast; /* Para navegadores baseados em Chrome/Edge */
-    image-rendering: crisp-edges;
+    image-rendering: auto;          /* Deixa o navegador decidir a melhor suavização */
+    -ms-interpolation-mode: bicubic;
 }
 #map-placeholder { position: absolute; z-index: 1; color: #555; text-align: center; font-size: 16px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
 
