@@ -5,94 +5,167 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Draft Maker - Brawl Stars</title>
     <link rel="stylesheet" href="draft.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
- 
+
     <div class="navbar">
         <a href="index.html">MENU</a>
         <a href="regioes.html">META</a>
         <a href="draft.html" style="color: #ff00ff;">DRAFT</a>
     </div>
- 
-    <div class="top-controls">
-        <div class="first-pick-selector">
-            <span>FIRST PICK:</span>
-            <button id="fp-blue" class="fp-btn active" onclick="window.setFirstPick('blue')"></button>
-            <button id="fp-red" class="fp-btn" onclick="window.setFirstPick('red')"></button>
+
+    <!-- ============================================================ -->
+    <!-- BARRA SUPERIOR: some por "modo de sele\u00e7\u00e3o" antes do draft   -->
+    <!-- come\u00e7ar, e vira a BARRA DE TEMPO (timer) assim que come\u00e7a.   -->
+    <!-- ============================================================ -->
+    <div class="top-controls" id="top-controls">
+
+        <!-- Estado 0: bot\u00e3o iniciar -->
+        <div id="tc-iniciar" class="tc-state">
+            <button id="btn-iniciar-draft" class="btn-iniciar">INICIAR DRAFT</button>
         </div>
-        <div class="map-selector">
-            <select id="map-select" onchange="window.atualizarMeta()">
-                </select>
-        </div>
-    </div>
- 
-    <div class="main-container">
-        
-        <div class="draft-area">
-            <div class="vertical-layout">
-                
-                <div class="team-col">
-                    <div class="ban-col">
-                        <div class="slot ban-slot" id="slot-b0"></div>
-                        <div class="slot ban-slot" id="slot-b2"></div>
-                        <div class="slot ban-slot" id="slot-b4"></div>
-                    </div>
-                    <div class="pick-col">
-                        <div class="slot pick-slot" id="slot-pA1"></div>
-                        <div class="slot pick-slot" id="slot-pA2"></div>
-                        <div class="slot pick-slot" id="slot-pA3"></div>
-                    </div>
-                </div>
-     
-                <div class="map-col">
-                    <span id="map-placeholder">SELECIONE O MAPA</span>
-                    <img src="" alt="Mapa" id="map-img">
-                </div>
-     
-                <div class="team-col red-team-imgs">
-                    <div class="pick-col">
-                        <div class="slot pick-slot" id="slot-pV1"></div>
-                        <div class="slot pick-slot" id="slot-pV2"></div>
-                        <div class="slot pick-slot" id="slot-pV3"></div>
-                    </div>
-                    <div class="ban-col">
-                        <div class="slot ban-slot" id="slot-b1"></div>
-                        <div class="slot ban-slot" id="slot-b3"></div>
-                        <div class="slot ban-slot" id="slot-b5"></div>
-                    </div>
-                </div>
-                
+
+        <!-- Estado 1/2/3 (sele\u00e7\u00e3o modo/mapa/lado) fica tudo dentro da draft-area central agora -->
+
+        <!-- Estado 4: barra de tempo (ativa durante bans/picks) -->
+        <div id="tc-timer" class="tc-state" style="display:none;">
+            <div class="timer-segments" id="timer-segments"></div>
+            <div class="timer-readout">
+                <span id="timer-fase-label">BANS - AZUL</span>
+                <span id="timer-numero">30</span>
+                <img src="element/time.png" class="timer-clock-icon" onerror="this.style.display='none'">
             </div>
         </div>
- 
-        <div class="info-panels">
+
+    </div>
+
+    <div class="main-container">
+
+        <div class="draft-area" id="draft-area">
+
+            <!-- ================================================== -->
+            <!-- TELA DE SETUP (modo -> mapa -> lado) mostrada         -->
+            <!-- dentro da pr\u00f3pria \u00e1rea central antes do draft come\u00e7ar -->
+            <!-- ================================================== -->
+            <div id="setup-overlay" class="setup-overlay" style="display:none;">
+
+                <div id="setup-modo" class="setup-step">
+                    <h2 class="setup-title">SELECIONE O MODO</h2>
+                    <div class="setup-grid modos-grid" id="grid-modos"></div>
+                </div>
+
+                <div id="setup-mapa" class="setup-step" style="display:none;">
+                    <h2 class="setup-title">SELECIONE O MAPA</h2>
+                    <div class="setup-grid mapas-grid" id="grid-mapas"></div>
+                </div>
+
+                <div id="setup-lado" class="setup-step" style="display:none;">
+                    <h2 class="setup-title">QUEM COME\u00c7A? (FIRST PICK)</h2>
+                    <div class="coin-toss-wrap">
+                        <img src="element/blueside.png" class="coin-toss-img" id="coin-blue" onclick="window.escolherLado('blue')" onerror="this.style.display='none'">
+                        <img src="element/redside.png" class="coin-toss-img" id="coin-red" onclick="window.escolherLado('red')" onerror="this.style.display='none'">
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ================================================== -->
+            <!-- TABULEIRO DO DRAFT (id draft-board-capture \u00e9 exatamente -->
+            <!-- a regi\u00e3o exportada na imagem final)                    -->
+            <!-- ================================================== -->
+            <div id="vertical-layout" class="vertical-layout" style="display:none;">
+
+                <div id="draft-board-capture" class="draft-board-capture">
+
+                    <div id="coin-topo" class="coin-topo" style="display:none;">
+                        <img id="coin-topo-img" src="" alt="side">
+                    </div>
+
+                    <div class="board-row">
+                        <div class="team-col">
+                            <div class="ban-col">
+                                <div class="slot ban-slot" id="slot-b0"></div>
+                                <div class="slot ban-slot" id="slot-b2"></div>
+                                <div class="slot ban-slot" id="slot-b4"></div>
+                            </div>
+                            <div class="pick-col">
+                                <div class="slot pick-slot" id="slot-pA1"></div>
+                                <div class="slot pick-slot" id="slot-pA2"></div>
+                                <div class="slot pick-slot" id="slot-pA3"></div>
+                            </div>
+                        </div>
+
+                        <div class="map-col">
+                            <span id="map-placeholder">SELECIONE O MAPA</span>
+                            <img src="" alt="Modo" id="map-modo-icon">
+                            <img src="" alt="Mapa" id="map-img">
+                            <span id="map-nome-label"></span>
+                        </div>
+
+                        <div class="team-col red-team-imgs">
+                            <div class="pick-col">
+                                <div class="slot pick-slot" id="slot-pV1"></div>
+                                <div class="slot pick-slot" id="slot-pV2"></div>
+                                <div class="slot pick-slot" id="slot-pV3"></div>
+                            </div>
+                            <div class="ban-col">
+                                <div class="slot ban-slot" id="slot-b1"></div>
+                                <div class="slot ban-slot" id="slot-b3"></div>
+                                <div class="slot ban-slot" id="slot-b5"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- ================================================== -->
+            <!-- AN\u00c1LISE FINAL (aparece ap\u00f3s o \u00faltimo pick)              -->
+            <!-- ================================================== -->
+            <div id="analise-final" class="analise-final" style="display:none;"></div>
+
+        </div>
+
+        <div class="info-panels" id="info-panels">
             <div class="side-panel">
                 <div class="panel-title">META TOP 10</div>
-                <div class="mini-brawler-grid" id="meta-list">
-                    </div>
+                <button class="panel-filter-btn" onclick="window.toggleFiltroPainel('filtro-meta')">▾</button>
+                <div class="panel-filter-box" id="filtro-meta">
+                    <label>REGIÃO</label>
+                    <select id="filtro-meta-regiao"><option value="SA">SA</option><option value="NA">NA</option><option value="EMEA">EMEA</option><option value="EA">EA</option><option value="ALL">GERAL</option></select>
+                    <label>MÊS</label>
+                    <select id="filtro-meta-mes"><option value="todos">Todos</option></select>
+                </div>
+                <div class="mini-brawler-grid" id="meta-list"></div>
             </div>
- 
+
             <div class="side-panel">
                 <div class="panel-title">COUNTERS (INIMIGO)</div>
-                <div class="mini-brawler-grid" id="counters-list">
-                    </div>
+                <button class="panel-filter-btn" onclick="window.toggleFiltroPainel('filtro-counters')">▾</button>
+                <div class="panel-filter-box" id="filtro-counters">
+                    <label>REGIÃO</label>
+                    <select id="filtro-counters-regiao"><option value="SA">SA</option><option value="NA">NA</option><option value="EMEA">EMEA</option><option value="EA">EA</option><option value="ALL">GERAL</option></select>
+                    <label>MÊS</label>
+                    <select id="filtro-counters-mes"><option value="todos">Todos</option></select>
+                </div>
+                <div class="mini-brawler-grid" id="counters-list"></div>
             </div>
- 
+
             <div class="side-panel">
                 <div class="panel-title">COUNTERS (NOSSO)</div>
-                <div class="mini-brawler-grid" id="podetomar-list">
-                    </div>
+                <div class="mini-brawler-grid" id="podetomar-list"></div>
             </div>
         </div>
- 
-        <div class="roster-area">
+
+        <div class="roster-area" id="roster-area">
             <input type="text" id="search" class="search-bar" placeholder="BUSCAR..." oninput="window.filtrar()">
-            <div class="roster-grid" id="roster">
-                </div>
+            <div class="roster-grid" id="roster"></div>
         </div>
- 
+
     </div>
- 
+
     <script src="draft.js"></script>
 </body>
 </html>
