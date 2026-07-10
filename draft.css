@@ -11,7 +11,7 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
 
-body { background-color: var(--bg-geral); color: #ffffff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+body { background-color: var(--bg-geral); color: #ffffff; min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
 
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -21,16 +21,28 @@ body { background-color: var(--bg-geral); color: #ffffff; height: 100vh; display
 .navbar { display: flex; background-color: #000000; padding: 15px 30px; border-bottom: 1px solid var(--borda-suave); gap: 30px; }
 .navbar a { color: #ffffff; text-decoration: none; font-weight: bold; font-size: 13px; text-transform: uppercase; }
 
-.top-controls { display: flex; align-items: center; justify-content: space-between; background-color: var(--bg-paineis); border: 1px solid var(--borda-suave); border-radius: 12px; padding: 12px 24px; margin: 20px 20px 15px 20px; }
-.first-pick-selector { display: flex; align-items: center; gap: 14px; font-size: 12px; font-weight: 800; color: #888a93; }
-.fp-btn { width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; position: relative; outline: none; }
-#fp-blue { background-color: var(--azul-time); }
-#fp-red  { background-color: var(--vermelho-time); }
-.fp-btn.active::after { content: ''; position: absolute; top: -6px; left: -6px; right: -6px; bottom: -6px; border: 2px solid #ffffff; border-radius: 50%; box-shadow: 0 0 10px rgba(255,255,255,0.8); }
-.map-selector select { background-color: #000000; color: #ffffff; border: 1px solid var(--borda-destaque); padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: bold; outline: none; min-width: 240px; }
+.top-controls { display: flex; align-items: center; justify-content: center; background-color: var(--bg-paineis); border: 1px solid var(--borda-suave); border-radius: 12px; padding: 12px 24px; margin: 20px 20px 15px 20px; min-height: 30px; }
+.tc-state { width: 100%; display: flex; align-items: center; justify-content: center; }
+
+.btn-iniciar { background: linear-gradient(135deg, var(--rosa-neon), #8800ff); color: #fff; border: none; padding: 14px 40px; font-size: 15px; font-weight: 900; letter-spacing: 1px; border-radius: 10px; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 20px rgba(255,0,255,0.35); transition: transform .15s ease; }
+.btn-iniciar:hover { transform: translateY(-2px); }
+
+/* ── BARRA DE TEMPO (substitui a linha de sele\u00e7\u00e3o de modo/mapa/lado) ── */
+#tc-timer { gap: 18px; }
+.timer-segments { flex: 1; display: flex; gap: 4px; max-width: 640px; }
+.timer-segment { flex: 1; height: 8px; border-radius: 4px; background: #26272f; overflow: hidden; position: relative; }
+.timer-segment .fill { position: absolute; top: 0; left: 0; height: 100%; width: 100%; background: var(--azul-time); transition: width 1s linear; }
+.timer-segment.done .fill { width: 100% !important; background: #3a3d4a !important; transition: none; }
+.timer-segment.team-red .fill { background: var(--vermelho-time); }
+.timer-readout { display: flex; align-items: center; gap: 10px; white-space: nowrap; font-weight: 900; }
+#timer-fase-label { font-size: 12px; letter-spacing: 1px; color: #b7b9c4; text-transform: uppercase; }
+#timer-numero { font-size: 22px; min-width: 34px; text-align: center; color: #fff; }
+#timer-numero.urgente { color: var(--vermelho-time); animation: piscaTempo .6s infinite; }
+@keyframes piscaTempo { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+.timer-clock-icon { width: 26px; height: 26px; object-fit: contain; }
 
 /* ── MAIN CONTAINER ────────────────────────────────── */
-.main-container { display: flex; flex: 1; padding: 0 20px 20px 20px; gap: 20px; align-items: stretch; height: calc(100vh - 140px); overflow: hidden; }
+.main-container { display: flex; flex: 1; padding: 0 20px 20px 20px; gap: 20px; align-items: stretch; min-height: calc(100vh - 140px); }
 
 /* ── DRAFT AREA (CONTAINER DO TABLEIRO) ──────────────── */
 .draft-area {
@@ -45,29 +57,44 @@ body { background-color: var(--bg-geral); color: #ffffff; height: 100vh; display
     justify-content: center;
 }
 
+/* ── TELA DE SETUP (MODO / MAPA / LADO) ─────────────── */
+.setup-overlay { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+.setup-step { width: 100%; text-align: center; animation: fadeInSetup .25s ease; }
+@keyframes fadeInSetup { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.setup-title { font-size: 18px; letter-spacing: 2px; color: var(--rosa-neon); margin-bottom: 25px; font-weight: 900; }
+
+.setup-grid { display: grid; gap: 16px; max-width: 700px; margin: 0 auto; max-height: 60vh; overflow-y: auto; padding: 8px; }
+.modos-grid { grid-template-columns: repeat(3, 1fr); }
+.mapas-grid { grid-template-columns: repeat(3, 1fr); }
+
+.modo-card, .mapa-card { background: var(--bg-slots); border: 2px solid var(--borda-destaque); border-radius: 12px; padding: 14px; cursor: pointer; transition: transform .15s ease, border-color .15s ease; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.modo-card:hover, .mapa-card:hover { transform: translateY(-3px); border-color: var(--rosa-neon); }
+.modo-card img { width: 64px; height: 64px; object-fit: contain; }
+.modo-card span { font-weight: 800; font-size: 12px; letter-spacing: .5px; }
+.mapa-card img { width: 100%; aspect-ratio: 16/10; object-fit: cover; border-radius: 8px; background: #000; }
+.mapa-card span { font-weight: 800; font-size: 12px; }
+
+.coin-toss-wrap { display: flex; align-items: center; justify-content: center; gap: 60px; margin-top: 10px; }
+.coin-toss-img { width: 140px; height: 140px; object-fit: contain; cursor: pointer; transition: transform .18s ease, filter .18s ease; filter: drop-shadow(0 0 12px rgba(255,255,255,0.15)); }
+.coin-toss-img:hover { transform: scale(1.08); filter: drop-shadow(0 0 22px rgba(255,255,255,0.4)); }
+
 /* Alinha o topo de todos os blocos internos (Picks, Bans e Mapa) */
-.vertical-layout {
+.vertical-layout { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+.draft-board-capture { background: var(--bg-paineis); border-radius: 16px; padding: 20px 15px 15px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.board-row {
     display: flex;
     flex-direction: row;
     justify-content: center;
-    align-items: flex-start !important; 
+    align-items: flex-start !important;
     gap: 18px;
 }
 
-/* Garante que a linha de picks e bans comece junta do topo */
-.team-col {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start !important;
-    gap: 10px;
-}
+.coin-topo { display: flex; align-items: center; justify-content: center; margin-bottom: 4px; }
+.coin-topo img { width: 46px; height: 46px; object-fit: contain; }
 
-.ban-col, .pick-col {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    justify-content: flex-start !important;
-}
+/* Garante que a linha de picks e bans comece junta do topo */
+.team-col { display: flex; flex-direction: row; align-items: flex-start !important; gap: 10px; }
+.ban-col, .pick-col { display: flex; flex-direction: column; gap: 10px; justify-content: flex-start !important; }
 
 /* ── SLOTS DE PICKS E BANS ──────────────────────────── */
 .slot { background-color: var(--bg-slots); border: 2px solid var(--borda-destaque); border-radius: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative !important; cursor: pointer; }
@@ -80,11 +107,16 @@ body { background-color: var(--bg-geral); color: #ffffff; height: 100vh; display
 .ban-slot .slot-assets img { filter: grayscale(100%) !important; opacity: 0.5; }
 .red-team-imgs img { transform: scaleX(-1); }
 
+/* Timer dentro da moldura do slot ativo (ainda n\u00e3o pickado) */
+.slot-mini-timer { position: absolute; top: 3px; right: 3px; background: rgba(0,0,0,0.75); color: #fff; font-size: 10px; font-weight: 900; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; z-index: 20; border: 1px solid rgba(255,255,255,0.4); }
+.pick-slot .slot-mini-timer { width: 26px; height: 26px; font-size: 12px; top: 5px; right: 5px; }
+.slot-mini-timer.urgente { background: rgba(255,51,51,0.85); animation: piscaTempo .6s infinite; }
+
 /* ── MAPA CENTRAL GIGANTE E DOMINANTE ────────────────── */
 .map-col {
-    width: 400px !important;       /* Reduzi um pouco para ficar mais elegante */
-    height: 600px !important;      
-    background-color: var(--bg-paineis); /* Usa a mesma cor do painel ao redor */
+    width: 340px !important;
+    height: 500px !important;
+    background-color: var(--bg-paineis);
     border: 2px solid var(--borda-destaque);
     border-radius: 16px;
     display: flex;
@@ -92,29 +124,36 @@ body { background-color: var(--bg-geral); color: #ffffff; height: 100vh; display
     justify-content: center;
     overflow: hidden;
     position: relative;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); /* Sombra mais suave */
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 }
-.map-col img { 
-    width: 100%; 
-    height: 100%; 
-    object-fit: contain; /* ALTERADO: 'contain' mostra a imagem inteira sem cortar */
-    display: none; 
-    z-index: 2; 
-
-    image-rendering: auto;          /* Deixa o navegador decidir a melhor suavização */
+.map-col img#map-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: none;
+    z-index: 2;
+    image-rendering: auto;
     -ms-interpolation-mode: bicubic;
 }
 #map-placeholder { position: absolute; z-index: 1; color: #555; text-align: center; font-size: 16px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+#map-modo-icon { position: absolute; top: 10px; left: 10px; width: 34px; height: 34px; object-fit: contain; z-index: 3; display: none; background: rgba(0,0,0,0.55); border-radius: 8px; padding: 4px; }
+#map-nome-label { position: absolute; bottom: 10px; left: 0; right: 0; text-align: center; z-index: 3; font-weight: 900; font-size: 14px; text-shadow: 0 2px 6px rgba(0,0,0,0.9); display: none; letter-spacing: .5px; }
 
 /* ── ASSETS E FALLBACKS ─────────────────────────────── */
 .slot-assets { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; position: relative; }
 .slot-fallback-text { display: none; width: 100%; height: 100%; align-items: center; justify-content: center; text-align: center; font-weight: 800; font-size: 11px; padding: 4px; background: linear-gradient(135deg, #1f2026, #111217); color: #ffffff; text-transform: uppercase; word-break: break-all; }
 .ban-slot .slot-fallback-text { font-size: 8px; line-height: 1.2; }
 
-/* ── PAINÉIS LATERAIS ───────────────────────────────── */
+/* ── PAIN\u00c9IS LATERAIS ───────────────────────────────── */
 .info-panels { flex: 1.1; display: flex; flex-direction: column; gap: 15px; }
-.side-panel { background-color: var(--bg-paineis); border: 1px solid var(--borda-suave); border-radius: 12px; padding: 15px; flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.side-panel { background-color: var(--bg-paineis); border: 1px solid var(--borda-suave); border-radius: 12px; padding: 15px; flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative; }
 .panel-title { color: var(--rosa-neon); font-weight: bold; font-size: 13px; text-transform: uppercase; text-align: center; margin-bottom: 12px; }
+.panel-filter-btn { position: absolute; top: 10px; right: 12px; background: transparent; border: 1px solid var(--borda-destaque); color: #b7b9c4; width: 24px; height: 24px; border-radius: 6px; cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center; }
+.panel-filter-btn:hover { border-color: var(--rosa-neon); color: var(--rosa-neon); }
+.panel-filter-box { display: none; position: absolute; top: 40px; right: 12px; background: #05060a; border: 1px solid var(--borda-destaque); border-radius: 8px; padding: 12px; z-index: 30; min-width: 170px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+.panel-filter-box.aberto { display: block; }
+.panel-filter-box label { font-size: 10px; color: #888a93; font-weight: 800; display: block; margin: 8px 0 4px; }
+.panel-filter-box select { width: 100%; background: #000; color: #fff; border: 1px solid var(--borda-destaque); border-radius: 6px; padding: 6px; font-size: 11px; }
 
 #counters-list, #podetomar-list, #meta-list { display: flex !important; flex-wrap: wrap !important; gap: 8px !important; padding: 10px !important; overflow-y: auto; align-items: flex-start; align-content: flex-start; }
 
@@ -141,8 +180,22 @@ body { background-color: var(--bg-geral); color: #ffffff; height: 100vh; display
 .brawler-icon img, .slot img, .mini-brawler img { width: 100% !important; height: 100% !important; object-fit: cover !important; display: block; }
 .fallback-initials { display: none; width: 100%; height: 100%; align-items: center; justify-content: center; background: linear-gradient(135deg, #2d303a, #1c1d24); color: var(--rosa-neon); font-weight: bold; font-size: 13px; border-radius: 4px; }
 
-/* ── ANIMAÇÕES DE PRÉ-SELEÇÃO ────────────────────────── */
+/* ── ANIMA\u00c7\u00d5ES DE PR\u00c9-SELE\u00c7\u00c3O ────────────────────────── */
 .pre-selecting { animation: pulse-draft 1.2s infinite ease-in-out; }
 @keyframes pulse-draft { 0% { opacity: 0.5; } 50% { opacity: 0.85; } 100% { opacity: 0.5; } }
 .pre-select-badge { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(0,123,255,0.95); color: #ffffff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 900; box-shadow: 0 0 8px rgba(0,123,255,0.8); z-index: 15; }
 .pick-slot .pre-select-badge { width: 38px; height: 38px; font-size: 19px; }
+
+/* ── AN\u00c1LISE FINAL P\u00d3S-DRAFT ─────────────────────────── */
+.analise-final { width: 100%; max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; padding: 10px; }
+.analise-card { background: var(--bg-slots); border: 1px solid var(--borda-destaque); border-radius: 14px; padding: 20px; }
+.analise-card h3 { color: var(--rosa-neon); font-size: 15px; margin-bottom: 12px; letter-spacing: .5px; }
+.winrate-bar-wrap { background: #05060a; border-radius: 20px; height: 30px; overflow: hidden; position: relative; border: 1px solid var(--borda-destaque); }
+.winrate-bar-fill { height: 100%; background: linear-gradient(90deg, var(--azul-time), #22c55e); display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; font-weight: 900; font-size: 13px; color: #fff; transition: width .6s ease; }
+.analise-lista { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.analise-lista li { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px 14px; font-size: 13px; display: flex; align-items: center; gap: 10px; }
+.troca-sugestao { display: flex; align-items: center; gap: 10px; }
+.troca-sugestao img { width: 30px; height: 30px; border-radius: 6px; object-fit: cover; }
+.troca-x { color: var(--vermelho-time); font-weight: 900; font-size: 15px; }
+.btn-baixar-print { background: linear-gradient(135deg, var(--rosa-neon), #8800ff); color: #fff; border: none; padding: 12px 26px; font-weight: 900; border-radius: 10px; cursor: pointer; font-size: 13px; letter-spacing: .5px; margin: 6px auto 0; display: block; }
+.btn-novo-draft { background: transparent; border: 2px solid var(--borda-destaque); color: #b7b9c4; padding: 10px 22px; font-weight: 900; border-radius: 10px; cursor: pointer; font-size: 12px; margin: 0 auto; display: block; }
