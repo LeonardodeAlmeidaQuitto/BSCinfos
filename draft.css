@@ -1,3 +1,4 @@
+
 :root {
     --bg-geral: #0b0c10;
     --bg-paineis: #111217;
@@ -7,6 +8,13 @@
     --rosa-neon: #ff00ff;
     --azul-time: #007bff;
     --vermelho-time: #ff3333;
+
+    /* Tamanhos do tabuleiro (bans, picks e mapa) — aumentados a pedido.
+       Se precisar reajustar para caber na sua tela, mexa só aqui. */
+    --ban-slot-size: 66px;
+    --pick-slot-size: 138px;
+    --map-w: 390px;
+    --map-h: 570px;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
@@ -28,25 +36,25 @@ body {
 .navbar { display: flex; background-color: #000000; padding: 15px 30px; border-bottom: 1px solid var(--borda-suave); gap: 30px; }
 .navbar a { color: #ffffff; text-decoration: none; font-weight: bold; font-size: 13px; text-transform: uppercase; }
 
-.top-controls { display: flex; align-items: center; justify-content: center; background-color: var(--bg-paineis); border: 1px solid var(--borda-suave); border-radius: 12px; padding: 12px 24px; margin: 20px 20px 15px 20px; min-height: 30px; }
+.top-controls { display: flex; align-items: center; justify-content: center; background-color: var(--bg-paineis); border: 1px solid var(--borda-suave); border-radius: 14px; padding: 18px 28px; margin: 20px 20px 16px 20px; min-height: 42px; }
 .tc-state { width: 100%; display: flex; align-items: center; justify-content: center; }
 
 .btn-iniciar { background: linear-gradient(135deg, var(--rosa-neon), #8800ff); color: #fff; border: none; padding: 14px 40px; font-size: 15px; font-weight: 900; letter-spacing: 1px; border-radius: 10px; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 20px rgba(255,0,255,0.35); transition: transform .15s ease; }
 .btn-iniciar:hover { transform: translateY(-2px); }
 
 /*  BARRA DE TEMPO (substitui a linha de seleo de modo/mapa/lado)  */
-#tc-timer { gap: 18px; }
-.timer-segments { flex: 1; display: flex; gap: 4px; max-width: 640px; }
-.timer-segment { flex: 1; height: 8px; border-radius: 4px; background: #26272f; overflow: hidden; position: relative; }
+#tc-timer { gap: 24px; }
+.timer-segments { flex: 1; display: flex; gap: 5px; max-width: 760px; }
+.timer-segment { flex: 1; height: 13px; border-radius: 6px; background: #26272f; overflow: hidden; position: relative; }
 .timer-segment .fill { position: absolute; top: 0; left: 0; height: 100%; width: 100%; background: var(--azul-time); transition: width 1s linear; }
 .timer-segment.done .fill { width: 100% !important; background: #3a3d4a !important; transition: none; }
 .timer-segment.team-red .fill { background: var(--vermelho-time); }
-.timer-readout { display: flex; align-items: center; gap: 10px; white-space: nowrap; font-weight: 900; }
-#timer-fase-label { font-size: 12px; letter-spacing: 1px; color: #b7b9c4; text-transform: uppercase; }
-#timer-numero { font-size: 22px; min-width: 34px; text-align: center; color: #fff; }
+.timer-readout { display: flex; align-items: center; gap: 14px; white-space: nowrap; font-weight: 900; }
+#timer-fase-label { font-size: 15px; letter-spacing: 1px; color: #b7b9c4; text-transform: uppercase; }
+#timer-numero { font-size: 32px; min-width: 48px; text-align: center; color: #fff; }
 #timer-numero.urgente { color: var(--vermelho-time); animation: piscaTempo .6s infinite; }
 @keyframes piscaTempo { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
-.timer-clock-icon { width: 26px; height: 26px; object-fit: contain; }
+.timer-clock-icon { width: 36px; height: 36px; object-fit: contain; }
 
 /*  MAIN CONTAINER  */
 .main-container { 
@@ -77,18 +85,20 @@ body {
 .setup-overlay { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
 .setup-step { width: 100%; text-align: center; animation: fadeInSetup .25s ease; }
 @keyframes fadeInSetup { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-.setup-title { font-size: 18px; letter-spacing: 2px; color: var(--rosa-neon); margin-bottom: 25px; font-weight: 900; }
+.setup-title { font-size: 23px; letter-spacing: 2px; color: var(--rosa-neon); margin-bottom: 28px; font-weight: 900; }
 
-.setup-grid { display: grid; gap: 16px; max-width: 700px; margin: 0 auto; max-height: 60vh; overflow-y: auto; padding: 8px; }
+.setup-grid { display: grid; gap: 22px; max-width: 900px; margin: 0 auto; max-height: 72vh; overflow-y: auto; padding: 10px; }
 .modos-grid { grid-template-columns: repeat(3, 1fr); }
 .mapas-grid { grid-template-columns: repeat(3, 1fr); }
 
-.modo-card, .mapa-card { background: var(--bg-slots); border: 2px solid var(--borda-destaque); border-radius: 12px; padding: 14px; cursor: pointer; transition: transform .15s ease, border-color .15s ease; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.modo-card, .mapa-card { background: var(--bg-slots); border: 2px solid var(--borda-destaque); border-radius: 14px; padding: 20px; cursor: pointer; transition: transform .15s ease, border-color .15s ease; display: flex; flex-direction: column; align-items: center; gap: 14px; }
 .modo-card:hover, .mapa-card:hover { transform: translateY(-3px); border-color: var(--rosa-neon); }
-.modo-card img { width: 64px; height: 64px; object-fit: contain; }
-.modo-card span { font-weight: 800; font-size: 12px; letter-spacing: .5px; }
-.mapa-card img { width: 100%; aspect-ratio: 16/10; object-fit: cover; border-radius: 8px; background: #000; }
-.mapa-card span { font-weight: 800; font-size: 12px; }
+.modo-card img { width: 104px; height: 104px; object-fit: contain; }
+.modo-card span { font-weight: 800; font-size: 15px; letter-spacing: .5px; }
+/* aspect-ratio real dos prints de mapa (131x200) + object-fit:contain garante
+   que o mapa inteiro apareça, sem cortar topo/base como acontecia com 16/10 + cover */
+.mapa-card img { width: 100%; aspect-ratio: 131/200; object-fit: contain; border-radius: 8px; background: #000; }
+.mapa-card span { font-weight: 800; font-size: 15px; }
 
 .coin-toss-wrap { display: flex; align-items: center; justify-content: center; gap: 60px; margin-top: 10px; }
 .coin-toss-img { width: 140px; height: 140px; object-fit: contain; cursor: pointer; transition: transform .18s ease, filter .18s ease; filter: drop-shadow(0 0 12px rgba(255,255,255,0.15)); }
@@ -96,45 +106,45 @@ body {
 
 /* Alinha o topo de todos os blocos internos (Picks, Bans e Mapa) */
 .vertical-layout { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
-.draft-board-capture { background: var(--bg-paineis); border-radius: 16px; padding: 20px 15px 15px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.draft-board-capture { background: var(--bg-paineis); border-radius: 16px; padding: 22px 18px 18px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .board-row {
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: flex-start !important;
-    gap: 18px;
+    gap: 24px;
 }
 
 .coin-topo { display: flex; align-items: center; justify-content: center; margin-bottom: 4px; }
-.coin-topo img { width: 46px; height: 46px; object-fit: contain; }
+.coin-topo img { width: 54px; height: 54px; object-fit: contain; }
 
 /* Garante que a linha de picks e bans comece junta do topo */
-.team-col { display: flex; flex-direction: row; align-items: flex-start !important; gap: 10px; }
-.ban-col, .pick-col { display: flex; flex-direction: column; gap: 10px; justify-content: flex-start !important; }
+.team-col { display: flex; flex-direction: row; align-items: flex-start !important; gap: 13px; }
+.ban-col, .pick-col { display: flex; flex-direction: column; gap: 12px; justify-content: flex-start !important; }
 
 /*  SLOTS DE PICKS E BANS  */
 .slot { background-color: var(--bg-slots); border: 2px solid var(--borda-destaque); border-radius: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative !important; cursor: pointer; }
 .active-blue { border-color: var(--azul-time) !important;     box-shadow: 0 0 15px rgba(0,123,255,0.5); }
 .active-red  { border-color: var(--vermelho-time) !important; box-shadow: 0 0 15px rgba(255,51,51,0.5); }
 
-.ban-slot  { width: 55px !important;  height: 55px !important;  border-radius: 8px;  }
-.pick-slot { width: 115px !important; height: 115px !important; border-radius: 13px; }
+.ban-slot  { width: var(--ban-slot-size) !important;  height: var(--ban-slot-size) !important;  border-radius: 10px;  }
+.pick-slot { width: var(--pick-slot-size) !important; height: var(--pick-slot-size) !important; border-radius: 16px; }
 
 .ban-slot .slot-assets img { filter: grayscale(100%) !important; opacity: 0.5; }
 .red-team-imgs img { transform: scaleX(-1); }
 
 /* Timer dentro da moldura do slot ativo (ainda no pickado) */
-.slot-mini-timer { position: absolute; top: 3px; right: 3px; background: rgba(0,0,0,0.75); color: #fff; font-size: 10px; font-weight: 900; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; z-index: 20; border: 1px solid rgba(255,255,255,0.4); }
-.pick-slot .slot-mini-timer { width: 26px; height: 26px; font-size: 12px; top: 5px; right: 5px; }
+.slot-mini-timer { position: absolute; top: 3px; right: 3px; background: rgba(0,0,0,0.75); color: #fff; font-size: 12px; font-weight: 900; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; z-index: 20; border: 1px solid rgba(255,255,255,0.4); }
+.pick-slot .slot-mini-timer { width: 33px; height: 33px; font-size: 15px; top: 6px; right: 6px; }
 .slot-mini-timer.urgente { background: rgba(255,51,51,0.85); animation: piscaTempo .6s infinite; }
 
 /*  MAPA CENTRAL GIGANTE E DOMINANTE  */
 .map-col {
-    width: 340px !important;
-    height: 500px !important;
+    width: var(--map-w) !important;
+    height: var(--map-h) !important;
     background-color: var(--bg-paineis);
     border: 2px solid var(--borda-destaque);
-    border-radius: 16px;
+    border-radius: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -151,14 +161,14 @@ body {
     image-rendering: auto;
     -ms-interpolation-mode: bicubic;
 }
-#map-placeholder { position: absolute; z-index: 1; color: #555; text-align: center; font-size: 16px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
-#map-modo-icon { position: absolute; top: 10px; left: 10px; width: 34px; height: 34px; object-fit: contain; z-index: 3; display: none; background: rgba(0,0,0,0.55); border-radius: 8px; padding: 4px; }
-#map-nome-label { position: absolute; bottom: 10px; left: 0; right: 0; text-align: center; z-index: 3; font-weight: 900; font-size: 14px; text-shadow: 0 2px 6px rgba(0,0,0,0.9); display: none; letter-spacing: .5px; }
+#map-placeholder { position: absolute; z-index: 1; color: #555; text-align: center; font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+#map-modo-icon { position: absolute; top: 12px; left: 12px; width: 40px; height: 40px; object-fit: contain; z-index: 3; display: none; background: rgba(0,0,0,0.55); border-radius: 8px; padding: 4px; }
+#map-nome-label { position: absolute; bottom: 12px; left: 0; right: 0; text-align: center; z-index: 3; font-weight: 900; font-size: 17px; text-shadow: 0 2px 6px rgba(0,0,0,0.9); display: none; letter-spacing: .5px; }
 
 /*  ASSETS E FALLBACKS  */
 .slot-assets { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; position: relative; }
 .slot-fallback-text { display: none; width: 100%; height: 100%; align-items: center; justify-content: center; text-align: center; font-weight: 800; font-size: 11px; padding: 4px; background: linear-gradient(135deg, #1f2026, #111217); color: #ffffff; text-transform: uppercase; word-break: break-all; }
-.ban-slot .slot-fallback-text { font-size: 8px; line-height: 1.2; }
+.ban-slot .slot-fallback-text { font-size: 9px; line-height: 1.2; }
 
 /*  PAINIS LATERAIS  */
 .info-panels { 
@@ -230,8 +240,8 @@ body {
 /*  ANIMAES DE PR-SELEO  */
 .pre-selecting { animation: pulse-draft 1.2s infinite ease-in-out; }
 @keyframes pulse-draft { 0% { opacity: 0.5; } 50% { opacity: 0.85; } 100% { opacity: 0.5; } }
-.pre-select-badge { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(0,123,255,0.95); color: #ffffff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 900; box-shadow: 0 0 8px rgba(0,123,255,0.8); z-index: 15; }
-.pick-slot .pre-select-badge { width: 38px; height: 38px; font-size: 19px; }
+.pre-select-badge { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(0,123,255,0.95); color: #ffffff; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 900; box-shadow: 0 0 8px rgba(0,123,255,0.8); z-index: 15; }
+.pick-slot .pre-select-badge { width: 46px; height: 46px; font-size: 23px; }
 
 /*  ANLISE FINAL PS-DRAFT  */
 .analise-final { width: 100%; max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; padding: 10px; }
