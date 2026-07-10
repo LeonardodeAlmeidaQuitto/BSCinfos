@@ -137,7 +137,6 @@ const DADOS_COUNTERS = {
 
 const BRAWLERS = ["Damian", "8-Bit", "Alli", "Amber", "Angelo", "Ash", "Barley", "Bea", "Belle", "Berry", "Bibi", "Bo", "Bolt", "Bonnie", "Brock", "Bull", "Buster", "Buzz", "Byron", "Carl", "Charlie", "Chester", "Chuck", "Clancy", "Colette", "Colt", "Cordelius", "Crow", "Darryl", "Doug", "Draco", "Dynamike", "Edgar", "El Primo", "Emz", "Eve", "Fang", "Finx", "Frank", "Gale", "Gene", "Gigi", "Glowy", "Gray", "Griff", "Grom", "Gus", "Hank", "Jacky", "Jae Yong", "Janet", "Jessie", "Juju", "Kaze", "Kenji", "Kit", "LarryLawrie", "Leon", "Lily", "Lola", "Lou", "Lumi", "Maisie", "Mandy", "Max", "Meeple", "Meg", "Melodie", "Mico", "Mina", "Moe", "Mortis", "Mr.P", "Najia", "Nani", "Nita", "Ollie", "Otis", "Pam", "Pearl", "Penny", "Pierce", "Piper", "Poco", "R-T", "Rico", "Rosa", "Ruffs", "Sam", "Sandy", "Shade", "Shelly", "Sirius", "Spike", "Sprout", "Squeak", "Stu", "Surge", "Starr Nova", "Tara", "Tick", "Trunk", "Willow", "Ziggy"].sort();
 
-// --- ESTADO GERAL DO DRAFT ---
 let currentStep = 0, selected = [], firstPick = 'blue', draftOrder = [], picksVermelhos = [], picksAzuis = [], preSelected = null;
 let modoEscolhido = null, mapaEscolhido = null;
 let draftIniciado = false, draftFinalizado = false;
@@ -385,10 +384,12 @@ function buildOrder() {
         { slot: 'slot-b1', team: 'red',  type: 'ban' }, { slot: 'slot-b3', team: 'red',  type: 'ban' }, { slot: 'slot-b5', team: 'red',  type: 'ban' }
     ];
 
-    // O time que comeca (firstPick) picka nas posicoes GLOBAIS 1, 3 e 4 da sequencia de picks;
-    // o outro time picka nas posicoes 2, 5 e 6 -- exatamente como pedido.
+    // O time que comeca (firstPick) picka nas posicoes GLOBAIS 1, 4 e 5 da sequencia de picks;
+    // o outro time picka nas posicoes 2, 3 e 6 -- padrao 1-2-2-1 (snake draft), exatamente como pedido:
+    // Ex.: firstPick azul -> Azul, Vermelho, Vermelho, Azul, Azul, Vermelho
+    //      firstPick vermelho -> Vermelho, Azul, Azul, Vermelho, Vermelho, Azul
     const timeOutro = firstPick === 'blue' ? 'red' : 'blue';
-    const sequenciaTimes = [firstPick, timeOutro, firstPick, firstPick, timeOutro, timeOutro];
+    const sequenciaTimes = [firstPick, timeOutro, timeOutro, firstPick, firstPick, timeOutro];
 
     let idxAzul = 0, idxVermelho = 0;
     sequenciaTimes.forEach(time => {
