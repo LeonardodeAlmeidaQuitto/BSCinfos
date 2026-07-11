@@ -5,7 +5,7 @@ const MAPAS_ALVO = {
     "Heist": ["Hot Potato", "Safe Zone", "Bridge Too Far", "Pit Stop", "Kaboom Canyon"],
     "Knockout": ["Goldarm Gulch", "Belle's Rock", "Out in the Open", "New Horizons"],
     "Hot Zone": ["Ring of Fire", "Dueling Beetles", "Open Business"],
-    "Gem Grab": ["Hard Rock Mine", "Double Swoosh", "Deathcap Trap"]
+    "Gem Grab": ["Hard Rock Mine", "Double Swoosh", "Deathcap Trap", "Gem Fort"]
 };
 
 // SUBSTITUA PELOS SEUS DADOS DA PLANILHA (META)
