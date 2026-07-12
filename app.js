@@ -115,7 +115,7 @@ function atualizarRostersAtuais() {
     });
 }
     return false;
-};
+});
  
 // Correspondência EXATA: os 3 jogadores da partida precisam estar todos
 // no roster cadastrado (que pode ter 3 ou 4 jogadores).
