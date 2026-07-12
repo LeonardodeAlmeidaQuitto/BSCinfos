@@ -174,7 +174,7 @@ function carregarCSV() {
     Papa.parse("historico_bruto.csv", {
         download: true, header: true, skipEmptyLines: true,
         complete: function(results) {
-    });
+    };
  
     dados.forEach(linha => {
         let isKnown = encontrarTimePorRoster([linha.player_tag]);
