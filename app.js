@@ -218,8 +218,20 @@ function atualizarRostersAtuais() {
     carregarTimesSalvosLocal();
 }
 
+function lerTimesSalvos(regiao) {
+    let bruto = localStorage.getItem('customTeams_' + regiao);
+    if (!bruto) return [];
+    try {
+        let dados = JSON.parse(bruto);
+        return Array.isArray(dados) ? dados : [];
+    } catch (e) {
+        console.error(`Dados de times salvos corrompidos para '${regiao}', ignorando.`, e);
+        return [];
+    }
+}
+
 function carregarTimesSalvosLocal() {
-    let salvos = JSON.parse(localStorage.getItem('customTeams_' + _REGIAO)) || [];
+    let salvos = lerTimesSalvos(_REGIAO);
     if (!CONFIGURACAO_MANUAL_TIMES[_REGIAO] && _REGIAO !== "ALL") CONFIGURACAO_MANUAL_TIMES[_REGIAO] = {};
     if (_REGIAO === "ALL" && !CONFIGURACAO_MANUAL_TIMES["ALL"]) CONFIGURACAO_MANUAL_TIMES["ALL"] = { "TIER ?": [], "TIMES REGISTRADOS": [] };
 
@@ -237,7 +249,7 @@ function carregarTimesSalvosLocal() {
 
 function mesclarTimesSalvosEmRostersPorData() {
     if (_REGIAO === "ALL") return; 
-    let salvos = JSON.parse(localStorage.getItem('customTeams_' + _REGIAO)) || [];
+    let salvos = lerTimesSalvos(_REGIAO);
     if (salvos.length === 0) return;
 
     let selectAno = document.getElementById('select-ano');
@@ -357,29 +369,39 @@ document.addEventListener("DOMContentLoaded", () => {
 // 3. CARREGAMENTO E PROCESSAMENTO
 // ==========================================
 function carregarCSV() {
+    function carregarBans() {
+        Papa.parse("bans_matcherino.csv", {
+            download: true, header: true, skipEmptyLines: true,
+            complete: function(banRes) {
+                if (banRes.data && banRes.data.length > 0 && banRes.data[0].brawler_banido !== undefined) {
+                    dadosBans = banRes.data;
+                } else { dadosBans = []; }
+
+                popularFiltrosGlobais();
+                processarDadosGlobais();
+            },
+            error: function(err) {
+                console.error("Falha ao carregar bans_matcherino.csv:", err);
+                dadosBans = [];
+                popularFiltrosGlobais();
+                processarDadosGlobais();
+            }
+        });
+    }
+
     Papa.parse("historico_bruto.csv", {
         download: true, header: true, skipEmptyLines: true,
         complete: function(results) {
             if (results.data && results.data.length > 0 && results.data[0].pick !== undefined) {
                 dadosBrutos = results.data;
             } else { dadosBrutos = []; }
-            
-            Papa.parse("bans_matcherino.csv", {
-                download: true, header: true, skipEmptyLines: true,
-                complete: function(banRes) {
-                    if (banRes.data && banRes.data.length > 0 && banRes.data[0].brawler_banido !== undefined) {
-                        dadosBans = banRes.data;
-                    } else { dadosBans = []; }
-                    
-                    popularFiltrosGlobais();
-                    processarDadosGlobais();
-                },
-                error: function() {
-                    dadosBans = [];
-                    popularFiltrosGlobais();
-                    processarDadosGlobais();
-                }
-            });
+
+            carregarBans();
+        },
+        error: function(err) {
+            console.error("Falha ao carregar historico_bruto.csv:", err);
+            dadosBrutos = [];
+            carregarBans();
         }
     });
 }
@@ -1035,7 +1057,7 @@ window.registrarTimeCustom = function(idAntigo) {
 
     let novoTime = { id_time: novoId, nome_time: novoNome, jogadores: jogadoresFinais, tier: tierEscolhido };
 
-    let salvos = JSON.parse(localStorage.getItem('customTeams_' + _REGIAO)) || [];
+    let salvos = lerTimesSalvos(_REGIAO);
     salvos = salvos.filter(t => t.id_time !== novoId && t.id_time !== idAntigo);
     salvos.push(novoTime);
     localStorage.setItem('customTeams_' + _REGIAO, JSON.stringify(salvos));

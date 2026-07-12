@@ -674,6 +674,9 @@ window.baixarImagemDraft = function() {
         link.download = `draft_${limparNome(mapaEscolhido) || 'mapa'}_${Date.now()}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
+    }).catch(err => {
+        console.error('Erro ao gerar a imagem do draft:', err);
+        alert('N\u00e3o foi poss\u00edvel gerar a imagem do draft.');
     });
 };
 
