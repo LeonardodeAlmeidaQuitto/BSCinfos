@@ -93,7 +93,7 @@ def formatar_data_brawl(battle_time_str):
     try:
         dt = datetime.strptime(battle_time_str, "%Y%m%dT%H%M%S.%fZ").replace(tzinfo=timezone.utc)
         return dt.astimezone(obter_fuso_brasilia()).strftime("%d/%m/%Y %H:%M:%S")
-    except:
+    except (ValueError, TypeError):
         return datetime.now(obter_fuso_brasilia()).strftime("%d/%m/%Y %H:%M:%S")
 
 def nome_brawler(b):
@@ -154,13 +154,15 @@ def minerar_dados():
         try:
             df = pd.read_csv(ARQUIVO_BRUTO)
             if "id_partida" in df.columns: ids_registrados = set(df["id_partida"].dropna().astype(str).unique())
-        except: pass
+        except Exception as e:
+            print(f"[AVISO] Falha ao ler {ARQUIVO_BRUTO}: {e}. Continuando sem IDs existentes (pode gerar duplicatas).")
 
     if os.path.exists(ARQUIVO_BANS):
         try:
             dfb = pd.read_csv(ARQUIVO_BANS)
             if "id_partida" in dfb.columns: ids_bans = set(dfb["id_partida"].dropna().astype(str).unique())
-        except: pass
+        except Exception as e:
+            print(f"[AVISO] Falha ao ler {ARQUIVO_BANS}: {e}. Continuando sem bans existentes (pode gerar duplicatas).")
 
     novas_picks, novos_bans = [], []
     headers_api = {"Authorization": f"Bearer {API_KEY}"}

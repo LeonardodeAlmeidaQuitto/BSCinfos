@@ -40,7 +40,8 @@ def minerar_dados_team():
         try:
             df_existente = pd.read_csv(ARQUIVO_BRUTO_TEAM, sep=',', dtype=str, keep_default_na=False)
             ids_registrados = set(df_existente['id_partida'].unique())
-        except:
+        except Exception as e:
+            print(f"[AVISO] Falha ao ler {ARQUIVO_BRUTO_TEAM}: {e}. Continuando sem IDs existentes (pode gerar duplicatas).")
             ids_registrados = set()
     else:
         pd.DataFrame(columns=colunas).to_csv(ARQUIVO_BRUTO_TEAM, index=False)
@@ -83,7 +84,8 @@ def minerar_dados_team():
                     
                     ids_registrados.add(m_id)
                     total_novas += 1
-            except:
+            except Exception as e:
+                print(f"[ERRO] Falha ao processar battlelog de {nome_player} ({tag_busca}): {e}")
                 continue
 
     if novas_linhas:
@@ -102,7 +104,7 @@ def minerar_dados_team():
                 dt = datetime.strptime(str(data_str).strip(), '%d/%m/%Y %H:%M:%S')
                 meses_nome = ["JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"]
                 return str(dt.year), meses_nome[dt.month - 1]
-            except:
+            except (ValueError, TypeError, IndexError):
                 return "OUTRO", "OUTRO"
 
         df_total['ano'] = df_total['data_adicao'].apply(lambda x: tratar_datas(x)[0])
