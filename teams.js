@@ -1,16 +1,7 @@
-// --- CONFIGURAÇÃO UTILS (Do seu app.js) ---
-const obterClasseColorida = (wr) => {
-    const v = parseFloat(wr);
-    if (v >= 80) return 'wr-80';
-    if (v >= 60) return 'wr-60-70';
-    if (v >= 50) return 'wr-50';
-    return 'wr-30';
-};
+const { sortTableRows, winRateClass } = window.BSCUtils;
 
 function ordenarTabela(thElement, tipo) {
     const table = thElement.closest('table');
-    const tbody = table.querySelector('tbody');
-    const rows = Array.from(tbody.querySelectorAll('tr'));
     const colIndex = thElement.cellIndex;
 
     let isAsc = thElement.getAttribute('data-sort') === 'asc';
@@ -23,23 +14,10 @@ function ordenarTabela(thElement, tipo) {
         }
     });
 
-    rows.sort((a, b) => {
-        let valA = a.cells[colIndex].innerText.trim();
-        let valB = b.cells[colIndex].innerText.trim();
-
-        if (tipo === 'number' || tipo === 'percent') {
-            let numA = parseFloat(valA.replace('%', '')) || 0;
-            let numB = parseFloat(valB.replace('%', '')) || 0;
-            return isAsc ? numA - numB : numB - numA;
-        } 
-        return isAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
-    });
+    sortTableRows(table, colIndex, { ascending: isAsc, type: tipo });
 
     const textoBase = thElement.innerHTML.replace(/[▲▼↕]/g, '').trim();
     thElement.innerHTML = textoBase + ' ' + (isAsc ? '▲' : '▼');
-
-    tbody.innerHTML = '';
-    rows.forEach(row => tbody.appendChild(row));
 }
 
 // --- LOGICA DE RENDERIZAÇÃO DA PÁGINA ---
@@ -95,7 +73,7 @@ function renderizarTabelaFinal(listaBrawlers, container) {
                 <td style="text-align: left !important; padding-left: 15px !important; font-weight: bold;">${b.nome}</td>
                 <td>${b.picks}</td>
                 <td>${b.vitorias}</td>
-                <td class="${obterClasseColorida(wr)}">${wr.toFixed(1)}%</td>
+                <td class="${winRateClass(wr)}">${wr.toFixed(1)}%</td>
             </tr>
         `;
     }).join('');

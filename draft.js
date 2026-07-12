@@ -1,4 +1,6 @@
 // --- DADOS DO SISTEMA ---
+const { normalizeKey } = window.BSCUtils;
+
 const MAPAS_ALVO = {
     "Brawl Ball": ["Super Beach", "Pinhole Punt", "Sneaky Fields", "Triple Dribble", "Pinhole Punt", "Pinball Dreams"],
     "Bounty": ["Shooting Star", "Hideout", "Layer Cake", "Dry Season"],
@@ -147,7 +149,7 @@ let faseAtualIdx = 0;
 let tempoRestante = 30;
 let timerInterval = null;
 
-function limparNome(nome) { return !nome ? "" : nome.toLowerCase().replace(/[^a-z0-9]/g, ''); }
+const limparNome = normalizeKey;
 function obterContainerInimigo() { return document.getElementById('counters-list'); }
 function obterContainerNosso() { return document.getElementById('podetomar-list'); }
 function obterContainerMeta() { return document.getElementById('meta-list'); }

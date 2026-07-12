@@ -6,6 +6,7 @@ let listaBrawlers = [];
 let brawlerSelecionado = null;
 let timeSelecionado = null;
 
+const { assetKey, makeTablesSortable, normalizeKey } = window.BSCUtils;
 const _REGIAO = window.REGIAO_ATUAL ? window.REGIAO_ATUAL.toUpperCase() : "SA";
 // ========================================================
 // 1. CONFIGURAÇÃO DE ROTAÇÃO DE MAPAS MENSAL
@@ -271,8 +272,8 @@ function obterTiersDisponiveis() {
     return tiers;
 }
 
-const formatImg = n => { if(!n) return 'default'; return n.toLowerCase().replace(/[^a-z0-9]/g, ''); };
-const normalizarChave = n => { if(!n) return ''; return n.toLowerCase().replace(/[^a-z0-9]/g, ''); };
+const formatImg = assetKey;
+const normalizarChave = normalizeKey;
 
 // ========================================================
 // HELPERS DE LOGO DE TIME
@@ -1246,35 +1247,5 @@ container.innerHTML = `
 // 9. FUNÇÃO PARA ORDENAR TABELAS (META)
 // ==========================================
 function tornarTabelasOrdenaveis() {
-    document.querySelectorAll('table.excel-table').forEach(table => {
-        const headers = table.querySelectorAll('th');
-        headers.forEach((th, index) => {
-            th.style.cursor = 'pointer';
-            th.title = "Clique para ordenar";
-            th.addEventListener('click', () => {
-                const tbody = table.querySelector('tbody');
-                if (!tbody) return;
-                const rows = Array.from(tbody.querySelectorAll('tr'));
-                const isAscending = th.classList.contains('asc');
-                headers.forEach(h => h.classList.remove('asc', 'desc'));
-                th.classList.add(isAscending ? 'desc' : 'asc');
-                rows.sort((rowA, rowB) => {
-                    let cellA = rowA.children[index].innerText.trim();
-                    let cellB = rowB.children[index].innerText.trim();
-                    const parseCell = (val) => {
-                        let num = parseFloat(val.replace('%', '').replace(',', '.'));
-                        return isNaN(num) ? val : num;
-                    };
-                    let valA = parseCell(cellA);
-                    let valB = parseCell(cellB);
-                    if (typeof valA === 'string' && typeof valB === 'string') {
-                        return isAscending ? valB.localeCompare(valA) : valA.localeCompare(valB);
-                    } else {
-                        return isAscending ? valA - valB : valB - valA;
-                    }
-                });
-                tbody.append(...rows);
-            });
-        });
-    });
+    makeTablesSortable();
 }
