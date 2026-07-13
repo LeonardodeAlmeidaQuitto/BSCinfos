@@ -229,7 +229,7 @@ const gen = mapUNK.get(sig);
             }
         }
     });
-}
+})
  
 function popularFiltrosGlobais() {
     let anos = new Set(), meses = new Set(), dias = new Set();
