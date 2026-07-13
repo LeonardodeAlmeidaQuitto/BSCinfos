@@ -204,21 +204,26 @@ Papa.parse("historico_bruto.csv", {
                                 });
                                 counter++;
                             }
-                            const gen = mapUNK.get(sig);
-                            linha.id_time = gen.id; linha.nome_time = gen.nome;
-                        // Sem cadastro neste mês: o time volta a ser Unknow até ser registrado.
-                        const sig = tTags.slice().sort().join('_');
-                        if (!mapUNK.has(sig)) {
-                            const nId = `UNK${counter}`, nName = `Unknow ${counter}`;
-                            mapUNK.set(sig, { id: nId, nome: nName });
-                            CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIER ?"].push({
-                                id_time: nId, nome_time: nName,
-                                jogadores: [ { nick: tNames[0], tag: tTags[0] }, { nick: tNames[1], tag: tTags[1] }, { nick: tNames[2], tag: tTags[2] } ]
-                            });
-                            counter++;
-                        }
-                        const gen = mapUNK.get(sig);
-                        linha.id_time = gen.id; linha.nome_time = gen.nome;
+const gen = mapUNK.get(sig);
+            linha.id_time = gen.id; linha.nome_time = gen.nome;
+        } else { 
+            // ^--- ISSO CORRIGE O ERRO. Fecha o bloco anterior e abre o escopo do "else"
+            
+            // Sem cadastro neste mês: o time volta a ser Unknow até ser registrado.
+            const sig = tTags.slice().sort().join('_'); 
+            if (!mapUNK.has(sig)) {
+                const nId = `UNK${counter}`, nName = `Unknow ${counter}`;
+                mapUNK.set(sig, { id: nId, nome: nName });
+                CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIER ?"].push({
+                    id_time: nId, nome_time: nName,
+                    jogadores: [ { nick: tNames[0], tag: tTags[0] }, { nick: tNames[1], tag: tTags[1] }, { nick: tNames[2], tag: tTags[2] } ]
+                });
+                counter++;
+            }
+            
+            const gen = mapUNK.get(sig);
+            linha.id_time = gen.id; linha.nome_time = gen.nome;
+        } // <-- Lembre-se de verificar se este fecha o "else" corretamente no final do bloco
                     }
                 }
             }
