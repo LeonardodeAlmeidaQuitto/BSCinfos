@@ -1,4 +1,3 @@
-
 let dadosBrutos = [];
 let dadosFiltrados = [];
 let dadosBans = [];
@@ -171,10 +170,15 @@ function carregarCSV() {
         .then(j => { ROSTERS_AUTO = j || {}; })
         .catch(() => { ROSTERS_AUTO = {}; });
  
-    Papa.parse("historico_bruto.csv", {
-        download: true, header: true, skipEmptyLines: true,
+Papa.parse("historico_bruto.csv", {
+        download: true, 
+        header: true, 
+        skipEmptyLines: true,
         complete: function(results) {
-    };
+            // A lógica do results vai aqui dentro
+        }
+    }); // <- Aqui fecha o objeto e o parêntese do Papa.parse
+} // <- Aqui fecha a function carregarCSV()
  
     dados.forEach(linha => {
         let isKnown = encontrarTimePorRoster([linha.player_tag]);
