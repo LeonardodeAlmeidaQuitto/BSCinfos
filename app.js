@@ -10,6 +10,29 @@ let mapaSelecionado = null;
 const _REGIAO = window.REGIAO_ATUAL ? window.REGIAO_ATUAL.toUpperCase() : "SA";
 const REGIOES_TODAS = ["SA", "NA", "EMEA", "EA", "ALL"];
 
+// Funções Auxiliares Adicionais (Garantia contra falhas)
+function parseDateBR(dataStr) {
+    if (!dataStr) return 0;
+    let p = dataStr.split(' ');
+    let d = p[0].split('/');
+    let t = p[1] ? p[1].split(':') : ['0','0','0'];
+    if (d.length === 3) {
+        return new Date(d[2], d[1] - 1, d[0], t[0], t[1], t[2]).getTime();
+    }
+    return new Date(dataStr).getTime() || 0;
+}
+
+window.teamLogoUrl = function(id) { return `element/teams/${id.toLowerCase()}.png`; };
+window.teamLogoFallback = function(id) { return `element/teams/default.png`; };
+window.teamLogoOnError = function(id) { return `this.onerror=null; this.src='element/teams/default.png';`; };
+window.isTimeDaRegiaoAtual = function(id) { 
+    if (_REGIAO === "ALL") return true;
+    for (let tier in CONFIGURACAO_MANUAL_TIMES[_REGIAO]) {
+        if (CONFIGURACAO_MANUAL_TIMES[_REGIAO][tier].some(t => t.id_time === id)) return true;
+    }
+    return true; 
+};
+
 // ========================================================
 // 1. CONFIGURAÇÃO DE ROTAÇÃO DE MAPAS MENSAL
 // ========================================================
@@ -29,8 +52,6 @@ const ROTACAO_MAPAS = {
 let CONFIGURACAO_MANUAL_TIMES = {};
 let ROSTERS_AUTO = {};
  
-// Cadastro de times é MENSAL: cada mês começa vazio (todos como Unknow)
-// e os rosters cadastrados ficam salvos por ano/mês/região no localStorage.
 function chaveMesAtiva() {
     const selectAno = document.getElementById('select-ano');
     const selectMes = document.getElementById('select-mes');
@@ -64,7 +85,6 @@ function atualizarRostersAtuais() {
     const mesChave = chaveMesAtiva();
     CONFIGURACAO_MANUAL_TIMES = {};
     
-    // Configura o Base Rosters
     let selectAno = document.getElementById('select-ano');
     let selectMes = document.getElementById('select-mes');
     const ano = selectAno ? selectAno.value : 'todos';
@@ -96,8 +116,6 @@ function atualizarRostersAtuais() {
     });
 }
  
-// Correspondência EXATA: os 3 jogadores da partida precisam estar todos
-// no roster cadastrado (que pode ter 3 ou 4 jogadores).
 function encontrarTimePorRoster(tagsArray) {
     let tagsValidas = (tagsArray || []).filter(t => t && t !== '#' && t !== 'None');
     if (tagsValidas.length < 3) return null;
@@ -111,7 +129,6 @@ function encontrarTimePorRoster(tagsArray) {
                 let matchCount = 0;
                 team.jogadores.forEach(j => { if (tagsArray.includes(j.tag)) matchCount++; });
                 
-                // Exige 3 matches (evita a duplicação errada de >= 2)
                 if (matchCount === 3) {
                     return { id: team.id_time, nome: team.nome_time, regiao: reg };
                 }
@@ -121,7 +138,6 @@ function encontrarTimePorRoster(tagsArray) {
     return null;
 }
  
-// Nick mais recente observado na API para uma tag (id + nick atualizado).
 function nickAtualizado(tag, fallback) {
     let melhor = null, ts = -1;
     dadosBrutos.forEach(r => {
@@ -142,15 +158,32 @@ function carregarCSV() {
         .then(j => { ROSTERS_AUTO = j || {}; })
         .catch(() => { ROSTERS_AUTO = {}; });
  
-    Papa.parse("historico_bruto.csv", {
-        download: true, 
-        header: true, 
+    // Encadeando os Papa.parse para garantir a leitura do arquivo de bans e histórico
+    Papa.parse("bans_matcherino.csv", {
+        download: true,
+        header: true,
         skipEmptyLines: true,
-        complete: function(results) {
-            dadosBrutos = results.data;
-            processarDadosGlobais();
+        complete: function(resBans) {
+            dadosBans = resBans.data;
+            carregarHistoricoBruto();
+        },
+        error: function() {
+            dadosBans = [];
+            carregarHistoricoBruto();
         }
     });
+
+    function carregarHistoricoBruto() {
+        Papa.parse("historico_bruto.csv", {
+            download: true, 
+            header: true, 
+            skipEmptyLines: true,
+            complete: function(results) {
+                dadosBrutos = results.data;
+                processarDadosGlobais();
+            }
+        });
+    }
 }
 
 function processarTimesDesconhecidos(dados) {
@@ -171,13 +204,11 @@ function processarTimesDesconhecidos(dados) {
             const pIdx = ids.indexOf(linha.player_tag);
             
             if (pIdx !== -1) {
-                // Fallback para compilação lógica
                 let opTeam = encontrarTimePorRoster(ids);
                 if (opTeam && (_REGIAO === "ALL" || opTeam.regiao === _REGIAO)) {
                     linha.id_time = opTeam.id; 
                     linha.nome_time = opTeam.nome;
                 } else {
-                    // Sem cadastro neste mês: o time volta a ser Unknow até ser registrado.
                     const tTags = ids;
                     const tNames = names;
                     const sig = tTags.slice().sort().join('_'); 
@@ -328,7 +359,6 @@ function atualizarDropdownTimesScrims(timesNaScrimMap, valorAtual) {
 // ==========================================
 // 4. NOVA LÓGICA MD3: ESTRUTURAR E PROCESSAR DADOS
 // ==========================================
- 
 function estruturarMD3(dadosPeriodo) {
     let rawMatches = {};
     let partidasEstruturadas = [];
@@ -350,14 +380,21 @@ function estruturarMD3(dadosPeriodo) {
     };
  
     Object.values(rawMatches).forEach(linhas => {
-        if(linhas.length !== 6) return; // formato 3v3 exige exatamente 6 linhas
-        let t0 = linhas.slice(0,3), t1 = linhas.slice(3,6);
+        if(linhas.length !== 6) return; 
+        
+        // Agrupa as linhas por time de forma rigorosa
+        let timesAgrupados = {};
+        linhas.forEach(l => {
+            if (!timesAgrupados[l.id_time]) timesAgrupados[l.id_time] = [];
+            timesAgrupados[l.id_time].push(l);
+        });
+        let timesArray = Object.values(timesAgrupados);
+        if (timesArray.length !== 2 || timesArray[0].length !== 3 || timesArray[1].length !== 3) return;
+
+        let t0 = timesArray[0], t1 = timesArray[1];
         let t0Id = t0[0].id_time, t1Id = t1[0].id_time;
         
         if (!t0Id || !t1Id || t0Id === t1Id) return;
-        if (t0.some(p => p.id_time !== t0Id) || t1.some(p => p.id_time !== t1Id)) return;
-        
-        // Se isTimeDaRegiaoAtual estiver implementado alhures
         if (typeof isTimeDaRegiaoAtual === 'function' && _REGIAO !== "ALL" && !isTimeDaRegiaoAtual(t0Id) && !isTimeDaRegiaoAtual(t1Id)) return;
  
         let resultado = validarVencedorPartida(t0, t1);
@@ -377,9 +414,36 @@ function estruturarMD3(dadosPeriodo) {
         });
     });
 
-    // Lógica agrupada por Scrims simulada a partir do escopo corrigido
-    // ... [Aqui entraria a separação dos matches dentro das scrims reais dependendo do formato de agrupamento do seu CSV]
-    // A correção do erro apontado (vencedorRound) na hora de fechar as MD3 segue o padrão seguro:
+    // Construção das Scrims agrupadas (Este era o trecho faltando e que esvaziava os dados)
+    let agrupamentoScrims = {};
+    partidasEstruturadas.forEach(p => {
+        let dataCurta = p.dataFormatada ? p.dataFormatada.split(' ')[0] : 'Indefinido';
+        let idA = p.tAId < p.tBId ? p.tAId : p.tBId;
+        let idB = p.tAId < p.tBId ? p.tBId : p.tAId;
+        let nomeA = p.tAId < p.tBId ? p.tANome : p.tBNome;
+        let nomeB = p.tAId < p.tBId ? p.tBNome : p.tANome;
+
+        let key = `${idA}_${idB}_${dataCurta}`;
+        if (p.tipo === 'tournament' || p.isMatcherino) key += '_tournament';
+
+        if (!agrupamentoScrims[key]) {
+            agrupamentoScrims[key] = {
+                tAId: idA, tBId: idB,
+                tANome: nomeA, tBNome: nomeB,
+                dataFormatada: dataCurta,
+                sets: [],
+                timestamp: p.timestamp,
+                temMatcherino: false
+            };
+        }
+        if (p.isMatcherino) agrupamentoScrims[key].temMatcherino = true;
+        agrupamentoScrims[key].sets.push(p);
+    });
+
+    scrims = Object.values(agrupamentoScrims);
+    scrims.forEach(s => {
+        s.sets.sort((a,b) => a.timestamp - b.timestamp);
+    });
 
     // Simulação do loop de Scrims corrigido da captura de tela
     scrims.forEach(scrim => {
@@ -393,7 +457,6 @@ function estruturarMD3(dadosPeriodo) {
         const fecharRound = (setsDoRound) => {
             if (setsDoRound.length === 0) return;
             
-            // CORREÇÃO APLICADA: Remover duplicatas inconsistentes, gerando apenas evidências limpas de Winner
             let vencedorRound = null;
             if (winsA > winsB) { vencedorRound = scrim.tAId; scoreScrimA++; }
             else if (winsB > winsA) { vencedorRound = scrim.tBId; scoreScrimB++; }
@@ -466,7 +529,6 @@ function processarDadosGlobais() {
         }
         if(tipo !== 'todos') mT = (row.tipo === tipo);
         
-        // Considerando que isTimeDaRegiaoAtual exista fora deste escopo
         let comp = typeof isTimeDaRegiaoAtual === 'function' ? isTimeDaRegiaoAtual(row.id_time) : true;
         return mA && mM && mD && mT && comp;
     };
@@ -739,17 +801,25 @@ function sugestaoQuartoJogador(time) {
     let porPartida = {};
     dadosBrutos.forEach(r => { if(!porPartida[r.id_partida]) porPartida[r.id_partida] = []; porPartida[r.id_partida].push(r); });
     Object.values(porPartida).forEach(linhas => {
-        [linhas.slice(0,3), linhas.slice(3,6)].forEach(lado => {
-            let tagsLado = lado.map(p => p.player_tag);
-            if (tagsRoster.filter(t => tagsLado.includes(t)).length >= 2) {
-                lado.forEach(p => {
-                    if (!tagsRoster.includes(p.player_tag) && p.player_tag && p.player_tag !== 'None') {
-                        if (!contagem[p.player_tag]) contagem[p.player_tag] = { n: 0, nick: p.player_name };
-                        contagem[p.player_tag].n++;
-                    }
-                });
-            }
+        let timesAgrupados = {};
+        linhas.forEach(l => {
+            if (!timesAgrupados[l.id_time]) timesAgrupados[l.id_time] = [];
+            timesAgrupados[l.id_time].push(l);
         });
+        let lados = Object.values(timesAgrupados);
+        if(lados.length === 2 && lados[0].length === 3 && lados[1].length === 3) {
+            lados.forEach(lado => {
+                let tagsLado = lado.map(p => p.player_tag);
+                if (tagsRoster.filter(t => tagsLado.includes(t)).length >= 2) {
+                    lado.forEach(p => {
+                        if (!tagsRoster.includes(p.player_tag) && p.player_tag && p.player_tag !== 'None') {
+                            if (!contagem[p.player_tag]) contagem[p.player_tag] = { n: 0, nick: p.player_name };
+                            contagem[p.player_tag].n++;
+                        }
+                    });
+                }
+            });
+        }
     });
     let melhor = Object.entries(contagem).sort((a,b) => b[1].n - a[1].n)[0];
     return melhor ? { tag: melhor[0], nick: melhor[1].nick } : { tag: '', nick: '' };
