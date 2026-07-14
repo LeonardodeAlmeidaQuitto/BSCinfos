@@ -1,4 +1,3 @@
-
 import requests
 import pandas as pd
 import os
@@ -186,7 +185,6 @@ def minerar_dados():
         'items_resultado_invalido': 0,
     }
  
-    for tag_busca, info_busca in list(MAPEAMENTO_PLAYERS.items()):
     ids_consulta = IDS_MONITORADOS + [t for t in tags_torneio if t not in IDS_MONITORADOS]
     for tag_busca in ids_consulta:
         info_busca = MAPEAMENTO_PLAYERS.get(tag_busca, {})
