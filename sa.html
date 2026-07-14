@@ -9,15 +9,16 @@
     
     <script>window.REGIAO_ATUAL = "SA";</script>
     
+    <script src="utils.js" defer></script>
     <script src="app.js" defer></script>
 </head>
-<body>
+<body data-region-label="SA">
 
     <nav class="navbar">
         <a href="index.html" class="nav-link">MENU</a>
         <div class="nav-links">
         <div class="dropdown">
-            <a href="#" class="nav-link" id="ea-menu-btn">SA ▼ (META)</a>
+            <a href="#" class="nav-link" id="region-menu-btn">SA ▼ (META)</a>
             <div class="dropdown-content">
                 <a href="#" onclick="mudarTela('meta'); return false;">Meta</a>
                 <a href="#" onclick="mudarTela('brawlers'); return false;">Brawlers</a>
@@ -103,17 +104,5 @@
 
     </main>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            window.mudarTela = function(tela) {
-                document.querySelectorAll('.tela-secao').forEach(sec => sec.classList.replace('tela-ativa', 'tela-oculta'));
-                document.getElementById(`tela-${tela}`).classList.replace('tela-oculta', 'tela-ativa');
-                
-                const titulos = {'meta': 'SA ▼ (META)', 'brawlers': 'SA ▼ (BRAWLERS)', 'times': 'SA ▼ (TIMES)', 'scrims': 'SA ▼ (SCRIMS)'};
-                document.getElementById('sa-menu-btn').textContent = titulos[tela];
-                document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('active'));
-            };
-        });
-    </script>
 </body>
 </html>
