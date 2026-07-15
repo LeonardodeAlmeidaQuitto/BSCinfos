@@ -20,19 +20,16 @@ const ROTACAO_MAPAS = {
             "Heist": ["Safe Zone", "Kaboom Canyon", "Pit Stop"],
             "Bounty": ["Hideout", "Shooting Star", "Layer Cake"],
             "Knockout": ["Goldarm Gulch", "Out in the Open", "New Horizons"]
-        }
-    },
-     "2026": {
+        },
         "07": { 
             "Brawl Ball": ["Pinhole Punt", "Pinball Dreams", "Triple Dribble"], 
             "Gem Grab": ["Hard Rock Mine", "Crystal Arcade", "Gem Fort"],
             "Hot Zone": ["Dueling Beetles", "Open Business", "Ring of Fire"],
             "Heist": ["Safe Zone", "Kaboom Canyon", "Pit Stop"],
             "Bounty": ["Hideout", "Dry Season", "Layer Cake"],
-            "Knockout": ["Goldarm Gulch", "Out in the Open", "New Horizons"]
+            "Knockout": ["Goldarm Gulch", "Out in the Open", "New Horizons"]        
         }
-    }
-};
+    };
 
        
 // ========================================================
@@ -810,15 +807,44 @@ window.toggleModoMeta = function(idModo) {
 }
 
 function obterRotacaoAtiva(ano, mes) {
-    if (ano !== 'todos' && mes !== 'todos' && ROTACAO_MAPAS[ano] && ROTACAO_MAPAS[ano][mes]) {
-        return ROTACAO_MAPAS[ano][mes];
+    let mapasAgregados = {};
+
+    // Função auxiliar para juntar mapas sem duplicá-los
+    const adicionarMapas = (rotacao) => {
+        for (let modo in rotacao) {
+            if (!mapasAgregados[modo]) mapasAgregados[modo] = new Set();
+            rotacao[modo].forEach(mapa => mapasAgregados[modo].add(mapa));
+        }
+    };
+
+    if (ano !== 'todos' && mes !== 'todos') {
+        // Filtro específico (Ex: Ano 2026, Mês 07)
+        if (ROTACAO_MAPAS[ano] && ROTACAO_MAPAS[ano][mes]) {
+            adicionarMapas(ROTACAO_MAPAS[ano][mes]);
+        }
+    } else if (ano !== 'todos' && mes === 'todos') {
+        // Filtro de ano específico, mas pegando todos os meses
+        if (ROTACAO_MAPAS[ano]) {
+            for (let m in ROTACAO_MAPAS[ano]) {
+                adicionarMapas(ROTACAO_MAPAS[ano][m]);
+            }
+        }
+    } else {
+        // Filtro "TODOS": Agrega todos os anos e todos os meses cadastrados
+        for (let a in ROTACAO_MAPAS) {
+            for (let m in ROTACAO_MAPAS[a]) {
+                adicionarMapas(ROTACAO_MAPAS[a][m]);
+            }
+        }
     }
-    let anos = Object.keys(ROTACAO_MAPAS).sort().reverse();
-    for (let a of anos) {
-        let meses = Object.keys(ROTACAO_MAPAS[a]).sort().reverse();
-        for (let m of meses) return ROTACAO_MAPAS[a][m];
+
+    // Converte os Sets (que evitaram repetição) de volta para Arrays para a renderização
+    let resultado = {};
+    for (let modo in mapasAgregados) {
+        resultado[modo] = Array.from(mapasAgregados[modo]);
     }
-    return null;
+
+    return Object.keys(resultado).length > 0 ? resultado : null;
 }
 
 function renderizarMeta() {
