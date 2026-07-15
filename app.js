@@ -1,5 +1,6 @@
 let dadosBrutos = [];
 let dadosFiltrados = [];
+let mapaSelecionadoInfo = null;
 let dadosBans = [];
 let dadosBansFiltrados = [];
 let listaBrawlers = [];
@@ -1381,4 +1382,290 @@ function tornarTabelasOrdenaveis() {
             });
         });
     });
+}
+
+// ==========================================
+// MÓDULO MAPAS: RENDERIZAÇÃO E ESTATÍSTICAS
+// ==========================================
+
+function renderizarSidebarMapas() {
+    const sidebar = document.getElementById('sidebar-mapas');
+    if (!sidebar) return;
+    
+    // Identificar todos os modos e mapas disponíveis nos dados filtrados
+    let modosMapas = {};
+    dadosFiltrados.forEach(r => {
+        let modo = r.modo || "Desconhecido";
+        let mapa = r.mapa || "Desconhecido";
+        if(!modosMapas[modo]) modosMapas[modo] = new Set();
+        modosMapas[modo].add(mapa);
+    });
+
+    let html = `<h3 style="margin-bottom: 15px; color: var(--accent-hover, #fff);">MODOS E MAPAS</h3>`;
+    
+    Object.keys(modosMapas).sort().forEach(modo => {
+        let cleanMode = formatImg(modo);
+        html += `
+            <div style="margin-bottom: 15px;">
+                <div style="display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 14px; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 4px;">
+                    <img src="element/modes/${cleanMode}.png" style="width: 20px;" onerror="this.src='element/modes/default.png'">
+                    ${modo.toUpperCase()}
+                </div>
+                <div style="padding-left: 10px; margin-top: 5px;">
+        `;
+        
+        Array.from(modosMapas[modo]).sort().forEach(mapa => {
+            let cleanMap = formatImg(mapa);
+            html += `
+                <div class="sidebar-item" onclick="selecionarMapa('${modo}', '${mapa}')" style="display: flex; align-items: center; gap: 8px; padding: 6px; cursor: pointer; font-size: 13px;">
+                    <img src="element/maps/${cleanMap}.png" style="width: 30px; height: 30px; object-fit: cover; border-radius: 4px;" onerror="this.src='element/maps/default.png'">
+                    <span>${mapa}</span>
+                </div>
+            `;
+        });
+        html += `</div></div>`;
+    });
+    
+    sidebar.innerHTML = html;
+}
+
+function selecionarMapa(modo, mapa) {
+    mapaSelecionadoInfo = { modo, mapa };
+    renderizarDetalhesMapa(modo, mapa);
+}
+
+function renderizarDetalhesMapa(modo, mapa) {
+    const painel = document.getElementById('painel-info-mapa');
+    if(!painel) return;
+
+    // 1. Filtrar dados exclusivos deste mapa e modo
+    let dadosMapa = dadosFiltrados.filter(r => r.modo === modo && r.mapa === mapa);
+    if(dadosMapa.length === 0) {
+        painel.innerHTML = `<p>Sem dados para este mapa nos filtros atuais.</p>`;
+        return;
+    }
+
+    // 2. Agrupar por Partida e por Time para formar as Composições (3 Brawlers)
+    let partidasAgrupadas = {}; 
+    dadosMapa.forEach(r => {
+        if(!partidasAgrupadas[r.id_partida]) partidasAgrupadas[r.id_partida] = {};
+        if(!partidasAgrupadas[r.id_partida][r.id_time]) partidasAgrupadas[r.id_partida][r.id_time] = { brawlers: [], win: parseInt(r.win) === 1, timeNome: r.nome_time, data: r.data_adicao };
+        partidasAgrupadas[r.id_partida][r.id_time].brawlers.push((r.pick||'').toUpperCase());
+    });
+
+    let statsBrawlers = {};
+    let statsComps = {};
+    let statsSinergias = {};
+    let statsTimes = {};
+    let historicoTimes = {}; // Para guardar as últimas comps de cada time
+
+    let totalTimesJogaram = 0; // Usado para calcular o PickRate% base de Comps e Times
+
+    Object.values(partidasAgrupadas).forEach(timesNaPartida => {
+        Object.entries(timesNaPartida).forEach(([idTime, dadosTime]) => {
+            if(dadosTime.brawlers.length !== 3) return; // Só avalia times com 3 picks registrados
+            totalTimesJogaram++;
+
+            let win = dadosTime.win;
+            let brawlersOrdenados = [...dadosTime.brawlers].sort();
+            
+            // --- Brawlers Individuais ---
+            brawlersOrdenados.forEach(b => {
+                if(!statsBrawlers[b]) statsBrawlers[b] = { picks: 0, wins: 0 };
+                statsBrawlers[b].picks++;
+                if(win) statsBrawlers[b].wins++;
+            });
+
+            // --- Composições (3 Juntos) ---
+            let compKey = brawlersOrdenados.join(' + ');
+            if(!statsComps[compKey]) statsComps[compKey] = { picks: 0, wins: 0, brawlers: brawlersOrdenados };
+            statsComps[compKey].picks++;
+            if(win) statsComps[compKey].wins++;
+
+            // --- Sinergias (2 Juntos) ---
+            let pares = [
+                [brawlersOrdenados[0], brawlersOrdenados[1]].join(' + '),
+                [brawlersOrdenados[0], brawlersOrdenados[2]].join(' + '),
+                [brawlersOrdenados[1], brawlersOrdenados[2]].join(' + ')
+            ];
+            pares.forEach(par => {
+                if(!statsSinergias[par]) statsSinergias[par] = { picks: 0, wins: 0, brawlers: par.split(' + ') };
+                statsSinergias[par].picks++;
+                if(win) statsSinergias[par].wins++;
+            });
+
+            // --- Times ---
+            if(!statsTimes[idTime]) statsTimes[idTime] = { nome: dadosTime.timeNome, matches: 0, wins: 0 };
+            statsTimes[idTime].matches++;
+            if(win) statsTimes[idTime].wins++;
+
+            // --- Histórico de Comps do Time (Para o click) ---
+            if(!historicoTimes[idTime]) historicoTimes[idTime] = [];
+            historicoTimes[idTime].push({ comp: brawlersOrdenados, win: win, data: parseDateBR(dadosTime.data) || 0 });
+        });
+    });
+
+    // Ordenar históricos (mais recentes primeiro)
+    Object.keys(historicoTimes).forEach(id => {
+        historicoTimes[id].sort((a,b) => b.data - a.data);
+    });
+
+    // Formatar arrays para renderização
+    const formatRow = (obj, totalBase) => {
+        let pr = ((obj.picks || obj.matches) / totalBase * 100).toFixed(1);
+        let wr = ((obj.wins / (obj.picks || obj.matches)) * 100).toFixed(1);
+        return { ...obj, pr, wr };
+    };
+
+    let arrBrawlers = Object.entries(statsBrawlers).map(([nome, d]) => formatRow({...d, nome}, totalTimesJogaram)).sort((a,b) => b.picks - a.picks);
+    let arrComps = Object.values(statsComps).map(d => formatRow(d, totalTimesJogaram)).sort((a,b) => b.picks - a.picks).slice(0,5);
+    let arrSinergias = Object.values(statsSinergias).map(d => formatRow(d, totalTimesJogaram)).sort((a,b) => b.picks - a.picks).slice(0,5);
+    let arrTimes = Object.entries(statsTimes).map(([id, d]) => formatRow({...d, id}, totalTimesJogaram)).sort((a,b) => b.matches - a.matches).slice(0, 10);
+
+    let cleanMap = formatImg(mapa);
+    let cleanMode = formatImg(modo);
+
+    // Salvar o histórico globalmente para o popup de clique
+    window.historicoTimesMapa = historicoTimes;
+
+    let html = `
+        <!-- Cabeçalho do Mapa (Foto Média + Título) -->
+        <div style="display: flex; gap: 20px; align-items: center; margin-bottom: 25px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;">
+            <img src="element/maps/${cleanMap}.png" style="width: 250px; height: 140px; object-fit: cover; border-radius: 8px; border: 2px solid var(--borda-destaque);" onerror="this.src='element/maps/default.png'">
+            <div>
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px;">
+                    <img src="element/modes/${cleanMode}.png" style="width:24px;" onerror="this.src='element/modes/default.png'">
+                    <span style="color:var(--texto-secundario); font-weight:bold;">${modo.toUpperCase()}</span>
+                </div>
+                <h2 style="font-size: 32px; margin: 0;">${mapa}</h2>
+                <div style="margin-top:10px; font-size:12px; color:#888;">Total de Partidas no Filtro: ${totalTimesJogaram / 2}</div>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            
+            <!-- Principais Comps (3 Brawlers) -->
+            <div style="background: var(--bg-geral); padding: 15px; border-radius: 8px; border: 1px solid var(--borda-destaque);">
+                <h3 style="margin-bottom: 15px; font-size: 14px;">👑 PRINCIPAIS COMPS (3 JUNTOS)</h3>
+                <table class="excel-table" style="width: 100%;">
+                    <thead><tr><th style="text-align:left;">Composição</th><th>P</th><th>PR%</th><th>W</th><th>WR%</th></tr></thead>
+                    <tbody>
+                        ${arrComps.map(c => `
+                            <tr>
+                                <td style="text-align:left; display:flex; gap:5px;">
+                                    <img src="brawlers/${formatImg(c.brawlers[0])}.png" style="width:24px; border-radius:4px;" onerror="this.src='brawlers/default.png'">
+                                    <img src="brawlers/${formatImg(c.brawlers[1])}.png" style="width:24px; border-radius:4px;" onerror="this.src='brawlers/default.png'">
+                                    <img src="brawlers/${formatImg(c.brawlers[2])}.png" style="width:24px; border-radius:4px;" onerror="this.src='brawlers/default.png'">
+                                </td>
+                                <td>${c.picks}</td><td style="color:gray;">${c.pr}%</td><td>${c.wins}</td><td class="winrate-cell">${c.wr}%</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Principais Sinergias (2 Brawlers) -->
+            <div style="background: var(--bg-geral); padding: 15px; border-radius: 8px; border: 1px solid var(--borda-destaque);">
+                <h3 style="margin-bottom: 15px; font-size: 14px;">🤝 PRINCIPAIS SINERGIAS (2 JUNTOS)</h3>
+                <table class="excel-table" style="width: 100%;">
+                    <thead><tr><th style="text-align:left;">Sinergia</th><th>P</th><th>PR%</th><th>W</th><th>WR%</th></tr></thead>
+                    <tbody>
+                        ${arrSinergias.map(c => `
+                            <tr>
+                                <td style="text-align:left; display:flex; gap:5px; align-items:center;">
+                                    <img src="brawlers/${formatImg(c.brawlers[0])}.png" style="width:24px; border-radius:4px;" onerror="this.src='brawlers/default.png'">
+                                    <span style="font-size:12px; color:gray;">+</span>
+                                    <img src="brawlers/${formatImg(c.brawlers[1])}.png" style="width:24px; border-radius:4px;" onerror="this.src='brawlers/default.png'">
+                                </td>
+                                <td>${c.picks}</td><td style="color:gray;">${c.pr}%</td><td>${c.wins}</td><td class="winrate-cell">${c.wr}%</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Melhores Brawlers no Mapa -->
+            <div style="background: var(--bg-geral); padding: 15px; border-radius: 8px; border: 1px solid var(--borda-destaque);">
+                <h3 style="margin-bottom: 15px; font-size: 14px;">⭐ MELHORES BRAWLERS</h3>
+                <div style="max-height: 250px; overflow-y: auto;">
+                    <table class="excel-table" style="width: 100%;">
+                        <thead><tr><th style="text-align:left;">Brawler</th><th>P</th><th>PR%</th><th>W</th><th>WR%</th></tr></thead>
+                        <tbody>
+                            ${arrBrawlers.map(b => `
+                                <tr>
+                                    <td style="text-align:left; font-weight:bold;">
+                                        <img src="brawlers/${formatImg(b.nome)}.png" style="width:20px; vertical-align:middle; margin-right:5px; border-radius:4px;" onerror="this.src='brawlers/default.png'">
+                                        ${b.nome}
+                                    </td>
+                                    <td>${b.picks}</td><td style="color:gray;">${b.pr}%</td><td>${b.wins}</td><td class="winrate-cell">${b.wr}%</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Melhores Times no Mapa -->
+            <div style="background: var(--bg-geral); padding: 15px; border-radius: 8px; border: 1px solid var(--borda-destaque);">
+                <h3 style="margin-bottom: 15px; font-size: 14px;">🛡️ MELHORES TIMES NESTE MAPA</h3>
+                <div style="max-height: 250px; overflow-y: auto;">
+                    <table class="excel-table" style="width: 100%;">
+                        <thead><tr><th style="text-align:left;">Time (Clique para Histórico)</th><th>Partidas</th><th>W</th><th>WR%</th></tr></thead>
+                        <tbody>
+                            ${arrTimes.map(t => `
+                                <tr style="cursor:pointer;" onclick="mostrarHistoricoTimeMapa('${t.id}', '${t.nome}')" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                                    <td style="text-align:left; font-weight:bold; display:flex; align-items:center; gap:8px;">
+                                        <img src="${teamLogoUrl(t.id)}" style="width:20px; border-radius:4px;" onerror="this.onerror=null; this.src='${teamLogoFallback(t.id)}';">
+                                        ${t.nome}
+                                    </td>
+                                    <td>${t.matches}</td><td>${t.wins}</td><td class="winrate-cell">${t.wr}%</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+        
+        <!-- Container Modal para Histórico de Time (escondido por padrão) -->
+        <div id="modal-historico-time-mapa" style="display:none; margin-top:20px; padding:15px; background:rgba(0,0,0,0.4); border-radius:8px; border:1px solid var(--borda-destaque);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h3 id="modal-historico-titulo" style="font-size:14px; margin:0;">ÚLTIMAS COMPS DO TIME</h3>
+                <button onclick="document.getElementById('modal-historico-time-mapa').style.display='none'" style="background:transparent; border:none; color:white; cursor:pointer;">❌</button>
+            </div>
+            <div id="modal-historico-conteudo" style="display:flex; gap:15px; overflow-x:auto;"></div>
+        </div>
+    `;
+    
+    painel.innerHTML = html;
+}
+
+// Função para exibir as últimas 3 comps de um time ao clicar nele na tabela
+function mostrarHistoricoTimeMapa(idTime, nomeTime) {
+    const modal = document.getElementById('modal-historico-time-mapa');
+    const titulo = document.getElementById('modal-historico-titulo');
+    const conteudo = document.getElementById('modal-historico-conteudo');
+    
+    if(!modal || !window.historicoTimesMapa) return;
+    
+    let historico = window.historicoTimesMapa[idTime] || [];
+    let ultimas3 = historico.slice(0, 3); // Pega apenas as 3 mais recentes
+
+    titulo.innerText = `ÚLTIMAS 3 COMPS DE ${nomeTime.toUpperCase()}`;
+    
+    if(ultimas3.length === 0) {
+        conteudo.innerHTML = `<p style="font-size:12px; color:gray;">Nenhum histórico recente encontrado.</p>`;
+    } else {
+        conteudo.innerHTML = ultimas3.map((h, i) => `
+            <div style="background:var(--bg-geral); padding:10px; border-radius:8px; text-align:center; min-width:120px; border: 1px solid ${h.win ? 'rgba(0,255,0,0.2)' : 'rgba(255,0,0,0.2)'};">
+                <div style="font-size:10px; color:gray; margin-bottom:5px;">${h.win ? '<span style="color:#4caf50;">VITÓRIA</span>' : '<span style="color:#f44336;">DERROTA</span>'}</div>
+                <div style="display:flex; justify-content:center; gap:5px;">
+                    ${h.comp.map(b => `<img src="brawlers/${formatImg(b)}.png" style="width:28px; border-radius:4px;" onerror="this.src='brawlers/default.png'" title="${b}">`).join('')}
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    modal.style.display = 'block';
 }
