@@ -21,7 +21,7 @@ const ROTACAO_MAPAS = {
             "Bounty": ["Hideout", "Shooting Star", "Layer Cake"],
             "Knockout": ["Goldarm Gulch", "Out in the Open", "New Horizons"]
         }
-    }
+    },
      "2026": {
         "07": { 
             "Brawl Ball": ["Pinhole Punt", "Pinball Dreams", "Triple Dribble"], 
