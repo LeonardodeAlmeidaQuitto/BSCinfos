@@ -1383,22 +1383,32 @@ function tornarTabelasOrdenaveis() {
         headers.forEach((th, index) => {
             th.style.cursor = 'pointer';
             th.title = "Clique para ordenar";
-            th.addEventListener('click', () => {
+            
+            // Remove listener antigo se existir (evita duplicidade caso seja chamado várias vezes)
+            const newTh = th.cloneNode(true);
+            th.parentNode.replaceChild(newTh, th);
+            
+            newTh.addEventListener('click', () => {
                 const tbody = table.querySelector('tbody');
                 if (!tbody) return;
                 const rows = Array.from(tbody.querySelectorAll('tr'));
-                const isAscending = th.classList.contains('asc');
-                headers.forEach(h => h.classList.remove('asc', 'desc'));
-                th.classList.add(isAscending ? 'desc' : 'asc');
+                const isAscending = newTh.classList.contains('asc');
+                
+                table.querySelectorAll('th').forEach(h => h.classList.remove('asc', 'desc'));
+                newTh.classList.add(isAscending ? 'desc' : 'asc');
+                
                 rows.sort((rowA, rowB) => {
                     let cellA = rowA.children[index].innerText.trim();
                     let cellB = rowB.children[index].innerText.trim();
+                    
                     const parseCell = (val) => {
                         let num = parseFloat(val.replace('%', '').replace(',', '.'));
                         return isNaN(num) ? val : num;
                     };
+                    
                     let valA = parseCell(cellA);
                     let valB = parseCell(cellB);
+                    
                     if (typeof valA === 'string' && typeof valB === 'string') {
                         return isAscending ? valB.localeCompare(valA) : valA.localeCompare(valB);
                     } else {
@@ -1637,7 +1647,7 @@ function renderizarDetalhesMapa(modo, mapa) {
                 <h3 style="margin-bottom: 15px; font-size: 14px;">🛡️ MELHORES TIMES NESTE MAPA</h3>
                 <div style="max-height: 250px; overflow-y: auto;">
                     <table class="excel-table" style="width: 100%;">
-                        <thead><tr><th style="text-align:left;">Time (Clique para Histórico)</th><th>Partidas</th><th>W</th><th>WR%</th></tr></thead>
+                        <thead><tr><th style="text-align:left;">Time (Clique)</th><th>Partidas</th><th>W</th><th>WR%</th></tr></thead>
                         <tbody>
                             ${arrTimes.map(t => `
                                 <tr style="cursor:pointer;" onclick="mostrarHistoricoTimeMapa('${t.id}', '${t.nome}')" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
@@ -1666,6 +1676,11 @@ function renderizarDetalhesMapa(modo, mapa) {
     `;
     
     painel.innerHTML = html;
+    
+    // ==========================================
+    // ALTERAÇÃO: Chamar a função de ordenação aqui
+    // ==========================================
+    tornarTabelasOrdenaveis();
 }
 
 // Função para exibir as últimas 3 comps de um time ao clicar nele na tabela
