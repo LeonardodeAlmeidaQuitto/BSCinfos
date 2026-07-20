@@ -3,7 +3,7 @@ name: Bot Minerador do Brawl Stars
 on:
   schedule:
     # Roda a cada 30 minutos exatos
-    - cron: '*/30 * * * *'
+    - cron: '*/15 * * * *'
   workflow_dispatch: # Permite rodar manualmente no GitHub
 
 jobs:
