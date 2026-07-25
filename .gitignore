@@ -1,0 +1,12 @@
+# Segredos e variáveis de ambiente — NUNCA versionar
+.env
+.env.*
+!.env.example
+*.key
+secrets.*
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/

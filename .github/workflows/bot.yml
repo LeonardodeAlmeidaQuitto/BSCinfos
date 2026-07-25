@@ -35,6 +35,8 @@ jobs:
           git pull --rebase origin main
 
       - name: Rodando o Gerador (Bot)
+        env:
+          BRAWL_API_KEY: ${{ secrets.BRAWL_API_KEY }}
         run: python gerador.py
 
       - name: Salvando as alterações no GitHub
