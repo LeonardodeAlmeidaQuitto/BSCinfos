@@ -2,7 +2,7 @@ name: Bot Minerador do Brawl Stars
 
 on:
   schedule:
-    # Roda a cada 15 minutos exatos
+    # Roda a cada 30 minutos exatos
     - cron: '*/15 * * * *'
   workflow_dispatch: # Permite rodar manualmente no GitHub
 
@@ -17,8 +17,6 @@ jobs:
     steps:
       - name: Baixando os arquivos do repositório
         uses: actions/checkout@v4
-        with:
-          lfs: true  # <-- ADICIONADO: Necessário para baixar e processar arquivos maiores que 100MB
 
       - name: Instalando o Python
         uses: actions/setup-python@v5
@@ -26,9 +24,8 @@ jobs:
           python-version: '3.10'
 
       - name: Instalando as bibliotecas
-        # Adicionei o 'requests' aqui, pois o código Python (gerador) costuma usar essa biblioteca
         run: |
-          pip install pandas brawlstats requests
+          pip install pandas brawlstats
 
       - name: Sincronizar e Configurar Git
         run: |
