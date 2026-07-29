@@ -2,21 +2,22 @@ name: Bot Minerador do Brawl Stars
 
 on:
   schedule:
-    # Roda a cada 30 minutos exatos
     - cron: '*/15 * * * *'
-  workflow_dispatch: # Permite rodar manualmente no GitHub
+  workflow_dispatch:
 
 jobs:
   minerar_e_atualizar:
     runs-on: ubuntu-latest
     env:
-      TZ: 'America/Sao_Paulo' # Garante que a máquina use o horário de Brasília
+      TZ: 'America/Sao_Paulo'
     permissions:
       contents: write
 
     steps:
       - name: Baixando os arquivos do repositório
         uses: actions/checkout@v4
+        with:
+          lfs: true # Essencial para ler o arquivo grande
 
       - name: Instalando o Python
         uses: actions/setup-python@v5
@@ -25,26 +26,33 @@ jobs:
 
       - name: Instalando as bibliotecas
         run: |
-          pip install pandas brawlstats
+          pip install pandas brawlstats requests
 
-      - name: Sincronizar e Configurar Git
+      - name: Sincronizar, Configurar Git e LFS
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          # Puxa as mudanças ANTES de gerar novos dados para evitar conflitos
+          
+          # Garante que o Git LFS está ativo na máquina virtual
+          git lfs install
+          
           git pull --rebase origin main
 
       - name: Rodando o Gerador (Bot)
+        # ATENÇÃO: Se o nome do seu arquivo Python for diferente, mude aqui.
         run: python gerador.py
 
       - name: Salvando as alterações no GitHub
         run: |
-          # Adiciona os arquivos atualizados
-          git add historico_bruto.csv estatisticas_finais.csv api/
+          # Adiciona o arquivo de configuração do LFS e os dados
+          git add .gitattributes historico_bruto.csv estatisticas_finais.csv
           
-          # Só faz o commit e push se o Python realmente encontrou partidas novas
+          # Se a pasta api existir, adiciona também (ignora erro se não existir)
+          git add api/ || true
+          
+          # Verifica se há mudanças e faz o commit usando LFS
           if ! git diff --cached --quiet; then
-            git commit -m "🤖 Atualização Automática de Partidas"
+            git commit -m "🤖 Atualização Automática de Partidas (com LFS)"
             git push origin main
           else
             echo "Sem mudanças para atualizar"
