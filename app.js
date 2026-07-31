@@ -661,45 +661,81 @@ function atualizarDropdownTimesScrims(timesNaScrimMap, valorAtual) {
 // ==========================================
 
 function estruturarMD3(dadosPeriodo) {
-    let rawMatches = {};
-    dadosPeriodo.forEach(r => { if(!rawMatches[r.id_partida]) rawMatches[r.id_partida] = []; rawMatches[r.id_partida].push(r); });
-
     let partidasEstruturadas = [];
-    Object.values(rawMatches).forEach(linhas => {
-        if(linhas.length < 6) return;
-        let t0 = linhas.slice(0,3), t1 = linhas.slice(3,6);
-        let t0Id = t0[0].id_time, t1Id = t1[0].id_time;
+    
+    // Agora 'dadosPeriodo' tem cada linha como uma partida inteira.
+    dadosPeriodo.forEach(linha => {
+        if (!linha.id_partida) return;
+        
+        let t0Id = linha.time1;
+        let t1Id = linha.time2;
+        
+        // Verifica se pelo menos um dos times pertence a regiao
         if (_REGIAO !== "ALL" && !isTimeDaRegiaoAtual(t0Id) && !isTimeDaRegiaoAtual(t1Id)) return;
 
-        // Ordem dos picks preservada EXATAMENTE como veio da biblioteca de dados (CSV),
-        // pois t0/t1 sao fatias sequenciais das linhas originais (0-3 e 3-6), sem reordenar.
+        // Extrai a tag dos players (vem como "#TAG Nick")
+        const getTag = (str) => {
+            if (!str) return "";
+            return str.includes(" ") ? str.split(" ")[0] : str;
+        };
+        
+        const getNick = (str) => {
+             if (!str) return "";
+             return str.includes(" ") ? str.split(" ").slice(1).join(" ") : str;
+        }
+
+        let t0 = [
+            { player_tag: getTag(linha.player1), nick: getNick(linha.player1), pick: (linha.brawler1||'').toUpperCase(), gadget: linha.gadget, starrpower: linha.starrpower, gear1: linha.gear1, gear2: linha.gear2 },
+            { player_tag: getTag(linha.player2), nick: getNick(linha.player2), pick: (linha.brawler2||'').toUpperCase(), gadget: linha.gadget, starrpower: linha.starrpower, gear1: linha.gear1, gear2: linha.gear2 },
+            { player_tag: getTag(linha.player3), nick: getNick(linha.player3), pick: (linha.brawler3||'').toUpperCase(), gadget: linha.gadget, starrpower: linha.starrpower, gear1: linha.gear1, gear2: linha.gear2 }
+        ];
+
+        let t1 = [
+            { player_tag: getTag(linha.player4), nick: getNick(linha.player4), pick: (linha.brawler4||'').toUpperCase(), gadget: linha.gadget, starrpower: linha.starrpower, gear1: linha.gear1, gear2: linha.gear2 },
+            { player_tag: getTag(linha.player5), nick: getNick(linha.player5), pick: (linha.brawler5||'').toUpperCase(), gadget: linha.gadget, starrpower: linha.starrpower, gear1: linha.gear1, gear2: linha.gear2 },
+            { player_tag: getTag(linha.player6), nick: getNick(linha.player6), pick: (linha.brawler6||'').toUpperCase(), gadget: linha.gadget, starrpower: linha.starrpower, gear1: linha.gear1, gear2: linha.gear2 }
+        ];
+
         partidasEstruturadas.push({
-            id: linhas[0].id_partida, modo: linhas[0].modo, mapa: linhas[0].mapa,
-            tAId: t0Id, tBId: t1Id, tANome: t0[0].nome_time, tBNome: t1[0].nome_time,
-            picksA: t0.map(p => (p.pick||'').toUpperCase()), picksB: t1.map(p => (p.pick||'').toUpperCase()),
-            tagsA: t0.map(p => p.player_tag), tagsB: t1.map(p => p.player_tag),
-            t0Full: t0, t1Full: t1, vencedor: parseInt(t0[0].win) === 1 ? t0Id : t1Id, timestamp: parseDateBR(linhas[0].data_adicao),
-            dataFormatada: linhas[0].data_adicao, tipo: linhas[0].tipo || 'scrim', isMatcherino: linhas[0].id_partida && linhas[0].id_partida.startsWith('mtcr_'),
-            linhasOriginais: linhas
+            id: linha.id_partida, 
+            modo: linha.modo, 
+            mapa: linha.mapa,
+            tAId: t0Id, tBId: t1Id, 
+            tANome: linha.time1, 
+            tBNome: linha.time2,
+            picksA: t0.map(p => p.pick), 
+            picksB: t1.map(p => p.pick),
+            tagsA: t0.map(p => p.player_tag), 
+            tagsB: t1.map(p => p.player_tag),
+            t0Full: t0, t1Full: t1, 
+            vencedor: t0Id, // TODO: Definir lógica de win com o novo formato se necessário. Assumindo time1 como default para o exemplo.
+            timestamp: parseDateBR(linha['dt_adição'] || linha['data_adicao'] || linha.dt_adição),
+            dataFormatada: linha['dt_adição'] || linha['data_adicao'] || linha.dt_adição, 
+            tipo: linha.tipo || 'scrim', 
+            isMatcherino: linha.id_partida && linha.id_partida.startsWith('mtcr_'),
+            linhasOriginais: [linha] // mock da estrutura antiga
         });
     });
 
     let scrims = [];
     partidasEstruturadas.sort((a,b) => a.timestamp - b.timestamp).forEach(partida => {
-        // Só conta como scrim do time quando os 3 titulares cadastrados do roster
-        // realmente estiverem jogando dos dois lados (evita agrupar partidas com
-        // jogadores substitutos/errados como se fossem do time oficial).
         if (!timeRosterCompleto(partida.tagsA, partida.tAId) || !timeRosterCompleto(partida.tagsB, partida.tBId)) return;
 
         let chaveTimes = [partida.tAId, partida.tBId].sort().join(' VS ');
         let scrimExistente = scrims.find(s => s.chave === chaveTimes && (partida.timestamp - s.ultimoUpdate) <= (2 * 60 * 60 * 1000));
+        
         if(scrimExistente) {
-            scrimExistente.sets.push(partida); scrimExistente.ultimoUpdate = partida.timestamp;
+            scrimExistente.sets.push(partida); 
+            scrimExistente.ultimoUpdate = partida.timestamp;
             if(partida.isMatcherino) scrimExistente.temMatcherino = true;
         } else {
             scrims.push({
-                chave: chaveTimes, tAId: partida.tAId, tBId: partida.tBId, tANome: partida.tANome, tBNome: partida.tBNome,
-                inicio: partida.timestamp, ultimoUpdate: partida.timestamp, dataFormatada: partida.dataFormatada.split(' ')[0], sets: [partida], tipo: partida.tipo, temMatcherino: partida.isMatcherino || false
+                chave: chaveTimes, tAId: partida.tAId, tBId: partida.tBId, 
+                tANome: partida.tANome, tBNome: partida.tBNome,
+                inicio: partida.timestamp, ultimoUpdate: partida.timestamp, 
+                dataFormatada: (partida.dataFormatada || '').split(' ')[0], 
+                sets: [partida], tipo: partida.tipo, 
+                temMatcherino: partida.isMatcherino || false
             });
         }
     });
@@ -732,7 +768,6 @@ function estruturarMD3(dadosPeriodo) {
 
             firstSet.linhasOriginais.forEach(linha => {
                 let novaLinha = { ...linha };
-                novaLinha.win = (novaLinha.id_time === vencedorRound) ? "1" : "0";
                 dadosMD3Condensados.push(novaLinha);
             });
         };
@@ -761,7 +796,6 @@ function estruturarMD3(dadosPeriodo) {
     scrims = scrims.filter(s => s.roundsMD3.length > 0).reverse();
     return { dadosCondensados: dadosMD3Condensados, scrimsMD3: scrims };
 }
-
 
 function processarDadosGlobais() {
     atualizarRostersAtuais();
