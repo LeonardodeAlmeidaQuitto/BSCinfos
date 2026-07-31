@@ -1,7 +1,7 @@
 import requests
 import pandas as pd
 import os
-import json
+import csv
 from datetime import datetime, timedelta, timezone
 import re
 
@@ -10,15 +10,18 @@ import re
 # =============================================================================
 API_KEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjU0ODZlOGQxLTRkNWQtNDJmYy1iOWE3LWU5ODYyMWJhOWI0NSIsImlhdCI6MTc3ODUwODgwOCwic3ViIjoiZGV2ZWxvcGVyLzc0NjFhNGJkLThhZDctNjg2Mi0wOGVkLTJiYmEzMzAxMWE3NiIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiNDUuNzkuMjE4Ljc5Il0sInR5cGUiOiJjbGllbnQifV19.yvcSQalBqNz6Q6DjZWU5IL1XvBjn5DGckYvy2bgl5tjVeRJ2GMhY_I2JP1zdEeLAfEG2hGVJT7OMZro4kkegFA"
 
-# Proxy da RoyaleAPI: tentado primeiro (contorna o IP fixo travado no token).
+# Adicione sua chave da RapidAPI Djole33 abaixo (Substitua o texto abaixo pela sua chave)
+RAPIDAPI_KEY = "e28d71b8f2msh519f1b75f65bb54p1d5598jsnae80ec5aa0a2" 
+
 PROXY_URL = "https://bsproxy.royaleapi.dev/v1"
-# API oficial da Supercell: usada como fallback automático se o proxy falhar.
 API_OFICIAL_URL = "https://api.brawlstars.com/v1"
 
 ARQUIVO_BRUTO = "historico_bruto.csv"
 ARQUIVO_BANS = "bans_matcherino.csv"
 
-COLUNAS_PICKS = ["id_partida", "regiao", "id_players", "name_players", "pick", "win", "win_rate", "modo", "mapa", "data_adicao", "player_tag", "player_name", "id_time", "nome_time", "tipo"]
+# Cabeçalho exato solicitado
+HEADER_CSV_BRUTO = "id_partida,região,time1,player1,brawler1,gadget,starrpower,gear1,gear2,player2,brawler2,gadget,starrpower,gear1,gear2,player3,brawler3,gadget,starrpower,gear1,gear2,time2,player4,brawler4,gadget,starrpower,gear1,gear2,player5,brawler5,gadget,starrpower,gear1,gear2,player6,brawler6,gadget,starrpower,gear1,gear2,modo,mapa,tipo,dt_adição"
+
 COLUNAS_BANS = ["id_partida", "regiao", "mapa", "modo", "id_time", "nome_time", "brawler_banido", "data_adicao", "tipo"]
 
 # Mapeamento de Tags para identificação automática de Região, Time e Nick
@@ -104,21 +107,39 @@ def nome_brawler(b):
     if isinstance(b, dict): return str(b.get('brawler') or b.get('brawlerName') or b.get('name') or 'UNKNOWN').upper()
     return 'UNKNOWN'
 
+def obter_extras(player_data):
+    """Extrai gadget, starpower, gear1 e gear2 do dicionario do jogador."""
+    brawler = player_data.get('brawler', {})
+    gadgets = brawler.get('gadgets', [])
+    starpowers = brawler.get('starPowers', [])
+    gears = brawler.get('gears', [])
+    
+    gadget = gadgets[0].get('name', '') if gadgets else ''
+    sp = starpowers[0].get('name', '') if starpowers else ''
+    g1 = gears[0].get('name', '') if len(gears) > 0 else ''
+    g2 = gears[1].get('name', '') if len(gears) > 1 else ''
+    
+    return gadget, sp, g1, g2
+
 def buscar_battlelog(tag_url, headers_api):
     """
-    Tenta buscar o battlelog primeiro via proxy RoyaleAPI, e se falhar
-    (qualquer erro de conexão ou status != 200), tenta de novo via API
-    oficial da Supercell direto. Retorna (resposta, origem, erro).
-    Se as duas tentativas falharem, resposta vem None e erro tem o motivo.
+    Tenta buscar o battlelog usando a RapidAPI primeiro para obter os dados extras (gears/starpowers).
+    Se falhar, faz fallback para proxy ou oficial.
     """
+    rapid_headers = {
+        "X-RapidAPI-Key": RAPIDAPI_KEY,
+        "X-RapidAPI-Host": "brawlstarsapi.p.rapidapi.com"
+    }
+    
     tentativas = [
-        (f"{PROXY_URL}/players/{tag_url}/battlelog", "proxy"),
-        (f"{API_OFICIAL_URL}/players/{tag_url}/battlelog", "direto"),
+        (f"https://brawlstarsapi.p.rapidapi.com/v1/player/battlelog?playerTag={tag_url}", "rapidapi", rapid_headers),
+        (f"{PROXY_URL}/players/{tag_url}/battlelog", "proxy", headers_api),
+        (f"{API_OFICIAL_URL}/players/{tag_url}/battlelog", "direto", headers_api),
     ]
     ultimo_erro = None
-    for url, origem in tentativas:
+    for url, origem, h in tentativas:
         try:
-            resp = requests.get(url, headers=headers_api, timeout=10)
+            resp = requests.get(url, headers=h, timeout=10)
             if resp.status_code == 200:
                 return resp, origem, None
             ultimo_erro = f"HTTP {resp.status_code} via {origem} -> {resp.text[:150]}"
@@ -130,7 +151,7 @@ def minerar_dados():
     global MAPEAMENTO_PLAYERS
     tags_torneio = set()
 
-    # Automatização do Matcherino via arquivo 'torneios.txt'
+    # Busca em torneios.txt para tags dinâmicas do Matcherino
     if os.path.exists('torneios.txt'):
         with open('torneios.txt', 'r') as f:
             for linha in f:
@@ -153,10 +174,12 @@ def minerar_dados():
     TAG_PARA_REGIAO = {t: i.get("regiao", "SA") for t, i in MAPEAMENTO_PLAYERS.items()}
 
     ids_registrados, ids_bans = set(), set()
+    
+    # Lê os IDs já existentes
     if os.path.exists(ARQUIVO_BRUTO):
         try:
-            df = pd.read_csv(ARQUIVO_BRUTO)
-            if "id_partida" in df.columns: ids_registrados = set(df["id_partida"].dropna().astype(str).unique())
+            df = pd.read_csv(ARQUIVO_BRUTO, usecols=[0])
+            ids_registrados = set(df.iloc[:, 0].dropna().astype(str).unique())
         except: pass
 
     if os.path.exists(ARQUIVO_BANS):
@@ -168,7 +191,6 @@ def minerar_dados():
     novas_picks, novos_bans = [], []
     headers_api = {"Authorization": f"Bearer {API_KEY}"}
 
-    # --- Contadores de diagnóstico ---
     stats = {
         'total_players': 0, 'status_ok': 0, 'falhas_conexao': 0,
         'origem_sucesso': {}, 'total_items_lidos': 0, 'items_nao_3v3': 0,
@@ -200,6 +222,8 @@ def minerar_dados():
             try:
                 battle = item.get("battle", {})
                 teams = battle.get("teams", [])
+                
+                # Ignora modos que não são 3v3
                 if len(teams) != 2 or len(teams[0]) != 3 or len(teams[1]) != 3:
                     stats['items_nao_3v3'] += 1
                     continue
@@ -211,19 +235,15 @@ def minerar_dados():
 
                 all_p = teams[0] + teams[1]
                 tags_list = [p.get('tag', '') for p in all_p]
-                nicks_list = [p.get('name', 'Unknown') for p in all_p]
                 brawlers_list = [nome_brawler(p.get('brawler', {})) for p in all_p]
 
                 is_matcherino = any(t in tags_torneio for t in tags_list)
                 tipo_raw = battle.get('type', 'friendly').lower()
                 bans_raw = battle.get('bannedBrawlers') or battle.get('bans') or []
-
                 tipo_final = 'tournament' if (is_matcherino or len(bans_raw) > 0 or 'ranked' in tipo_raw) else 'scrim'
 
                 time_str = b_time.split(".")[0] if b_time else "00000000T000000"
                 pid = f"{time_str}_{mapa}_{'_'.join(tags_list)}_{'_'.join(brawlers_list)}"
-
-                res = battle.get('result')
                 reg_final = "/".join(sorted({TAG_PARA_REGIAO.get(t, sigla_busca) for t in tags_list}))
 
                 t0_id, t0_nome = "OPONENTE_T0", "DESCONHECIDO T0"
@@ -240,18 +260,33 @@ def minerar_dados():
 
                 if pid not in ids_registrados:
                     stats['items_novos'] += 1
-                    for i in range(6):
-                        venceu = 1 if (i < 3 and res == 'victory') or (i >= 3 and res == 'defeat') else 0
-                        id_t, nm_t = (t0_id, t0_nome) if i < 3 else (t1_id, t1_nome)
-                        novas_picks.append([
-                            pid, reg_final, ";".join(tags_list), ";".join(nicks_list),
-                            brawlers_list[i], venceu, f"{venceu*100}.0%", modo, mapa,
-                            momento, tags_list[i], nicks_list[i], id_t, nm_t, tipo_final
-                        ])
+                    
+                    def build_player_data(player_dict):
+                        tag = player_dict.get('tag', '')
+                        nick = player_dict.get('name', 'Unknown')
+                        player_str = f"{tag} {nick}"
+                        brawler = nome_brawler(player_dict.get('brawler', {}))
+                        gadget, sp, g1, g2 = obter_extras(player_dict)
+                        return [player_str, brawler, gadget, sp, g1, g2]
+
+                    # Estruturando a linha do CSV com as 44 colunas
+                    nova_linha = [
+                        pid, reg_final, t0_nome,
+                        *build_player_data(teams[0][0]),
+                        *build_player_data(teams[0][1]),
+                        *build_player_data(teams[0][2]),
+                        t1_nome,
+                        *build_player_data(teams[1][0]),
+                        *build_player_data(teams[1][1]),
+                        *build_player_data(teams[1][2]),
+                        modo, mapa, tipo_final, momento
+                    ]
+                    novas_picks.append(nova_linha)
                     ids_registrados.add(pid)
                 else:
                     stats['items_ja_existentes'] += 1
 
+                # Lógica de Bans
                 if bans_raw and pid not in ids_bans:
                     bans_a, bans_b = [], []
                     if isinstance(bans_raw, list):
@@ -275,10 +310,17 @@ def minerar_dados():
                 if stats['erros_processamento'] <= 5:
                     print(f"  [ERRO processamento] {tag_busca}: {e}")
 
+    # Salva no arquivo CSV
     if novas_picks:
-        df_p = pd.DataFrame(novas_picks, columns=COLUNAS_PICKS)
-        df_p.to_csv(ARQUIVO_BRUTO, mode='a', header=not os.path.exists(ARQUIVO_BRUTO), index=False)
-        print(f"Salvo: {len(df_p)//6} jogos no {ARQUIVO_BRUTO}")
+        if not os.path.exists(ARQUIVO_BRUTO):
+            with open(ARQUIVO_BRUTO, 'w', encoding='utf-8') as f:
+                f.write(HEADER_CSV_BRUTO + "\n")
+                
+        with open(ARQUIVO_BRUTO, 'a', encoding='utf-8', newline='') as f:
+            writer = csv.writer(f)
+            for row in novas_picks:
+                writer.writerow(row)
+        print(f"Salvo: {len(novas_picks)} novos jogos no {ARQUIVO_BRUTO}")
 
     if novos_bans:
         df_b = pd.DataFrame(novos_bans, columns=COLUNAS_BANS)
@@ -286,17 +328,12 @@ def minerar_dados():
         print(f"Salvo: {len(novos_bans)} bans no {ARQUIVO_BANS}")
 
     if not novas_picks and not novos_bans:
-        print("Nenhum dado novo.")
+        print("Nenhum dado novo para salvar.")
 
     print("\n========== DIAGNOSTICO DA EXECUCAO ==========")
     print(f"Jogadores consultados: {stats['total_players']}")
-    print(f"  Respostas OK: {stats['status_ok']}  (proxy: {stats['origem_sucesso'].get('proxy',0)}, direto: {stats['origem_sucesso'].get('direto',0)})")
-    print(f"  Falhas de conexao/autenticacao: {stats['falhas_conexao']}")
-    print(f"Partidas brutas lidas nos battlelogs: {stats['total_items_lidos']}")
-    print(f"  Descartadas (nao eram 3v3): {stats['items_nao_3v3']}")
-    print(f"  Ja existentes no historico: {stats['items_ja_existentes']}")
-    print(f"  Novas partidas: {stats['items_novos']}")
-    print(f"  Erros ao processar item: {stats['erros_processamento']}")
+    print(f"Respostas OK: {stats['status_ok']} (Proxy: {stats['origem_sucesso'].get('proxy',0)} | Direto: {stats['origem_sucesso'].get('direto',0)} | RapidAPI: {stats['origem_sucesso'].get('rapidapi',0)})")
+    print(f"Novas partidas adicionadas: {stats['items_novos']}")
     print("==============================================\n")
 
 if __name__ == "__main__":
