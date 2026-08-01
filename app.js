@@ -2391,3 +2391,5 @@ function mostrarHistoricoTimeMapa(idTime, nomeTime) {
     }
 
     modal.style.display = 'block';
+
+}
