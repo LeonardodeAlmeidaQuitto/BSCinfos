@@ -36,9 +36,14 @@ jobs:
           # Garante que o Git LFS está ativo na máquina virtual
           git lfs install
           
-          # Limpa modificações temporárias do LFS para permitir o pull
-          git checkout .
+          # "Esconde" as alterações automáticas do LFS temporariamente
+          git stash || true
+          
+          # Agora o pull vai funcionar sem travar
           git pull --rebase origin main
+          
+          # Devolve as alterações do LFS para o ambiente, ignorando erros se estiver vazio
+          git stash pop || true
 
       - name: Rodando o Gerador (Bot)
         # ATENÇÃO: Se o nome do seu arquivo Python for diferente, mude aqui.
