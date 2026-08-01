@@ -9,7 +9,11 @@ import re
 # =============================================================================
 # CONFIGURAÇÃO GERAL
 # =============================================================================
-# Chave da API oficial da Supercell (battlelog)
+# Chave da API oficial da Supercell (battlelog).
+# IMPORTANTÍSSIMO: Se você receber "HTTP 403 accessDenied Invalid authorization",
+# significa que este token EXPIROU. Gere um novo em:
+#   https://developer.supercell.com -> My Keys -> Create Key
+# e cole o novo JWT abaixo.
 API_KEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjU0ODZlOGQxLTRkNWQtNDJmYy1iOWE3LWU5ODYyMWJhOWI0NSIsImlhdCI6MTc3ODUwODgwOCwic3ViIjoiZGV2ZWxvcGVyLzc0NjFhNGJkLThhZDctNjg2Mi0wOGVkLTJiYmEzMzAxMWE3NiIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZSJ9LHsiY2lkcnMiOlsiNDUuNzkuMjE4Ljc5Il0sInR5cGUiOiJjbGllbnQifV19.yvcSQalBqNz6Q6DjZWU5IL1XvBjn5DGckYvy2bgl5tjVeRJ2GMhY_I2JP1zdEeLAfEG2hGVJT7OMZro4kkegFA"
 
 # Proxy da RoyaleAPI: tentado primeiro (contorna o IP fixo travado no token).
@@ -19,19 +23,26 @@ API_OFICIAL_URL = "https://api.brawlstars.com/v1"
 
 # -----------------------------------------------------------------------------
 # RAPIDAPI - BrawlStarsAPI (Djole33)
-# Endpoint do perfil do jogador (/players/{tag}) retorna a lista "brawlers" com
-# gadgets, starPowers e gears de cada brawler que o jogador possui.
+# Endpoint: GET /brawlers  -> retorna lista de todos os brawlers com:
+#   "1st gadget", "2nd gadget", "1st star power", "2nd star power", id, name
 #
-# IMPORTANTE: Você DEVE substituir RAPIDAPI_KEY abaixo pela sua chave gratuita
-# obtida em https://rapidapi.com/Djole33/api/brawlstarsapi
-# Sem ela, os campos gadget/starrpower/gear1/gear2 ficarao vazios ("").
+# Esta API NÃO tem endpoint de perfil de jogador (/players/{tag} NÃO existe).
+# Os gadgets/star powers/gears de cada partida já vêm DENTRO do battlelog da
+# API oficial da Supercell (battle.teams[].brawler.gadgets/starPowers/gears).
+# A RapidAPI é usada apenas como FALLBACK para preencher nomes de gadgets/star
+# powers quando o battlelog não os trouxer (raro), e os gears não estão
+# disponíveis nela.
+#
+# IMPORTANTE: Substitua RAPIDAPI_KEY pela sua chave gratuita obtida em
+# https://rapidapi.com/Djole33/api/brawlstarsapi
 # -----------------------------------------------------------------------------
-RAPIDAPI_KEY = "e28d71b8f2msh519f1b75f65bb54p1d5598jsnae80ec5aa0a2" 
+RAPIDAPI_KEY = "e28d71b8f2msh519f1b75f65bb54p1d5598jsnae80ec5aa0a2"
 RAPIDAPI_HOST = "brawlstarsapi.p.rapidapi.com"
 RAPIDAPI_URL = f"https://{RAPIDAPI_HOST}"
 
 ARQUIVO_BRUTO = "historico_bruto.csv"
 ARQUIVO_BANS = "bans_matcherino.csv"
+ARQUIVO_CACHE_BRAWLERS = "cache_brawlers_rapidapi.json"
 
 # -----------------------------------------------------------------------------
 # NOVO FORMATO: 1 linha por partida (antes eram 6 linhas por partida).
@@ -59,7 +70,6 @@ COLUNAS_BANS = ["id_partida", "regiao", "mapa", "modo", "id_time", "nome_time", 
 # colar aqui dentro de MAPEAMENTO_PLAYERS. Isso é necessário porque o navegador não tem permissão
 # para escrever em arquivos do servidor/repositório — então a sincronização desse arquivo .py
 # (que roda separadamente, minerando dados via API) precisa desse passo manual de copiar/colar.
-
 
 
 MAPEAMENTO_PLAYERS = {
@@ -124,12 +134,9 @@ MAPEAMENTO_PLAYERS = {
 }
 
 # =============================================================================
-# CACHE DE PERFIS DE JOGADORES (RapidAPI)
+# CACHE DA LISTA DE BRAWLERS (RapidAPI) — usada apenas como FALLBACK
 # =============================================================================
-# Para não chamar a RapidAPI repetidas vezes pelo mesmo jogador no mesmo ciclo,
-# guardamos em memoria o perfil de cada tag. O perfil contem a lista "brawlers"
-# com gadgets, starPowers e gears.
-_cache_perfis = {}
+_cache_brawlers_rapidapi = {}
 
 
 def obter_fuso_brasilia():
@@ -175,70 +182,132 @@ def buscar_battlelog(tag_url, headers_api):
     return None, None, ultimo_erro
 
 
-def _headers_rapidapi():
-    return {
-        "X-RapidAPI-Key": RAPIDAPI_KEY,
-        "X-RapidAPI-Host": RAPIDAPI_HOST
-    }
+# =============================================================================
+# EXTRAÇÃO DE EQUIPAMENTOS DIRETO DO BATTLELOG
+# =============================================================================
+# A API oficial da Supercell já retorna, dentro de cada item do battlelog,
+# a estrutura battle.teams[].players[].brawler com:
+#   - gadgets:   [{"id": 1, "name": "Nome do Gadget"}, ...]
+#   - starPowers: [{"id": 1, "name": "Nome do Star Power"}, ...]
+#   - gears:      [{"id": 1, "name": "Nome do Gear", "level": 3}, ...]
+#
+# Assim, NÃO precisamos de um endpoint de perfil de jogador. Extraímos
+# tudo diretamente do objeto brawler que vem na própria partida.
+# =============================================================================
+
+def _extrair_nome_lista(lista, indice=0):
+    """De uma lista de dicts [{'id':..,'name':..}], pega o nome do índice dado."""
+    if not lista or indice >= len(lista):
+        return ""
+    item = lista[indice]
+    if isinstance(item, dict):
+        return item.get("name", "")
+    if isinstance(item, str):
+        return item
+    return ""
 
 
+def extrair_equipamentos_do_brawler(brawler_obj):
+    """
+    Dado o objeto brawler que vem dentro de cada player no battlelog,
+    retorna (gadget, starrpower, gear1, gear2) como strings.
+    Se o brawler não trouxer esses campos, retorna vazios.
+    """
+    vazio = ("", "", "", "")
+    if not brawler_obj or not isinstance(brawler_obj, dict):
+        return vazio
+
+    gadgets = brawler_obj.get("gadgets") or []
+    star_powers = brawler_obj.get("starPowers") or []
+    gears = brawler_obj.get("gears") or []
+
+    gadget = _extrair_nome_lista(gadgets, 0)
+    starrpower = _extrair_nome_lista(star_powers, 0)
+    gear1 = _extrair_nome_lista(gears, 0)
+    gear2 = _extrair_nome_lista(gears, 1)
+
+    # Se o battlelog não trouxe nomes (algumas respostas antigas podem trazer só IDs),
+    # tenta o fallback via RapidAPI.
+    if not gadget or not starrpower:
+        nome_b = nome_brawler(brawler_obj)
+        fb_gadget, fb_sp = _fallback_rapidapi(nome_b)
+        if not gadget:
+            gadget = fb_gadget
+        if not starrpower:
+            starrpower = fb_sp
+
+    return (gadget, starrpower, gear1, gear2)
+
+
+# =============================================================================
+# FALLBACK RAPIDAPI (/brawlers) — só usado se o battlelog não trouxer nomes
+# =============================================================================
 def _rapidapi_ativa():
-    """Verifica se a chave da RapidAPI foi configurada."""
     return bool(RAPIDAPI_KEY) and RAPIDAPI_KEY != "SUA_CHAVE_RAPIDAPI_AQUI"
 
 
-def buscar_perfil_rapidapi(tag_original):
+def _carregar_brawlers_rapidapi():
     """
-    Busca o perfil completo do jogador via BrawlStarsAPI (RapidAPI / Djole33).
-    Retorna o JSON do perfil ou None em caso de erro.
-    O perfil contém o campo "brawlers" (lista) onde cada item tem:
-        name, gadgets[], starPowers[], gears[]
+    Busca a lista de todos os brawlers via GET /brawlers (RapidAPI).
+    Cada item tem: "1st gadget", "2nd gadget", "1st star power",
+    "2nd star power", id, name.
+    Cacheia em arquivo JSON para não repetir a chamada a cada execução.
     """
-    if tag_original in _cache_perfis:
-        return _cache_perfis[tag_original]
+    global _cache_brawlers_rapidapi
+    if _cache_brawlers_rapidapi:
+        return _cache_brawlers_rapidapi
+
+    # Tenta carregar do cache em arquivo
+    if os.path.exists(ARQUIVO_CACHE_BRAWLERS):
+        try:
+            with open(ARQUIVO_CACHE_BRAWLERS, "r", encoding="utf-8") as f:
+                _cache_brawlers_rapidapi = json.load(f)
+                return _cache_brawlers_rapidapi
+        except Exception:
+            pass
 
     if not _rapidapi_ativa():
-        return None
+        return {}
 
-    tag_url = tag_original.replace("#", "%23")
-    url = f"{RAPIDAPI_URL}/players/{tag_url}"
     try:
-        resp = requests.get(url, headers=_headers_rapidapi(), timeout=15)
+        url = f"{RAPIDAPI_URL}/brawlers"
+        headers = {"X-RapidAPI-Key": RAPIDAPI_KEY, "X-RapidAPI-Host": RAPIDAPI_HOST}
+        resp = requests.get(url, headers=headers, timeout=30)
         if resp.status_code == 200:
-            perfil = resp.json()
-            _cache_perfis[tag_original] = perfil
-            return perfil
+            lista = resp.json()
+            for b in lista:
+                nome = str(b.get("name", "")).upper()
+                _cache_brawlers_rapidapi[nome] = {
+                    "gadget": b.get("1st gadget", ""),
+                    "starrpower": b.get("1st star power", ""),
+                }
+            # Salva cache em arquivo
+            try:
+                with open(ARQUIVO_CACHE_BRAWLERS, "w", encoding="utf-8") as f:
+                    json.dump(_cache_brawlers_rapidapi, f, ensure_ascii=False, indent=2)
+            except Exception:
+                pass
+            print(f"[RapidAPI] Lista de {len(lista)} brawlers carregada e cacheada.")
+            return _cache_brawlers_rapidapi
         else:
-            print(f"  [RapidAPI] Perfil {tag_original}: HTTP {resp.status_code}")
+            print(f"[RapidAPI] Falha ao buscar /brawlers: HTTP {resp.status_code}")
     except Exception as e:
-        print(f"  [RapidAPI] Erro perfil {tag_original}: {e}")
-    return None
+        print(f"[RapidAPI] Erro ao buscar /brawlers: {e}")
+    return {}
 
 
-def extrair_equipamentos(perfil, nome_brawler_alvo):
+def _fallback_rapidapi(nome_brawler_alvo):
     """
-    Dado o perfil do jogador e o NOME do brawler usado na partida,
-    retorna (gadget, starrpower, gear1, gear2) como strings.
-    Se o brawler não estiver no perfil ou não houver dados, retorna vazios.
+    Retorna (gadget, starrpower) do fallback da RapidAPI para o brawler dado.
+    Gears não estão disponíveis nesta API (retorna "").
     """
-    vazio = ("", "", "", "")
-    if not perfil or not nome_brawler_alvo:
-        return vazio
-
-    alvo = nome_brawler_alvo.upper()
-    brawlers = perfil.get("brawlers") or []
-    for br in brawlers:
-        if str(br.get("name", "")).upper() == alvo:
-            gadgets = br.get("gadgets") or []
-            star_powers = br.get("starPowers") or []
-            gears = br.get("gears") or []
-
-            gadget = gadgets[0].get("name", "") if gadgets and isinstance(gadgets[0], dict) else (gadgets[0] if gadgets else "")
-            starrpower = star_powers[0].get("name", "") if star_powers and isinstance(star_powers[0], dict) else (star_powers[0] if star_powers else "")
-            gear1 = gears[0].get("name", "") if gears and isinstance(gears[0], dict) else (gears[0] if gears else "")
-            gear2 = gears[1].get("name", "") if len(gears) > 1 and isinstance(gears[1], dict) else (gears[1] if len(gears) > 1 else "")
-            return (gadget, starrpower, gear1, gear2)
-    return vazio
+    dados = _carregar_brawlers_rapidapi()
+    if not dados:
+        return ("", "")
+    info = dados.get(nome_brawler_alvo.upper())
+    if info:
+        return (info.get("gadget", ""), info.get("starrpower", ""))
+    return ("", "")
 
 
 def formatar_player(tag, nick):
@@ -254,6 +323,12 @@ def formatar_player(tag, nick):
 def minerar_dados():
     global MAPEAMENTO_PLAYERS
     tags_torneio = set()
+
+    # -------------------------------------------------------------------------
+    # PRÉ-CARREGAR FALLBACK RAPIDAPI (lista de brawlers) — só se a chave existir
+    # -------------------------------------------------------------------------
+    if _rapidapi_ativa():
+        _carregar_brawlers_rapidapi()
 
     # Automatização do Matcherino via arquivo 'torneios.txt'
     if os.path.exists('torneios.txt'):
@@ -298,22 +373,12 @@ def minerar_dados():
     novas_picks, novos_bans = [], []
     headers_api = {"Authorization": f"Bearer {API_KEY}"}
 
-    # Coletamos as tags únicas que aparecem nas partidas novas para buscar os
-    # perfis (RapidAPI) de forma agrupada e com cache.
-    tags_necessarias = set()
-
     # --- Contadores de diagnóstico ---
     stats = {
         'total_players': 0, 'status_ok': 0, 'falhas_conexao': 0,
         'origem_sucesso': {}, 'total_items_lidos': 0, 'items_nao_3v3': 0,
         'items_ja_existentes': 0, 'items_novos': 0, 'erros_processamento': 0,
-        'perfis_rapidapi_ok': 0, 'perfis_rapidapi_falha': 0,
     }
-
-    # Primeiro percorremos para identificar as partidas novas e as tags delas,
-    # sem ainda buscar os perfis (que são chamadas caras).
-    # Armazenamos as partidas candidatas em uma lista de "trabalho".
-    partidas_candidatas = []
 
     for tag_busca, info_busca in list(MAPEAMENTO_PLAYERS.items()):
         sigla_busca = info_busca.get("regiao", "SA")
@@ -349,10 +414,13 @@ def minerar_dados():
                 b_time = item.get("battleTime")
                 momento = formatar_data_brawl(b_time)
 
+                # all_p = lista de 6 players (3 do time 0 + 3 do time 1)
                 all_p = teams[0] + teams[1]
                 tags_list = [p.get('tag', '') for p in all_p]
                 nicks_list = [p.get('name', 'Unknown') for p in all_p]
                 brawlers_list = [nome_brawler(p.get('brawler', {})) for p in all_p]
+                # OBJETOS brawler completos (com gadgets/starPowers/gears)
+                brawler_objs = [p.get('brawler', {}) for p in all_p]
 
                 is_matcherino = any(t in tags_torneio for t in tags_list)
                 tipo_raw = battle.get('type', 'friendly').lower()
@@ -365,22 +433,56 @@ def minerar_dados():
 
                 if pid in ids_registrados:
                     stats['items_ja_existentes'] += 1
-                    # Mesmo já existindo a partida, registramos bans se houver
                 else:
                     stats['items_novos'] += 1
-                    partidas_candidatas.append({
-                        'pid': pid, 'mapa': mapa, 'modo': modo, 'momento': momento,
-                        'teams': teams, 'tags_list': tags_list, 'nicks_list': nicks_list,
-                        'brawlers_list': brawlers_list, 'is_matcherino': is_matcherino,
-                        'tipo_final': tipo_final, 'bans_raw': bans_raw, 'sigla_busca': sigla_busca,
-                        'res': battle.get('result')
-                    })
+
+                    # Extrair equipamentos diretamente do objeto brawler do battlelog
+                    slots = []
+                    for i in range(6):
+                        tag = tags_list[i]
+                        nick = nicks_list[i]
+                        brawler = brawlers_list[i]
+                        brawler_obj = brawler_objs[i]
+                        gadget, starrpower, gear1, gear2 = extrair_equipamentos_do_brawler(brawler_obj)
+                        slots.append((formatar_player(tag, nick), brawler, gadget, starrpower, gear1, gear2))
+
+                    # Identificar os times (T0 e T1)
+                    t0_id, t0_nome = "OPONENTE_T0", "DESCONHECIDO T0"
+                    t1_id, t1_nome = "OPONENTE_T1", "DESCONHECIDO T1"
+                    for p in teams[0]:
+                        if p.get('tag') in MAPEAMENTO_PLAYERS:
+                            t0_id, t0_nome = MAPEAMENTO_PLAYERS[p['tag']]["id_time"], MAPEAMENTO_PLAYERS[p['tag']]["nome_time"]
+                            break
+                    for p in teams[1]:
+                        if p.get('tag') in MAPEAMENTO_PLAYERS:
+                            t1_id, t1_nome = MAPEAMENTO_PLAYERS[p['tag']]["id_time"], MAPEAMENTO_PLAYERS[p['tag']]["nome_time"]
+                            break
+
+                    reg_final = "/".join(sorted({TAG_PARA_REGIAO.get(t, sigla_busca) for t in tags_list}))
+
+                    # Construir a linha final: 1 linha por partida (44 colunas)
+                    # Ordem exata do COLUNAS_PICKS:
+                    # id_partida, regiao, time1,
+                    # p1,b1,g1,sp1,gr1_1,gr1_2,
+                    # p2,b2,g2,sp2,gr2_1,gr2_2,
+                    # p3,b3,g3,sp3,gr3_1,gr3_2,
+                    # time2,
+                    # p4,b4,g4,sp4,gr4_1,gr4_2,
+                    # p5,b5,g5,sp5,gr5_1,gr5_2,
+                    # p6,b6,g6,sp6,gr6_1,gr6_2,
+                    # modo, mapa, tipo, dt_adicao
+                    linha_final = [pid, reg_final, t0_nome]
+                    for s in slots[:3]:
+                        linha_final.extend(s)
+                    linha_final.append(t1_nome)
+                    for s in slots[3:6]:
+                        linha_final.extend(s)
+                    linha_final.extend([modo, mapa, tipo_final, momento])
+
+                    novas_picks.append(linha_final)
                     ids_registrados.add(pid)
-                    # Marca as tags para buscar perfil depois
-                    tags_necessarias.update(tags_list)
 
                 # Bans são coletados independentemente de a partida ser nova
-                # (mas só registramos uma vez por partida)
                 if bans_raw and pid not in ids_bans:
                     bans_a, bans_b = [], []
                     if isinstance(bans_raw, list):
@@ -393,7 +495,6 @@ def minerar_dados():
                             m = len(bans_raw) // 2
                             bans_a, bans_b = bans_raw[:m], bans_raw[m:]
 
-                    # Determinar id_time/nome_time dos times T0 e T1
                     t0_id, t0_nome = "OPONENTE_T0", "DESCONHECIDO T0"
                     t1_id, t1_nome = "OPONENTE_T1", "DESCONHECIDO T1"
                     for p in teams[0]:
@@ -421,88 +522,6 @@ def minerar_dados():
                     print(f"  [ERRO processamento] {tag_busca}: {e}")
 
     # -------------------------------------------------------------------------
-    # Pré-carregar perfis RapidAPI das tags necessárias (com cache em memória).
-    # Se a RapidAPI não estiver configurada, os equipamentos virão vazios.
-    # -------------------------------------------------------------------------
-    rapidapi_ativa = _rapidapi_ativa()
-    if rapidapi_ativa and tags_necessarias:
-        print(f"\n[RapidAPI] Buscando perfis de {len(tags_necessarias)} jogadores...")
-        for i, tag in enumerate(sorted(tags_necessarias)):
-            perfil = buscar_perfil_rapidapi(tag)
-            if perfil:
-                stats['perfis_rapidapi_ok'] += 1
-            else:
-                stats['perfis_rapidapi_falha'] += 1
-            # Pequeno delay para respeitar limites da RapidAPI (free tier ~1 req/s)
-            time.sleep(0.3)
-            if (i + 1) % 10 == 0:
-                print(f"  ... {i + 1}/{len(tags_necessarias)} perfis processados")
-    elif not rapidapi_ativa:
-        print("\n[RapidAPI] Chave não configurada (RAPIDAPI_KEY). Gadget/StarPower/Gears ficarão vazios.")
-        print("[RapidAPI] Obtenha sua chave em https://rapidapi.com/Djole33/api/brawlstarsapi e substitua RAPIDAPI_KEY no topo do arquivo.")
-
-    # -------------------------------------------------------------------------
-    # Construir UMA linha por partida com os equipamentos extraídos dos perfis.
-    # -------------------------------------------------------------------------
-    for pc in partidas_candidatas:
-        try:
-            teams = pc['teams']
-            tags_list = pc['tags_list']
-            nicks_list = pc['nicks_list']
-            brawlers_list = pc['brawlers_list']
-            res = pc['res']
-
-            reg_final = "/".join(sorted({TAG_PARA_REGIAO.get(t, pc['sigla_busca']) for t in tags_list}))
-
-            # Identificar os times (T0 e T1)
-            t0_id, t0_nome = "OPONENTE_T0", "DESCONHECIDO T0"
-            t1_id, t1_nome = "OPONENTE_T1", "DESCONHECIDO T1"
-            for p in teams[0]:
-                if p.get('tag') in MAPEAMENTO_PLAYERS:
-                    t0_id, t0_nome = MAPEAMENTO_PLAYERS[p['tag']]["id_time"], MAPEAMENTO_PLAYERS[p['tag']]["nome_time"]
-                    break
-            for p in teams[1]:
-                if p.get('tag') in MAPEAMENTO_PLAYERS:
-                    t1_id, t1_nome = MAPEAMENTO_PLAYERS[p['tag']]["id_time"], MAPEAMENTO_PLAYERS[p['tag']]["nome_time"]
-                    break
-
-            # Construir os 6 slots de jogador: players 1-3 = time1 (T0), players 4-6 = time2 (T1)
-            # Cada slot = (player, brawler, gadget, starrpower, gear1, gear2)
-            # Ordem exata do COLUNAS_PICKS:
-            # id_partida, regiao, time1,
-            # p1,b1,g1,sp1,gr1_1,gr1_2,
-            # p2,b2,g2,sp2,gr2_1,gr2_2,
-            # p3,b3,g3,sp3,gr3_1,gr3_2,
-            # time2,
-            # p4,b4,g4,sp4,gr4_1,gr4_2,
-            # p5,b5,g5,sp5,gr5_1,gr5_2,
-            # p6,b6,g6,sp6,gr6_1,gr6_2,
-            # modo, mapa, tipo, dt_adicao
-
-            slots = []
-            for i in range(6):
-                tag = tags_list[i]
-                nick = nicks_list[i]
-                brawler = brawlers_list[i]
-                perfil = _cache_perfis.get(tag)
-                gadget, starrpower, gear1, gear2 = extrair_equipamentos(perfil, brawler)
-                slots.append((formatar_player(tag, nick), brawler, gadget, starrpower, gear1, gear2))
-
-            linha_final = [pc['pid'], reg_final, t0_nome]
-            for s in slots[:3]:
-                linha_final.extend(s)
-            linha_final.append(t1_nome)
-            for s in slots[3:6]:
-                linha_final.extend(s)
-            linha_final.extend([pc['modo'], pc['mapa'], pc['tipo_final'], pc['momento']])
-
-            novas_picks.append(linha_final)
-        except Exception as e:
-            stats['erros_processamento'] += 1
-            if stats['erros_processamento'] <= 10:
-                print(f"  [ERRO montagem linha] {pc['pid']}: {e}")
-
-    # -------------------------------------------------------------------------
     # Salvar os arquivos CSV
     # -------------------------------------------------------------------------
     if novas_picks:
@@ -527,7 +546,12 @@ def minerar_dados():
     print(f"  Ja existentes no historico: {stats['items_ja_existentes']}")
     print(f"  Novas partidas: {stats['items_novos']}")
     print(f"  Erros ao processar item: {stats['erros_processamento']}")
-    print(f"RapidAPI perfis: OK={stats['perfis_rapidapi_ok']} | Falha={stats['perfis_rapidapi_falha']}")
+    if stats['falhas_conexao'] == stats['total_players'] and stats['total_players'] > 0:
+        print("")
+        print("  !!! ATENCAO: TODAS as chamadas falharam com 403 (accessDenied).")
+        print("  !!! O token API_KEY da Supercell EXPIROU.")
+        print("  !!! Gere um novo token em https://developer.supercell.com")
+        print("  !!! e substitua o valor de API_KEY no topo deste arquivo.")
     print("==============================================\n")
 
 
