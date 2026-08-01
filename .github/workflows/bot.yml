@@ -18,6 +18,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           lfs: true # Essencial para ler o arquivo grande
+          fetch-depth: 0 # Baixa o histórico completo para evitar erros de sincronização
 
       - name: Instalando o Python
         uses: actions/setup-python@v5
@@ -28,22 +29,11 @@ jobs:
         run: |
           pip install pandas brawlstats requests
 
-      - name: Sincronizar, Configurar Git e LFS
+      - name: Configurar Git
+        # Apenas configura o nome do bot, sem tentar puxar arquivos desnecessariamente aqui
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          
-          # Garante que o Git LFS está ativo na máquina virtual
-          git lfs install
-          
-          # "Esconde" as alterações automáticas do LFS temporariamente
-          git stash || true
-          
-          # Agora o pull vai funcionar sem travar
-          git pull --rebase origin main
-          
-          # Devolve as alterações do LFS para o ambiente, ignorando erros se estiver vazio
-          git stash pop || true
 
       - name: Rodando o Gerador (Bot)
         # ATENÇÃO: Se o nome do seu arquivo Python for diferente, mude aqui.
@@ -51,15 +41,20 @@ jobs:
 
       - name: Salvando as alterações no GitHub
         run: |
-          # Adiciona o arquivo de configuração do LFS e os dados
-          git add .gitattributes historico_bruto.csv estatisticas_finais.csv
+          # Adiciona o arquivo de configuração do LFS e os dados, ignorando erros se algum não existir
+          git add .gitattributes historico_bruto.csv estatisticas_finais.csv || true
           
-          # Se a pasta api existir, adiciona também (ignora erro se não existir)
+          # Se a pasta api existir, adiciona também
           git add api/ || true
           
-          # Verifica se há mudanças e faz o commit usando LFS
+          # Verifica se há mudanças e faz o commit
           if ! git diff --cached --quiet; then
-            git commit -m "🤖 Atualização Automática de Partidas (com LFS)"
+            git commit -m "🤖 Atualização Automática de Partidas"
+            
+            # Puxa atualizações APÓS fazer o commit (evita o erro 128)
+            git pull --rebase origin main || true
+            
+            # Envia para o GitHub
             git push origin main
           else
             echo "Sem mudanças para atualizar"
