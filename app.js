@@ -707,6 +707,11 @@ function carregarCSV() {
                 if (dados.length > 0 && dados[0].pick !== undefined) dadosBrutos = dados;
             }
 
+            if (dadosBrutos.length === 0) {
+                mostrarErroCarregamento("historico_bruto.csv foi carregado mas está vazio ou em formato não reconhecido. Verifique se o CSV tem as 44 colunas no novo formato (id_partida, regiao, time1, player1..6, brawler1..6, etc).");
+                return;
+            }
+
             Papa.parse("bans_matcherino.csv", {
                 download: true, header: true, skipEmptyLines: true,
                 complete: function(banRes) {
@@ -723,8 +728,31 @@ function carregarCSV() {
                     processarDadosGlobais();
                 }
             });
+        },
+        error: function(err) {
+            mostrarErroCarregamento(
+                "Não foi possível carregar historico_bruto.csv.\n\n" +
+                "CAUSA PROVÁVEL: Você abriu o arquivo HTML diretamente no navegador (protocolo file://). " +
+                "O navegador bloqueia requisições AJAX de arquivos locais por segurança (CORS).\n\n" +
+                "SOLUÇÃO: Use um servidor web local. Escolha uma das opções:\n" +
+                "  1) Python:  python3 -m http.server 8080  (depois acesse http://localhost:8080/sa.html)\n" +
+                "  2) Node:    npx http-server -p 8080\n" +
+                "  3) VS Code: instale a extensão 'Live Server' e clique em 'Go Live'\n\n" +
+                "Erro técnico: " + (err ? JSON.stringify(err) : 'desconhecido')
+            );
         }
     });
+}
+
+function mostrarErroCarregamento(mensagem) {
+    console.error("[BCSInfos] Erro de carregamento:", mensagem);
+    let c = document.getElementById('conteudo-meta');
+    if (c) {
+        c.innerHTML = '<div style="padding:30px; margin:20px auto; max-width:700px; background:rgba(244,67,54,0.1); border:2px solid #f44336; border-radius:12px; color:white;">' +
+            '<h2 style="color:#f44336; margin-bottom:15px;">⚠️ Erro ao carregar dados</h2>' +
+            '<pre style="white-space:pre-wrap; font-size:14px; line-height:1.6; color:#e0e0e0;">' + mensagem + '</pre>' +
+            '</div>';
+    }
 }
 
 function processarTimesDesconhecidos(dados) {
@@ -909,12 +937,16 @@ function estruturarMD3(dadosPeriodo) {
         if(linhas.length < 6) return;
         let t0 = linhas.slice(0,3), t1 = linhas.slice(3,6);
         let t0Id = t0[0].id_time, t1Id = t1[0].id_time;
-        // Filtro de região em estruturarMD3: mantém a partida se pelo menos um
-        // time for cadastrado na região atual, OU se a partida for da região
-        // atual segundo o CSV (times desconhecidos/não-cadastrados).
-        let regPartida = (linhas[0]._regiaoPartida || '').toUpperCase();
-        if (_REGIAO !== "ALL" && !isTimeDaRegiaoAtual(t0Id) && !isTimeDaRegiaoAtual(t1Id)) {
-            if (_REGIAO !== regPartida) return;
+        // Filtro de região em estruturarMD3: prioriza o campo regiao do CSV
+        // (_regiaoPartida ou regiao) como fonte de verdade. Se não tiver,
+        // cai para isTimeDaRegiaoAtual nos times cadastrados.
+        let regPartida = (linhas[0]._regiaoPartida || linhas[0].regiao || '').toUpperCase().trim();
+        if (_REGIAO !== "ALL") {
+            if (regPartida) {
+                if (_REGIAO !== regPartida) return;
+            } else if (!isTimeDaRegiaoAtual(t0Id) && !isTimeDaRegiaoAtual(t1Id)) {
+                return;
+            }
         }
 
         partidasEstruturadas.push({
@@ -1023,19 +1055,23 @@ function processarDadosGlobais() {
             if(dia !== 'todos') mD = p[0] === dia;
         }
         if(tipo !== 'todos') mT = (row.tipo === tipo);
-        // Filtro de região: se o time for cadastrado, usa isTimeDaRegiaoAtual.
-        // Se NÃO tiver id_time (time desconhecido/não-cadastrado), usa o campo
-        // regiao do CSV (_regiaoPartida) como fallback — assim partidas SA com
-        // times não-cadastrados ainda aparecem na página SA.
+        // Filtro de região — prioridade:
+        //   1) ALL → sempre passa
+        //   2) Se a partida tem campo regiao do CSV (_regiaoPartida ou regiao),
+        //      usa esse campo como fonte de verdade (mais confiável que id_time).
+        //   3) Se não tem campo regiao (formato antigo), usa isTimeDaRegiaoAtual.
         let passaRegiao;
         if (_REGIAO === 'ALL') {
             passaRegiao = true;
-        } else if (row.id_time && isTimeDaRegiaoAtual(row.id_time)) {
-            passaRegiao = true;
-        } else if (!row.id_time && row._regiaoPartida === _REGIAO) {
-            passaRegiao = true;
         } else {
-            passaRegiao = false;
+            let regPartida = (row._regiaoPartida || row.regiao || '').toUpperCase().trim();
+            if (regPartida) {
+                passaRegiao = (regPartida === _REGIAO);
+            } else if (row.id_time && isTimeDaRegiaoAtual(row.id_time)) {
+                passaRegiao = true;
+            } else {
+                passaRegiao = false;
+            }
         }
         return mA && mM && mD && mT && passaRegiao;
     };
@@ -2391,5 +2427,4 @@ function mostrarHistoricoTimeMapa(idTime, nomeTime) {
     }
 
     modal.style.display = 'block';
-
 }
