@@ -424,7 +424,9 @@ function encontrarTimePorRoster(tagsArray) {
 // sao aceitos diretamente.
 // ========================================================
 function timeRosterCompleto(tagsDaPartida, idTime) {
-    if (!idTime) return false;
+    // Times não-cadastrados (id_time vazio) são aceitos — representam times
+    // desconhecidos cuja partida veio do CSV com a região correta.
+    if (!idTime) return true;
     if (idTime.toUpperCase().startsWith('UNK')) return true;
     for (let reg in CONFIGURACAO_MANUAL_TIMES) {
         for (let tier in CONFIGURACAO_MANUAL_TIMES[reg]) {
@@ -681,7 +683,8 @@ function normalizarCSVNovoFormato(linhas) {
                 _time1Nome: time1Nome,
                 _time2Nome: time2Nome,
                 _slotIndex: i,
-                _ehTime1: ehTime1
+                _ehTime1: ehTime1,
+                _regiaoPartida: (regiao || '').toUpperCase()
             });
         }
     });
@@ -906,7 +909,13 @@ function estruturarMD3(dadosPeriodo) {
         if(linhas.length < 6) return;
         let t0 = linhas.slice(0,3), t1 = linhas.slice(3,6);
         let t0Id = t0[0].id_time, t1Id = t1[0].id_time;
-        if (_REGIAO !== "ALL" && !isTimeDaRegiaoAtual(t0Id) && !isTimeDaRegiaoAtual(t1Id)) return;
+        // Filtro de região em estruturarMD3: mantém a partida se pelo menos um
+        // time for cadastrado na região atual, OU se a partida for da região
+        // atual segundo o CSV (times desconhecidos/não-cadastrados).
+        let regPartida = (linhas[0]._regiaoPartida || '').toUpperCase();
+        if (_REGIAO !== "ALL" && !isTimeDaRegiaoAtual(t0Id) && !isTimeDaRegiaoAtual(t1Id)) {
+            if (_REGIAO !== regPartida) return;
+        }
 
         partidasEstruturadas.push({
             id: linhas[0].id_partida, modo: linhas[0].modo, mapa: linhas[0].mapa,
@@ -1014,7 +1023,21 @@ function processarDadosGlobais() {
             if(dia !== 'todos') mD = p[0] === dia;
         }
         if(tipo !== 'todos') mT = (row.tipo === tipo);
-        return mA && mM && mD && mT && isTimeDaRegiaoAtual(row.id_time);
+        // Filtro de região: se o time for cadastrado, usa isTimeDaRegiaoAtual.
+        // Se NÃO tiver id_time (time desconhecido/não-cadastrado), usa o campo
+        // regiao do CSV (_regiaoPartida) como fallback — assim partidas SA com
+        // times não-cadastrados ainda aparecem na página SA.
+        let passaRegiao;
+        if (_REGIAO === 'ALL') {
+            passaRegiao = true;
+        } else if (row.id_time && isTimeDaRegiaoAtual(row.id_time)) {
+            passaRegiao = true;
+        } else if (!row.id_time && row._regiaoPartida === _REGIAO) {
+            passaRegiao = true;
+        } else {
+            passaRegiao = false;
+        }
+        return mA && mM && mD && mT && passaRegiao;
     };
 
     let dadosRaw = dadosBrutos.filter(filterFn);
@@ -2368,4 +2391,3 @@ function mostrarHistoricoTimeMapa(idTime, nomeTime) {
     }
 
     modal.style.display = 'block';
-}
