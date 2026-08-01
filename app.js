@@ -699,6 +699,35 @@ function carregarCSV() {
         download: true, header: true, skipEmptyLines: true,
         complete: function(results) {
             let dados = (results.data && results.data.length > 0) ? results.data : [];
+
+            // DETECÇÃO DE ERRO 404: GitHub Pages retorna uma página HTML quando
+            // o arquivo não existe. PapaParse analisa isso como dados com
+            // colunas aleatórias. Verificamos se as colunas esperadas existem.
+            if (dados.length > 0) {
+                let primeira = dados[0];
+                let temColunasCSV = (primeira.id_partida !== undefined ||
+                                     primeira.regiao !== undefined ||
+                                     primeira.brawler1 !== undefined ||
+                                     primeira.pick !== undefined);
+                if (!temColunasCSV) {
+                    mostrarErroCarregamento(
+                        "ERRO: historico_bruto.csv NÃO FOI ENCONTRADO no servidor!\n\n" +
+                        "O servidor retornou uma página de erro (404) em vez do arquivo CSV.\n" +
+                        "Isso significa que o arquivo historico_bruto.csv NÃO está no GitHub.\n\n" +
+                        "SOLUÇÃO:\n" +
+                        "  1) Faça upload do arquivo historico_bruto.csv para o repositório do GitHub\n" +
+                        "  2) Verifique se o arquivo está na mesma pasta que sa.html\n" +
+                        "  3) Faça git add historico_bruto.csv && git commit && git push\n" +
+                        "  4) Aguarde o GitHub Pages atualizar (pode levar 1-2 minutos)\n\n" +
+                        "Arquivos necessários na mesma pasta:\n" +
+                        "  - sa.html, na.html, emea.html, ea.html, geral.html, index.html\n" +
+                        "  - app.js, style.css\n" +
+                        "  - historico_bruto.csv (ESTE ARQUIVO ESTÁ FALTANDO!)"
+                    );
+                    return;
+                }
+            }
+
             // Normaliza: se for novo formato (1 linha/partida), expande para 6 linhas
             dadosBrutos = normalizarCSVNovoFormato(dados);
             // valida se há dados úteis (precisa ter pick OU brawler1)
@@ -732,12 +761,14 @@ function carregarCSV() {
         error: function(err) {
             mostrarErroCarregamento(
                 "Não foi possível carregar historico_bruto.csv.\n\n" +
-                "CAUSA PROVÁVEL: Você abriu o arquivo HTML diretamente no navegador (protocolo file://). " +
-                "O navegador bloqueia requisições AJAX de arquivos locais por segurança (CORS).\n\n" +
-                "SOLUÇÃO: Use um servidor web local. Escolha uma das opções:\n" +
-                "  1) Python:  python3 -m http.server 8080  (depois acesse http://localhost:8080/sa.html)\n" +
-                "  2) Node:    npx http-server -p 8080\n" +
-                "  3) VS Code: instale a extensão 'Live Server' e clique em 'Go Live'\n\n" +
+                "CAUSAS POSSÍVEIS:\n" +
+                "  1) Você abriu o HTML diretamente no navegador (file://) — use um servidor web\n" +
+                "  2) O arquivo historico_bruto.csv não existe no servidor (404)\n" +
+                "  3) O arquivo está em pasta diferente\n\n" +
+                "SOLUÇÕES:\n" +
+                "  - Local: python3 -m http.server 8080 e acesse http://localhost:8080/sa.html\n" +
+                "  - GitHub: faça upload do historico_bruto.csv para o repositório\n" +
+                "  - VS Code: use a extensão 'Live Server'\n\n" +
                 "Erro técnico: " + (err ? JSON.stringify(err) : 'desconhecido')
             );
         }
