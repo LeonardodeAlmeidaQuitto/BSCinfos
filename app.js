@@ -694,8 +694,29 @@ function normalizarCSVNovoFormato(linhas) {
 // =====================================================================
 // 3. CARREGAMENTO E PROCESSAMENTO
 // =====================================================================
-function carregarCSV() {
-    Papa.parse("historico_bruto.csv", {
+// Constrói o caminho base a partir da URL atual para funcionar em qualquer
+// subpasta do GitHub Pages (ex: usuario.github.io/REPO/sa.html)
+function _caminhoBaseCSV() {
+    // Pega o caminho da página atual sem o nome do arquivo
+    // Ex: /REPO/sa.html -> /REPO/
+    let path = window.location.pathname;
+    let idx = path.lastIndexOf('/');
+    if (idx >= 0) {
+        return path.substring(0, idx + 1); // inclui a barra final
+    }
+    return '/';
+}
+
+// Tenta carregar o CSV de múltiplos caminhos possíveis
+function _tentarCarregarCSV(caminhos, indice, onSucesso, onErroFinal) {
+    if (indice >= caminhos.length) {
+        onErroFinal(caminhos);
+        return;
+    }
+    let caminho = caminhos[indice];
+    console.log("[BCSInfos] Tentando carregar CSV de:", caminho);
+
+    Papa.parse(caminho, {
         download: true, header: true, skipEmptyLines: true,
         complete: function(results) {
             let dados = (results.data && results.data.length > 0) ? results.data : [];
@@ -703,6 +724,7 @@ function carregarCSV() {
             // DETECÇÃO DE ERRO 404: GitHub Pages retorna uma página HTML quando
             // o arquivo não existe. PapaParse analisa isso como dados com
             // colunas aleatórias. Verificamos se as colunas esperadas existem.
+            let pareceHTML404 = false;
             if (dados.length > 0) {
                 let primeira = dados[0];
                 let temColunasCSV = (primeira.id_partida !== undefined ||
@@ -710,68 +732,105 @@ function carregarCSV() {
                                      primeira.brawler1 !== undefined ||
                                      primeira.pick !== undefined);
                 if (!temColunasCSV) {
-                    mostrarErroCarregamento(
-                        "ERRO: historico_bruto.csv NÃO FOI ENCONTRADO no servidor!\n\n" +
-                        "O servidor retornou uma página de erro (404) em vez do arquivo CSV.\n" +
-                        "Isso significa que o arquivo historico_bruto.csv NÃO está no GitHub.\n\n" +
-                        "SOLUÇÃO:\n" +
-                        "  1) Faça upload do arquivo historico_bruto.csv para o repositório do GitHub\n" +
-                        "  2) Verifique se o arquivo está na mesma pasta que sa.html\n" +
-                        "  3) Faça git add historico_bruto.csv && git commit && git push\n" +
-                        "  4) Aguarde o GitHub Pages atualizar (pode levar 1-2 minutos)\n\n" +
-                        "Arquivos necessários na mesma pasta:\n" +
-                        "  - sa.html, na.html, emea.html, ea.html, geral.html, index.html\n" +
-                        "  - app.js, style.css\n" +
-                        "  - historico_bruto.csv (ESTE ARQUIVO ESTÁ FALTANDO!)"
-                    );
-                    return;
+                    pareceHTML404 = true;
+                }
+            } else if (results.meta && results.meta.fields) {
+                // Se fields existe mas data está vazia, pode ser HTML de uma linha
+                let fieldsStr = results.meta.fields.join('');
+                if (fieldsStr.indexOf('<') >= 0 || fieldsStr.indexOf('html') >= 0 || fieldsStr.indexOf('DOCTYPE') >= 0) {
+                    pareceHTML404 = true;
                 }
             }
 
-            // Normaliza: se for novo formato (1 linha/partida), expande para 6 linhas
-            dadosBrutos = normalizarCSVNovoFormato(dados);
-            // valida se há dados úteis (precisa ter pick OU brawler1)
-            if (dadosBrutos.length === 0 || dadosBrutos[0].pick === undefined) {
-                // pode ser que ainda seja formato antigo legítimo
-                if (dados.length > 0 && dados[0].pick !== undefined) dadosBrutos = dados;
-            }
-
-            if (dadosBrutos.length === 0) {
-                mostrarErroCarregamento("historico_bruto.csv foi carregado mas está vazio ou em formato não reconhecido. Verifique se o CSV tem as 44 colunas no novo formato (id_partida, regiao, time1, player1..6, brawler1..6, etc).");
+            if (pareceHTML404) {
+                console.warn("[BCSInfos] Caminho retornou HTML (provável 404):", caminho);
+                // Tenta próximo caminho
+                _tentarCarregarCSV(caminhos, indice + 1, onSucesso, onErroFinal);
                 return;
             }
 
-            Papa.parse("bans_matcherino.csv", {
-                download: true, header: true, skipEmptyLines: true,
-                complete: function(banRes) {
-                    if (banRes.data && banRes.data.length > 0 && banRes.data[0].brawler_banido !== undefined) {
-                        dadosBans = banRes.data;
-                    } else { dadosBans = []; }
-
-                    popularFiltrosGlobais();
-                    processarDadosGlobais();
-                },
-                error: function() {
-                    dadosBans = [];
-                    popularFiltrosGlobais();
-                    processarDadosGlobais();
-                }
-            });
+            // Sucesso! Tem dados CSV válidos
+            console.log("[BCSInfos] CSV carregado com sucesso de:", caminho, "- linhas:", dados.length);
+            onSucesso(dados, caminho);
         },
         error: function(err) {
-            mostrarErroCarregamento(
-                "Não foi possível carregar historico_bruto.csv.\n\n" +
-                "CAUSAS POSSÍVEIS:\n" +
-                "  1) Você abriu o HTML diretamente no navegador (file://) — use um servidor web\n" +
-                "  2) O arquivo historico_bruto.csv não existe no servidor (404)\n" +
-                "  3) O arquivo está em pasta diferente\n\n" +
-                "SOLUÇÕES:\n" +
-                "  - Local: python3 -m http.server 8080 e acesse http://localhost:8080/sa.html\n" +
-                "  - GitHub: faça upload do historico_bruto.csv para o repositório\n" +
-                "  - VS Code: use a extensão 'Live Server'\n\n" +
-                "Erro técnico: " + (err ? JSON.stringify(err) : 'desconhecido')
-            );
+            console.warn("[BCSInfos] Erro ao carregar de:", caminho, err);
+            // Tenta próximo caminho
+            _tentarCarregarCSV(caminhos, indice + 1, onSucesso, onErroFinal);
         }
+    });
+}
+
+function carregarCSV() {
+    // Constrói lista de caminhos possíveis para o CSV
+    // Tenta: caminho relativo, caminho base da URL, raiz do site
+    let base = _caminhoBaseCSV();
+    let caminhos = [
+        "historico_bruto.csv",                          // relativo à página atual
+        base + "historico_bruto.csv",                   // base da URL atual
+        "./historico_bruto.csv",                        // explícito relativo
+        "/historico_bruto.csv"                          // raiz do domínio
+    ];
+    // Remove duplicados
+    caminhos = [...new Set(caminhos)];
+
+    _tentarCarregarCSV(caminhos, 0, function(dados, caminhoUsado) {
+        // Normaliza: se for novo formato (1 linha/partida), expande para 6 linhas
+        dadosBrutos = normalizarCSVNovoFormato(dados);
+        // valida se há dados úteis (precisa ter pick OU brawler1)
+        if (dadosBrutos.length === 0 || dadosBrutos[0].pick === undefined) {
+            // pode ser que ainda seja formato antigo legítimo
+            if (dados.length > 0 && dados[0].pick !== undefined) dadosBrutos = dados;
+        }
+
+        if (dadosBrutos.length === 0) {
+            mostrarErroCarregamento("historico_bruto.csv foi carregado de '" + caminhoUsado + "' mas está vazio ou em formato não reconhecido. Verifique se o CSV tem as 44 colunas no novo formato (id_partida, regiao, time1, player1..6, brawler1..6, etc).");
+            return;
+        }
+
+        // Carrega bans com mesma lógica de múltiplos caminhos
+        let caminhosBans = [
+            "bans_matcherino.csv",
+            base + "bans_matcherino.csv",
+            "./bans_matcherino.csv",
+            "/bans_matcherino.csv"
+        ];
+        caminhosBans = [...new Set(caminhosBans)];
+
+        _tentarCarregarCSV(caminhosBans, 0, function(banData) {
+            if (banData && banData.length > 0 && banData[0].brawler_banido !== undefined) {
+                dadosBans = banData;
+            } else { dadosBans = []; }
+            popularFiltrosGlobais();
+            processarDadosGlobais();
+        }, function() {
+            dadosBans = [];
+            popularFiltrosGlobais();
+            processarDadosGlobais();
+        });
+    }, function(todosCaminhos) {
+        // Todos os caminhos falharam
+        let base = _caminhoBaseCSV();
+        let urlAtual = window.location.href;
+        mostrarErroCarregamento(
+            "ERRO: historico_bruto.csv NÃO FOI ENCONTRADO!\n\n" +
+            "URL atual da página: " + urlAtual + "\n" +
+            "Caminho base detectado: " + base + "\n" +
+            "Caminhos tentados:\n" +
+            todosCaminhos.map(function(c) { return "  - " + c; }).join("\n") + "\n\n" +
+            "O arquivo historico_bruto.csv não está no GitHub Pages.\n" +
+            "O GitHub retornou uma página de erro (404) em vez do CSV.\n\n" +
+            "SOLUÇÃO:\n" +
+            "  1) Faça upload do arquivo historico_bruto.csv para o repositório\n" +
+            "  2) O arquivo deve estar na MESMA PASTA que sa.html (raiz do repo)\n" +
+            "  3) Faça git add historico_bruto.csv && git commit -m 'add csv' && git push\n" +
+            "  4) Aguarde 1-2 minutos para o GitHub Pages atualizar\n" +
+            "  5) Recarregue a página (Ctrl+F5)\n\n" +
+            "Arquivos necessários no repositório (todos juntos, sem subpasta):\n" +
+            "  - index.html, sa.html, na.html, emea.html, ea.html, geral.html\n" +
+            "  - app.js, style.css\n" +
+            "  - historico_bruto.csv  ← ESTE ARQUIVO ESTÁ FALTANDO!"
+        );
     });
 }
 
