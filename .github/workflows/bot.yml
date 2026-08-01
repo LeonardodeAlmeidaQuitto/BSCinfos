@@ -2,7 +2,7 @@ name: Bot Minerador do Brawl Stars
 
 on:
   schedule:
-    - cron: '*/25 * * * *'
+    - cron: '*/20 * * * *'
   workflow_dispatch:
 
 jobs:
