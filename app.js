@@ -775,16 +775,41 @@ function carregarCSV() {
     caminhos = [...new Set(caminhos)];
 
     _tentarCarregarCSV(caminhos, 0, function(dados, caminhoUsado) {
+        // DEBUG: log detalhado para diagnóstico
+        console.log("[BCSInfos] === DIAGNÓSTICO DE CARREGAMENTO ===");
+        console.log("[BCSInfos] CSV carregado de:", caminhoUsado);
+        console.log("[BCSInfos] Linhas recebidas:", dados.length);
+        if (dados.length > 0) {
+            console.log("[BCSInfos] Colunas detectadas:", Object.keys(dados[0]));
+            console.log("[BCSInfos] Primeira linha:", JSON.stringify(dados[0]).substring(0, 500));
+            console.log("[BCSInfos] Tem brawler1?", dados[0].brawler1 !== undefined);
+            console.log("[BCSInfos] Tem dt_adicao?", dados[0].dt_adicao !== undefined);
+            console.log("[BCSInfos] Tem id_partida?", dados[0].id_partida !== undefined);
+            console.log("[BCSInfos] Tem regiao?", dados[0].regiao !== undefined);
+        }
+
         // Normaliza: se for novo formato (1 linha/partida), expande para 6 linhas
         dadosBrutos = normalizarCSVNovoFormato(dados);
+        console.log("[BCSInfos] Após normalização - dadosBrutos.length:", dadosBrutos.length);
+
         // valida se há dados úteis (precisa ter pick OU brawler1)
         if (dadosBrutos.length === 0 || dadosBrutos[0].pick === undefined) {
             // pode ser que ainda seja formato antigo legítimo
             if (dados.length > 0 && dados[0].pick !== undefined) dadosBrutos = dados;
         }
 
+        console.log("[BCSInfos] dadosBrutos finais:", dadosBrutos.length, "linhas");
+        if (dadosBrutos.length > 0) {
+            console.log("[BCSInfos] Primeira linha expandida:", JSON.stringify(dadosBrutos[0]).substring(0, 300));
+            // Verifica datas
+            let comData = dadosBrutos.filter(r => r.data_adicao || r.dt_adicao).length;
+            console.log("[BCSInfos] Linhas com data:", comData, "de", dadosBrutos.length);
+        }
+
         if (dadosBrutos.length === 0) {
-            mostrarErroCarregamento("historico_bruto.csv foi carregado de '" + caminhoUsado + "' mas está vazio ou em formato não reconhecido. Verifique se o CSV tem as 44 colunas no novo formato (id_partida, regiao, time1, player1..6, brawler1..6, etc).");
+            mostrarErroCarregamento("historico_bruto.csv foi carregado de '" + caminhoUsado + "' mas está vazio ou em formato não reconhecido.\n\n" +
+                "Colunas detectadas: " + (dados.length > 0 ? Object.keys(dados[0]).join(', ') : 'nenhuma') + "\n\n" +
+                "Verifique se o CSV tem as 44 colunas no novo formato (id_partida, regiao, time1, player1..6, brawler1..6, etc).");
             return;
         }
 
