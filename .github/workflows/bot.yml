@@ -36,6 +36,8 @@ jobs:
           # Garante que o Git LFS está ativo na máquina virtual
           git lfs install
           
+          # Limpa modificações temporárias do LFS para permitir o pull
+          git checkout .
           git pull --rebase origin main
 
       - name: Rodando o Gerador (Bot)
