@@ -725,6 +725,7 @@ function _tentarCarregarCSV(caminhos, indice, onSucesso, onErroFinal) {
             // o arquivo não existe. PapaParse analisa isso como dados com
             // colunas aleatórias. Verificamos se as colunas esperadas existem.
             let pareceHTML404 = false;
+            let pareceLFSPointer = false;
             if (dados.length > 0) {
                 let primeira = dados[0];
                 let temColunasCSV = (primeira.id_partida !== undefined ||
@@ -732,18 +733,29 @@ function _tentarCarregarCSV(caminhos, indice, onSucesso, onErroFinal) {
                                      primeira.brawler1 !== undefined ||
                                      primeira.pick !== undefined);
                 if (!temColunasCSV) {
-                    pareceHTML404 = true;
+                    // Verifica se é um ponteiro Git LFS
+                    let todasChaves = Object.keys(primeira).join(' ') + ' ' + Object.values(primeira).join(' ');
+                    if (todasChaves.indexOf('git-lfs') >= 0 || todasChaves.indexOf('sha256') >= 0 ||
+                        todasChaves.indexOf('version https') >= 0) {
+                        pareceLFSPointer = true;
+                        console.warn("[BCSInfos] Caminho retornou PONTEIRO Git LFS (não o CSV real):", caminho);
+                    } else {
+                        pareceHTML404 = true;
+                    }
                 }
             } else if (results.meta && results.meta.fields) {
-                // Se fields existe mas data está vazia, pode ser HTML de uma linha
+                // Se fields existe mas data está vazia, pode ser HTML de uma linha ou LFS
                 let fieldsStr = results.meta.fields.join('');
-                if (fieldsStr.indexOf('<') >= 0 || fieldsStr.indexOf('html') >= 0 || fieldsStr.indexOf('DOCTYPE') >= 0) {
+                if (fieldsStr.indexOf('git-lfs') >= 0 || fieldsStr.indexOf('sha256') >= 0) {
+                    pareceLFSPointer = true;
+                    console.warn("[BCSInfos] Caminho retornou PONTEIRO Git LFS (não o CSV real):", caminho);
+                } else if (fieldsStr.indexOf('<') >= 0 || fieldsStr.indexOf('html') >= 0 || fieldsStr.indexOf('DOCTYPE') >= 0) {
                     pareceHTML404 = true;
                 }
             }
 
-            if (pareceHTML404) {
-                console.warn("[BCSInfos] Caminho retornou HTML (provável 404):", caminho);
+            if (pareceHTML404 || pareceLFSPointer) {
+                if (pareceHTML404) console.warn("[BCSInfos] Caminho retornou HTML (provável 404):", caminho);
                 // Tenta próximo caminho
                 _tentarCarregarCSV(caminhos, indice + 1, onSucesso, onErroFinal);
                 return;
@@ -771,6 +783,31 @@ function carregarCSV() {
         "./historico_bruto.csv",                        // explícito relativo
         "/historico_bruto.csv"                          // raiz do domínio
     ];
+
+    // DETECÇÃO DE GIT LFS: GitHub Pages serve ponteiros LFS em vez do conteúdo real.
+    // Se o CSV está no Git LFS, precisamos buscar via media.githubusercontent.com
+    // que resolve o LFS e retorna o conteúdo real.
+    // Extrai usuário/repositório da URL atual (ex: usuario.github.io/REPO/sa.html)
+    try {
+        let hostParts = window.location.hostname.split('.');
+        if (hostParts.length >= 3 && hostParts[1] === 'github' && hostParts[2] === 'io') {
+            let usuario = hostParts[0];
+            let pathParts = window.location.pathname.split('/').filter(p => p.length > 0);
+            if (pathParts.length > 0) {
+                let repo = pathParts[0]; // primeiro segmento após o domínio é o repo
+                // Adiciona URLs do GitHub que resolvem LFS
+                let mediaUrl = 'https://media.githubusercontent.com/media/' + usuario + '/' + repo + '/main/historico_bruto.csv';
+                let rawUrl = 'https://raw.githubusercontent.com/' + usuario + '/' + repo + '/main/historico_bruto.csv';
+                caminhos.push(mediaUrl);  // resolve LFS - retorna conteúdo real
+                caminhos.push(rawUrl);    // fallback (pode retornar ponteiro LFS)
+                console.log("[BCSInfos] Detectado GitHub Pages - usuário:", usuario, "repo:", repo);
+                console.log("[BCSInfos] URL LFS fallback:", mediaUrl);
+            }
+        }
+    } catch(e) {
+        console.warn("[BCSInfos] Erro ao detectar URL GitHub:", e);
+    }
+
     // Remove duplicados
     caminhos = [...new Set(caminhos)];
 
@@ -838,23 +875,26 @@ function carregarCSV() {
         let base = _caminhoBaseCSV();
         let urlAtual = window.location.href;
         mostrarErroCarregamento(
-            "ERRO: historico_bruto.csv NÃO FOI ENCONTRADO!\n\n" +
+            "ERRO: historico_bruto.csv não pôde ser carregado!\n\n" +
             "URL atual da página: " + urlAtual + "\n" +
             "Caminho base detectado: " + base + "\n" +
             "Caminhos tentados:\n" +
             todosCaminhos.map(function(c) { return "  - " + c; }).join("\n") + "\n\n" +
-            "O arquivo historico_bruto.csv não está no GitHub Pages.\n" +
-            "O GitHub retornou uma página de erro (404) em vez do CSV.\n\n" +
-            "SOLUÇÃO:\n" +
-            "  1) Faça upload do arquivo historico_bruto.csv para o repositório\n" +
-            "  2) O arquivo deve estar na MESMA PASTA que sa.html (raiz do repo)\n" +
-            "  3) Faça git add historico_bruto.csv && git commit -m 'add csv' && git push\n" +
-            "  4) Aguarde 1-2 minutos para o GitHub Pages atualizar\n" +
-            "  5) Recarregue a página (Ctrl+F5)\n\n" +
-            "Arquivos necessários no repositório (todos juntos, sem subpasta):\n" +
-            "  - index.html, sa.html, na.html, emea.html, ea.html, geral.html\n" +
-            "  - app.js, style.css\n" +
-            "  - historico_bruto.csv  ← ESTE ARQUIVO ESTÁ FALTANDO!"
+            "POSSÍVEIS CAUSAS:\n" +
+            "  1) O arquivo historico_bruto.csv está no Git LFS (ponteiro em vez de conteúdo real)\n" +
+            "  2) O arquivo não existe no repositório (404)\n" +
+            "  3) O arquivo está em pasta diferente\n\n" +
+            "SOLUÇÃO (Git LFS — causa mais provável):\n" +
+            "  O .gitattributes tem '*.csv filter=lfs' que faz o GitHub Pages servir\n" +
+            "  um PONTEIRO em vez do conteúdo real do CSV.\n\n" +
+            "  Para resolver, remova o CSV do LFS:\n" +
+            "  1) Edite .gitattributes e REMOVA a linha: *.csv filter=lfs\n" +
+            "  2) Rode: git rm --cached historico_bruto.csv\n" +
+            "  3) Rode: git add historico_bruto.csv (agora sem LFS)\n" +
+            "  4) git commit -m 'Remove CSV from LFS' && git push\n" +
+            "  5) Aguarde 1-2 minutos e recarregue (Ctrl+F5)\n\n" +
+            "  OU: se o gerador.py usa GitHub Actions, configure o workflow para\n" +
+            "  commitar o CSV SEM LFS (remova 'git lfs install' do workflow)."
         );
     });
 }
