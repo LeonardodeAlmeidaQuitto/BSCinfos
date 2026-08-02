@@ -17,7 +17,7 @@ jobs:
       - name: Baixando os arquivos do repositório
         uses: actions/checkout@v4
         with:
-          lfs: true # Essencial para ler o arquivo grande
+          lfs: false # NÃO usar LFS — GitHub Pages não resolve arquivos LFS
           fetch-depth: 0 # Baixa o histórico completo para evitar erros de sincronização
 
       - name: Instalando o Python
@@ -30,18 +30,29 @@ jobs:
           pip install pandas brawlstats requests
 
       - name: Configurar Git
-        # Apenas configura o nome do bot, sem tentar puxar arquivos desnecessariamente aqui
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
+      - name: Remover CSV do Git LFS (CRÍTICO!)
+        # Remove o rastreamento LFS dos CSVs para que o GitHub Pages possa servi-los
+        run: |
+          # Remove a regra de LFS para CSV do .gitattributes
+          if [ -f .gitattributes ]; then
+            sed -i '/\*\.csv/d' .gitattributes
+            echo "Arquivo .gitattributes atualizado (removida regra LFS para CSV)"
+            cat .gitattributes
+          fi
+          # Remove o CSV do cache do LFS e readiciona como arquivo normal
+          git rm --cached historico_bruto.csv 2>/dev/null || true
+          git rm --cached estatisticas_finais.csv 2>/dev/null || true
+
       - name: Rodando o Gerador (Bot)
-        # ATENÇÃO: Se o nome do seu arquivo Python for diferente, mude aqui.
         run: python gerador.py
 
       - name: Salvando as alterações no GitHub
         run: |
-          # Adiciona o arquivo de configuração do LFS e os dados, ignorando erros se algum não existir
+          # Adiciona o .gitattributes (sem a regra LFS para CSV) e os CSVs como arquivos normais
           git add .gitattributes historico_bruto.csv estatisticas_finais.csv || true
           
           # Se a pasta api existir, adiciona também
