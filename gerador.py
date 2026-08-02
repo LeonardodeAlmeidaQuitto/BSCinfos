@@ -5,6 +5,7 @@ import json
 import time
 from datetime import datetime, timedelta, timezone
 import re
+import subprocess
 
 # =============================================================================
 # CONFIGURAÇÃO GERAL
@@ -18,7 +19,7 @@ API_KEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlY
 
 # Proxy da RoyaleAPI: tentado primeiro (contorna o IP fixo travado no token).
 PROXY_URL = "https://bsproxy.royaleapi.dev/v1"
-# API oficial da Supercell: usada como fallback automático se o proxy falhar.
+# API oficial da Supercell: usada como fallback automática se o proxy falhar.
 API_OFICIAL_URL = "https://api.brawlstars.com/v1"
 
 # -----------------------------------------------------------------------------
@@ -70,6 +71,7 @@ COLUNAS_BANS = ["id_partida", "regiao", "mapa", "modo", "id_time", "nome_time", 
 # colar aqui dentro de MAPEAMENTO_PLAYERS. Isso é necessário porque o navegador não tem permissão
 # para escrever em arquivos do servidor/repositório — então a sincronização desse arquivo .py
 # (que roda separadamente, minerando dados via API) precisa desse passo manual de copiar/colar.
+
 
 
 
@@ -135,7 +137,7 @@ MAPEAMENTO_PLAYERS = {
 }
 
 # =============================================================================
-# CACHE DA LISTA DE BRAWLERS (RapidAPI) — usada apenas como FALLBACK
+# CACHE DA LISTA DE BRAWLERS (RapidAPI) — usado apenas como FALLBACK
 # =============================================================================
 _cache_brawlers_rapidapi = {}
 
@@ -319,6 +321,83 @@ def formatar_player(tag, nick):
     tag_fmt = tag if tag else ""
     nick_fmt = nick if nick else "Unknown"
     return f"{tag_fmt} (#) {nick_fmt}"
+
+
+def remover_csv_do_lfs():
+    """
+    Remove o arquivo CSV do cache do Git LFS para que ele seja armazenado
+    como um arquivo normal no repositório. Isso corrige o problema de GitHub
+    Pages servir ponteiros LFS de 3 linhas em vez do arquivo completo.
+    
+    Esta função roda automaticamente após minerar_dados(), então o CSV gerado
+    sempre será gravado como arquivo normal, não via LFS.
+    """
+    caminho_csv = ARQUIVO_BRUTO
+    
+    # Só executa se o arquivo CSV existe
+    if not os.path.exists(caminho_csv):
+        print(f"[LFS] Arquivo {caminho_csv} não encontrado. Pulando remoção do LFS.")
+        return
+    
+    print(f"[LFS] Iniciando remoção do {caminho_csv} do Git LFS...")
+    
+    try:
+        # Passo 1: Remover arquivo do cache Git (mas manter no disco)
+        print(f"[LFS] Executando: git rm --cached {caminho_csv}")
+        resultado1 = subprocess.run(
+            ["git", "rm", "--cached", caminho_csv],
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+        
+        if resultado1.returncode != 0:
+            # Se o arquivo não está no rastreamento, é normal não ter erro
+            if "did not match any files" in resultado1.stdout or "did not match any files" in resultado1.stderr:
+                print(f"[LFS] Arquivo não estava rastreado. Continuando...")
+            else:
+                print(f"[LFS] Aviso: git rm --cached retornou status {resultado1.returncode}")
+                print(f"[LFS] stdout: {resultado1.stdout}")
+                print(f"[LFS] stderr: {resultado1.stderr}")
+        
+        # Passo 2: Adicionar o arquivo novamente como arquivo normal
+        print(f"[LFS] Executando: git add {caminho_csv}")
+        resultado2 = subprocess.run(
+            ["git", "add", caminho_csv],
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+        
+        if resultado2.returncode != 0:
+            print(f"[LFS] Erro ao executar git add: {resultado2.stderr}")
+            print(f"[LFS] Aviso: O CSV pode permanecer no LFS")
+        
+        # Passo 3: Opcional - remover do cache LFS (não apaga o arquivo em si)
+        print(f"[LFS] Executando: git lfs prune")
+        resultado3 = subprocess.run(
+            ["git", "lfs", "prune"],
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+        
+        if resultado3.returncode != 0:
+            print(f"[LFS] Aviso: git lfs prune retornou status {resultado3.returncode}")
+        
+        print(f"[LFS] ✅ Remoção do LFS concluída com sucesso!")
+        print(f"[LFS] O arquivo {caminho_csv} agora será gravado como arquivo normal.")
+        print(f"[LFS] GitHub Pages poderá servir este arquivo corretamente.")
+        
+    except subprocess.TimeoutExpired:
+        print(f"[LFS] ❌ Erro: Timeout ao executar comandos git")
+        print(f"[LFS] O CSV pode permanecer no LFS mas o app.js tem fallback")
+    except FileNotFoundError:
+        print(f"[LFS] ⚠️  Aviso: Comando 'git' não encontrado no ambiente atual")
+        print(f"[LFS] Remoção LFS só funciona em ambiente com Git instalado")
+    except Exception as e:
+        print(f"[LFS] ❌ Erro ao remover do LFS: {e}")
+        print(f"[LFS] O app.js tem fallback automático para ler de media.githubusercontent.com")
 
 
 def minerar_dados():
@@ -557,4 +636,8 @@ def minerar_dados():
 
 
 if __name__ == "__main__":
+    # Executa a mineração de dados
     minerar_dados()
+    
+    # Remove o CSV do LFS automaticamente após mineração
+    remover_csv_do_lfs()
