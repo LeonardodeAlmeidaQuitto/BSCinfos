@@ -1,24 +1,55 @@
-- name: Salvando as alterações no GitHub
+name: Bot Minerador do Brawl Stars
+
+on:
+  schedule:
+    - cron: '*/20 * * * *'
+  workflow_dispatch:
+
+jobs:
+  minerar_e_atualizar:
+    runs-on: ubuntu-latest
+    env:
+      TZ: 'America/Sao_Paulo'
+    permissions:
+      contents: write
+
+    steps:
+      - name: Baixando os arquivos do repositório
+        uses: actions/checkout@v4
+        with:
+          lfs: false
+          fetch-depth: 1 # Pega apenas o estado atual para evitar conflitos de histórico
+
+      - name: Instalando o Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Instalando as bibliotecas
         run: |
-          # Adiciona o .gitattributes (sem a regra LFS para CSV) e os CSVs como arquivos normais
-          git add .gitattributes historico_bruto.csv estatisticas_finais.csv || true
+          pip install pandas brawlstats requests
+
+      - name: Configurar Git
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Rodando o Gerador (Bot)
+        run: python gerador.py
+
+      - name: Salvando as alterações no GitHub
+        run: |
+          # Garante que o .gitattributes não tenha a regra LFS para CSV
+          if [ -f .gitattributes ]; then
+            sed -i '/\*\.csv/d' .gitattributes
+          fi
           
-          # Se a pasta api existir, adiciona também
-          git add api/ || true
+          # Adiciona os arquivos gerados
+          git add .gitattributes historico_bruto.csv estatisticas_finais.csv api/ || true
           
-          # Verifica se há mudanças e faz o commit
+          # Verifica se há mudanças e faz o commit e push direto
           if ! git diff --cached --quiet; then
             git commit -m "🤖 Atualização Automática de Partidas"
-            
-            # Configura o pull para merge padrão e diz ao Git para preferir as alterações locais (do bot) em caso de conflito
-            git config pull.rebase false
-            git pull origin main -X ours --no-edit || true
-            
-            # Caso o conflito persista por causa do 'modify/delete', forçamos a adição novamente
-            git add historico_bruto.csv estatisticas_finais.csv || true
-            git commit -m "🤖 Resolvendo conflito de arquivos" || true
-            
-            # Envia para o GitHub
             git push origin main
           else
             echo "Sem mudanças para atualizar"
