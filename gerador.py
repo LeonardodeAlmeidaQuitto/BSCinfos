@@ -201,18 +201,23 @@ def minerar_dados():
         'items_ja_existentes': 0, 'items_novos': 0, 'erros_processamento': 0,
     }
 
+    total_jogadores = len(MAPEAMENTO_PLAYERS)
     for tag_busca, info_busca in list(MAPEAMENTO_PLAYERS.items()):
         sigla_busca = info_busca.get("regiao", "SA")
         tag_url = tag_busca.replace("#", "%23")
         stats['total_players'] += 1
 
+        print(f"[{stats['total_players']}/{total_jogadores}] Consultando {info_busca.get('nome', '?')} ({tag_busca})...", flush=True)
+
         resp, origem, erro = buscar_battlelog(tag_url, headers_api)
         if resp is None:
             stats['falhas_conexao'] += 1
+            print(f"    -> Falha: {erro}", flush=True)
             continue
 
         stats['status_ok'] += 1
         stats['origem_sucesso'][origem] = stats['origem_sucesso'].get(origem, 0) + 1
+        print(f"    -> OK via {origem}", flush=True)
 
         try:
             items = resp.json().get("items", [])
@@ -248,6 +253,7 @@ def minerar_dados():
                 reg_final = "/".join(sorted({TAG_PARA_REGIAO.get(t, sigla_busca) for t in tags_list}))
 
                 if pid not in ids_registrados:
+                    print(f"    -> Nova partida encontrada, buscando equipamentos...", flush=True)
                     t0_nome, t1_nome = "DESCONHECIDO T0", "DESCONHECIDO T1"
                     for p in teams[0]:
                         if p.get('tag') in MAPEAMENTO_PLAYERS: t0_nome = MAPEAMENTO_PLAYERS[p['tag']]["nome_time"]
