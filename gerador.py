@@ -294,9 +294,6 @@ def minerar_dados():
 
 if __name__ == "__main__":
     minerar_dados()
-        df_p = pd.DataFrame(novas_picks, columns=COLUNAS_PICKS)
-        df_p.to_csv(ARQUIVO_BRUTO, mode='a', header=not os.path.exists(ARQUIVO_BRUTO), index=False)
-        print(f"Salvo: {len(df_p)} jogos (1 linha cada) no {ARQUIVO_BRUTO}")
 
     if novos_bans:
         df_b = pd.DataFrame(novos_bans, columns=COLUNAS_BANS)
@@ -327,6 +324,3 @@ if __name__ == "__main__":
 if __name__ == "__main__":
     # Executa a mineração de dados
     minerar_dados()
-    
-    # Remove o CSV do LFS automaticamente após mineração
-    remover_csv_do_lfs()
