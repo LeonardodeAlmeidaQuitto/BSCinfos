@@ -123,11 +123,7 @@ const ROSTERS_POR_DATA = {
             { id_time: "FZ", nome_time: "FRENZY", jogadores: [ { nick: "Toridesu", tag: "#89UUQLJCC" }, { nick: "Danshari", tag: "#99GGUPY2U" }, { nick: "Ferkel", tag: "#CV9Y9VPP" } ] },
             { id_time: "F0", nome_time: "FAZE ZERO", jogadores: [ { nick: "Rennosuke", tag: "#8R0JY2UJ2" }, { nick: "Telpny", tag: "#9GJ8GYCY2" }, { nick: "Mira", tag: "#88LLQGP0Q" } ] }
                 ]
-            }
-        }
-    },
-
-    "2026": {
+        },
         "07": { 
            "SA": {
         "TIER S": [
@@ -215,8 +211,8 @@ const ROSTERS_POR_DATA = {
             ]
         }
     }
-}
-
+};
+            
 let CONFIGURACAO_MANUAL_TIMES = {};
 
 function atualizarRostersAtuais() {
