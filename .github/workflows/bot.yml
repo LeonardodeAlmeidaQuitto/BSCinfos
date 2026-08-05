@@ -43,6 +43,9 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
       - name: Rodando o Gerador (Bot)
+        env:
+          BS_API_KEY: ${{ secrets.BS_API_KEY }}
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
         run: python gerador.py
 
       - name: Salvando as alterações no GitHub
