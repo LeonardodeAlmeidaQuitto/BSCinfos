@@ -9,10 +9,10 @@ import time
 # =============================================================================
 # CONFIGURAÇÃO GERAL
 # =============================================================================
-API_KEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjBmMDc4YzZkLTYyYWEtNDliZS1iOTFlLWMwYzhiMzVmZWY2MCIsImlhdCI6MTc4NTc5NTAzNSwic3ViIjoiZGV2ZWxvcGVyLzc0NjFhNGJkLThhZDctNjg2Mi0wOGVkLTJiYmEzMzAxMWE3NiIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiNDUuNzkuMjE4Ljc5Il0sInR5cGUiOiJjbGllbnQifV19.bA6wAah_j7FFE_AdOSzWvzUMxcGEHXjiXp5SjB1bIi90ClnoKXqhQYOoyP7oc2UA7Ft2EELJEHGc6UJW_9RPuA" # INSIRA SUA CHAVE OFICIAL DA SUPERCELL COMPLETA AQUI
+API_KEY = os.environ.get("BS_API_KEY", "")  # Vem do GitHub Secrets (BS_API_KEY)
 
 # --- CONFIGURAÇÃO DA RAPIDAPI (Djole33/api/brawlstarsapi) ---
-RAPIDAPI_KEY = "e28d71b8f2msh519f1b75f65bb54p1d5598jsnae80ec5aa0a2"
+RAPIDAPI_KEY = os.environ.get("RAPIDAPI_KEY", "")  # Vem do GitHub Secrets (RAPIDAPI_KEY)
 RAPIDAPI_HOST = "brawl-stars-api3.p.rapidapi.com"
 
 PROXY_URL = "https://bsproxy.royaleapi.dev/v1"
