@@ -5,9 +5,17 @@ on:
     - cron: '*/20 * * * *'
   workflow_dispatch:
 
+# Evita que duas execuções rodem ao mesmo tempo (o script pode passar de 20min).
+# cancel-in-progress: false -> a nova execução espera a anterior terminar,
+# em vez de matar ela no meio (o que poderia corromper o CSV ou o push).
+concurrency:
+  group: minerar-brawl-stars
+  cancel-in-progress: false
+
 jobs:
   minerar_e_atualizar:
     runs-on: ubuntu-latest
+    timeout-minutes: 15 # Segurança: mata o job se ele travar de verdade, antes do próximo cron disparar
     env:
       TZ: 'America/Sao_Paulo'
     permissions:
@@ -24,6 +32,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+          cache: 'pip'
 
       - name: Instalando as bibliotecas
         run: |
@@ -43,10 +52,10 @@ jobs:
           if [ -f .gitattributes ]; then
             sed -i '/\*\.csv/d' .gitattributes
           fi
-          
+
           # Adiciona os arquivos gerados
           git add .gitattributes historico_bruto.csv estatisticas_finais.csv api/ || true
-          
+
           # Verifica se há mudanças e faz o commit e push direto
           if ! git diff --cached --quiet; then
             git commit -m "🤖 Atualização Automática de Partidas"
