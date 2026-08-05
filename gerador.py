@@ -9,10 +9,10 @@ import time
 # =============================================================================
 # CONFIGURAÇÃO GERAL
 # =============================================================================
-API_KEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9..." # INSIRA SUA CHAVE OFICIAL DA SUPERCELL COMPLETA AQUI
+API_KEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjBmMDc4YzZkLTYyYWEtNDliZS1iOTFlLWMwYzhiMzVmZWY2MCIsImlhdCI6MTc4NTc5NTAzNSwic3ViIjoiZGV2ZWxvcGVyLzc0NjFhNGJkLThhZDctNjg2Mi0wOGVkLTJiYmEzMzAxMWE3NiIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiNDUuNzkuMjE4Ljc5Il0sInR5cGUiOiJjbGllbnQifV19.bA6wAah_j7FFE_AdOSzWvzUMxcGEHXjiXp5SjB1bIi90ClnoKXqhQYOoyP7oc2UA7Ft2EELJEHGc6UJW_9RPuA" # INSIRA SUA CHAVE OFICIAL DA SUPERCELL COMPLETA AQUI
 
 # --- CONFIGURAÇÃO DA RAPIDAPI (Djole33/api/brawlstarsapi) ---
-RAPIDAPI_KEY = "SUA_CHAVE_RAPIDAPI_AQUI"
+RAPIDAPI_KEY = "e28d71b8f2msh519f1b75f65bb54p1d5598jsnae80ec5aa0a2"
 RAPIDAPI_HOST = "brawl-stars-api3.p.rapidapi.com"
 
 PROXY_URL = "https://bsproxy.royaleapi.dev/v1"
@@ -293,34 +293,11 @@ def minerar_dados():
         print("Nenhum dado novo.")
 
 if __name__ == "__main__":
-    minerar_dados()
-
-    if novos_bans:
-        df_b = pd.DataFrame(novos_bans, columns=COLUNAS_BANS)
-        df_b.to_csv(ARQUIVO_BANS, mode='a', header=not os.path.exists(ARQUIVO_BANS), index=False)
-        print(f"Salvo: {len(novos_bans)} bans no {ARQUIVO_BANS}")
-
-    if not novas_picks and not novos_bans:
-        print("Nenhum dado novo.")
-
-    print("\n========== DIAGNOSTICO DA EXECUCAO ==========")
-    print(f"Jogadores consultados: {stats['total_players']}")
-    print(f"  Respostas OK: {stats['status_ok']}  (proxy: {stats['origem_sucesso'].get('proxy',0)}, direto: {stats['origem_sucesso'].get('direto',0)})")
-    print(f"  Falhas de conexao/autenticacao: {stats['falhas_conexao']}")
-    print(f"Partidas brutas lidas nos battlelogs: {stats['total_items_lidos']}")
-    print(f"  Descartadas (nao eram 3v3): {stats['items_nao_3v3']}")
-    print(f"  Ja existentes no historico: {stats['items_ja_existentes']}")
-    print(f"  Novas partidas: {stats['items_novos']}")
-    print(f"  Erros ao processar item: {stats['erros_processamento']}")
-    if stats['falhas_conexao'] == stats['total_players'] and stats['total_players'] > 0:
-        print("")
-        print("  !!! ATENCAO: TODAS as chamadas falharam com 403 (accessDenied).")
-        print("  !!! O token API_KEY da Supercell EXPIROU.")
-        print("  !!! Gere um novo token em https://developer.supercell.com")
-        print("  !!! e substitua o valor de API_KEY no topo deste arquivo.")
-    print("==============================================\n")
-
-
-if __name__ == "__main__":
     # Executa a mineração de dados
     minerar_dados()
+
+    # OBS: a chamada a remover_csv_do_lfs() foi removida porque essa função
+    # não estava definida em nenhum lugar do arquivo (causaria NameError).
+    # Se você realmente precisa remover o CSV do Git LFS após a mineração,
+    # me diga o que essa função deve fazer (ex: rodar `git lfs untrack` e
+    # `git rm --cached` no arquivo) que eu implemento certinho.
