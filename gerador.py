@@ -8,10 +8,10 @@ import re
 # =============================================================================
 # CONFIGURAÇÃO GERAL
 # =============================================================================
-API_KEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjU0ODZlOGQxLTRkNWQtNDJmYy1iOWE3LWU5ODYyMWJhOWI0NSIsImlhdCI6MTc3ODUwODgwOCwic3ViIjoiZGV2ZWxvcGVyLzc0NjFhNGJkLThhZDctNjg2Mi0wOGVkLTJiYmEzMzAxMWE3NiIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiNDUuNzkuMjE4Ljc5Il0sInR5cGUiOiJjbGllbnQifV19.yvcSQalBqNz6Q6DjZWU5IL1XvBjn5DGckYvy2bgl5tjVeRJ2GMhY_I2JP1zdEeLAfEG2hGVJT7OMZro4kkegFA"
+API_KEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjBmMDc4YzZkLTYyYWEtNDliZS1iOTFlLWMwYzhiMzVmZWY2MCIsImlhdCI6MTc4NTc5NTAzNSwic3ViIjoiZGV2ZWxvcGVyLzc0NjFhNGJkLThhZDctNjg2Mi0wOGVkLTJiYmEzMzAxMWE3NiIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiNDUuNzkuMjE4Ljc5Il0sInR5cGUiOiJjbGllbnQifV19.bA6wAah_j7FFE_AdOSzWvzUMxcGEHXjiXp5SjB1bIi90ClnoKXqhQYOoyP7oc2UA7Ft2EELJEHGc6UJW_9RPuA"
 # A chave da API vem do Secret BRAWL_STARS_API_KEY (configurado no GitHub em
 # Settings -> Secrets and variables -> Actions). Nunca deixe a chave escrita aqui.
-API_KEY = os.environ.get("BS_API_KEY", "")
+API_KEY = os.environ.get("BRAWL_STARS_API_KEY", "")
  
 # Proxy da RoyaleAPI: tentado primeiro (contorna o IP fixo travado no token).
 PROXY_URL = "https://bsproxy.royaleapi.dev/v1"
@@ -185,7 +185,6 @@ def minerar_dados():
         'items_resultado_invalido': 0,
     }
  
-    for tag_busca, info_busca in list(MAPEAMENTO_PLAYERS.items()):
     ids_consulta = IDS_MONITORADOS + [t for t in tags_torneio if t not in IDS_MONITORADOS]
     for tag_busca in ids_consulta:
         info_busca = MAPEAMENTO_PLAYERS.get(tag_busca, {})
