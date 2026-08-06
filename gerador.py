@@ -4,37 +4,34 @@ import os
 import json
 from datetime import datetime, timedelta, timezone
 import re
-import time
-
+ 
 # =============================================================================
 # CONFIGURAÇÃO GERAL
 # =============================================================================
-API_KEY = os.environ.get("BS_API_KEY", "")  # Vem do GitHub Secrets (BS_API_KEY)
-
-# --- CONFIGURAÇÃO DA RAPIDAPI (Djole33/api/brawlstarsapi) ---
-RAPIDAPI_KEY = os.environ.get("RAPIDAPI_KEY", "")  # Vem do GitHub Secrets (RAPIDAPI_KEY)
-RAPIDAPI_HOST = "brawl-stars-api3.p.rapidapi.com"
-
+API_KEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjU0ODZlOGQxLTRkNWQtNDJmYy1iOWE3LWU5ODYyMWJhOWI0NSIsImlhdCI6MTc3ODUwODgwOCwic3ViIjoiZGV2ZWxvcGVyLzc0NjFhNGJkLThhZDctNjg2Mi0wOGVkLTJiYmEzMzAxMWE3NiIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiNDUuNzkuMjE4Ljc5Il0sInR5cGUiOiJjbGllbnQifV19.yvcSQalBqNz6Q6DjZWU5IL1XvBjn5DGckYvy2bgl5tjVeRJ2GMhY_I2JP1zdEeLAfEG2hGVJT7OMZro4kkegFA"
+# A chave da API vem do Secret BRAWL_STARS_API_KEY (configurado no GitHub em
+# Settings -> Secrets and variables -> Actions). Nunca deixe a chave escrita aqui.
+API_KEY = os.environ.get("BS_API_KEY", "")
+ 
+# Proxy da RoyaleAPI: tentado primeiro (contorna o IP fixo travado no token).
 PROXY_URL = "https://bsproxy.royaleapi.dev/v1"
+# API oficial da Supercell: usada como fallback automático se o proxy falhar.
 API_OFICIAL_URL = "https://api.brawlstars.com/v1"
-
+ 
 ARQUIVO_BRUTO = "historico_bruto.csv"
 ARQUIVO_BANS = "bans_matcherino.csv"
-
-# NOVA ORGANIZAÇÃO DE COLUNAS CONFORME SOLICITADO
-COLUNAS_PICKS = [
-    "id_partida", "regiao", 
-    "time1", "player1", "brawler1", "gadget", "starrpower", "gear1", "gear2", 
-    "player2", "brawler2", "gadget2", "starrpower2", "gear1_2", "gear2_2", 
-    "player3", "brawler3", "gadget3", "starrpower3", "gear1_3", "gear2_3", 
-    "time2", "player4", "brawler4", "gadget4", "starrpower4", "gear1_4", "gear2_4", 
-    "player5", "brawler5", "gadget5", "starrpower5", "gear1_5", "gear2_5", 
-    "player6", "brawler6", "gadget6", "starrpower6", "gear1_6", "gear2_6", 
-    "modo", "mapa", "tipo", "dt_adicao"
-]
-
+ARQUIVO_ROSTERS_AUTO = os.path.join("api", "rosters_auto.json")
+ 
+COLUNAS_PICKS = ["id_partida", "regiao", "id_players", "name_players", "pick", "win", "win_rate", "modo", "mapa", "data_adicao", "player_tag", "player_name", "id_time", "nome_time", "tipo"]
 COLUNAS_BANS = ["id_partida", "regiao", "mapa", "modo", "id_time", "nome_time", "brawler_banido", "data_adicao", "tipo"]
-
+ 
+# Mapeamento de Tags para identificação automática de Região, Time e Nick
+#
+# OBS: quando um time "Unknow" é registrado pelo site (aba TIMES -> Registrar Equipe Desconhecida),
+# o app.js gera automaticamente um botão "COPIAR" com as linhas prontas no formato abaixo para você
+# colar aqui dentro de MAPEAMENTO_PLAYERS. Isso é necessário porque o navegador não tem permissão
+# para escrever em arquivos do servidor/repositório — então a sincronização desse arquivo .py
+# (que roda separadamente, minerando dados via API) precisa desse passo manual de copiar/colar.
 MAPEAMENTO_PLAYERS = {
 # SA  
         "#PLLRJC2V": {"nome": "Wesley", "id_time": "BH", "nome_time": "BH ESPORTS", "regiao": "SA"},
@@ -71,7 +68,7 @@ MAPEAMENTO_PLAYERS = {
         "#9PCV9L982": {"nome": "AngelBoy", "id_time": "FUT", "nome_time": "FUT ESPORTS", "regiao": "EMEA"},
         "#2208QGGGL": {"nome": "Dompe", "id_time": "KUMA", "nome_time": "KUMA", "regiao": "EMEA"},
         "#80PVPCC29": {"nome": "Enraged", "id_time": "NAVI", "nome_time": "NAVI", "regiao": "EMEA"},
-        "#2Y822YJYJC": {"nome": "Decaii", "id_time": "MZP", "nome_time": "METIZPORT", "regiao": "EMEA"},
+        "#2Y822YJYJC": {"nome": "Decaii", "id_time": "MZP", "nome_time": "MZP", "regiao": "EMEA"},
         "#YQUCCJ2": {"nome": "Symantec", "id_time": "HMB", "nome_time": "HMBLE", "regiao": "EMEA"},
         "#9LVUC2PY": {"nome": "Ope", "id_time": "SK", "nome_time": "SK GAMING", "regiao": "EMEA"},
         "#PCPRPJV": {"nome": "IKaoss", "id_time": "TH", "nome_time": "TEAM HERETICS", "regiao": "EMEA"},
@@ -93,25 +90,36 @@ MAPEAMENTO_PLAYERS = {
         "#28VP0G808": {"nome": "Koga", "id_time": "INS", "nome_time": "INSOMNIA", "regiao": "EA"},
         "#89UUQLJCC": {"nome": "Toridesu", "id_time": "FZ", "nome_time": "FRENZY", "regiao": "EA"},
         "#8R0JY2UJ2": {"nome": "Rennosuke", "id_time": "F0", "nome_time": "FAZE ZERO", "regiao": "EA"}
-
+ 
 }
-
+ 
+# Fonte explícita de consulta: a mineração lê o battlelog SOMENTE destes IDs.
+# O nick de cada jogador é sempre o nome observado na API no momento da partida
+# (nunca o nome do mapeamento), então o historico_bruto.csv guarda id+nome da época.
+IDS_MONITORADOS = list(MAPEAMENTO_PLAYERS.keys())
+ 
 def obter_fuso_brasilia():
     return timezone(timedelta(hours=-3))
-
+ 
 def formatar_data_brawl(battle_time_str):
     try:
         dt = datetime.strptime(battle_time_str, "%Y%m%dT%H%M%S.%fZ").replace(tzinfo=timezone.utc)
         return dt.astimezone(obter_fuso_brasilia()).strftime("%d/%m/%Y %H:%M:%S")
     except:
         return datetime.now(obter_fuso_brasilia()).strftime("%d/%m/%Y %H:%M:%S")
-
+ 
 def nome_brawler(b):
     if isinstance(b, str): return b.upper()
     if isinstance(b, dict): return str(b.get('brawler') or b.get('brawlerName') or b.get('name') or 'UNKNOWN').upper()
     return 'UNKNOWN'
-
+ 
 def buscar_battlelog(tag_url, headers_api):
+    """
+    Tenta buscar o battlelog primeiro via proxy RoyaleAPI, e se falhar
+    (qualquer erro de conexão ou status != 200), tenta de novo via API
+    oficial da Supercell direto. Retorna (resposta, origem, erro).
+    Se as duas tentativas falharem, resposta vem None e erro tem o motivo.
+    """
     tentativas = [
         (f"{PROXY_URL}/players/{tag_url}/battlelog", "proxy"),
         (f"{API_OFICIAL_URL}/players/{tag_url}/battlelog", "direto"),
@@ -126,44 +134,12 @@ def buscar_battlelog(tag_url, headers_api):
         except Exception as e:
             ultimo_erro = f"Exceção via {origem} -> {e}"
     return None, None, ultimo_erro
-
-# Função conectada à RapidAPI do Djole33 para buscar equipamentos
-def buscar_equipamentos_rapidapi(tag, brawler_name):
-    tag_limpa = tag.replace("#", "")
-    url = f"https://{RAPIDAPI_HOST}/players/%23{tag_limpa}"
-    
-    headers = {
-        "X-RapidAPI-Key": RAPIDAPI_KEY,
-        "X-RapidAPI-Host": RAPIDAPI_HOST
-    }
-    
-    try:
-        req = requests.get(url, headers=headers, timeout=5)
-        if req.status_code == 200:
-            dados = req.json()
-            brawlers = dados.get("brawlers", [])
-            for b in brawlers:
-                if str(b.get("name", "")).upper() == brawler_name:
-                    # Capturando os atributos equipados ou desbloqueados 
-                    star_powers = [sp["name"] for sp in b.get("starPowers", [])]
-                    gadgets = [gd["name"] for gd in b.get("gadgets", [])]
-                    gears = [gr["name"] for gr in b.get("gears", [])]
-                    
-                    gd_final = gadgets[0] if len(gadgets) > 0 else "None"
-                    sp_final = star_powers[0] if len(star_powers) > 0 else "None"
-                    gr1_final = gears[0] if len(gears) > 0 else "None"
-                    gr2_final = gears[1] if len(gears) > 1 else "None"
-                    
-                    return gd_final, sp_final, gr1_final, gr2_final
-    except Exception as e:
-        print(f"Erro na RapidAPI para {tag}: {e}")
-        
-    return "None", "None", "None", "None"
-
+ 
 def minerar_dados():
     global MAPEAMENTO_PLAYERS
     tags_torneio = set()
-
+ 
+    # Automatização do Matcherino via arquivo 'torneios.txt'
     if os.path.exists('torneios.txt'):
         with open('torneios.txt', 'r') as f:
             for linha in f:
@@ -182,49 +158,57 @@ def minerar_dados():
                                     tags_torneio.add(tag)
                     except Exception as e:
                         print(f"Erro Matcherino {t_id}: {e}")
-
+ 
     TAG_PARA_REGIAO = {t: i.get("regiao", "SA") for t, i in MAPEAMENTO_PLAYERS.items()}
-
+ 
     ids_registrados, ids_bans = set(), set()
     if os.path.exists(ARQUIVO_BRUTO):
         try:
             df = pd.read_csv(ARQUIVO_BRUTO)
             if "id_partida" in df.columns: ids_registrados = set(df["id_partida"].dropna().astype(str).unique())
         except: pass
-
+ 
+    if os.path.exists(ARQUIVO_BANS):
+        try:
+            dfb = pd.read_csv(ARQUIVO_BANS)
+            if "id_partida" in dfb.columns: ids_bans = set(dfb["id_partida"].dropna().astype(str).unique())
+        except: pass
+ 
     novas_picks, novos_bans = [], []
     headers_api = {"Authorization": f"Bearer {API_KEY}"}
-
+ 
+    # --- Contadores de diagnóstico ---
     stats = {
         'total_players': 0, 'status_ok': 0, 'falhas_conexao': 0,
         'origem_sucesso': {}, 'total_items_lidos': 0, 'items_nao_3v3': 0,
         'items_ja_existentes': 0, 'items_novos': 0, 'erros_processamento': 0,
+        'items_resultado_invalido': 0,
     }
-
-    total_jogadores = len(MAPEAMENTO_PLAYERS)
+ 
     for tag_busca, info_busca in list(MAPEAMENTO_PLAYERS.items()):
+    ids_consulta = IDS_MONITORADOS + [t for t in tags_torneio if t not in IDS_MONITORADOS]
+    for tag_busca in ids_consulta:
+        info_busca = MAPEAMENTO_PLAYERS.get(tag_busca, {})
         sigla_busca = info_busca.get("regiao", "SA")
         tag_url = tag_busca.replace("#", "%23")
         stats['total_players'] += 1
-
-        print(f"[{stats['total_players']}/{total_jogadores}] Consultando {info_busca.get('nome', '?')} ({tag_busca})...", flush=True)
-
+ 
         resp, origem, erro = buscar_battlelog(tag_url, headers_api)
         if resp is None:
             stats['falhas_conexao'] += 1
-            print(f"    -> Falha: {erro}", flush=True)
+            if stats['falhas_conexao'] <= 8:
+                print(f"  [FALHA] {tag_busca}: {erro}")
             continue
-
+ 
         stats['status_ok'] += 1
         stats['origem_sucesso'][origem] = stats['origem_sucesso'].get(origem, 0) + 1
-        print(f"    -> OK via {origem}", flush=True)
-
+ 
         try:
             items = resp.json().get("items", [])
         except Exception:
             items = []
         stats['total_items_lidos'] += len(items)
-
+ 
         for item in items:
             try:
                 battle = item.get("battle", {})
@@ -232,78 +216,209 @@ def minerar_dados():
                 if len(teams) != 2 or len(teams[0]) != 3 or len(teams[1]) != 3:
                     stats['items_nao_3v3'] += 1
                     continue
-
+ 
                 mapa = item.get("event", {}).get("map", "Unknown")
                 modo = item.get("event", {}).get("mode", "Unknown")
                 b_time = item.get("battleTime")
                 momento = formatar_data_brawl(b_time)
-
+ 
                 all_p = teams[0] + teams[1]
                 tags_list = [p.get('tag', '') for p in all_p]
                 nicks_list = [p.get('name', 'Unknown') for p in all_p]
                 brawlers_list = [nome_brawler(p.get('brawler', {})) for p in all_p]
-
+ 
                 is_matcherino = any(t in tags_torneio for t in tags_list)
                 tipo_raw = battle.get('type', 'friendly').lower()
                 bans_raw = battle.get('bannedBrawlers') or battle.get('bans') or []
-
+ 
                 tipo_final = 'tournament' if (is_matcherino or len(bans_raw) > 0 or 'ranked' in tipo_raw) else 'scrim'
+ 
                 time_str = b_time.split(".")[0] if b_time else "00000000T000000"
                 pid = f"{time_str}_{mapa}_{'_'.join(tags_list)}_{'_'.join(brawlers_list)}"
+ 
+                res = battle.get('result')
+                if res not in ('victory', 'defeat'):
+                    stats['items_resultado_invalido'] += 1
+                    continue
                 reg_final = "/".join(sorted({TAG_PARA_REGIAO.get(t, sigla_busca) for t in tags_list}))
-
+ 
+                t0_id, t0_nome = "OPONENTE_T0", "DESCONHECIDO T0"
+                t1_id, t1_nome = "OPONENTE_T1", "DESCONHECIDO T1"
+ 
+                for p in teams[0]:
+                    if p.get('tag') in MAPEAMENTO_PLAYERS:
+                        t0_id, t0_nome = MAPEAMENTO_PLAYERS[p['tag']]["id_time"], MAPEAMENTO_PLAYERS[p['tag']]["nome_time"]
+                        break
+                for p in teams[1]:
+                    if p.get('tag') in MAPEAMENTO_PLAYERS:
+                        t1_id, t1_nome = MAPEAMENTO_PLAYERS[p['tag']]["id_time"], MAPEAMENTO_PLAYERS[p['tag']]["nome_time"]
+                        break
+ 
                 if pid not in ids_registrados:
-                    print(f"    -> Nova partida encontrada, buscando equipamentos...", flush=True)
-                    t0_nome, t1_nome = "DESCONHECIDO T0", "DESCONHECIDO T1"
-                    for p in teams[0]:
-                        if p.get('tag') in MAPEAMENTO_PLAYERS: t0_nome = MAPEAMENTO_PLAYERS[p['tag']]["nome_time"]
-                    for p in teams[1]:
-                        if p.get('tag') in MAPEAMENTO_PLAYERS: t1_nome = MAPEAMENTO_PLAYERS[p['tag']]["nome_time"]
-                        
-                    # MONTAR LINHA HORIZONTAL (1 POR PARTIDA)
-                    linha_partida = [pid, reg_final, t0_nome]
-                    
-                    for i in range(6):
-                        # Pular inserção do nome do Time2 antes do player 4
-                        if i == 3:
-                            linha_partida.append(t1_nome)
-                            
-                        t = tags_list[i]
-                        n = nicks_list[i]
-                        b = brawlers_list[i]
-                        
-                        nome_formatado = f"{t} {n}"
-                        gd, sp, gr1, gr2 = buscar_equipamentos_rapidapi(t, b)
-                        
-                        linha_partida.extend([nome_formatado, b, gd, sp, gr1, gr2])
-                        
-                        # Evitar limite de requests rápidos
-                        time.sleep(0.1)
-
-                    linha_partida.extend([modo, mapa, tipo_final, momento])
-                    novas_picks.append(linha_partida)
-                    ids_registrados.add(pid)
                     stats['items_novos'] += 1
+                    for i in range(6):
+                        venceu = 1 if (i < 3 and res == 'victory') or (i >= 3 and res == 'defeat') else 0
+                        id_t, nm_t = (t0_id, t0_nome) if i < 3 else (t1_id, t1_nome)
+                        novas_picks.append([
+                            pid, reg_final, ";".join(tags_list), ";".join(nicks_list),
+                            brawlers_list[i], venceu, f"{venceu*100}.0%", modo, mapa,
+                            momento, tags_list[i], nicks_list[i], id_t, nm_t, tipo_final
+                        ])
+                    ids_registrados.add(pid)
                 else:
                     stats['items_ja_existentes'] += 1
-
+ 
+                if bans_raw and pid not in ids_bans:
+                    bans_a, bans_b = [], []
+                    if isinstance(bans_raw, list):
+                        if len(bans_raw) <= 2:
+                            if len(bans_raw) > 0: bans_a.append(bans_raw[0])
+                            if len(bans_raw) > 1: bans_b.append(bans_raw[1])
+                        else:
+                            m = len(bans_raw)//2
+                            bans_a, bans_b = bans_raw[:m], bans_raw[m:]
+ 
+                    for b in bans_a:
+                        bb = nome_brawler(b)
+                        if bb != 'UNKNOWN': novos_bans.append([pid, reg_final, mapa, modo, t0_id, t0_nome, bb, momento, tipo_final])
+                    for b in bans_b:
+                        bb = nome_brawler(b)
+                        if bb != 'UNKNOWN': novos_bans.append([pid, reg_final, mapa, modo, t1_id, t1_nome, bb, momento, tipo_final])
+                    ids_bans.add(pid)
+ 
             except Exception as e:
                 stats['erros_processamento'] += 1
-
+                if stats['erros_processamento'] <= 5:
+                    print(f"  [ERRO processamento] {tag_busca}: {e}")
+ 
     if novas_picks:
         df_p = pd.DataFrame(novas_picks, columns=COLUNAS_PICKS)
         df_p.to_csv(ARQUIVO_BRUTO, mode='a', header=not os.path.exists(ARQUIVO_BRUTO), index=False)
-        print(f"Salvo: {len(novas_picks)} novos jogos no {ARQUIVO_BRUTO}")
-
+        print(f"Salvo: {len(df_p)//6} jogos no {ARQUIVO_BRUTO}")
+ 
+    if novos_bans:
+        df_b = pd.DataFrame(novos_bans, columns=COLUNAS_BANS)
+        df_b.to_csv(ARQUIVO_BANS, mode='a', header=not os.path.exists(ARQUIVO_BANS), index=False)
+        print(f"Salvo: {len(novos_bans)} bans no {ARQUIVO_BANS}")
+ 
     if not novas_picks and not novos_bans:
         print("Nenhum dado novo.")
-
+ 
+    print("\n========== DIAGNOSTICO DA EXECUCAO ==========")
+    print(f"Jogadores consultados: {stats['total_players']}")
+    print(f"  Respostas OK: {stats['status_ok']}  (proxy: {stats['origem_sucesso'].get('proxy',0)}, direto: {stats['origem_sucesso'].get('direto',0)})")
+    print(f"  Falhas de conexao/autenticacao: {stats['falhas_conexao']}")
+    print(f"Partidas brutas lidas nos battlelogs: {stats['total_items_lidos']}")
+    print(f"  Descartadas (nao eram 3v3): {stats['items_nao_3v3']}")
+    print(f"  Descartadas (sem resultado valido victory/defeat): {stats['items_resultado_invalido']}")
+    print(f"  Ja existentes no historico: {stats['items_ja_existentes']}")
+    print(f"  Novas partidas: {stats['items_novos']}")
+    print(f"  Erros ao processar item: {stats['erros_processamento']}")
+    print("==============================================\n")
+ 
+def gerar_rosters_auto():
+    """
+    Lê o historico_bruto.csv e, para cada ID monitorado, calcula os companheiros
+    que mais jogaram junto com ele, separados por mês (AAAA-MM) e região.
+    Gera api/rosters_auto.json com candidatos de roster de 3 jogadores (ID + 2
+    companheiros mais frequentes) e de 4 jogadores (ID + 3 mais frequentes),
+    sempre com o nick mais recente observado nas partidas.
+    """
+    if not os.path.exists(ARQUIVO_BRUTO):
+        print("Sem historico para gerar rosters automaticos.")
+        return
+ 
+    try:
+        df = pd.read_csv(ARQUIVO_BRUTO, dtype=str).fillna("")
+    except Exception as e:
+        print(f"Erro lendo {ARQUIVO_BRUTO}: {e}")
+        return
+ 
+    ids_set = set(IDS_MONITORADOS)
+    # dados[mes][regiao][id_monitorado] = {"nome_atual", "ultimo_ts", "companheiros": {tag: {"nome", "partidas_juntos", "ultimo_ts"}}}
+    dados = {}
+    partidas_vistas = set()
+ 
+    for _, row in df.iterrows():
+        ids_raw = str(row.get("id_players", ""))
+        nomes_raw = str(row.get("name_players", ""))
+        tag_linha = str(row.get("player_tag", ""))
+        if not ids_raw or tag_linha not in ids_set:
+            continue
+ 
+        data_str = str(row.get("data_adicao", ""))
+        try:
+            d, m, resto = data_str.split("/", 2)
+            ano = resto.split(" ")[0]
+            mes_chave = f"{ano}-{m}"
+            ts = datetime.strptime(data_str, "%d/%m/%Y %H:%M:%S").timestamp()
+        except Exception:
+            continue
+ 
+        chave_partida = (str(row.get("id_partida", "")), tag_linha)
+        if chave_partida in partidas_vistas:
+            continue
+        partidas_vistas.add(chave_partida)
+ 
+        tags = ids_raw.split(";")
+        nomes = nomes_raw.split(";")
+        if tag_linha not in tags:
+            continue
+        idx = tags.index(tag_linha)
+        inicio = 0 if idx < 3 else 3
+        time_tags = tags[inicio:inicio + 3]
+        time_nomes = nomes[inicio:inicio + 3] if len(nomes) >= inicio + 3 else time_tags
+ 
+        regiao = MAPEAMENTO_PLAYERS.get(tag_linha, {}).get("regiao", "SA")
+        bucket = dados.setdefault(mes_chave, {}).setdefault(regiao, {}).setdefault(tag_linha, {
+            "nome_atual": "", "ultimo_ts": 0, "total_partidas": 0, "companheiros": {}
+        })
+        bucket["total_partidas"] += 1
+        nome_obs = time_nomes[time_tags.index(tag_linha)] if tag_linha in time_tags else ""
+        if ts >= bucket["ultimo_ts"] and nome_obs:
+            bucket["ultimo_ts"] = ts
+            bucket["nome_atual"] = nome_obs
+ 
+        for i, t in enumerate(time_tags):
+            if not t or t == tag_linha:
+                continue
+            comp = bucket["companheiros"].setdefault(t, {"nome": "", "partidas_juntos": 0, "ultimo_ts": 0})
+            comp["partidas_juntos"] += 1
+            nome_c = time_nomes[i] if i < len(time_nomes) else ""
+            if ts >= comp["ultimo_ts"] and nome_c:
+                comp["ultimo_ts"] = ts
+                comp["nome"] = nome_c
+ 
+    saida = {}
+    for mes_chave, regioes in dados.items():
+        saida[mes_chave] = {}
+        for regiao, players in regioes.items():
+            lista = []
+            for tag_id, info in players.items():
+                comps = sorted(
+                    [{"tag": t, "nome": c["nome"], "partidas_juntos": c["partidas_juntos"]}
+                     for t, c in info["companheiros"].items()],
+                    key=lambda c: c["partidas_juntos"], reverse=True
+                )
+                base = {"tag": tag_id, "nome": info["nome_atual"] or MAPEAMENTO_PLAYERS.get(tag_id, {}).get("nome", "")}
+                lista.append({
+                    "id_consultado": tag_id,
+                    "nome_atual": base["nome"],
+                    "total_partidas": info["total_partidas"],
+                    "companheiros": comps,
+                    "candidatos": {
+                        "3": [base] + [{"tag": c["tag"], "nome": c["nome"]} for c in comps[:2]],
+                        "4": [base] + [{"tag": c["tag"], "nome": c["nome"]} for c in comps[:3]],
+                    },
+                })
+            lista.sort(key=lambda p: p["total_partidas"], reverse=True)
+            saida[mes_chave][regiao] = lista
+ 
+    os.makedirs(os.path.dirname(ARQUIVO_ROSTERS_AUTO), exist_ok=True)
+    with open(ARQUIVO_ROSTERS_AUTO, "w", encoding="utf-8") as f:
+        json.dump(saida, f, ensure_ascii=False, indent=2)
+    print(f"Rosters automaticos salvos em {ARQUIVO_ROSTERS_AUTO} ({len(saida)} meses)")
+ 
 if __name__ == "__main__":
-    # Executa a mineração de dados
     minerar_dados()
-
-    # OBS: a chamada a remover_csv_do_lfs() foi removida porque essa função
-    # não estava definida em nenhum lugar do arquivo (causaria NameError).
-    # Se você realmente precisa remover o CSV do Git LFS após a mineração,
-    # me diga o que essa função deve fazer (ex: rodar `git lfs untrack` e
-    # `git rm --cached` no arquivo) que eu implemento certinho.
+    gerar_rosters_auto()
