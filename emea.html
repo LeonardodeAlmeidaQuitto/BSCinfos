@@ -3,15 +3,13 @@
 <head>
 <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EMEA Infos</title>
+    <title>EUROPEAN Infos</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     
     <script>window.REGIAO_ATUAL = "EMEA";</script>
     
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="app.js" defer></script>
-<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
 </head>
 <body>
 
@@ -19,11 +17,10 @@
         <a href="index.html" class="nav-link">MENU</a>
         <div class="nav-links">
         <div class="dropdown">
-            <a href="#" class="nav-link" id="emea-menu-btn">EMEA ▼ (META)</a>
+            <a href="#" class="nav-link" id="ea-menu-btn">EU ▼ (META)</a>
             <div class="dropdown-content">
                 <a href="#" onclick="mudarTela('meta'); return false;">Meta</a>
                 <a href="#" onclick="mudarTela('brawlers'); return false;">Brawlers</a>
-                <a href="#" onclick="mudarTela('mapas'); return false;">Mapas</a>
                 <a href="#" onclick="mudarTela('times'); return false;">Times</a>
                 <a href="#" onclick="mudarTela('scrims'); return false;">Scrims</a>
             </div>
@@ -36,26 +33,30 @@
                         <img src="element/sa.png" style="width: 20px; height: 20px; object-fit: contain; border-radius: 2px;" onerror="this.style.display='none'"> 
                         SA
                     </a>
-                    <a href="ea.html" style="display: flex; align-items: center; gap: 8px;">
-                        <img src="element/ea.png" style="width: 20px; height: 20px; object-fit: contain; border-radius: 2px;" onerror="this.style.display='none'"> 
-                        EA
+                    <a href="emea.html" style="display: flex; align-items: center; gap: 8px;">
+                        <img src="element/emea.png" style="width: 20px; height: 20px; object-fit: contain; border-radius: 2px;" onerror="this.style.display='none'"> 
+                        EMEA
                     </a>
                     <a href="na.html" style="display: flex; align-items: center; gap: 8px;">
                         <img src="element/na.png" style="width: 20px; height: 20px; object-fit: contain; border-radius: 2px;" onerror="this.style.display='none'"> 
                         NA
                     </a>
+                    <a href="ea.html" style="display: flex; align-items: center; gap: 8px;">
+                        <img src="element/ea.png" style="width: 20px; height: 20px; object-fit: contain; border-radius: 2px;" onerror="this.style.display='none'"> 
+                        EA
+                    </a>
                 </div>
             </div>
-         <a href="geral.html" class="nav-link">GERAL</a>
+        <a href="geral.html" class="nav-link">GERAL</a>
 
     </nav>
 
     <main class="main-container">
         <header class="page-header">
-            <h1>EMEA INFOS <span class="accent">ANALYSIS</span></h1>
+            <h1>EUROPEAN INFOS <span class="accent">ANALYSIS</span></h1>
         </header>
 
-        <!-- Filtros Globais -->
+        <!-- Filtros Globais (Dia adicionado entre Mês e Tipo) -->
         <div class="filter-container">
             <select id="select-ano" class="filter-select" onchange="processarDadosGlobais()"></select>
             <select id="select-mes" class="filter-select" onchange="processarDadosGlobais()"></select>
@@ -85,28 +86,11 @@
             </div>
         </div>
 
-        <!-- Tela MAPAS -->
-        <div id="tela-mapas" class="tela-secao tela-oculta">
-            <div style="display: flex; gap: 20px; height: 100%;">
-                
-                <div id="sidebar-mapas" style="width: 250px; min-width: 250px; background: var(--bg-cards, #181820); border-radius: 8px; padding: 15px; overflow-y: auto; border: 1px solid var(--borda-destaque, #2a2a35);">
-                    <div style="text-align: center; color: var(--texto-secundario, #a0a0b0);">Carregando mapas...</div>
-                </div>
-                
-                <div id="painel-info-mapa" style="flex: 1; background: var(--bg-cards, #181820); border-radius: 8px; padding: 20px; overflow-y: auto; border: 1px solid var(--borda-destaque, #2a2a35);">
-                    <div style="text-align: center; color: var(--texto-secundario, #a0a0b0); padding-top: 50px;">
-                        Selecione um mapa na lista ao lado para ver as estatísticas completas.
-                    </div>
-                </div>
-                
-            </div>
-        </div>
-
         <!-- Tela TIMES -->
         <div id="tela-times" class="tela-secao tela-oculta">
             <div class="times-container">
                 <div class="sidebar">
-                    <div class="sidebar-header">EQUIPES DA REGIÃO EMEA</div>
+                    <div class="sidebar-header">EQUIPES DA REGIÃO EU</div>
                     <div class="sidebar-list" id="lista-times-sidebar"></div>
                 </div>
                 <div class="info-panel" id="painel-info-time">
@@ -129,15 +113,8 @@
                 document.querySelectorAll('.tela-secao').forEach(sec => sec.classList.replace('tela-ativa', 'tela-oculta'));
                 document.getElementById(`tela-${tela}`).classList.replace('tela-oculta', 'tela-ativa');
                 
-                const titulos = {
-                    'meta': 'EMEA ▼ (META)', 
-                    'brawlers': 'EMEA ▼ (BRAWLERS)', 
-                    'mapas': 'EMEA ▼ (MAPAS)', 
-                    'times': 'EMEA ▼ (TIMES)', 
-                    'scrims': 'EMEA ▼ (SCRIMS)'
-                };
-                document.getElementById('emea-menu-btn').textContent = titulos[tela];
-                
+                const titulos = {'meta': 'EU ▼ (META)', 'brawlers': 'EU ▼ (BRAWLERS)', 'times': 'EU ▼ (TIMES)', 'scrims': 'EU ▼ (SCRIMS)'};
+                document.getElementById('eu-menu-btn').textContent = titulos[tela];
                 document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('active'));
             };
         });
