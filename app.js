@@ -1711,3 +1711,44 @@ function mostrarHistoricoTimeMapa(idTime, nomeTime) {
     
     modal.style.display = 'block';
 }
+
+function aplicarCoresTabelaMeta() {
+    // Nota: Os seletores (.meta-table, .brawler-name, etc.) precisarão corresponder às suas classes reais no HTML
+    const linhas = document.querySelectorAll('.meta-table tbody tr'); 
+
+    linhas.forEach(linha => {
+        const nomeCell = linha.querySelector('.brawler-name');
+        const prCell = linha.querySelector('.pr-cell');
+        const banCell = linha.querySelector('.ban-cell');
+        const brCell = linha.querySelector('.br-cell');
+        const wrCell = linha.querySelector('.wr-cell');
+
+        // Aplicando cores estáticas
+        if (nomeCell) nomeCell.style.color = 'white';
+        if (prCell) prCell.style.color = 'cyan';
+        if (banCell) banCell.style.color = 'red';
+        if (brCell) brCell.style.color = 'red';
+
+        // Aplicando cores dinâmicas no Win Rate (WR%)
+        if (wrCell) {
+            const wrTexto = wrCell.textContent.replace('%', '').trim();
+            const wrValor = parseFloat(wrTexto);
+            
+            if (!isNaN(wrValor)) {
+                if (wrValor >= 90 && wrValor <= 100) {
+                    wrCell.style.color = 'darkgreen';
+                } else if (wrValor >= 51 && wrValor <= 89) {
+                    wrCell.style.color = 'green';
+                } else if (wrValor >= 40 && wrValor <= 50) {
+                    wrCell.style.color = 'yellow';
+                } else if (wrValor >= 21 && wrValor <= 39) {
+                    wrCell.style.color = 'orange';
+                } else if (wrValor >= 10 && wrValor <= 20) {
+                    wrCell.style.color = 'red';
+                } else if (wrValor >= 0 && wrValor <= 9) {
+                    wrCell.style.color = 'darkred';
+                }
+            }
+        }
+    });
+}
