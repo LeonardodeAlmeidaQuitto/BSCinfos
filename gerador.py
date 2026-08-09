@@ -1,15 +1,14 @@
 import requests
 import pandas as pd
 import os
+import json
 from datetime import datetime, timedelta, timezone
 import re
 
 # =============================================================================
 # CONFIGURAÇÃO GERAL
 # =============================================================================
-# A chave da API vem do Secret BRAWL_STARS_API_KEY (configurado no GitLab em
-# Settings -> CI/CD -> Variables). Nunca escreva a chave diretamente aqui.
-API_KEY = os.environ.get("BRAWL_STARS_API_KEY", "")
+API_KEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjU0ODZlOGQxLTRkNWQtNDJmYy1iOWE3LWU5ODYyMWJhOWI0NSIsImlhdCI6MTc3ODUwODgwOCwic3ViIjoiZGV2ZWxvcGVyLzc0NjFhNGJkLThhZDctNjg2Mi0wOGVkLTJiYmEzMzAxMWE3NiIsInNjb3BlcyI6WyJicmF3bHN0YXJzIl0sImxpbWl0cyI6W3sidGllciI6ImRldmVsb3Blci9zaWx2ZXIiLCJ0eXBlIjoidGhyb3R0bGluZyJ9LHsiY2lkcnMiOlsiNDUuNzkuMjE4Ljc5Il0sInR5cGUiOiJjbGllbnQifV19.yvcSQalBqNz6Q6DjZWU5IL1XvBjn5DGckYvy2bgl5tjVeRJ2GMhY_I2JP1zdEeLAfEG2hGVJT7OMZro4kkegFA"
 
 # Proxy da RoyaleAPI: tentado primeiro (contorna o IP fixo travado no token).
 PROXY_URL = "https://bsproxy.royaleapi.dev/v1"
@@ -30,7 +29,7 @@ COLUNAS_BANS = ["id_partida", "regiao", "mapa", "modo", "id_time", "nome_time", 
 # para escrever em arquivos do servidor/repositório — então a sincronização desse arquivo .py
 # (que roda separadamente, minerando dados via API) precisa desse passo manual de copiar/colar.
 MAPEAMENTO_PLAYERS = {
-# SA
+# SA  
         "#PLLRJC2V": {"nome": "Wesley", "id_time": "BH", "nome_time": "BH ESPORTS", "regiao": "SA"},
         "#JQ8LLLY": {"nome": "FireCrow", "id_time": "LOUD", "nome_time": "LOUD", "regiao": "SA"},
         "#CQLR0Y80": {"nome": "Tufa", "id_time": "OCX", "nome_time": "OCX DIVISION", "regiao": "SA"},
@@ -65,7 +64,7 @@ MAPEAMENTO_PLAYERS = {
         "#9PCV9L982": {"nome": "AngelBoy", "id_time": "FUT", "nome_time": "FUT ESPORTS", "regiao": "EMEA"},
         "#2208QGGGL": {"nome": "Dompe", "id_time": "KUMA", "nome_time": "KUMA", "regiao": "EMEA"},
         "#80PVPCC29": {"nome": "Enraged", "id_time": "NAVI", "nome_time": "NAVI", "regiao": "EMEA"},
-        "#2Y822YJYJC": {"nome": "Decaii", "id_time": "MZP", "nome_time": "MZP", "regiao": "EMEA"},
+        "#2Y822YJYJC": {"nome": "Decaii", "id_time": "MZP", "nome_time": "METIZPORT", "regiao": "EMEA"},
         "#YQUCCJ2": {"nome": "Symantec", "id_time": "HMB", "nome_time": "HMBLE", "regiao": "EMEA"},
         "#9LVUC2PY": {"nome": "Ope", "id_time": "SK", "nome_time": "SK GAMING", "regiao": "EMEA"},
         "#PCPRPJV": {"nome": "IKaoss", "id_time": "TH", "nome_time": "TEAM HERETICS", "regiao": "EMEA"},
@@ -86,13 +85,9 @@ MAPEAMENTO_PLAYERS = {
         "#28PU0P9L0": {"nome": "Achapi", "id_time": "FL", "nome_time": "FENNEL", "regiao": "EA"},
         "#28VP0G808": {"nome": "Koga", "id_time": "INS", "nome_time": "INSOMNIA", "regiao": "EA"},
         "#89UUQLJCC": {"nome": "Toridesu", "id_time": "FZ", "nome_time": "FRENZY", "regiao": "EA"},
-        "#8R0JY2UJ2": {"nome": "Rennosuke", "id_time": "F0", "nome_time": "FAZE ZERO", "regiao": "EA"},
-}
+        "#8R0JY2UJ2": {"nome": "Rennosuke", "id_time": "F0", "nome_time": "FAZE ZERO", "regiao": "EA"}
 
-# Fonte explícita de consulta: a mineração lê o battlelog SOMENTE destes IDs.
-# O nick de cada jogador é sempre o nome observado na API no momento da partida
-# (nunca o nome do mapeamento), então o historico_bruto.csv guarda id+nome da época.
-IDS_MONITORADOS = list(MAPEAMENTO_PLAYERS.keys())
+}
 
 def obter_fuso_brasilia():
     return timezone(timedelta(hours=-3))
@@ -178,12 +173,9 @@ def minerar_dados():
         'total_players': 0, 'status_ok': 0, 'falhas_conexao': 0,
         'origem_sucesso': {}, 'total_items_lidos': 0, 'items_nao_3v3': 0,
         'items_ja_existentes': 0, 'items_novos': 0, 'erros_processamento': 0,
-        'items_resultado_invalido': 0,
     }
 
-    ids_consulta = IDS_MONITORADOS + [t for t in tags_torneio if t not in IDS_MONITORADOS]
-    for tag_busca in ids_consulta:
-        info_busca = MAPEAMENTO_PLAYERS.get(tag_busca, {})
+    for tag_busca, info_busca in list(MAPEAMENTO_PLAYERS.items()):
         sigla_busca = info_busca.get("regiao", "SA")
         tag_url = tag_busca.replace("#", "%23")
         stats['total_players'] += 1
@@ -232,9 +224,6 @@ def minerar_dados():
                 pid = f"{time_str}_{mapa}_{'_'.join(tags_list)}_{'_'.join(brawlers_list)}"
 
                 res = battle.get('result')
-                if res not in ('victory', 'defeat'):
-                    stats['items_resultado_invalido'] += 1
-                    continue
                 reg_final = "/".join(sorted({TAG_PARA_REGIAO.get(t, sigla_busca) for t in tags_list}))
 
                 t0_id, t0_nome = "OPONENTE_T0", "DESCONHECIDO T0"
@@ -305,7 +294,6 @@ def minerar_dados():
     print(f"  Falhas de conexao/autenticacao: {stats['falhas_conexao']}")
     print(f"Partidas brutas lidas nos battlelogs: {stats['total_items_lidos']}")
     print(f"  Descartadas (nao eram 3v3): {stats['items_nao_3v3']}")
-    print(f"  Descartadas (sem resultado valido victory/defeat): {stats['items_resultado_invalido']}")
     print(f"  Ja existentes no historico: {stats['items_ja_existentes']}")
     print(f"  Novas partidas: {stats['items_novos']}")
     print(f"  Erros ao processar item: {stats['erros_processamento']}")
