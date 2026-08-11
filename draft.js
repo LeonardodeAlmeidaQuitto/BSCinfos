@@ -1,8 +1,62 @@
 // =====================================================================================
 // DRAFT.JS — Brawl Stars Draft Tool
 // Dados de meta, counters e sinergias calculados DINAMICAMENTE do historico_bruto.csv
-// (lidos a partir da variável global `dadosBrutos` preenchida pelo app.js)
+// O draft.js carrega o CSV por conta própria via PapaParse (independente do app.js).
 // =====================================================================================
+
+// =====================================================================================
+// CARREGAMENTO AUTÔNOMO DO CSV
+// =====================================================================================
+let _draftDadosBrutos = [];       // dados carregados pelo próprio draft.js
+let _csvCarregado = false;
+let _csvCarregando = false;
+let _cbsAposCSV = [];              // callbacks a executar quando CSV terminar
+
+function _getDadosBrutos() {
+    // Prefere os dados já carregados pelo draft.js; cai no window.dadosBrutos do app.js se existir
+    if (_draftDadosBrutos.length > 0) return _draftDadosBrutos;
+    if (window.dadosBrutos && window.dadosBrutos.length > 0) return window.dadosBrutos;
+    return [];
+}
+
+function carregarCSVDraft(callback) {
+    if (_csvCarregado) { if (callback) callback(); return; }
+    if (callback) _cbsAposCSV.push(callback);
+    if (_csvCarregando) return;
+    _csvCarregando = true;
+
+    // Verifica se PapaParse está disponível
+    if (typeof Papa === 'undefined') {
+        console.warn('[draft.js] PapaParse não encontrado — tentando novamente em 500ms');
+        setTimeout(() => { _csvCarregando = false; carregarCSVDraft(null); }, 500);
+        return;
+    }
+
+    Papa.parse('historico_bruto.csv', {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+            if (results.data && results.data.length > 0 && results.data[0].pick !== undefined) {
+                _draftDadosBrutos = results.data;
+            }
+            _csvCarregado = true;
+            _csvCarregando = false;
+            // Invalida o cache de brawlers para recalcular com dados reais
+            _cacheDadosBrawlers = {};
+            _cacheDataRef = null;
+            // Executa todos os callbacks pendentes
+            _cbsAposCSV.forEach(fn => { try { fn(); } catch(e) {} });
+            _cbsAposCSV = [];
+        },
+        error: function() {
+            _csvCarregado = true;   // marca como tentado para não ficar em loop
+            _csvCarregando = false;
+            _cbsAposCSV.forEach(fn => { try { fn(); } catch(e) {} });
+            _cbsAposCSV = [];
+        }
+    });
+}
 
 // --- CONFIGURAÇÃO DE MAPAS ---
 const MAPAS_ALVO = {
@@ -23,7 +77,7 @@ const MAPAS_ALVO = {
  * Usa window.dadosBrutos que o app.js já carregou do CSV.
  */
 function calcularMetaMapa(nomeMapa, minPicks = 2) {
-    const dados = window.dadosBrutos;
+    const dados = _getDadosBrutos();
     if (!dados || dados.length === 0) return [];
 
     const stats = {};
@@ -52,7 +106,7 @@ function calcularMetaMapa(nomeMapa, minPicks = 2) {
  * Retorna { bomContra: [...], ruimContra: [...], sinergias: [...] }
  */
 function calcularDadosBrawler(brawlerNome, minMatches = 2, topN = 5) {
-    const dados = window.dadosBrutos;
+    const dados = _getDadosBrutos();
     if (!dados || dados.length === 0) return { bomContra: [], ruimContra: [], sinergias: [] };
 
     const brawlerUpper = brawlerNome.toUpperCase();
@@ -124,9 +178,9 @@ let _cacheDataRef = null;
 function obterDadosBrawlerDinamico(nome) {
     if (!nome) return { bomContra: [], ruimContra: [], sinergias: [] };
     const key = nome.toUpperCase();
-    const dadosAtual = window.dadosBrutos;
+    const dadosAtual = _getDadosBrutos();
 
-    // Invalida cache se dadosBrutos mudou
+    // Invalida cache quando o array de dados mudar de referência
     if (dadosAtual !== _cacheDataRef) {
         _cacheDadosBrawlers = {};
         _cacheDataRef = dadosAtual;
@@ -214,9 +268,10 @@ function abrirModalSugestao(nomeBrawler, event) {
 
     // Estatísticas do brawler no mapa atual (se mapa selecionado)
     let statsMapaHTML = '';
-    if (mapaEscolhido && window.dadosBrutos && window.dadosBrutos.length > 0) {
+    const _dadosDisp = _getDadosBrutos();
+    if (mapaEscolhido && _dadosDisp.length > 0) {
         const brawlerUpper = nomeBrawler.toUpperCase();
-        const noMapa = window.dadosBrutos.filter(r =>
+        const noMapa = _dadosDisp.filter(r =>
             (r.pick || '').toUpperCase() === brawlerUpper &&
             normalizarChaveDraft(r.mapa) === normalizarChaveDraft(mapaEscolhido)
         );
@@ -253,7 +308,7 @@ function abrirModalSugestao(nomeBrawler, event) {
                 <img src="brawlers/${id}.png" onerror="this.style.display='none'" style="width:52px; height:52px; border-radius:10px; object-fit:cover; border:2px solid #60a5fa;">
                 <div>
                     <div style="font-size:16px; font-weight:900; color:#fff;">${nomeBrawler}</div>
-                    <div style="font-size:11px; color:#64748b; margin-top:2px;">Dados de ${window.dadosBrutos ? window.dadosBrutos.length + ' partidas' : 'sem CSV'}</div>
+                    <div style="font-size:11px; color:#64748b; margin-top:2px;">Dados de ${_getDadosBrutos().length > 0 ? _getDadosBrutos().length + ' registros' : 'carregando CSV...'}</div>
                 </div>
             </div>
 
@@ -421,11 +476,12 @@ window.atualizarMeta = function() {
     if (!container) return;
     container.innerHTML = "";
 
-    // Tenta calcular dinamicamente; exibe loading enquanto CSV não carregou
-    if (!window.dadosBrutos || window.dadosBrutos.length === 0) {
+    const dados = _getDadosBrutos();
+
+    // CSV ainda não carregou — mostra loading e agenda retry via callback
+    if (dados.length === 0) {
         container.innerHTML = '<p style="color:#555; font-size:11px; width:100%; text-align:center;">Carregando dados...</p>';
-        // Tenta novamente em 1s
-        setTimeout(window.atualizarMeta, 1000);
+        carregarCSVDraft(window.atualizarMeta);
         return;
     }
 
@@ -811,6 +867,13 @@ function inicializarSistema() {
     document.getElementById('btn-iniciar-draft').addEventListener('click', iniciarSetup);
     const searchInput = document.getElementById('search');
     if (searchInput) { searchInput.removeAttribute('oninput'); searchInput.addEventListener('input', window.filtrar); }
+
+    // Dispara carregamento do CSV em background assim que a página carrega
+    // (se app.js já populou dadosBrutos, _getDadosBrutos() retorna os dados dele;
+    //  senão, carrega de forma autônoma via PapaParse)
+    if (_getDadosBrutos().length === 0) {
+        carregarCSVDraft(null);
+    }
 }
 
 if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', inicializarSistema); }
