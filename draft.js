@@ -67,7 +67,7 @@ const DADOS_COUNTERS = {
     "Eve": ["Penny", "Janet", "Belle", "Byron", "Carl"],
     "Fang": ["Chester", "Otis"],
     "Finx": ["Emz", "Edgar", "Ziggy", "Meg", "Pam"],
-    "Frank": ["Colette", "Chester",],
+    "Frank": ["Colette", "Chester"],
     "Gale": ["Ziggy", "Lola", "Amber"],
     "Gene": ["Mr.P", "Eve", "Belle", "Ruffs"],
     "Gigi": ["Jacky", "Doug"],
@@ -137,12 +137,18 @@ const DADOS_COUNTERS = {
 
 const BRAWLERS = ["Damian", "8-Bit", "Alli", "Amber", "Angelo", "Ash", "Barley", "Bea", "Belle", "Berry", "Bibi", "Bo", "Bolt", "Bonnie", "Brock", "Bull", "Buster", "Buzz", "Byron", "Carl", "Charlie", "Chester", "Chuck", "Clancy", "Colette", "Colt", "Cordelius", "Crow", "Darryl", "Doug", "Draco", "Dynamike", "Edgar", "El Primo", "Emz", "Eve", "Fang", "Finx", "Frank", "Gale", "Gene", "Gigi", "Glowy", "Gray", "Griff", "Grom", "Gus", "Hank", "Jacky", "Jae Yong", "Janet", "Jessie", "Juju", "Kaze", "Kenji", "Kit", "LarryLawrie", "Leon", "Lily", "Lola", "Lou", "Lumi", "Maisie", "Mandy", "Max", "Meeple", "Meg", "Melodie", "Mico", "Mina", "Moe", "Mortis", "Mr.P", "Najia", "Nani", "Nita", "Nori", "Ollie", "Otis", "Pam", "Pearl", "Penny", "Pierce", "Piper", "Poco", "R-T", "Rico", "Rosa", "Ruffs", "Sam", "Sandy", "Shade", "Shelly", "Sirius", "Spike", "Sprout", "Squeak", "Stu", "Surge", "Starr Nova", "Tara", "Tick", "Trunk", "Willow", "Ziggy"].sort();
 
-let currentStep = 0, selected = [], firstPick = 'blue', draftOrder = [], picksVermelhos = [], picksAzuis = [], preSelected = null;
+let currentStep = 0, firstPick = 'blue', draftOrder = [], picksVermelhos = [], picksAzuis = [], preSelected = null;
 let modoEscolhido = null, mapaEscolhido = null;
 let draftIniciado = false, draftFinalizado = false;
 
+// selected: apenas PICKS confirmados (para desabilitar no roster e nos calculos de counter)
+// bansBlueSel / bansRedSel: bans de cada time — um mesmo brawler PODE aparecer nos dois
+let selected = [];
+let bansBlueSel = []; // ids dos bans do time azul
+let bansRedSel  = []; // ids dos bans do time vermelho
+
 // --- ESTADO DO TIMER ---
-let fases = [];          // lista de { team, type, dur, label, slotAlvo (so pra picks) }
+let fases = [];
 let faseAtualIdx = 0;
 let tempoRestante = 30;
 let timerInterval = null;
@@ -206,46 +212,34 @@ function popularGridMapas(modo) {
 
 window.escolherMapa = function(mapa) {
     mapaEscolhido = mapa;
-
-    // Popula a regiao "SELECIONE O MAPA" do tabuleiro real com a foto do mapa
-    // + a logo do modo pequena no canto superior esquerdo.
     const mapImg = document.getElementById('map-img');
     const modoIcon = document.getElementById('map-modo-icon');
     const placeholder = document.getElementById('map-placeholder');
     const nomeLabel = document.getElementById('map-nome-label');
-
     const chaveMapa = limparNome(mapa), chaveModo = limparNome(modoEscolhido);
     if (mapImg) {
         mapImg.src = `element/maps/${chaveMapa}.png`;
         mapImg.style.display = 'block';
-        mapImg.onerror = function() { this.style.display = 'none'; if (placeholder) { placeholder.style.display = 'block'; placeholder.innerHTML = 'IMAGEM<br>N\u00c3O<br>ENCONTRADA'; } };
+        mapImg.onerror = function() { this.style.display = 'none'; if (placeholder) { placeholder.style.display = 'block'; placeholder.innerHTML = 'IMAGEM<br>NÃO<br>ENCONTRADA'; } };
     }
     if (placeholder) placeholder.style.display = 'none';
     if (modoIcon) { modoIcon.src = `element/modes/${chaveModo}.png`; modoIcon.style.display = 'block'; modoIcon.onerror = function() { this.style.display = 'none'; }; }
     if (nomeLabel) { nomeLabel.innerText = mapa; nomeLabel.style.display = 'block'; }
-
-    // Revela o tabuleiro (com slots vazios) por tras do overlay de escolha de lado
     document.getElementById('vertical-layout').style.display = 'flex';
-
-    // Avanca para a escolha do lado (moeda)
     document.getElementById('setup-mapa').style.display = 'none';
     document.getElementById('setup-lado').style.display = 'block';
-
     window.atualizarMeta();
 };
 
 window.escolherLado = function(lado) {
     firstPick = lado;
     document.getElementById('setup-overlay').style.display = 'none';
-
-    // Mostra a moeda do lado que comecou no topo do retangulo do tabuleiro (fica na imagem final tambem)
     const coinTopo = document.getElementById('coin-topo');
     const coinTopoImg = document.getElementById('coin-topo-img');
     if (coinTopo && coinTopoImg) {
         coinTopoImg.src = lado === 'blue' ? 'element/blueside.png' : 'element/redside.png';
         coinTopo.style.display = 'flex';
     }
-
     draftIniciado = true;
     resetDraft();
     iniciarBarraDeTempo();
@@ -279,7 +273,7 @@ window.filtrar = function() {
 };
 
 // =====================================================================================
-// 3. META / COUNTERS (paineis laterais) - FASE 2 pluga dados reais aqui
+// 3. META / COUNTERS (paineis laterais)
 // =====================================================================================
 window.atualizarMeta = function() {
     const container = obterContainerMeta();
@@ -311,7 +305,7 @@ function calcularCounters() {
     let container = obterContainerInimigo();
     if (!container) return;
     container.innerHTML = "";
-    if (picksVermelhos.length === 0) { container.innerHTML = '<p style="color:#555; font-size:11px; width: 100%; text-align:center;">Aguardando advers\u00e1rio</p>'; return; }
+    if (picksVermelhos.length === 0) { container.innerHTML = '<p style="color:#555; font-size:11px; width: 100%; text-align:center;">Aguardando adversário</p>'; return; }
     let contagemCounters = contarCounters(picksVermelhos);
     let brawlersValidos = Object.keys(contagemCounters).filter(nome => {
         const idNome = limparNome(nome);
@@ -328,7 +322,7 @@ function calcularCounters() {
             container.innerHTML += `<div class="mini-brawler ${destaqueClass}" title="${nome} (Counter x${qtd})"><img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="fallback-initials">${nome.substring(0,2).toUpperCase()}</div>${badge}</div>`;
         });
     } else {
-        container.innerHTML = '<p style="color:#555; font-size:11px; width: 100%; text-align:center;">Sem recomenda\u00e7\u00f5es.</p>';
+        container.innerHTML = '<p style="color:#555; font-size:11px; width: 100%; text-align:center;">Sem recomendações.</p>';
     }
 }
 
@@ -342,7 +336,6 @@ function calcularPodeTomar() {
         if (!listaAzuisParaCalcular.includes(preSelected.nome)) listaAzuisParaCalcular.push(preSelected.nome);
     }
     if (listaAzuisParaCalcular.length === 0) { container.innerHTML = '<p style="color:#555; font-size:11px; width: 100%; text-align:center;">Aguardando nosso time</p>'; return; }
-
     let contagemAmeacas = contarCounters(listaAzuisParaCalcular);
     let brawlersValidos = Object.keys(contagemAmeacas).filter(nome => {
         const idNome = limparNome(nome);
@@ -359,11 +352,10 @@ function calcularPodeTomar() {
             container.innerHTML += `<div class="mini-brawler ${destaqueClass}" title="${nome} (Counter x${qtd})"><img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="fallback-initials">${nome.substring(0,2).toUpperCase()}</div>${badge}</div>`;
         });
     } else {
-        container.innerHTML = '<p style="color:#555; font-size:11px; width: 100%; text-align:center;">Sem amea\u00e7as.</p>';
+        container.innerHTML = '<p style="color:#555; font-size:11px; width: 100%; text-align:center;">Sem ameaças.</p>';
     }
 }
 
-// Botoes de seta/filtro (regiao + mes) dos paineis laterais - placeholder de UI (FASE 2 liga aos dados reais)
 window.toggleFiltroPainel = function(id) {
     document.querySelectorAll('.panel-filter-box').forEach(box => { if (box.id !== id) box.classList.remove('aberto'); });
     const box = document.getElementById(id);
@@ -376,32 +368,25 @@ document.addEventListener('click', (e) => {
 });
 
 // =====================================================================================
-// 4. MONTAGEM DA ORDEM DO DRAFT (bans + picks 1-3-4 / 2-5-6)
+// 4. MONTAGEM DA ORDEM DO DRAFT
 // =====================================================================================
 function buildOrder() {
     const order = [
         { slot: 'slot-b0', team: 'blue', type: 'ban' }, { slot: 'slot-b2', team: 'blue', type: 'ban' }, { slot: 'slot-b4', team: 'blue', type: 'ban' },
         { slot: 'slot-b1', team: 'red',  type: 'ban' }, { slot: 'slot-b3', team: 'red',  type: 'ban' }, { slot: 'slot-b5', team: 'red',  type: 'ban' }
     ];
-
-    // O time que comeca (firstPick) picka nas posicoes GLOBAIS 1, 4 e 5 da sequencia de picks;
-    // o outro time picka nas posicoes 2, 3 e 6 -- padrao 1-2-2-1 (snake draft), exatamente como pedido:
-    // Ex.: firstPick azul -> Azul, Vermelho, Vermelho, Azul, Azul, Vermelho
-    //      firstPick vermelho -> Vermelho, Azul, Azul, Vermelho, Vermelho, Azul
     const timeOutro = firstPick === 'blue' ? 'red' : 'blue';
     const sequenciaTimes = [firstPick, timeOutro, timeOutro, firstPick, firstPick, timeOutro];
-
     let idxAzul = 0, idxVermelho = 0;
     sequenciaTimes.forEach(time => {
         if (time === 'blue') { idxAzul++; order.push({ slot: `slot-pA${idxAzul}`, team: 'blue', type: 'pick' }); }
         else { idxVermelho++; order.push({ slot: `slot-pV${idxVermelho}`, team: 'red', type: 'pick' }); }
     });
-
     draftOrder = order;
 }
 
 // =====================================================================================
-// 5. TIMER (bans 30s / picks azul 30s / picks vermelho 35s)
+// 5. TIMER
 // =====================================================================================
 function montarFases() {
     fases = [{ label: 'BANS', team: null, dur: 30 }];
@@ -435,22 +420,18 @@ function iniciarBarraDeTempo() {
 function iniciarFase(idx) {
     if (timerInterval) clearInterval(timerInterval);
     faseAtualIdx = idx;
-    if (idx >= fases.length) return; // draft ja terminou (analise final assume o resto)
-
-    // Marca segmentos anteriores como concluidos
+    if (idx >= fases.length) return;
     for (let i = 0; i < idx; i++) { const s = document.getElementById(`seg-${i}`); if (s) s.classList.add('done'); }
-
     const fase = fases[idx];
     tempoRestante = fase.dur;
     atualizarLabelFase(fase);
     atualizarVisualTimer();
     marcarMiniTimerSlotAtivo();
-
     timerInterval = setInterval(() => {
         tempoRestante--;
         atualizarVisualTimer();
         marcarMiniTimerSlotAtivo();
-        if (tempoRestante <= 0) { clearInterval(timerInterval); } // fica parado em 0 ate o operador clicar (nao trava/nao corrompe o draft)
+        if (tempoRestante <= 0) { clearInterval(timerInterval); }
     }, 1000);
 }
 
@@ -470,27 +451,23 @@ function atualizarVisualTimer() {
     }
 }
 
-// Mostra um pequeno timer (numero) dentro da moldura do slot que esta prestes a ser preenchido
 function marcarMiniTimerSlotAtivo() {
     document.querySelectorAll('.slot-mini-timer').forEach(el => el.remove());
     if (currentStep >= draftOrder.length) return;
     const step = draftOrder[currentStep];
     const slotEl = document.getElementById(step.slot);
-    if (!slotEl || slotEl.querySelector('.slot-assets')) return; // ja preenchido
+    if (!slotEl || slotEl.querySelector('.slot-assets')) return;
     const mini = document.createElement('div');
     mini.className = 'slot-mini-timer' + (tempoRestante <= 10 ? ' urgente' : '');
     mini.innerText = Math.max(0, tempoRestante);
     slotEl.appendChild(mini);
 }
 
-// Ao preencher um slot (ban ou pick confirmado), reseta o timer e avanca de setor
 function avancarFaseAposPreenchimento() {
     const proximoStepEhPick = currentStep < draftOrder.length && draftOrder[currentStep].type === 'pick';
     const faseAtualEhBan = fases[faseAtualIdx] && fases[faseAtualIdx].team === null;
-
     if (faseAtualEhBan && proximoStepEhPick) { iniciarFase(faseAtualIdx + 1); return; }
     if (!faseAtualEhBan) {
-        // cada pick confirmado avanca uma fase (pois cada fase = 1 pick)
         if (faseAtualIdx + 1 < fases.length) iniciarFase(faseAtualIdx + 1);
         else { if (timerInterval) clearInterval(timerInterval); document.getElementById('tc-timer').style.display = 'none'; }
     }
@@ -500,28 +477,52 @@ function avancarFaseAposPreenchimento() {
 // =====================================================================================
 // 6. INTERACAO DE CLIQUE NOS BRAWLERS
 // =====================================================================================
+function isBrawlerDisponivel(id, step) {
+    if (selected.includes(id)) return false;
+    if (step.type === 'ban') {
+        if (step.team === 'blue' && bansBlueSel.includes(id)) return false;
+        if (step.team === 'red'  && bansRedSel.includes(id))  return false;
+        return true;
+    }
+    if (bansBlueSel.includes(id) || bansRedSel.includes(id)) return false;
+    return true;
+}
+
+function atualizarEstadoRoster() {
+    const step = currentStep < draftOrder.length ? draftOrder[currentStep] : null;
+    document.querySelectorAll('.brawler-icon').forEach(div => {
+        const id = div.id.replace('b-', '');
+        div.classList.remove('disabled', 'banned-blue', 'banned-red');
+        const pickado = selected.includes(id);
+        const baniuAzul = bansBlueSel.includes(id);
+        const baniuVerm = bansRedSel.includes(id);
+        if (baniuAzul) div.classList.add('banned-blue');
+        if (baniuVerm) div.classList.add('banned-red');
+        if (pickado) { div.classList.add('disabled'); return; }
+        if (!step) return;
+        if (step.type === 'ban') {
+            if (step.team === 'blue' && baniuAzul) div.classList.add('disabled');
+            if (step.team === 'red'  && baniuVerm)  div.classList.add('disabled');
+        } else {
+            if (baniuAzul || baniuVerm) div.classList.add('disabled');
+        }
+    });
+}
+
 window.clicarBrawler = function(nome, id) {
     if (!draftIniciado || draftFinalizado) return;
-    if (currentStep >= draftOrder.length || selected.includes(id)) return;
+    if (currentStep >= draftOrder.length) return;
     const step = draftOrder[currentStep];
+    if (!isBrawlerDisponivel(id, step)) return;
     const slot = document.getElementById(step.slot);
     if (!slot) return;
-
     if (step.team === 'blue') {
         if (preSelected && preSelected.id === id) { window.confirmarBlueSelection(); return; }
         preSelected = { nome, id };
-        slot.innerHTML = `<div class="slot-assets pre-selecting" onclick="window.confirmarBlueSelection(event)"><img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="slot-fallback-text">${nome}</div><div class="pre-select-badge">\u2713</div></div>`;
+        slot.innerHTML = `<div class="slot-assets pre-selecting" onclick="window.confirmarBlueSelection(event)"><img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="slot-fallback-text">${nome}</div><div class="pre-select-badge">✓</div></div>`;
         calcularCounters(); calcularPodeTomar();
     } else {
-        slot.innerHTML = criarConteudoSlot(nome, id);
-        const icon = document.getElementById(`b-${id}`);
-        if (icon) icon.classList.add('disabled');
-        selected.push(id);
-        if (step.type === 'pick') picksVermelhos.push(nome);
-        currentStep++; preSelected = null;
-        atualizarFoco(); calcularCounters(); calcularPodeTomar();
-        avancarFaseAposPreenchimento();
-        verificarFimDraft();
+        confirmarSelecao(nome, id, step);
     }
 };
 
@@ -530,17 +531,29 @@ window.confirmarBlueSelection = function(event) {
     if (!preSelected) return;
     const { nome, id } = preSelected;
     const step = draftOrder[currentStep];
+    confirmarSelecao(nome, id, step);
+};
+
+function confirmarSelecao(nome, id, step) {
     const slot = document.getElementById(step.slot);
     if (slot) slot.innerHTML = criarConteudoSlot(nome, id);
-    const icon = document.getElementById(`b-${id}`);
-    if (icon) icon.classList.add('disabled');
-    selected.push(id);
-    if (step.type === 'pick') picksAzuis.push(nome);
-    preSelected = null; currentStep++;
-    atualizarFoco(); calcularCounters(); calcularPodeTomar();
+    if (step.type === 'ban') {
+        if (step.team === 'blue') bansBlueSel.push(id);
+        else                      bansRedSel.push(id);
+    } else {
+        selected.push(id);
+        if (step.team === 'blue') picksAzuis.push(nome);
+        else                      picksVermelhos.push(nome);
+    }
+    preSelected = null;
+    currentStep++;
+    atualizarEstadoRoster();
+    atualizarFoco();
+    calcularCounters();
+    calcularPodeTomar();
     avancarFaseAposPreenchimento();
     verificarFimDraft();
-};
+}
 
 function atualizarFoco() {
     document.querySelectorAll('.slot').forEach(s => s.classList.remove('active-blue', 'active-red'));
@@ -552,9 +565,10 @@ function atualizarFoco() {
 }
 
 window.resetDraft = function() {
-    currentStep = 0; selected = []; picksVermelhos = []; picksAzuis = []; preSelected = null; draftFinalizado = false;
+    currentStep = 0; selected = []; bansBlueSel = []; bansRedSel = [];
+    picksVermelhos = []; picksAzuis = []; preSelected = null; draftFinalizado = false;
     document.querySelectorAll('.slot').forEach(s => s.innerHTML = '');
-    document.querySelectorAll('.brawler-icon').forEach(b => b.classList.remove('disabled'));
+    document.querySelectorAll('.brawler-icon').forEach(b => b.classList.remove('disabled', 'banned-blue', 'banned-red'));
     document.getElementById('analise-final').style.display = 'none';
     document.getElementById('vertical-layout').style.display = 'flex';
     document.getElementById('info-panels').style.display = 'flex';
@@ -563,7 +577,7 @@ window.resetDraft = function() {
 };
 
 // =====================================================================================
-// 7. FIM DO DRAFT: ANALISE CRITICA + PRINT
+// 7. FIM DO DRAFT
 // =====================================================================================
 function verificarFimDraft() {
     if (currentStep < draftOrder.length) return;
@@ -589,12 +603,10 @@ function calcularProbabilidadeVitoria() {
 function calcularPontosFracos() {
     let contagemAmeacas = contarCounters(picksAzuis);
     return Object.entries(contagemAmeacas).filter(([, qtd]) => qtd >= 2 && picksVermelhos.some(v => limparNome(v) === limparNome(Object.keys(contagemAmeacas).find(() => true) || ''))).map(([nome]) => nome)
-        // fallback simples: ameacas fortes que o time vermelho de fato pickou
         .filter(nome => picksVermelhos.some(v => limparNome(v) === limparNome(nome)));
 }
 
 function sugerirMelhorTroca(brawlerAtual) {
-    // Sugere, entre os brawlers ainda nao usados no draft inteiro, aquele que menos e counterado pelos picks vermelhos
     const usados = new Set([...picksAzuis, ...picksVermelhos].map(limparNome));
     let candidatos = BRAWLERS.filter(b => !usados.has(limparNome(b)));
     let contagemAmeacas = contarCounters(picksAzuis.filter(b => limparNome(b) !== limparNome(brawlerAtual)));
@@ -605,56 +617,45 @@ function sugerirMelhorTroca(brawlerAtual) {
 function mostrarAnaliseFinal() {
     document.getElementById('info-panels').style.display = 'none';
     document.getElementById('roster-area').style.display = 'none';
-
     const prob = calcularProbabilidadeVitoria();
     const fracos = calcularPontosFracos();
-
-    const contagemAmeacasFinal = contarCounters(picksAzuis);
     const picksEmRisco = picksAzuis.filter(p => {
         return picksVermelhos.some(v => {
             const key = Object.keys(DADOS_COUNTERS).find(k => limparNome(k) === limparNome(v));
             return key && (DADOS_COUNTERS[key] || []).some(c => limparNome(c) === limparNome(p));
         });
     });
-
     const painel = document.getElementById('analise-final');
     painel.style.display = 'flex';
     painel.innerHTML = `
         <div class="analise-card">
-            <h3>PROBABILIDADE DE VIT\u00d3RIA (NOSSO TIME - AZUL)</h3>
+            <h3>PROBABILIDADE DE VITÓRIA (NOSSO TIME - AZUL)</h3>
             <div class="winrate-bar-wrap"><div class="winrate-bar-fill" style="width:${prob}%;">${prob.toFixed(0)}%</div></div>
         </div>
-
         <div class="analise-card">
             <h3>PONTOS FRACOS DO TIME</h3>
             <ul class="analise-lista">
-                ${fracos.length > 0 ? fracos.map(f => `<li>\u26a0\ufe0f O advers\u00e1rio pickou <strong>${f}</strong>, que \u00e9 uma amea\u00e7a forte contra mais de um dos nossos picks.</li>`).join('')
-                : '<li>\u2705 Nenhum ponto fraco cr\u00edtico identificado nos confrontos diretos.</li>'}
+                ${fracos.length > 0 ? fracos.map(f => `<li>⚠️ O adversário pickou <strong>${f}</strong>, que é uma ameaça forte contra mais de um dos nossos picks.</li>`).join('')
+                : '<li>✅ Nenhum ponto fraco crítico identificado nos confrontos diretos.</li>'}
             </ul>
         </div>
-
         <div class="analise-card">
             <h3>O QUE PODIA SER MELHOR</h3>
             <ul class="analise-lista">
                 ${picksEmRisco.length > 0 ? picksEmRisco.map(p => {
                     const sugestao = sugerirMelhorTroca(p);
                     const idAtual = limparNome(p), idSugestao = sugestao ? limparNome(sugestao) : null;
-                    return `<li><div class="troca-sugestao"><img src="brawlers/${idAtual}.png" onerror="this.src='brawlers/default.png'"><span class="troca-x">X</span>${sugestao ? `<img src="brawlers/${idSugestao}.png" onerror="this.src='brawlers/default.png'">` : ''}</div><span>Trocar <strong>${p}</strong> ${sugestao ? `por <strong>${sugestao}</strong>` : ''} reduziria a exposi\u00e7\u00e3o aos counters do advers\u00e1rio.</span></li>`;
-                }).join('') : '<li>\u2705 Nenhuma troca cr\u00edtica necess\u00e1ria \u2014 draft s\u00f3lido.</li>'}
+                    return `<li><div class="troca-sugestao"><img src="brawlers/${idAtual}.png" onerror="this.src='brawlers/default.png'"><span class="troca-x">X</span>${sugestao ? `<img src="brawlers/${idSugestao}.png" onerror="this.src='brawlers/default.png'">` : ''}</div><span>Trocar <strong>${p}</strong> ${sugestao ? `por <strong>${sugestao}</strong>` : ''} reduziria a exposição aos counters do adversário.</span></li>`;
+                }).join('') : '<li>✅ Nenhuma troca crítica necessária — draft sólido.</li>'}
             </ul>
         </div>
-
         <div class="analise-card">
             <h3>RESUMO DO DRAFT (MAPA + BANS + PICKS)</h3>
             <div id="print-preview-holder" style="display:flex; justify-content:center;"></div>
-            <button class="btn-baixar-print" onclick="window.baixarImagemDraft()">\u2b07\ufe0f BAIXAR IMAGEM DO DRAFT</button>
+            <button class="btn-baixar-print" onclick="window.baixarImagemDraft()">⬇️ BAIXAR IMAGEM DO DRAFT</button>
         </div>
-
-        <button class="btn-novo-draft" onclick="window.location.reload()">COME\u00c7AR NOVO DRAFT</button>
+        <button class="btn-novo-draft" onclick="window.location.reload()">COMEÇAR NOVO DRAFT</button>
     `;
-
-    // Clona visualmente o tabuleiro (mapa + bans + picks + moeda do topo) dentro da area de analise,
-    // mantendo o elemento original intacto (que continua sendo o alvo real do html2canvas).
     const original = document.getElementById('draft-board-capture');
     const holder = document.getElementById('print-preview-holder');
     if (original && holder) {
@@ -668,7 +669,7 @@ function mostrarAnaliseFinal() {
 
 window.baixarImagemDraft = function() {
     const alvo = document.getElementById('draft-board-capture');
-    if (!alvo || typeof html2canvas === 'undefined') { alert('N\u00e3o foi poss\u00edvel gerar a imagem (html2canvas n\u00e3o carregado).'); return; }
+    if (!alvo || typeof html2canvas === 'undefined') { alert('Não foi possível gerar a imagem (html2canvas não carregado).'); return; }
     html2canvas(alvo, { backgroundColor: '#111217', scale: 2 }).then(canvas => {
         const link = document.createElement('a');
         link.download = `draft_${limparNome(mapaEscolhido) || 'mapa'}_${Date.now()}.png`;
