@@ -902,7 +902,7 @@ function renderizarMeta() {
                         <th style="white-space:nowrap; padding:5px 8px; color:#898989;" >P</th>
                         <th style="white-space:nowrap; padding:5px 8px; color:#00ffff;">PR%</th>
                         <th style="white-space:nowrap; padding:5px 8px; color:#898989;">W</th>
-                        <th style="white-space:nowrap; padding:5px 8px; color:#ff00ff;">WR%</th>
+                        <th style="white-space:nowrap; padding:5px 8px; color:008000;">WR%</th>
                         <th style="white-space:nowrap; padding:5px 8px; color:#ff0000;">B</th>
                         <th style="white-space:nowrap; padding:5px 8px; color:#ff0000;">BR%</th>
                     </tr></thead>
@@ -910,9 +910,9 @@ function renderizarMeta() {
                         ${valid.map(([b, s]) => {
                             let bc = bNMap[b] || 0, brPct = tBM ? ((bc / tJM) * 100).toFixed(1) : '0.0';
                             return `<tr>
-                                <td style="text-align:left; font-weight:bold; color:var(--accent-hover); white-space:nowrap; padding:5px 8px;"><img src="brawlers/${formatImg(b)}.png" style="width:24px; vertical-align:middle; margin-right:5px; border-radius:4px;" onerror="this.src='brawlers/default.png'">${b}</td>
+                                <td style="text-align:left; font-weight:bold; color:var(#898989); white-space:nowrap; padding:5px 8px;"><img src="brawlers/${formatImg(b)}.png" style="width:24px; vertical-align:middle; margin-right:5px; border-radius:4px;" onerror="this.src='brawlers/default.png'">${b}</td>
                                 <td style="padding:5px 8px;">${s.picks}</td><td style="color: #00ffff; padding:5px 8px;">${(totalPicksTabela > 0 ? ((s.picks/totalPicksTabela)*100) : 0).toFixed(1)}%</td><td style="padding:5px 8px;">${s.wins}</td><td class="winrate-cell" style="padding:5px 8px;">${((s.wins/s.picks)*100).toFixed(1)}%</td>
-                                <td style="color:#b06aff; font-weight:bold; padding:5px 8px;">${bc}</td><td style="color:#b06aff; font-weight:bold; padding:5px 8px;">${brPct}%</td>
+                                <td style="color:#898989; font-weight:bold; padding:5px 8px;">${bc}</td><td style="color:#ff0000; font-weight:bold; padding:5px 8px;">${brPct}%</td>
                             </tr>`;
                         }).join('')}
                     </tbody>
