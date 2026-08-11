@@ -898,13 +898,13 @@ function renderizarMeta() {
                 <div style="overflow-x:auto;">
                 <table class="excel-table" style="width:100%; table-layout:auto; border-collapse:collapse;">
                     <thead><tr>
-                        <th style="text-align:left; white-space:nowrap; padding:5px 8px;">BRAWLER</th>
-                        <th style="white-space:nowrap; padding:5px 8px;">P</th>
-                        <th style="white-space:nowrap; padding:5px 8px;">PR%</th>
-                        <th style="white-space:nowrap; padding:5px 8px;">W</th>
-                        <th style="white-space:nowrap; padding:5px 8px;">WR%</th>
-                        <th style="white-space:nowrap; padding:5px 8px; color:#b06aff;">B</th>
-                        <th style="white-space:nowrap; padding:5px 8px; color:#b06aff;">BR%</th>
+                        <th style="text-align:left; white-space:nowrap; padding:5px 8px; color:#d3d3d3;">BRAWLER</th>
+                        <th style="white-space:nowrap; padding:5px 8px; color:#ffffff;" >P</th>
+                        <th style="white-space:nowrap; padding:5px 8px; color:#006400;">PR%</th>
+                        <th style="white-space:nowrap; padding:5px 8px; color:#88e788;">W</th>
+                        <th style="white-space:nowrap; padding:5px 8px; color:#;">WR%</th>
+                        <th style="white-space:nowrap; padding:5px 8px; color:#ff0000;">B</th>
+                        <th style="white-space:nowrap; padding:5px 8px; color:#ff0000;">BR%</th>
                     </tr></thead>
                     <tbody>
                         ${valid.map(([b, s]) => {
