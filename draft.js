@@ -6,18 +6,16 @@
 
 // =====================================================================================
 // CARREGAMENTO AUTÔNOMO DO CSV
+// Dispara IMEDIATAMENTE ao carregar o script (antes do DOMContentLoaded)
 // =====================================================================================
 let _draftDadosBrutos = [];
 let _csvCarregado = false;
 let _csvCarregando = false;
 let _cbsAposCSV = [];
+let _cacheDadosBrawlers = {};
+let _cacheDataRef = null;
 
-// Caminhos possíveis do CSV — tenta em ordem até achar
-const _CSV_PATHS = [
-    'historico_bruto.csv',
-    './historico_bruto.csv',
-    '../historico_bruto.csv'
-];
+const _CSV_PATHS = ['historico_bruto.csv', './historico_bruto.csv', '../historico_bruto.csv'];
 
 function _getDadosBrutos() {
     if (_draftDadosBrutos.length > 0) return _draftDadosBrutos;
@@ -25,43 +23,37 @@ function _getDadosBrutos() {
     return [];
 }
 
-function carregarCSVDraft(callback, pathIndex) {
-    if (_csvCarregado) { if (callback) callback(); return; }
-    if (callback) _cbsAposCSV.push(callback);
-    if (_csvCarregando) return;
-    _csvCarregando = true;
-
-    const idx = pathIndex || 0;
-    const path = _CSV_PATHS[idx] || _CSV_PATHS[0];
-
+function _dispararCarregamentoCSV(idx) {
+    idx = idx || 0;
+    if (_csvCarregado || _csvCarregando) return;
+    // Se Papa ainda não existe, injeta o script e aguarda
     if (typeof Papa === 'undefined') {
-        console.warn('[draft.js] PapaParse não encontrado — tentando em 500ms');
-        setTimeout(() => { _csvCarregando = false; carregarCSVDraft(null, idx); }, 500);
+        if (!document.getElementById('_papaparse_draft')) {
+            const s = document.createElement('script');
+            s.id = '_papaparse_draft';
+            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js';
+            s.onload = () => _dispararCarregamentoCSV(idx);
+            (document.head || document.documentElement).appendChild(s);
+        } else {
+            setTimeout(() => _dispararCarregamentoCSV(idx), 100);
+        }
         return;
     }
-
-    Papa.parse(path, {
-        download: true,
-        header: true,
-        skipEmptyLines: true,
+    _csvCarregando = true;
+    Papa.parse(_CSV_PATHS[idx] || _CSV_PATHS[0], {
+        download: true, header: true, skipEmptyLines: true,
         complete: function(results) {
-            // Verifica se veio com a coluna "pick" (confirma que é o arquivo certo)
             if (results.data && results.data.length > 0 && results.data[0].pick !== undefined) {
                 _draftDadosBrutos = results.data;
-                _csvCarregado = true;
-                _csvCarregando = false;
-                _cacheDadosBrawlers = {};
-                _cacheDataRef = null;
+                _csvCarregado = true; _csvCarregando = false;
+                _cacheDadosBrawlers = {}; _cacheDataRef = null;
                 _cbsAposCSV.forEach(fn => { try { fn(); } catch(e) {} });
                 _cbsAposCSV = [];
             } else if (idx + 1 < _CSV_PATHS.length) {
-                // Tenta próximo path
                 _csvCarregando = false;
-                carregarCSVDraft(null, idx + 1);
+                _dispararCarregamentoCSV(idx + 1);
             } else {
-                // Esgotou as tentativas
-                _csvCarregado = true;
-                _csvCarregando = false;
+                _csvCarregado = true; _csvCarregando = false;
                 _cbsAposCSV.forEach(fn => { try { fn(); } catch(e) {} });
                 _cbsAposCSV = [];
             }
@@ -69,16 +61,24 @@ function carregarCSVDraft(callback, pathIndex) {
         error: function() {
             if (idx + 1 < _CSV_PATHS.length) {
                 _csvCarregando = false;
-                carregarCSVDraft(null, idx + 1);
+                _dispararCarregamentoCSV(idx + 1);
             } else {
-                _csvCarregado = true;
-                _csvCarregando = false;
+                _csvCarregado = true; _csvCarregando = false;
                 _cbsAposCSV.forEach(fn => { try { fn(); } catch(e) {} });
                 _cbsAposCSV = [];
             }
         }
     });
 }
+
+function carregarCSVDraft(callback) {
+    if (_getDadosBrutos().length > 0) { if (callback) callback(); return; }
+    if (callback) _cbsAposCSV.push(callback);
+    _dispararCarregamentoCSV(0);
+}
+
+// Dispara imediatamente — não espera DOMContentLoaded
+_dispararCarregamentoCSV(0);
 
 // --- CONFIGURAÇÃO DE MAPAS ---
 const MAPAS_ALVO = {
@@ -207,10 +207,7 @@ function calcularDadosBrawler(brawlerNome) {
     };
 }
 
-// Cache: calculados uma vez e reutilizados enquanto os dadosBrutos não mudarem
-let _cacheDadosBrawlers = {};
-let _cacheDataRef = null;
-
+// obterDadosBrawlerDinamico — usa cache declarado no topo
 function obterDadosBrawlerDinamico(nome) {
     if (!nome) return null;
     const key = nome.toUpperCase();
@@ -966,10 +963,7 @@ function inicializarSistema() {
     document.getElementById('btn-iniciar-draft').addEventListener('click', iniciarSetup);
     const searchInput = document.getElementById('search');
     if (searchInput) { searchInput.removeAttribute('oninput'); searchInput.addEventListener('input', window.filtrar); }
-
-    // Dispara carregamento do CSV em background assim que a página carrega
-    // (se app.js já populou dadosBrutos, _getDadosBrutos() retorna os dados dele;
-    //  senão, carrega de forma autônoma via PapaParse)
+    // CSV já foi disparado no início do script; aqui só registra callback extra se ainda não carregou
     if (_getDadosBrutos().length === 0) {
         carregarCSVDraft(null);
     }
