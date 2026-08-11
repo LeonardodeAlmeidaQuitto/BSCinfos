@@ -15,7 +15,13 @@ let _cbsAposCSV = [];
 let _cacheDadosBrawlers = {};
 let _cacheDataRef = null;
 
-const _CSV_PATHS = ['historico_bruto.csv', './historico_bruto.csv', '../historico_bruto.csv'];
+// Prioriza o CSV do repositório GitHub (sempre atualizado);
+// fallback para caminho relativo caso esteja rodando localmente sem internet
+const _CSV_PATHS = [
+    'https://raw.githubusercontent.com/LeonardodeAlmeidaQuitto/BSCinfos/main/historico_bruto.csv',
+    'historico_bruto.csv',
+    './historico_bruto.csv'
+];
 
 function _getDadosBrutos() {
     if (_draftDadosBrutos.length > 0) return _draftDadosBrutos;
