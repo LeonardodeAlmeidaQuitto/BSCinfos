@@ -7,53 +7,75 @@
 // =====================================================================================
 // CARREGAMENTO AUTÔNOMO DO CSV
 // =====================================================================================
-let _draftDadosBrutos = [];       // dados carregados pelo próprio draft.js
+let _draftDadosBrutos = [];
 let _csvCarregado = false;
 let _csvCarregando = false;
-let _cbsAposCSV = [];              // callbacks a executar quando CSV terminar
+let _cbsAposCSV = [];
+
+// Caminhos possíveis do CSV — tenta em ordem até achar
+const _CSV_PATHS = [
+    'historico_bruto.csv',
+    './historico_bruto.csv',
+    '../historico_bruto.csv'
+];
 
 function _getDadosBrutos() {
-    // Prefere os dados já carregados pelo draft.js; cai no window.dadosBrutos do app.js se existir
     if (_draftDadosBrutos.length > 0) return _draftDadosBrutos;
     if (window.dadosBrutos && window.dadosBrutos.length > 0) return window.dadosBrutos;
     return [];
 }
 
-function carregarCSVDraft(callback) {
+function carregarCSVDraft(callback, pathIndex) {
     if (_csvCarregado) { if (callback) callback(); return; }
     if (callback) _cbsAposCSV.push(callback);
     if (_csvCarregando) return;
     _csvCarregando = true;
 
-    // Verifica se PapaParse está disponível
+    const idx = pathIndex || 0;
+    const path = _CSV_PATHS[idx] || _CSV_PATHS[0];
+
     if (typeof Papa === 'undefined') {
-        console.warn('[draft.js] PapaParse não encontrado — tentando novamente em 500ms');
-        setTimeout(() => { _csvCarregando = false; carregarCSVDraft(null); }, 500);
+        console.warn('[draft.js] PapaParse não encontrado — tentando em 500ms');
+        setTimeout(() => { _csvCarregando = false; carregarCSVDraft(null, idx); }, 500);
         return;
     }
 
-    Papa.parse('historico_bruto.csv', {
+    Papa.parse(path, {
         download: true,
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
+            // Verifica se veio com a coluna "pick" (confirma que é o arquivo certo)
             if (results.data && results.data.length > 0 && results.data[0].pick !== undefined) {
                 _draftDadosBrutos = results.data;
+                _csvCarregado = true;
+                _csvCarregando = false;
+                _cacheDadosBrawlers = {};
+                _cacheDataRef = null;
+                _cbsAposCSV.forEach(fn => { try { fn(); } catch(e) {} });
+                _cbsAposCSV = [];
+            } else if (idx + 1 < _CSV_PATHS.length) {
+                // Tenta próximo path
+                _csvCarregando = false;
+                carregarCSVDraft(null, idx + 1);
+            } else {
+                // Esgotou as tentativas
+                _csvCarregado = true;
+                _csvCarregando = false;
+                _cbsAposCSV.forEach(fn => { try { fn(); } catch(e) {} });
+                _cbsAposCSV = [];
             }
-            _csvCarregado = true;
-            _csvCarregando = false;
-            // Invalida o cache de brawlers para recalcular com dados reais
-            _cacheDadosBrawlers = {};
-            _cacheDataRef = null;
-            // Executa todos os callbacks pendentes
-            _cbsAposCSV.forEach(fn => { try { fn(); } catch(e) {} });
-            _cbsAposCSV = [];
         },
         error: function() {
-            _csvCarregado = true;   // marca como tentado para não ficar em loop
-            _csvCarregando = false;
-            _cbsAposCSV.forEach(fn => { try { fn(); } catch(e) {} });
-            _cbsAposCSV = [];
+            if (idx + 1 < _CSV_PATHS.length) {
+                _csvCarregando = false;
+                carregarCSVDraft(null, idx + 1);
+            } else {
+                _csvCarregado = true;
+                _csvCarregando = false;
+                _cbsAposCSV.forEach(fn => { try { fn(); } catch(e) {} });
+                _cbsAposCSV = [];
+            }
         }
     });
 }
@@ -101,74 +123,88 @@ function calcularMetaMapa(nomeMapa, minPicks = 2) {
 }
 
 /**
- * Calcula counters e sinergias para UM brawler a partir de dadosBrutos.
- * Lógica espelhada de renderizarDetalhesBrawler() do app.js.
- * Retorna { bomContra: [...], ruimContra: [...], sinergias: [...] }
+ * Calcula dados completos de um brawler igual ao renderizarDetalhesBrawler() do app.js.
+ * Retorna { totalPicks, wins, wrGeral, topMapas, countersTop, counteradosTop, sinergiasTop }
  */
-function calcularDadosBrawler(brawlerNome, minMatches = 2, topN = 5) {
+function calcularDadosBrawler(brawlerNome) {
     const dados = _getDadosBrutos();
-    if (!dados || dados.length === 0) return { bomContra: [], ruimContra: [], sinergias: [] };
+    if (!dados || dados.length === 0) return null;
 
     const brawlerUpper = brawlerNome.toUpperCase();
-    const partidasDeste = dados.filter(r => (r.pick || '').toUpperCase() === brawlerUpper);
-    if (partidasDeste.length === 0) return { bomContra: [], ruimContra: [], sinergias: [] };
-
-    const statsContra = {}, statsSinergia = {};
+    const partidasDeste = dados.filter(r => (r.pick || '').trim().toUpperCase() === brawlerUpper);
     const totalPicks = partidasDeste.length;
+    if (totalPicks === 0) return null;
+
+    const wins = partidasDeste.filter(r => parseInt(r.win) === 1).length;
+    const wrGeral = ((wins / totalPicks) * 100).toFixed(1);
+
+    // Top 3 mapas
+    const mapasStats = {};
+    partidasDeste.forEach(r => {
+        const m = (r.mapa || '').trim();
+        if (!m) return;
+        if (!mapasStats[m]) mapasStats[m] = { picks: 0, wins: 0 };
+        mapasStats[m].picks++;
+        if (parseInt(r.win) === 1) mapasStats[m].wins++;
+    });
+    const topMapas = Object.entries(mapasStats)
+        .sort((a, b) => b[1].picks - a[1].picks)
+        .slice(0, 3);
+
+    // Counters e Sinergias (lógica idêntica ao app.js)
+    const statsContra = {}, statsSinergia = {};
     const idsPartidas = [...new Set(partidasDeste.map(r => r.id_partida))];
 
     idsPartidas.forEach(id => {
         const todosNaPartida = dados.filter(r => r.id_partida === id);
-        const brawlerRows = todosNaPartida.filter(r => (r.pick || '').toUpperCase() === brawlerUpper);
-
+        const brawlerRows = todosNaPartida.filter(r => (r.pick || '').trim().toUpperCase() === brawlerUpper);
         brawlerRows.forEach(meRow => {
             const timeDoBrawler = meRow.id_time;
             const ganhou = parseInt(meRow.win) === 1;
-
             todosNaPartida.forEach(p => {
-                const pName = (p.pick || '').toUpperCase();
+                const pName = (p.pick || '').trim().toUpperCase();
                 if (!pName) return;
                 if (p.id_time !== timeDoBrawler) {
-                    // Adversário
-                    if (!statsContra[pName]) statsContra[pName] = { matches: 0, wins: 0 };
+                    if (!statsContra[pName]) statsContra[pName] = { matches: 0, bwWins: 0, bwLosses: 0 };
                     statsContra[pName].matches++;
-                    if (ganhou) statsContra[pName].wins++;
+                    if (ganhou) statsContra[pName].bwWins++; else statsContra[pName].bwLosses++;
                 } else if (pName !== brawlerUpper) {
-                    // Aliado — sinergia
-                    if (!statsSinergia[pName]) statsSinergia[pName] = { matches: 0, wins: 0 };
+                    if (!statsSinergia[pName]) statsSinergia[pName] = { matches: 0, bwWins: 0 };
                     statsSinergia[pName].matches++;
-                    if (ganhou) statsSinergia[pName].wins++;
+                    if (ganhou) statsSinergia[pName].bwWins++;
                 }
             });
         });
     });
 
     const matchups = Object.entries(statsContra)
-        .filter(([, s]) => s.matches >= minMatches)
-        .map(([nome, s]) => ({ nome, matches: s.matches, wr: (s.wins / s.matches) * 100 }));
+        .map(([nome, s]) => ({
+            nome,
+            matches: s.matches,
+            wins: s.bwWins,
+            losses: s.bwLosses,
+            wr: (s.bwWins / s.matches) * 100,
+            pr: (s.matches / totalPicks) * 100
+        }))
+        .filter(m => m.matches >= 1);
 
-    // Bom contra: WR >= 50%, ordenado por mais partidas
-    const bomContra = matchups
-        .filter(m => m.wr >= 50)
+    const countersTop    = [...matchups].filter(m => m.wr >= 50).sort((a, b) => b.matches - a.matches).slice(0, 5);
+    const counteradosTop = [...matchups].filter(m => m.wr  < 50).sort((a, b) => b.matches - a.matches).slice(0, 5);
+    const sinergiasTop   = Object.entries(statsSinergia)
+        .map(([nome, s]) => ({ nome, matches: s.matches, wins: s.bwWins, wr: (s.bwWins / s.matches) * 100, pr: (s.matches / totalPicks) * 100 }))
+        .filter(m => m.matches >= 1)
         .sort((a, b) => b.matches - a.matches)
-        .slice(0, topN)
-        .map(m => m.nome);
+        .slice(0, 5);
 
-    // Ruim contra: WR < 50%, ordenado por mais partidas
-    const ruimContra = matchups
-        .filter(m => m.wr < 50)
-        .sort((a, b) => b.matches - a.matches)
-        .slice(0, topN)
-        .map(m => m.nome);
-
-    const sinergias = Object.entries(statsSinergia)
-        .filter(([, s]) => s.matches >= minMatches)
-        .map(([nome, s]) => ({ nome, matches: s.matches, wr: (s.wins / s.matches) * 100 }))
-        .sort((a, b) => b.matches - a.matches)
-        .slice(0, topN)
-        .map(m => m.nome);
-
-    return { bomContra, ruimContra, sinergias };
+    // Também expõe bomContra/ruimContra/sinergias como arrays simples para a análise final
+    return {
+        totalPicks, wins, wrGeral,
+        topMapas,
+        countersTop, counteradosTop, sinergiasTop,
+        bomContra:  countersTop.map(c => c.nome),
+        ruimContra: counteradosTop.map(c => c.nome),
+        sinergias:  sinergiasTop.map(c => c.nome)
+    };
 }
 
 // Cache: calculados uma vez e reutilizados enquanto os dadosBrutos não mudarem
@@ -176,7 +212,7 @@ let _cacheDadosBrawlers = {};
 let _cacheDataRef = null;
 
 function obterDadosBrawlerDinamico(nome) {
-    if (!nome) return { bomContra: [], ruimContra: [], sinergias: [] };
+    if (!nome) return null;
     const key = nome.toUpperCase();
     const dadosAtual = _getDadosBrutos();
 
@@ -186,7 +222,7 @@ function obterDadosBrawlerDinamico(nome) {
         _cacheDataRef = dadosAtual;
     }
 
-    if (!_cacheDadosBrawlers[key]) {
+    if (!(key in _cacheDadosBrawlers)) {
         _cacheDadosBrawlers[key] = calcularDadosBrawler(nome);
     }
     return _cacheDadosBrawlers[key];
@@ -241,7 +277,7 @@ function obterDadosBrawler(nome) {
 }
 
 // =====================================================================================
-// MODAL DE SUGESTÃO (Bom Contra / Ruim Contra / Melhores Sinergias)
+// MODAL DE SUGESTÃO — formato idêntico ao geral.html (P, PR%, W/L, WR%, Top Mapas)
 // =====================================================================================
 function abrirModalSugestao(nomeBrawler, event) {
     if (event) event.stopPropagation();
@@ -249,103 +285,166 @@ function abrirModalSugestao(nomeBrawler, event) {
     const existente = document.getElementById('modal-sugestao-draft');
     if (existente) existente.remove();
 
-    // Força cálculo dinâmico direto (ignora cache para mostrar dados mais atuais)
-    const dados = calcularDadosBrawler(nomeBrawler);
     const id = limparNome(nomeBrawler);
+    const nRegistros = _getDadosBrutos().length;
 
-    const renderLista = (lista, cor) => {
-        if (!lista || lista.length === 0) return '<span style="color:#555; font-size:11px;">Sem dados suficientes</span>';
-        return lista.map(n => {
-            const nId = limparNome(n);
-            // Formata nome com capitalização correta
-            const nomeFormatado = n.charAt(0).toUpperCase() + n.slice(1).toLowerCase();
-            return `<div style="display:flex; align-items:center; gap:6px; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
-                <img src="brawlers/${nId}.png" onerror="this.style.display='none'" style="width:28px; height:28px; border-radius:6px; object-fit:cover;">
-                <span style="font-size:12px; font-weight:700; color:#e2e8f0;">${n}</span>
-            </div>`;
-        }).join('');
-    };
+    // Se CSV ainda não carregou, mostra loading e reabre quando terminar
+    if (nRegistros === 0) {
+        _mostrarModalLoading(nomeBrawler, id);
+        carregarCSVDraft(() => abrirModalSugestao(nomeBrawler, null));
+        return;
+    }
 
-    // Estatísticas do brawler no mapa atual (se mapa selecionado)
+    const dados = calcularDadosBrawler(nomeBrawler);
+
+    // Stats deste brawler no mapa atual
     let statsMapaHTML = '';
-    const _dadosDisp = _getDadosBrutos();
-    if (mapaEscolhido && _dadosDisp.length > 0) {
+    if (mapaEscolhido) {
+        const raw = _getDadosBrutos();
         const brawlerUpper = nomeBrawler.toUpperCase();
-        const noMapa = _dadosDisp.filter(r =>
-            (r.pick || '').toUpperCase() === brawlerUpper &&
-            normalizarChaveDraft(r.mapa) === normalizarChaveDraft(mapaEscolhido)
+        const noMapa = raw.filter(r =>
+            (r.pick || '').trim().toUpperCase() === brawlerUpper &&
+            normalizarChaveDraft((r.mapa || '')) === normalizarChaveDraft(mapaEscolhido)
         );
         if (noMapa.length > 0) {
-            const picks = noMapa.length;
-            const wins = noMapa.filter(r => parseInt(r.win) === 1).length;
-            const wr = ((wins / picks) * 100).toFixed(1);
-            const corWR = parseFloat(wr) >= 50 ? '#4ade80' : '#f87171';
-            statsMapaHTML = `<div style="background:#0f172a; border-radius:8px; padding:8px 12px; margin-bottom:14px; font-size:11px; color:#94a3b8; display:flex; gap:16px; align-items:center;">
-                <span>📍 <strong style="color:#fff">${mapaEscolhido}</strong></span>
-                <span>P: <strong style="color:#fff">${picks}</strong></span>
-                <span>W: <strong style="color:#fff">${wins}</strong></span>
-                <span>WR: <strong style="color:${corWR}">${wr}%</strong></span>
+            const mp = noMapa.length;
+            const mw = noMapa.filter(r => parseInt(r.win) === 1).length;
+            const mwr = ((mw / mp) * 100).toFixed(1);
+            const corWR = parseFloat(mwr) >= 50 ? '#4ade80' : '#f87171';
+            statsMapaHTML = `
+            <div style="background:#0f172a; border-radius:8px; padding:8px 14px; margin-bottom:14px; font-size:12px; font-weight:700; display:flex; gap:18px; align-items:center; flex-wrap:wrap;">
+                <span style="color:#94a3b8;">📍 <strong style="color:#fff">${mapaEscolhido}</strong></span>
+                <span style="color:#94a3b8;">P: <strong style="color:#fff">${mp}</strong></span>
+                <span style="color:#94a3b8;">W: <strong style="color:#fff">${mw}</strong></span>
+                <span style="color:#94a3b8;">WR: <strong style="color:${corWR}">${mwr}%</strong></span>
             </div>`;
         }
     }
 
+    // Helper: linha de matchup (estilo synergy-item do geral.html)
+    const renderMatchupRow = (c, isWin) => {
+        const cId = limparNome(c.nome);
+        const cor = isWin ? '#4ade80' : '#f87171';
+        const label = isWin ? 'W' : 'L';
+        const val   = isWin ? c.wins : c.losses;
+        return `
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 4px; border-bottom:1px solid rgba(255,255,255,0.05);">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <img src="brawlers/${cId}.png" onerror="this.style.display='none'" style="width:32px; height:32px; border-radius:7px; object-fit:cover;">
+                <span style="font-weight:800; font-size:13px; color:#e2e8f0;">${c.nome}</span>
+            </div>
+            <div style="display:flex; gap:10px; font-size:11px; font-weight:700; text-align:right;">
+                <div style="display:flex; flex-direction:column; color:#64748b;">
+                    <span>P: ${c.matches}</span>
+                    <span>PR: ${c.pr.toFixed(1)}%</span>
+                </div>
+                <div style="display:flex; flex-direction:column;">
+                    <span>${label}: <span style="color:#fff">${val}</span></span>
+                    <span style="color:${cor}">WR: ${c.wr.toFixed(1)}%</span>
+                </div>
+            </div>
+        </div>`;
+    };
+
+    // Helper: card de sinergia
+    const renderSinergiaCard = (c) => {
+        const cId = limparNome(c.nome);
+        return `
+        <div style="background:#0f172a; padding:12px 8px; border-radius:8px; text-align:center; border:1px solid #1e293b;">
+            <img src="brawlers/${cId}.png" onerror="this.style.display='none'" style="width:40px; height:40px; border-radius:7px; margin-bottom:6px; object-fit:cover;">
+            <div style="font-weight:900; font-size:12px; margin-bottom:4px; color:#e2e8f0;">${c.nome}</div>
+            <div style="font-size:11px; color:#64748b; font-weight:700;">P: ${c.matches} | PR: ${c.pr.toFixed(1)}%</div>
+            <div style="font-size:11px; font-weight:700; margin-top:2px;">W: <span style="color:#fff">${c.wins}</span> | <span style="color:#4ade80">WR: ${c.wr.toFixed(1)}%</span></div>
+        </div>`;
+    };
+
+    // Helper: card de mapa
+    const renderMapaCard = ([m, s]) => {
+        const mId = limparNome(m);
+        const mwr = ((s.wins / s.picks) * 100).toFixed(1);
+        const corWR = parseFloat(mwr) >= 50 ? '#4ade80' : '#f87171';
+        return `
+        <div style="background:#0f172a; padding:10px; border-radius:8px; border:1px solid #1e293b; text-align:center;">
+            <img src="element/maps/${mId}.png" onerror="this.style.display='none'" style="width:100%; height:56px; object-fit:cover; border-radius:5px; margin-bottom:6px;">
+            <div style="font-weight:900; font-size:11px; margin-bottom:5px; color:#e2e8f0;">${m}</div>
+            <div style="font-size:10px; color:#64748b; font-weight:700;">P: ${s.picks} | PR: ${((s.picks / dados.totalPicks) * 100).toFixed(1)}%</div>
+            <div style="font-size:10px; font-weight:700; margin-top:2px;">W: <span style="color:#fff">${s.wins}</span> | <span style="color:${corWR}">WR: ${mwr}%</span></div>
+        </div>`;
+    };
+
+    const semDados = !dados;
+
     const modal = document.createElement('div');
     modal.id = 'modal-sugestao-draft';
-    modal.style.cssText = `
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.75); z-index: 9999;
-        display: flex; align-items: center; justify-content: center;
-    `;
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;';
     modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
 
-    const temDados = dados.bomContra.length > 0 || dados.ruimContra.length > 0 || dados.sinergias.length > 0;
+    const wrCorGeral = dados ? (parseFloat(dados.wrGeral) >= 50 ? '#4ade80' : '#f87171') : '#94a3b8';
 
     modal.innerHTML = `
-        <div style="background:#1a1d26; border:1px solid #334155; border-radius:14px; width:360px; max-width:95vw; max-height:90vh; overflow-y:auto; padding:20px; position:relative;">
-            <button onclick="document.getElementById('modal-sugestao-draft').remove()" style="position:absolute; top:12px; right:14px; background:transparent; border:none; color:#94a3b8; font-size:18px; cursor:pointer; line-height:1;">✕</button>
+    <div style="background:#1a1d26; border:1px solid #334155; border-radius:14px; width:480px; max-width:96vw; max-height:92vh; overflow-y:auto; padding:20px; position:relative;">
+        <button onclick="document.getElementById('modal-sugestao-draft').remove()" style="position:absolute;top:12px;right:14px;background:transparent;border:none;color:#64748b;font-size:20px;cursor:pointer;line-height:1;">✕</button>
 
-            <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid #334155;">
-                <img src="brawlers/${id}.png" onerror="this.style.display='none'" style="width:52px; height:52px; border-radius:10px; object-fit:cover; border:2px solid #60a5fa;">
-                <div>
-                    <div style="font-size:16px; font-weight:900; color:#fff;">${nomeBrawler}</div>
-                    <div style="font-size:11px; color:#64748b; margin-top:2px;">Dados de ${_getDadosBrutos().length > 0 ? _getDadosBrutos().length + ' registros' : 'carregando CSV...'}</div>
-                </div>
+        <!-- HEADER -->
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid #334155;">
+            <img src="brawlers/${id}.png" onerror="this.style.display='none'" style="width:60px; height:60px; border-radius:12px; object-fit:cover; border:2px solid #60a5fa;">
+            <div>
+                <div style="font-size:20px; font-weight:900; color:#fff;">${nomeBrawler}</div>
+                ${dados ? `<div style="font-size:12px; color:#64748b; margin-top:4px; font-weight:700;">
+                    PICKS: <span style="color:#fff">${dados.totalPicks}</span> &nbsp;|&nbsp;
+                    W: <span style="color:#fff">${dados.wins}</span> &nbsp;|&nbsp;
+                    WR%: <span style="color:${wrCorGeral}">${dados.wrGeral}%</span>
+                </div>` : `<div style="font-size:11px; color:#475569; margin-top:4px;">${nRegistros} registros carregados</div>`}
             </div>
-
-            ${statsMapaHTML}
-
-            ${!temDados ? `<p style="color:#64748b; font-size:12px; text-align:center; padding:20px 0;">Sem partidas suficientes para calcular matchups para este brawler.<br><span style="font-size:10px; color:#475569;">(mínimo 2 partidas por confronto)</span></p>` : `
-            <div style="margin-bottom:16px;">
-                <div style="font-size:12px; font-weight:800; color:#4ade80; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-                    <span>✅</span> BOM CONTRA
-                    <span style="font-size:10px; color:#64748b; font-weight:400;">(WR ≥ 50%)</span>
-                </div>
-                ${renderLista(dados.bomContra)}
-            </div>
-
-            <div style="margin-bottom:16px; padding-top:12px; border-top:1px solid #1e293b;">
-                <div style="font-size:12px; font-weight:800; color:#f87171; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-                    <span>⚠️</span> RUIM CONTRA
-                    <span style="font-size:10px; color:#64748b; font-weight:400;">(WR < 50%)</span>
-                </div>
-                ${renderLista(dados.ruimContra)}
-            </div>
-
-            <div style="padding-top:12px; border-top:1px solid #1e293b;">
-                <div style="font-size:12px; font-weight:800; color:#a78bfa; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-                    <span>🤝</span> MELHORES SINERGIAS
-                    <span style="font-size:10px; color:#64748b; font-weight:400;">(mais picks juntos)</span>
-                </div>
-                ${renderLista(dados.sinergias)}
-            </div>
-            `}
         </div>
-    `;
+
+        ${statsMapaHTML}
+
+        ${semDados ? `<p style="color:#64748b; font-size:12px; text-align:center; padding:20px 0;">Sem partidas registradas para este brawler.</p>` : `
+
+        <!-- TOP 3 MAPAS -->
+        <div style="font-size:13px; font-weight:800; color:#a78bfa; margin-bottom:10px;">🗺️ TOP 3 MAPAS</div>
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; margin-bottom:18px;">
+            ${dados.topMapas.map(renderMapaCard).join('') || '<p style="color:#475569; font-size:11px;">Sem dados</p>'}
+        </div>
+
+        <!-- BOM CONTRA -->
+        <div style="font-size:13px; font-weight:800; color:#4ade80; margin-bottom:8px;">✅ BOM CONTRA <span style="font-size:10px; color:#475569; font-weight:400;">(WR ≥ 50%)</span></div>
+        <div style="margin-bottom:16px;">
+            ${dados.countersTop.length > 0 ? dados.countersTop.map(c => renderMatchupRow(c, true)).join('') : '<p style="color:#475569; font-size:11px; padding:4px 0;">Sem dados suficientes</p>'}
+        </div>
+
+        <!-- RUIM CONTRA -->
+        <div style="font-size:13px; font-weight:800; color:#f87171; margin-bottom:8px; padding-top:12px; border-top:1px solid #1e293b;">⚠️ RUIM CONTRA <span style="font-size:10px; color:#475569; font-weight:400;">(WR < 50%)</span></div>
+        <div style="margin-bottom:16px;">
+            ${dados.counteradosTop.length > 0 ? dados.counteradosTop.map(c => renderMatchupRow(c, false)).join('') : '<p style="color:#475569; font-size:11px; padding:4px 0;">Sem dados suficientes</p>'}
+        </div>
+
+        <!-- SINERGIAS -->
+        <div style="font-size:13px; font-weight:800; color:#c084fc; margin-bottom:10px; padding-top:12px; border-top:1px solid #1e293b;">🤝 TOP 5 SINERGIAS</div>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap:8px;">
+            ${dados.sinergiasTop.length > 0 ? dados.sinergiasTop.map(renderSinergiaCard).join('') : '<p style="color:#475569; font-size:11px;">Sem dados suficientes</p>'}
+        </div>
+        `}
+    </div>`;
 
     document.body.appendChild(modal);
 }
 
-// Cria o conteúdo do slot com ícone de sugestão (só para picks, não para bans)
+function _mostrarModalLoading(nomeBrawler, id) {
+    const modal = document.createElement('div');
+    modal.id = 'modal-sugestao-draft';
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;';
+    modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+    modal.innerHTML = `
+    <div style="background:#1a1d26; border:1px solid #334155; border-radius:14px; width:320px; max-width:96vw; padding:30px 20px; position:relative; text-align:center;">
+        <button onclick="document.getElementById('modal-sugestao-draft').remove()" style="position:absolute;top:12px;right:14px;background:transparent;border:none;color:#64748b;font-size:20px;cursor:pointer;">✕</button>
+        <img src="brawlers/${id}.png" onerror="this.style.display='none'" style="width:56px; height:56px; border-radius:12px; object-fit:cover; border:2px solid #60a5fa; margin-bottom:12px;">
+        <div style="font-size:17px; font-weight:900; color:#fff; margin-bottom:8px;">${nomeBrawler}</div>
+        <div style="font-size:13px; color:#64748b;">⏳ Carregando dados do CSV...</div>
+    </div>`;
+    document.body.appendChild(modal);
+}// Cria o conteúdo do slot com ícone de sugestão (só para picks, não para bans)
 function criarConteudoSlotComSugestao(nome, id) {
     return `
         <div class="slot-assets" style="position:relative;">
