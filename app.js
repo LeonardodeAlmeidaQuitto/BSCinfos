@@ -902,8 +902,8 @@ function renderizarMeta() {
                         <th style="white-space:nowrap; padding:5px 8px; color:#898989;" >P</th>
                         <th style="white-space:nowrap; padding:5px 8px; color:#00ffff;">PR%</th>
                         <th style="white-space:nowrap; padding:5px 8px; color:#898989;">W</th>
-                        <th style="white-space:nowrap; padding:5px 8px; color:008000;">WR%</th>
-                        <th style="white-space:nowrap; padding:5px 8px; color:#ff0000;">B</th>
+                        <th style="white-space:nowrap; padding:5px 8px; color:00ff00;">WR%</th>
+                        <th style="white-space:nowrap; padding:5px 8px; color:#898989;">B</th>
                         <th style="white-space:nowrap; padding:5px 8px; color:#ff0000;">BR%</th>
                     </tr></thead>
                     <tbody>
