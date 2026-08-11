@@ -1,6 +1,12 @@
-// --- DADOS DO SISTEMA ---
+// =====================================================================================
+// DRAFT.JS — Brawl Stars Draft Tool
+// Dados de meta, counters e sinergias calculados DINAMICAMENTE do historico_bruto.csv
+// (lidos a partir da variável global `dadosBrutos` preenchida pelo app.js)
+// =====================================================================================
+
+// --- CONFIGURAÇÃO DE MAPAS ---
 const MAPAS_ALVO = {
-    "Brawl Ball": ["Super Beach", "Pinhole Punt", "Sneaky Fields", "Triple Dribble", "Pinhole Punt", "Pinball Dreams"],
+    "Brawl Ball": ["Super Beach", "Pinhole Punt", "Sneaky Fields", "Triple Dribble", "Pinball Dreams"],
     "Bounty": ["Shooting Star", "Hideout", "Layer Cake", "Dry Season"],
     "Heist": ["Hot Potato", "Safe Zone", "Bridge Too Far", "Pit Stop", "Kaboom Canyon"],
     "Knockout": ["Goldarm Gulch", "Belle's Rock", "Out in the Open", "New Horizons"],
@@ -8,129 +14,144 @@ const MAPAS_ALVO = {
     "Gem Grab": ["Hard Rock Mine", "Double Swoosh", "Deathcap Trap", "Gem Fort", "Crystal Arcade"]
 };
 
-const DADOS_META = {
-    "Super Beach": ["Max", "Sandy", "Cordelius", "Melodie", "Stu", "Buster", "Charlie", "Rico", "Fang", "Colt"],
-    "Pinhole Punt": [], "Sneaky Fields": [], "Shooting Star": [], "Hideout": [],
-    "Layer Cake": [], "Hot Potato": [], "Safe Zone": [], "Bridge Too Far": [],
-    "Goldarm Gulch": [], "Belle's Rock": [], "Out in the Open": [],
-    "Hard Rock Mine": [], "Double Swoosh": [], "Deathcap Trap": []
-};
+// =====================================================================================
+// CÁLCULO DINÂMICO — lê window.dadosBrutos (preenchido pelo app.js via PapaParse)
+// =====================================================================================
+
+/**
+ * Retorna brawlers do mapa ordenados por WR% (mínimo MIN_PICKS picks).
+ * Usa window.dadosBrutos que o app.js já carregou do CSV.
+ */
+function calcularMetaMapa(nomeMapa, minPicks = 2) {
+    const dados = window.dadosBrutos;
+    if (!dados || dados.length === 0) return [];
+
+    const stats = {};
+    dados.forEach(row => {
+        const mapa = (row.mapa || '').trim();
+        const pick = (row.pick || '').trim().toUpperCase();
+        if (!pick || normalizarChaveDraft(mapa) !== normalizarChaveDraft(nomeMapa)) return;
+        if (!stats[pick]) stats[pick] = { picks: 0, wins: 0 };
+        stats[pick].picks++;
+        if (parseInt(row.win) === 1) stats[pick].wins++;
+    });
+
+    return Object.entries(stats)
+        .filter(([, s]) => s.picks >= minPicks)
+        .sort((a, b) => {
+            const wrA = a[1].wins / a[1].picks;
+            const wrB = b[1].wins / b[1].picks;
+            return wrB - wrA;
+        })
+        .map(([nome]) => nome);
+}
+
+/**
+ * Calcula counters e sinergias para UM brawler a partir de dadosBrutos.
+ * Lógica espelhada de renderizarDetalhesBrawler() do app.js.
+ * Retorna { bomContra: [...], ruimContra: [...], sinergias: [...] }
+ */
+function calcularDadosBrawler(brawlerNome, minMatches = 2, topN = 5) {
+    const dados = window.dadosBrutos;
+    if (!dados || dados.length === 0) return { bomContra: [], ruimContra: [], sinergias: [] };
+
+    const brawlerUpper = brawlerNome.toUpperCase();
+    const partidasDeste = dados.filter(r => (r.pick || '').toUpperCase() === brawlerUpper);
+    if (partidasDeste.length === 0) return { bomContra: [], ruimContra: [], sinergias: [] };
+
+    const statsContra = {}, statsSinergia = {};
+    const totalPicks = partidasDeste.length;
+    const idsPartidas = [...new Set(partidasDeste.map(r => r.id_partida))];
+
+    idsPartidas.forEach(id => {
+        const todosNaPartida = dados.filter(r => r.id_partida === id);
+        const brawlerRows = todosNaPartida.filter(r => (r.pick || '').toUpperCase() === brawlerUpper);
+
+        brawlerRows.forEach(meRow => {
+            const timeDoBrawler = meRow.id_time;
+            const ganhou = parseInt(meRow.win) === 1;
+
+            todosNaPartida.forEach(p => {
+                const pName = (p.pick || '').toUpperCase();
+                if (!pName) return;
+                if (p.id_time !== timeDoBrawler) {
+                    // Adversário
+                    if (!statsContra[pName]) statsContra[pName] = { matches: 0, wins: 0 };
+                    statsContra[pName].matches++;
+                    if (ganhou) statsContra[pName].wins++;
+                } else if (pName !== brawlerUpper) {
+                    // Aliado — sinergia
+                    if (!statsSinergia[pName]) statsSinergia[pName] = { matches: 0, wins: 0 };
+                    statsSinergia[pName].matches++;
+                    if (ganhou) statsSinergia[pName].wins++;
+                }
+            });
+        });
+    });
+
+    const matchups = Object.entries(statsContra)
+        .filter(([, s]) => s.matches >= minMatches)
+        .map(([nome, s]) => ({ nome, matches: s.matches, wr: (s.wins / s.matches) * 100 }));
+
+    // Bom contra: WR >= 50%, ordenado por mais partidas
+    const bomContra = matchups
+        .filter(m => m.wr >= 50)
+        .sort((a, b) => b.matches - a.matches)
+        .slice(0, topN)
+        .map(m => m.nome);
+
+    // Ruim contra: WR < 50%, ordenado por mais partidas
+    const ruimContra = matchups
+        .filter(m => m.wr < 50)
+        .sort((a, b) => b.matches - a.matches)
+        .slice(0, topN)
+        .map(m => m.nome);
+
+    const sinergias = Object.entries(statsSinergia)
+        .filter(([, s]) => s.matches >= minMatches)
+        .map(([nome, s]) => ({ nome, matches: s.matches, wr: (s.wins / s.matches) * 100 }))
+        .sort((a, b) => b.matches - a.matches)
+        .slice(0, topN)
+        .map(m => m.nome);
+
+    return { bomContra, ruimContra, sinergias };
+}
+
+// Cache: calculados uma vez e reutilizados enquanto os dadosBrutos não mudarem
+let _cacheDadosBrawlers = {};
+let _cacheDataRef = null;
+
+function obterDadosBrawlerDinamico(nome) {
+    if (!nome) return { bomContra: [], ruimContra: [], sinergias: [] };
+    const key = nome.toUpperCase();
+    const dadosAtual = window.dadosBrutos;
+
+    // Invalida cache se dadosBrutos mudou
+    if (dadosAtual !== _cacheDataRef) {
+        _cacheDadosBrawlers = {};
+        _cacheDataRef = dadosAtual;
+    }
+
+    if (!_cacheDadosBrawlers[key]) {
+        _cacheDadosBrawlers[key] = calcularDadosBrawler(nome);
+    }
+    return _cacheDadosBrawlers[key];
+}
+
+// Helper de normalização de chave (igual ao do app.js)
+function normalizarChaveDraft(str) {
+    if (!str) return '';
+    return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+}
 
 // =====================================================================================
-// DADOS DE BRAWLERS: counters (bom contra / ruim contra) e sinergias
-// Fonte: seção BRAWLERS da planilha ALL (todas as regiões combinadas)
-// Formato por brawler: { bomContra: [...], ruimContra: [...], sinergias: [...] }
-// Estes dados vêm do app.js (função renderizarDetalhesBrawler) — seção ALL
+// LISTA DE BRAWLERS
 // =====================================================================================
-const DADOS_BRAWLERS = {
-    "8-bit":        { bomContra: ["Squeak", "Colette", "Belle", "Crow", "Pierce"],      ruimContra: ["Najia", "Byron", "Penny", "Angelo", "Edgar"],       sinergias: ["Ruffs", "Jessie", "Byron", "Tick", "Penny"] },
-    "Alli":         { bomContra: ["Otis", "Kenji", "Ruffs", "Jacky", "Sirius"],         ruimContra: ["Bull", "Trunk", "Mortis", "Emz", "Edgar"],           sinergias: ["Surge", "Cordelius", "Sandy", "Charlie", "Otis"] },
-    "Amber":        { bomContra: ["Starr Nova", "Doug", "Ash", "Nani", "Lily"],         ruimContra: ["Bull", "Angelo", "Mortis", "Edgar", "Bea"],           sinergias: ["Sandy", "Emz", "Poco", "Gale", "Gene"] },
-    "Angelo":       { bomContra: ["Eve", "Ruffs", "Belle", "Pierce", "Nani"],           ruimContra: ["Charlie", "Kenji", "Byron", "Kaze", "Mina"],          sinergias: ["Sandy", "Emz", "Byron", "Poco", "Melodie"] },
-    "Ash":          { bomContra: ["Frank", "Trunk", "Edgar", "Rico", "Sirius"],         ruimContra: ["Shade", "Kenji", "Griff", "Otis", "Colette"],         sinergias: ["Emz", "Poco", "Byron", "Sandy", "Gus"] },
-    "Barley":       { bomContra: ["Mortis", "Kenji", "Edgar", "Trunk", "Mico"],         ruimContra: ["Cordelius", "Colt", "Stu", "Mico", "Lily"],            sinergias: ["Emz", "Poco", "Sandy", "Gale", "Dynamike"] },
-    "Bea":          { bomContra: ["Charlie", "Ruffs", "Byron", "Belle", "Angelo"],      ruimContra: ["Najia", "Leon", "Piper", "Crow", "Edgar"],             sinergias: ["Sandy", "Emz", "Gale", "Gene", "Mr.P"] },
-    "Belle":        { bomContra: ["Piper", "Charlie", "Byron", "Nani", "Crow"],         ruimContra: ["Najia", "Mina", "Mortis", "Kenji", "Edgar"],           sinergias: ["Sandy", "Emz", "Gene", "Gale", "Poco"] },
-    "Berry":        { bomContra: ["Kaze", "Crow", "Sirius", "Shade", "Clancy"],         ruimContra: ["Trunk", "Edgar", "Mortis", "Lily", "Alli"],            sinergias: ["Cordelius", "Sandy", "Emz", "Poco", "Gale"] },
-    "Bibi":         { bomContra: ["Cordelius", "Otis", "Edgar", "Buzz", "Bull"],        ruimContra: ["Colette", "Pearl", "Mortis", "Shelly", "Frank"],       sinergias: ["Poco", "Sandy", "Gene", "Emz", "Surge"] },
-    "Bo":           { bomContra: ["Mina", "Mortis", "Buzz", "Edgar", "Kenji"],          ruimContra: ["Cordelious", "Mortis", "Surge", "Max", "Charlie"],     sinergias: ["Sandy", "Emz", "Gale", "Gene", "Poco"] },
-    "Bolt":         { bomContra: ["Grom", "Mortis", "Edgar", "Colt", "Dynamike"],       ruimContra: ["Chester", "Doug", "Lou", "Charlie", "Cordelius"],      sinergias: ["Sandy", "Emz", "Poco", "Gale", "Gene"] },
-    "Bonnie":       { bomContra: ["Charlie", "Ruffs", "Leon", "Mina", "Pierce"],        ruimContra: ["Kaze", "Tara", "Mortis", "Edgar", "Stu"],              sinergias: ["Sandy", "Emz", "Gene", "Gale", "Poco"] },
-    "Brock":        { bomContra: ["RT", "Byron", "Pierce", "Piper", "Nani"],            ruimContra: ["Najia", "Kaze", "Max", "Bea", "Belle"],                sinergias: ["Sandy", "Emz", "Gene", "Gale", "Poco"] },
-    "Bull":         { bomContra: ["Cordelius", "Griff", "Colette", "Otis", "Nita"],     ruimContra: ["Charlie", "Lou", "Frank", "Sam", "Gale"],              sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Buster":       { bomContra: ["Leon", "Mina", "Kenji", "Edgar", "Darryl"],          ruimContra: ["Bull", "Mortis", "R-T", "Frank", "Colette"],           sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Buzz":         { bomContra: ["Charlie", "Bull", "Griff", "Edgar", "Alli"],         ruimContra: ["Cordelius", "Otis", "Frank", "Gale", "Colette"],       sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Byron":        { bomContra: ["Piper", "Nani", "Pierce", "Najia", "Mortis"],        ruimContra: ["Kenji", "Kaze", "Bonnie", "Mina", "Edgar"],            sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Carl":         { bomContra: ["Edgar", "Colette", "Otis", "Buzz", "Bull"],          ruimContra: ["Daminan", "Shade", "Frank", "Mortis", "Colette"],      sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Charlie":      { bomContra: ["Janet", "Ziggy", "Sirius", "Lumi", "Amber"],         ruimContra: ["Byron", "Carl", "Penny", "Jae Yong", "Amber"],         sinergias: ["Cordelius", "Sandy", "Emz", "Gene", "Poco"] },
-    "Chester":      { bomContra: ["Emz", "Meeple", "Pearl", "Mortis", "Frank"],         ruimContra: ["Meeple", "Charlie", "Byron", "Otis", "Ruffs"],         sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Chuck":        { bomContra: ["Charlie", "Cordelius", "Otis", "R-T", "Edgar"],      ruimContra: ["Otis", "Charlie", "Cordelius", "R-T", "Frank"],        sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Clancy":       { bomContra: ["Charlie", "Tara", "Ruffs", "Otis", "Crow"],          ruimContra: ["Barley", "LarryLawrie", "Juju", "Otis", "Charlie"],    sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Colette":      { bomContra: ["Ruffs", "Otis", "Crow", "Charlie", "Bea"],           ruimContra: ["Bea", "Charlie", "Otis", "Ruffs", "Edgar"],            sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Colt":         { bomContra: ["Pierce", "Nani", "Ruffs", "Mina", "Leon"],           ruimContra: ["Kenji", "Byron", "Crow", "Edgar", "Belle"],            sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Cordelius":    { bomContra: ["Nita", "Surge", "Mina", "Sirius", "Edgar"],          ruimContra: ["Nita", "Surge", "Mina", "Sirius", "Frank"],            sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Crow":         { bomContra: ["Gus", "Byron", "Mortis", "Otis", "Pierce"],          ruimContra: ["Mina", "Edgar", "Bea", "Piper", "Nita"],               sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Damian":       { bomContra: ["Otis", "Edgar", "Colette", "Chester", "Mortis"],     ruimContra: ["Chester", "Mortis", "Otis", "Frank", "Bull"],          sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Darryl":       { bomContra: ["Spike", "Cordelius", "Otis", "Chester", "Clancy"],   ruimContra: ["Gale", "Lou", "Bull", "Nita", "Colette"],              sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Doug":         { bomContra: ["Clancy", "Griff", "Mina", "Bolt", "Mico"],           ruimContra: ["Mina", "Griff", "Clancy", "Frank", "Bull"],            sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Draco":        { bomContra: ["Lou", "Frank", "Mina", "Chester", "Otis"],           ruimContra: ["Lou", "Frank", "Mina", "Chester", "Bull"],             sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Dynamike":     { bomContra: ["Bibi", "Trunk", "Mina", "Edgar", "Shade"],           ruimContra: ["Cordelius", "Stu", "Mortis", "Kenji", "Alli"],         sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Edgar":        { bomContra: ["Cordelius", "Otis", "Bull", "Griff", "Gale"],        ruimContra: ["Cordelius", "Otis", "Bull", "Griff", "Gale"],          sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "El Primo":     { bomContra: ["Colette", "Cordelius", "Otis", "Gale", "Stu"],       ruimContra: ["Cordelious", "Gale", "Colette", "Otis", "Frank"],      sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Emz":          { bomContra: ["Otis", "Colette", "Griff", "Mina", "Meeple"],        ruimContra: ["Sirius", "Darryl", "Mortis", "Leon", "Edgar"],         sinergias: ["Sandy", "Gene", "Poco", "Gale", "Brock"] },
-    "Eve":          { bomContra: ["Penny", "Janet", "Belle", "Byron", "Carl"],          ruimContra: ["Carl", "Mortis", "Edgar", "Kit", "Frank"],             sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Fang":         { bomContra: ["Chester", "Otis", "Edgar", "Mortis", "Crow"],        ruimContra: ["Chester", "Otis", "Cordelius", "Frank", "Bull"],       sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Finx":         { bomContra: ["Emz", "Edgar", "Ziggy", "Meg", "Pam"],               ruimContra: ["Emz", "Edgar", "Meg", "Pam", "Frank"],                 sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Frank":        { bomContra: ["Colette", "Chester", "Mortis", "Edgar", "Otis"],     ruimContra: ["Colette", "Chester", "Mortis", "Edgar", "Otis"],       sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Gale":         { bomContra: ["Ziggy", "Lola", "Amber", "Edgar", "Mortis"],         ruimContra: ["Amber", "Lola", "Frank", "Bull", "Jacky"],             sinergias: ["Sandy", "Emz", "Gene", "Poco", "Brock"] },
-    "Gene":         { bomContra: ["Mr.P", "Eve", "Belle", "Ruffs", "Crow"],             ruimContra: ["Ruffs", "Mortis", "Edgar", "Frank", "Bull"],           sinergias: ["Sandy", "Emz", "Poco", "Brock", "Gale"] },
-    "Gigi":         { bomContra: ["Jacky", "Doug", "Bull", "Frank", "Ash"],             ruimContra: ["Jacky", "Doug", "Frank", "Bull", "Colette"],           sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Glowy":        { bomContra: ["Edgar", "Crow", "Byron", "Mortis", "Shade"],         ruimContra: ["Edgar", "Crow", "Byron", "Mortis", "Frank"],           sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Gray":         { bomContra: ["R-T", "Eve", "Charlie", "Ruffs", "Pearl"],           ruimContra: ["Pearl", "Ruffs", "Charlie", "Frank", "Bull"],          sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Griff":        { bomContra: ["Moe", "Darryl", "Edgar", "Bull", "Mortis"],          ruimContra: ["Moe", "Frank", "Bull", "Mortis", "Edgar"],             sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Grom":         { bomContra: ["Kenji", "Edgar", "Bolt", "Mico", "Mortis"],          ruimContra: ["Kenji", "Edgar", "Mico", "Bolt", "Stu"],               sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Gus":          { bomContra: ["Edgar", "Damian", "Byron", "Nani", "Eve"],           ruimContra: ["Nani", "Eve", "Piece", "Leon", "Mortis"],              sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Hank":         { bomContra: ["Shade", "Bull", "Edgar", "Mortis", "Frank"],         ruimContra: ["Shade", "Bull", "Edgar", "Frank", "Colette"],          sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Jacky":        { bomContra: ["Frank", "Bull", "Ash", "Gigi", "Trunk"],             ruimContra: ["Frank", "Bull", "Mortis", "Colette", "Gale"],          sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Jae Yong":     { bomContra: ["Crow", "Byron", "Buzz", "Brock", "Piper"],           ruimContra: ["Crow", "Byron", "Buzz", "Mortis", "Edgar"],            sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Janet":        { bomContra: ["Mortis", "Kit", "Darryl", "Edgar", "Frank"],         ruimContra: ["Kit", "Darryl", "Mortis", "Edgar", "Frank"],           sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Jessie":       { bomContra: ["Barley", "Pierce", "Belle", "Crow", "Gene"],         ruimContra: ["Belle", "Pierce", "Barley", "Frank", "Bull"],          sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Juju":         { bomContra: ["Frank", "Brock", "Shelly", "Surge", "LarryLawrie"],  ruimContra: ["Brock", "Frank", "Bull", "Mortis", "Edgar"],           sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Kaze":         { bomContra: ["Draco", "Mina", "Chester", "Otis", "Byron"],         ruimContra: ["Chester", "Otis", "Draco", "Mina", "Frank"],           sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Kenji":        { bomContra: ["Shade", "Lou", "Edgar", "Mortis", "Dynamike"],       ruimContra: ["Shade", "Lou", "Frank", "Bull", "Mortis"],             sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Kit":          { bomContra: ["Bull", "Frank", "Hank", "Edgar", "Mortis"],          ruimContra: ["Bull", "Frank", "Hank", "Mortis", "Colette"],          sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "LarryLawrie":  { bomContra: ["Edgar", "Mortis", "Frank", "Bull", "Surge"],         ruimContra: ["Edgar", "Mortis", "Frank", "Bull", "Colette"],         sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Leon":         { bomContra: ["Crow", "Emz", "Mortis", "Frank", "Buster"],          ruimContra: ["Crow", "Emz", "Mortis", "Frank", "Bull"],              sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Lily":         { bomContra: ["Jacky", "R-T", "Damian", "Edgar", "Mortis"],         ruimContra: ["Jacky", "R-T", "Damian", "Frank", "Bull"],             sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Lola":         { bomContra: ["Lumi", "Belle", "Mortis", "Edgar", "Crow"],          ruimContra: ["Lumi", "Belle", "Frank", "Bull", "Mortis"],            sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Lou":          { bomContra: ["Poco", "Byron", "Mina", "Chester", "Draco"],         ruimContra: ["Chester", "Mina", "Frank", "Bull", "Mortis"],          sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Lumi":         { bomContra: ["Mortis", "Edgar", "Pierce", "Crow", "Leon"],         ruimContra: ["Mortis", "Edgar", "Pierce", "Frank", "Bull"],          sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Maisie":       { bomContra: ["Ruffs", "Stu", "Sirius", "Edgar", "Mortis"],         ruimContra: ["Sirius", "Stu", "Ruffs", "Frank", "Bull"],             sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Mandy":        { bomContra: ["Nani", "Edgar", "Mortis", "Frank", "Crow"],          ruimContra: ["Nani", "Edgar", "Mortis", "Frank", "Bull"],            sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Max":          { bomContra: ["Crow", "Finx", "Lola", "Edgar", "Mortis"],           ruimContra: ["Crow", "Finx", "Lola", "Frank", "Bull"],               sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Meeple":       { bomContra: ["Charlie", "Ruffs", "Emz", "Chester", "Mina"],        ruimContra: ["Charlie", "Ruffs", "Frank", "Bull", "Mortis"],         sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Meg":          { bomContra: ["Edgar", "Buster", "Mortis", "Frank", "Crow"],        ruimContra: ["Edgar", "Buster", "Frank", "Bull", "Mortis"],          sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Melodie":      { bomContra: ["Damian", "Otis", "Cordelius", "Buzz", "Edgar"],      ruimContra: ["Buzz", "Otis", "Damian", "Frank", "Bull"],             sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Mico":         { bomContra: ["Bull", "Doug", "Otis", "Cordelius", "Edgar"],        ruimContra: ["Cordelius", "Otis", "Frank", "Bull", "Mortis"],        sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Mina":         { bomContra: ["Kenji", "Meeple", "Shade", "Edgar", "Mortis"],       ruimContra: ["Kenji", "Meeple", "Shade", "Frank", "Bull"],           sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Moe":          { bomContra: ["Chester", "Damian", "Stu", "Edgar", "Mortis"],       ruimContra: ["Chester", "Damian", "Stu", "Frank", "Griff"],          sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Mortis":       { bomContra: ["Otis", "Bull", "Shelly", "Edgar", "Frank"],          ruimContra: ["Otis", "Bull", "Shelly", "Frank", "Gale"],             sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Mr.P":         { bomContra: ["Edgar", "Kenji", "Damian", "Mortis", "Crow"],        ruimContra: ["Kenji", "Damian", "Mortis", "Frank", "Bull"],          sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Najia":        { bomContra: ["Poco", "Edgar", "Lily", "Mortis", "Frank"],          ruimContra: ["Edgar", "Lily", "Frank", "Bull", "Mortis"],            sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Nani":         { bomContra: ["Max", "Gene", "Mortis", "Edgar", "Frank"],           ruimContra: ["Max", "Gene", "Frank", "Bull", "Mortis"],              sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Nita":         { bomContra: ["Amber", "Cordelious", "Edgar", "Mortis", "Frank"],   ruimContra: ["Cordelious", "Frank", "Bull", "Mortis", "Gale"],       sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Ollie":        { bomContra: ["Poco", "Griff", "Edgar", "Mortis", "Frank"],         ruimContra: ["Griff", "Frank", "Bull", "Mortis", "Gale"],            sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Otis":         { bomContra: ["Poco", "Ruffs", "Charlie", "Alli", "Edgar"],         ruimContra: ["Charlie", "Alli", "Frank", "Bull", "Mortis"],          sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Pam":          { bomContra: ["Colette", "Lumi", "Crow", "Lou", "Edgar"],           ruimContra: ["Lumi", "Crow", "Lou", "Frank", "Bull"],                sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Pearl":        { bomContra: ["Finx", "Pam", "Lola", "Edgar", "Mortis"],            ruimContra: ["Finx", "Pam", "Lola", "Frank", "Bull"],               sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Penny":        { bomContra: ["Willow", "Barley", "Edgar", "Mortis", "Frank"],      ruimContra: ["Willow", "Barley", "Frank", "Bull", "Mortis"],         sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Pierce":       { bomContra: ["Charlie", "Ruffs", "Nani", "Piper", "Edgar"],        ruimContra: ["Nani", "Piper", "Frank", "Bull", "Mortis"],            sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Piper":        { bomContra: ["Nani", "Kaze", "Brock", "Edgar", "Mortis"],          ruimContra: ["Nani", "Kaze", "Brock", "Frank", "Bull"],              sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Poco":         { bomContra: ["Crow", "Byron", "Meg", "Kit", "Edgar"],              ruimContra: ["Byron", "Meg", "LawrieLarry", "Kit", "Frank"],         sinergias: ["Sandy", "Emz", "Gene", "Gale", "Brock"] },
-    "R-T":          { bomContra: ["Gus", "Leon", "Jae Yong", "Max", "Edgar"],           ruimContra: ["Leon", "Jae Yong", "Max", "Frank", "Bull"],            sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Rico":         { bomContra: ["Colt", "Griff", "Brock", "Edgar", "Mortis"],         ruimContra: ["Griff", "Brock", "Frank", "Bull", "Mortis"],           sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Rosa":         { bomContra: ["Frank", "Bull", "Shelly", "Amber", "Mortis"],        ruimContra: ["Frank", "Bull", "Shelly", "Gale", "Colette"],          sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Ruffs":        { bomContra: ["Ollie", "Carl", "Janet", "Belle", "Jae Yong"],       ruimContra: ["Carl", "Janet", "Belle", "Frank", "Bull"],             sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Sam":          { bomContra: ["Frank", "Bull", "Gale", "Edgar", "Mortis"],          ruimContra: ["Frank", "Bull", "Gale", "Mortis", "Colette"],          sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Sandy":        { bomContra: ["Nita", "Kenji", "Draco", "Edgar", "Mortis"],         ruimContra: ["Kenji", "Draco", "Frank", "Bull", "Mortis"],           sinergias: ["Emz", "Gene", "Poco", "Gale", "Brock"] },
-    "Shade":        { bomContra: ["Lou", "Hank", "Edgar", "Mortis", "Frank"],           ruimContra: ["Lou", "Hank", "Frank", "Bull", "Mortis"],              sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Shelly":       { bomContra: ["Nita", "Stu", "Juju", "LawrieLarry", "Surge"],       ruimContra: ["Surge", "Frank", "Bull", "Mortis", "Gale"],            sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Sirius":       { bomContra: ["Amber", "Lumi", "Carl", "Nita", "Edgar"],            ruimContra: ["Lumi", "Carl", "Nita", "Frank", "Bull"],               sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Spike":        { bomContra: ["Pierce", "Piper", "willow", "Edgar", "Mortis"],      ruimContra: ["Pierce", "Piper", "Frank", "Bull", "Mortis"],          sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Sprout":       { bomContra: ["Mico", "Kit", "Mortis", "Edgar", "Frank"],           ruimContra: ["Kit", "Mortis", "Frank", "Bull", "Gale"],              sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Squeak":       { bomContra: ["Buzz", "Kenji", "Edgar", "Mortis", "Frank"],         ruimContra: ["Buzz", "Kenji", "Frank", "Bull", "Mortis"],            sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Starr Nova":   { bomContra: ["Otis", "Gale", "Edgar", "Mortis", "Frank"],          ruimContra: ["Gale", "Frank", "Bull", "Mortis", "Colette"],          sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Stu":          { bomContra: ["Ruffs", "Tara", "Charlie", "Edgar", "Mortis"],       ruimContra: ["Tara", "Charlie", "Frank", "Bull", "Mortis"],          sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Surge":        { bomContra: ["Ruffs", "Juju", "Edgar", "Mortis", "Frank"],         ruimContra: ["Juju", "Frank", "Bull", "Mortis", "Cordelius"],        sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Tara":         { bomContra: ["Janet", "Sandy", "Juju", "Edgar", "Mortis"],         ruimContra: ["Sandy", "Juju", "Frank", "Bull", "Mortis"],            sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Tick":         { bomContra: ["Bull", "Frank", "Edgar", "Mortis", "Colette"],       ruimContra: ["Frank", "Bull", "Mortis", "Gale", "Colette"],          sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Trunk":        { bomContra: ["Frank", "Bull", "Mina", "Edgar", "Mortis"],          ruimContra: ["Frank", "Bull", "Mina", "Mortis", "Gale"],             sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Willow":       { bomContra: ["Juju", "LarryLawrie", "Najia", "Edgar", "Mortis"],   ruimContra: ["LarryLawrie", "Najia", "Frank", "Bull", "Mortis"],     sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] },
-    "Ziggy":        { bomContra: ["Kaze", "Edgar", "Kenji", "Mortis", "Frank"],         ruimContra: ["Kaze", "Edgar", "Kenji", "Frank", "Bull"],             sinergias: ["Sandy", "Emz", "Gene", "Poco", "Gale"] }
-};
+const BRAWLERS = ["Damian", "8-Bit", "Alli", "Amber", "Angelo", "Ash", "Barley", "Bea", "Belle", "Berry", "Bibi", "Bo", "Bolt", "Bonnie", "Brock", "Bull", "Buster", "Buzz", "Byron", "Carl", "Charlie", "Chester", "Chuck", "Clancy", "Colette", "Colt", "Cordelius", "Crow", "Darryl", "Doug", "Draco", "Dynamike", "Edgar", "El Primo", "Emz", "Eve", "Fang", "Finx", "Frank", "Gale", "Gene", "Gigi", "Glowy", "Gray", "Griff", "Grom", "Gus", "Hank", "Jacky", "Jae Yong", "Janet", "Jessie", "Juju", "Kaze", "Kenji", "Kit", "Larry & Lawrie", "Leon", "Lily", "Lola", "Lou", "Lumi", "Maisie", "Mandy", "Max", "Meeple", "Meg", "Melodie", "Mico", "Mina", "Moe", "Mortis", "Mr.P", "Najia", "Nani", "Nita", "Nori", "Ollie", "Otis", "Pam", "Pearl", "Penny", "Pierce", "Piper", "Poco", "R-T", "Rico", "Rosa", "Ruffs", "Sam", "Sandy", "Shade", "Shelly", "Sirius", "Spike", "Sprout", "Squeak", "Stu", "Surge", "Starr Nova", "Tara", "Tick", "Trunk", "Willow", "Ziggy"].sort();
 
-const BRAWLERS = ["Damian", "8-Bit", "Alli", "Amber", "Angelo", "Ash", "Barley", "Bea", "Belle", "Berry", "Bibi", "Bo", "Bolt", "Bonnie", "Brock", "Bull", "Buster", "Buzz", "Byron", "Carl", "Charlie", "Chester", "Chuck", "Clancy", "Colette", "Colt", "Cordelius", "Crow", "Darryl", "Doug", "Draco", "Dynamike", "Edgar", "El Primo", "Emz", "Eve", "Fang", "Finx", "Frank", "Gale", "Gene", "Gigi", "Glowy", "Gray", "Griff", "Grom", "Gus", "Hank", "Jacky", "Jae Yong", "Janet", "Jessie", "Juju", "Kaze", "Kenji", "Kit", "LarryLawrie", "Leon", "Lily", "Lola", "Lou", "Lumi", "Maisie", "Mandy", "Max", "Meeple", "Meg", "Melodie", "Mico", "Mina", "Moe", "Mortis", "Mr.P", "Najia", "Nani", "Nita", "Nori", "Ollie", "Otis", "Pam", "Pearl", "Penny", "Pierce", "Piper", "Poco", "R-T", "Rico", "Rosa", "Ruffs", "Sam", "Sandy", "Shade", "Shelly", "Sirius", "Spike", "Sprout", "Squeak", "Stu", "Surge", "Starr Nova", "Tara", "Tick", "Trunk", "Willow", "Ziggy"].sort();
-
+// =====================================================================================
+// ESTADO DO DRAFT
+// =====================================================================================
 let currentStep = 0, firstPick = 'blue', draftOrder = [], picksVermelhos = [], picksAzuis = [], preSelected = null;
 let modoEscolhido = null, mapaEscolhido = null;
 let draftIniciado = false, draftFinalizado = false;
@@ -147,17 +168,22 @@ let faseAtualIdx = 0;
 let tempoRestante = 30;
 let timerInterval = null;
 
+// =====================================================================================
+// HELPERS
+// =====================================================================================
 function limparNome(nome) { return !nome ? "" : nome.toLowerCase().replace(/[^a-z0-9]/g, ''); }
 
 function criarConteudoSlot(nome, id) {
     return `<div class="slot-assets"><img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="slot-fallback-text">${nome}</div></div>`;
 }
 
-// Busca os dados do brawler no DADOS_BRAWLERS (ignora capitalização)
+// Busca os dados do brawler: primeiro tenta dinâmico (dadosBrutos), depois cai no vazio
 function obterDadosBrawler(nome) {
     if (!nome) return null;
-    const key = Object.keys(DADOS_BRAWLERS).find(k => limparNome(k) === limparNome(nome));
-    return key ? DADOS_BRAWLERS[key] : null;
+    const dados = obterDadosBrawlerDinamico(nome);
+    // Retorna null se vazio (para compatibilidade com código que verifica "if(dados)")
+    if (!dados.bomContra.length && !dados.ruimContra.length && !dados.sinergias.length) return null;
+    return dados;
 }
 
 // =====================================================================================
@@ -166,17 +192,19 @@ function obterDadosBrawler(nome) {
 function abrirModalSugestao(nomeBrawler, event) {
     if (event) event.stopPropagation();
 
-    // Remove modal anterior se existir
     const existente = document.getElementById('modal-sugestao-draft');
     if (existente) existente.remove();
 
-    const dados = obterDadosBrawler(nomeBrawler);
+    // Força cálculo dinâmico direto (ignora cache para mostrar dados mais atuais)
+    const dados = calcularDadosBrawler(nomeBrawler);
     const id = limparNome(nomeBrawler);
 
     const renderLista = (lista, cor) => {
-        if (!lista || lista.length === 0) return '<span style="color:#555; font-size:11px;">Sem dados</span>';
+        if (!lista || lista.length === 0) return '<span style="color:#555; font-size:11px;">Sem dados suficientes</span>';
         return lista.map(n => {
             const nId = limparNome(n);
+            // Formata nome com capitalização correta
+            const nomeFormatado = n.charAt(0).toUpperCase() + n.slice(1).toLowerCase();
             return `<div style="display:flex; align-items:center; gap:6px; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
                 <img src="brawlers/${nId}.png" onerror="this.style.display='none'" style="width:28px; height:28px; border-radius:6px; object-fit:cover;">
                 <span style="font-size:12px; font-weight:700; color:#e2e8f0;">${n}</span>
@@ -184,9 +212,27 @@ function abrirModalSugestao(nomeBrawler, event) {
         }).join('');
     };
 
-    const bomContra   = dados ? dados.bomContra   : [];
-    const ruimContra  = dados ? dados.ruimContra  : [];
-    const sinergias   = dados ? dados.sinergias   : [];
+    // Estatísticas do brawler no mapa atual (se mapa selecionado)
+    let statsMapaHTML = '';
+    if (mapaEscolhido && window.dadosBrutos && window.dadosBrutos.length > 0) {
+        const brawlerUpper = nomeBrawler.toUpperCase();
+        const noMapa = window.dadosBrutos.filter(r =>
+            (r.pick || '').toUpperCase() === brawlerUpper &&
+            normalizarChaveDraft(r.mapa) === normalizarChaveDraft(mapaEscolhido)
+        );
+        if (noMapa.length > 0) {
+            const picks = noMapa.length;
+            const wins = noMapa.filter(r => parseInt(r.win) === 1).length;
+            const wr = ((wins / picks) * 100).toFixed(1);
+            const corWR = parseFloat(wr) >= 50 ? '#4ade80' : '#f87171';
+            statsMapaHTML = `<div style="background:#0f172a; border-radius:8px; padding:8px 12px; margin-bottom:14px; font-size:11px; color:#94a3b8; display:flex; gap:16px; align-items:center;">
+                <span>📍 <strong style="color:#fff">${mapaEscolhido}</strong></span>
+                <span>P: <strong style="color:#fff">${picks}</strong></span>
+                <span>W: <strong style="color:#fff">${wins}</strong></span>
+                <span>WR: <strong style="color:${corWR}">${wr}%</strong></span>
+            </div>`;
+        }
+    }
 
     const modal = document.createElement('div');
     modal.id = 'modal-sugestao-draft';
@@ -197,44 +243,47 @@ function abrirModalSugestao(nomeBrawler, event) {
     `;
     modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
 
+    const temDados = dados.bomContra.length > 0 || dados.ruimContra.length > 0 || dados.sinergias.length > 0;
+
     modal.innerHTML = `
         <div style="background:#1a1d26; border:1px solid #334155; border-radius:14px; width:360px; max-width:95vw; max-height:90vh; overflow-y:auto; padding:20px; position:relative;">
             <button onclick="document.getElementById('modal-sugestao-draft').remove()" style="position:absolute; top:12px; right:14px; background:transparent; border:none; color:#94a3b8; font-size:18px; cursor:pointer; line-height:1;">✕</button>
 
-            <!-- Cabeçalho -->
-            <div style="display:flex; align-items:center; gap:12px; margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid #334155;">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid #334155;">
                 <img src="brawlers/${id}.png" onerror="this.style.display='none'" style="width:52px; height:52px; border-radius:10px; object-fit:cover; border:2px solid #60a5fa;">
                 <div>
                     <div style="font-size:16px; font-weight:900; color:#fff;">${nomeBrawler}</div>
-                    <div style="font-size:11px; color:#64748b; margin-top:2px;">Análise de Matchup (ALL Regiões)</div>
+                    <div style="font-size:11px; color:#64748b; margin-top:2px;">Dados de ${window.dadosBrutos ? window.dadosBrutos.length + ' partidas' : 'sem CSV'}</div>
                 </div>
             </div>
 
-            <!-- Bom Contra -->
+            ${statsMapaHTML}
+
+            ${!temDados ? `<p style="color:#64748b; font-size:12px; text-align:center; padding:20px 0;">Sem partidas suficientes para calcular matchups para este brawler.<br><span style="font-size:10px; color:#475569;">(mínimo 2 partidas por confronto)</span></p>` : `
             <div style="margin-bottom:16px;">
                 <div style="font-size:12px; font-weight:800; color:#4ade80; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
                     <span>✅</span> BOM CONTRA
+                    <span style="font-size:10px; color:#64748b; font-weight:400;">(WR ≥ 50%)</span>
                 </div>
-                ${renderLista(bomContra, '#4ade80')}
+                ${renderLista(dados.bomContra)}
             </div>
 
-            <!-- Ruim Contra -->
             <div style="margin-bottom:16px; padding-top:12px; border-top:1px solid #1e293b;">
                 <div style="font-size:12px; font-weight:800; color:#f87171; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
                     <span>⚠️</span> RUIM CONTRA
+                    <span style="font-size:10px; color:#64748b; font-weight:400;">(WR < 50%)</span>
                 </div>
-                ${renderLista(ruimContra, '#f87171')}
+                ${renderLista(dados.ruimContra)}
             </div>
 
-            <!-- Melhores Sinergias -->
             <div style="padding-top:12px; border-top:1px solid #1e293b;">
                 <div style="font-size:12px; font-weight:800; color:#a78bfa; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
                     <span>🤝</span> MELHORES SINERGIAS
+                    <span style="font-size:10px; color:#64748b; font-weight:400;">(mais picks juntos)</span>
                 </div>
-                ${renderLista(sinergias, '#a78bfa')}
+                ${renderLista(dados.sinergias)}
             </div>
-
-            ${!dados ? '<p style="color:#64748b; font-size:11px; text-align:center; margin-top:12px;">Dados ainda não cadastrados para este brawler na base ALL.</p>' : ''}
+            `}
         </div>
     `;
 
@@ -312,7 +361,7 @@ window.escolherMapa = function(mapa) {
     if (mapImg) {
         mapImg.src = `element/maps/${chaveMapa}.png`;
         mapImg.style.display = 'block';
-        mapImg.onerror = function() { this.style.display = 'none'; if (placeholder) { placeholder.style.display = 'block'; placeholder.innerHTML = 'IMAGEM<br>N\u00c3O<br>ENCONTRADA'; } };
+        mapImg.onerror = function() { this.style.display = 'none'; if (placeholder) { placeholder.style.display = 'block'; placeholder.innerHTML = 'IMAGEM<br>NÃO<br>ENCONTRADA'; } };
     }
     if (placeholder) placeholder.style.display = 'none';
     if (modoIcon) { modoIcon.src = `element/modes/${chaveModo}.png`; modoIcon.style.display = 'block'; modoIcon.onerror = function() { this.style.display = 'none'; }; }
@@ -365,13 +414,22 @@ window.filtrar = function() {
 };
 
 // =====================================================================================
-// 3. META (painel lateral mantido; painéis de counter removidos)
+// 3. META (calculada dinamicamente do CSV por WR% no mapa)
 // =====================================================================================
 window.atualizarMeta = function() {
     const container = document.getElementById('meta-list');
     if (!container) return;
     container.innerHTML = "";
-    const metaBrawlers = DADOS_META[mapaEscolhido];
+
+    // Tenta calcular dinamicamente; exibe loading enquanto CSV não carregou
+    if (!window.dadosBrutos || window.dadosBrutos.length === 0) {
+        container.innerHTML = '<p style="color:#555; font-size:11px; width:100%; text-align:center;">Carregando dados...</p>';
+        // Tenta novamente em 1s
+        setTimeout(window.atualizarMeta, 1000);
+        return;
+    }
+
+    const metaBrawlers = calcularMetaMapa(mapaEscolhido);
     if (metaBrawlers && metaBrawlers.length > 0) {
         metaBrawlers.forEach(nome => {
             const id = limparNome(nome);
@@ -547,7 +605,6 @@ window.clicarBrawler = function(nome, id) {
     if (step.team === 'blue') {
         if (preSelected && preSelected.id === id) { window.confirmarBlueSelection(); return; }
         preSelected = { nome, id };
-        // Pré-seleção: já mostra o ícone de sugestão nos picks
         const sugestaoBtn = step.type === 'pick'
             ? `<div class="slot-sugestao-btn" onclick="abrirModalSugestao('${nome}', event)" title="Ver análise"
                 style="position:absolute; bottom:3px; right:3px; width:22px; height:22px; cursor:pointer; z-index:10; border-radius:50%; background:rgba(0,0,0,0.55); display:flex; align-items:center; justify-content:center; overflow:hidden;">
@@ -557,7 +614,7 @@ window.clicarBrawler = function(nome, id) {
         slot.innerHTML = `<div class="slot-assets pre-selecting" onclick="window.confirmarBlueSelection(event)" style="position:relative;">
             <img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="slot-fallback-text">${nome}</div>
-            <div class="pre-select-badge">\u2713</div>
+            <div class="pre-select-badge">✓</div>
             ${sugestaoBtn}
         </div>`;
     } else {
@@ -576,7 +633,6 @@ window.confirmarBlueSelection = function(event) {
 function confirmarSelecao(nome, id, step) {
     const slot = document.getElementById(step.slot);
     if (slot) {
-        // Picks ganham ícone de sugestão; bans não
         if (step.type === 'pick') {
             slot.innerHTML = criarConteudoSlotComSugestao(nome, id);
         } else {
@@ -640,10 +696,10 @@ function calcularProbabilidadeVitoria() {
     let pontosNosso = 0, pontosInimigo = 0;
     picksAzuis.forEach(azul => {
         picksVermelhos.forEach(verm => {
-            const dadosAzul = obterDadosBrawler(azul);
-            const dadosVerm = obterDadosBrawler(verm);
-            if (dadosAzul && dadosAzul.bomContra && dadosAzul.bomContra.some(c => limparNome(c) === limparNome(verm))) pontosNosso++;
-            if (dadosVerm && dadosVerm.bomContra && dadosVerm.bomContra.some(c => limparNome(c) === limparNome(azul))) pontosInimigo++;
+            const dadosAzul = obterDadosBrawlerDinamico(azul);
+            const dadosVerm = obterDadosBrawlerDinamico(verm);
+            if (dadosAzul && dadosAzul.bomContra && dadosAzul.bomContra.some(c => c.toUpperCase() === verm.toUpperCase())) pontosNosso++;
+            if (dadosVerm && dadosVerm.bomContra && dadosVerm.bomContra.some(c => c.toUpperCase() === azul.toUpperCase())) pontosInimigo++;
         });
     });
     let prob = 50 + (pontosNosso - pontosInimigo) * 5;
@@ -653,20 +709,20 @@ function calcularProbabilidadeVitoria() {
 function calcularPontosFracos() {
     return picksAzuis.filter(azul => {
         return picksVermelhos.some(verm => {
-            const dadosVerm = obterDadosBrawler(verm);
-            return dadosVerm && dadosVerm.bomContra && dadosVerm.bomContra.some(c => limparNome(c) === limparNome(azul));
+            const dadosVerm = obterDadosBrawlerDinamico(verm);
+            return dadosVerm && dadosVerm.bomContra && dadosVerm.bomContra.some(c => c.toUpperCase() === azul.toUpperCase());
         });
     });
 }
 
 function sugerirMelhorTroca(brawlerAtual) {
-    const usados = new Set([...picksAzuis, ...picksVermelhos].map(limparNome));
-    let candidatos = BRAWLERS.filter(b => !usados.has(limparNome(b)));
-    // Prefere quem tem menos "ruim contra" em relação aos picks vermelhos
+    const usados = new Set([...picksAzuis, ...picksVermelhos].map(b => b.toUpperCase()));
+    let candidatos = BRAWLERS.filter(b => !usados.has(b.toUpperCase()));
     candidatos.sort((a, b) => {
-        const dadosA = obterDadosBrawler(a), dadosB = obterDadosBrawler(b);
-        const riscoA = dadosA && dadosA.ruimContra ? picksVermelhos.filter(v => dadosA.ruimContra.some(r => limparNome(r) === limparNome(v))).length : 0;
-        const riscoB = dadosB && dadosB.ruimContra ? picksVermelhos.filter(v => dadosB.ruimContra.some(r => limparNome(r) === limparNome(v))).length : 0;
+        const dadosA = obterDadosBrawlerDinamico(a);
+        const dadosB = obterDadosBrawlerDinamico(b);
+        const riscoA = dadosA && dadosA.ruimContra ? picksVermelhos.filter(v => dadosA.ruimContra.some(r => r.toUpperCase() === v.toUpperCase())).length : 0;
+        const riscoB = dadosB && dadosB.ruimContra ? picksVermelhos.filter(v => dadosB.ruimContra.some(r => r.toUpperCase() === v.toUpperCase())).length : 0;
         return riscoA - riscoB;
     });
     return candidatos[0] || null;
@@ -683,8 +739,8 @@ function mostrarAnaliseFinal() {
 
     const picksEmRisco = picksAzuis.filter(p => {
         return picksVermelhos.some(v => {
-            const dadosV = obterDadosBrawler(v);
-            return dadosV && dadosV.bomContra && dadosV.bomContra.some(c => limparNome(c) === limparNome(p));
+            const dadosV = obterDadosBrawlerDinamico(v);
+            return dadosV && dadosV.bomContra && dadosV.bomContra.some(c => c.toUpperCase() === p.toUpperCase());
         });
     });
 
@@ -692,7 +748,7 @@ function mostrarAnaliseFinal() {
     painel.style.display = 'flex';
     painel.innerHTML = `
         <div class="analise-card">
-            <h3>PROBABILIDADE DE VIT\u00d3RIA (NOSSO TIME - AZUL)</h3>
+            <h3>PROBABILIDADE DE VITÓRIA (NOSSO TIME - AZUL)</h3>
             <div class="winrate-bar-wrap"><div class="winrate-bar-fill" style="width:${prob}%;">${prob.toFixed(0)}%</div></div>
         </div>
 
@@ -700,8 +756,8 @@ function mostrarAnaliseFinal() {
             <h3>PONTOS FRACOS DO TIME</h3>
             <ul class="analise-lista">
                 ${fracos.length > 0
-                    ? fracos.map(f => `<li>\u26a0\ufe0f <strong>${f}</strong> est\u00e1 em risco — o advers\u00e1rio tem brawlers que s\u00e3o bons contra ele.</li>`).join('')
-                    : '<li>\u2705 Nenhum ponto fraco cr\u00edtico identificado nos confrontos diretos.</li>'}
+                    ? fracos.map(f => `<li>⚠️ <strong>${f}</strong> está em risco — o adversário tem brawlers que são bons contra ele.</li>`).join('')
+                    : '<li>✅ Nenhum ponto fraco crítico identificado nos confrontos diretos.</li>'}
             </ul>
         </div>
 
@@ -711,18 +767,18 @@ function mostrarAnaliseFinal() {
                 ${picksEmRisco.length > 0 ? picksEmRisco.map(p => {
                     const sugestao = sugerirMelhorTroca(p);
                     const idAtual = limparNome(p), idSugestao = sugestao ? limparNome(sugestao) : null;
-                    return `<li><div class="troca-sugestao"><img src="brawlers/${idAtual}.png" onerror="this.src='brawlers/default.png'"><span class="troca-x">X</span>${sugestao ? `<img src="brawlers/${idSugestao}.png" onerror="this.src='brawlers/default.png'">` : ''}</div><span>Trocar <strong>${p}</strong> ${sugestao ? `por <strong>${sugestao}</strong>` : ''} reduziria a exposi\u00e7\u00e3o aos counters do advers\u00e1rio.</span></li>`;
-                }).join('') : '<li>\u2705 Nenhuma troca cr\u00edtica necess\u00e1ria \u2014 draft s\u00f3lido.</li>'}
+                    return `<li><div class="troca-sugestao"><img src="brawlers/${idAtual}.png" onerror="this.src='brawlers/default.png'"><span class="troca-x">X</span>${sugestao ? `<img src="brawlers/${idSugestao}.png" onerror="this.src='brawlers/default.png'">` : ''}</div><span>Trocar <strong>${p}</strong> ${sugestao ? `por <strong>${sugestao}</strong>` : ''} reduziria a exposição aos counters do adversário.</span></li>`;
+                }).join('') : '<li>✅ Nenhuma troca crítica necessária — draft sólido.</li>'}
             </ul>
         </div>
 
         <div class="analise-card">
             <h3>RESUMO DO DRAFT (MAPA + BANS + PICKS)</h3>
             <div id="print-preview-holder" style="display:flex; justify-content:center;"></div>
-            <button class="btn-baixar-print" onclick="window.baixarImagemDraft()">\u2b07\ufe0f BAIXAR IMAGEM DO DRAFT</button>
+            <button class="btn-baixar-print" onclick="window.baixarImagemDraft()">⬇️ BAIXAR IMAGEM DO DRAFT</button>
         </div>
 
-        <button class="btn-novo-draft" onclick="window.location.reload()">COME\u00c7AR NOVO DRAFT</button>
+        <button class="btn-novo-draft" onclick="window.location.reload()">COMEÇAR NOVO DRAFT</button>
     `;
 
     const original = document.getElementById('draft-board-capture');
@@ -738,7 +794,7 @@ function mostrarAnaliseFinal() {
 
 window.baixarImagemDraft = function() {
     const alvo = document.getElementById('draft-board-capture');
-    if (!alvo || typeof html2canvas === 'undefined') { alert('N\u00e3o foi poss\u00edvel gerar a imagem (html2canvas n\u00e3o carregado).'); return; }
+    if (!alvo || typeof html2canvas === 'undefined') { alert('Não foi possível gerar a imagem (html2canvas não carregado).'); return; }
     html2canvas(alvo, { backgroundColor: '#111217', scale: 2 }).then(canvas => {
         const link = document.createElement('a');
         link.download = `draft_${limparNome(mapaEscolhido) || 'mapa'}_${Date.now()}.png`;
