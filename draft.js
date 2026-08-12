@@ -889,6 +889,33 @@ function abrirModalSugestao(nomeBrawler, event) {
 
         ${statsMapaHTML}
 
+        <!-- TOP 15 META DO MAPA -->
+        ${mapaEscolhido ? (() => {
+            const top15 = calcularMetaMapa(mapaEscolhido, 1).slice(0, 15);
+            if (top15.length === 0) return '';
+            const destacado = top15.includes(nomeBrawler.toUpperCase());
+            return `
+        <div style="margin-bottom:18px;">
+            <div style="font-size:13px; font-weight:800; color:#f59e0b; margin-bottom:10px;">
+                🏆 TOP 15 META — <span style="font-weight:600; color:#94a3b8;">${mapaEscolhido}</span>
+                ${destacado ? `<span style="margin-left:8px; background:#f59e0b22; color:#f59e0b; font-size:10px; padding:2px 7px; border-radius:10px; font-weight:800;">✦ ESTÁ AQUI</span>` : ''}
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                ${top15.map((nome, i) => {
+                    const tid = limparNome(nome);
+                    const isThis = nome === nomeBrawler.toUpperCase();
+                    const border = isThis ? '2px solid #f59e0b' : '1px solid #1e293b';
+                    const bg = isThis ? '#1c1600' : '#0f172a';
+                    return `<div style="display:flex; flex-direction:column; align-items:center; gap:3px; width:52px; cursor:pointer; background:${bg}; border:${border}; border-radius:8px; padding:5px 3px;" onclick="abrirModalSugestao('${nome}', event)">
+                        <span style="font-size:9px; font-weight:900; color:${isThis ? '#f59e0b' : '#64748b'};">#${i+1}</span>
+                        <img src="brawlers/${tid}.png" onerror="this.style.display='none'" style="width:36px; height:36px; border-radius:6px; object-fit:cover;">
+                        <span style="font-size:8px; font-weight:800; color:${isThis ? '#fbbf24' : '#e2e8f0'}; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:48px;">${nome}</span>
+                    </div>`;
+                }).join('')}
+            </div>
+        </div>`;
+        })() : ''}
+
         ${semDados ? `<p style="color:#64748b; font-size:12px; text-align:center; padding:20px 0;">Sem partidas registradas para este brawler.</p>` : `
 
         <!-- TOP 3 MAPAS -->
@@ -1450,6 +1477,41 @@ window.baixarImagemDraft = function() {
 // =====================================================================================
 // 8. INICIALIZAÇÃO
 // =====================================================================================
+
+// ── Injeção de CSS: oculta info-panels (META TOP / COUNTERS) e aumenta o draft ──────
+(function _injetarEstilosDraft() {
+    const style = document.createElement('style');
+    style.textContent = `
+        /* Oculta o painel META TOP 10 e COUNTERS */
+        #info-panels { display: none !important; }
+
+        /* Aumenta variáveis de tamanho do draft */
+        :root {
+            --ban-slot-size:  88px  !important;   /* era 66px  → +33% */
+            --pick-slot-size: 178px !important;   /* era 138px → +29% */
+            --map-w: 480px          !important;   /* era 390px */
+            --map-h: 700px          !important;   /* era 570px */
+        }
+
+        /* Fonte dos labels do mapa */
+        #map-nome-label { font-size: 22px !important; }
+        #map-modo-icon  { width: 52px !important; height: 52px !important; }
+
+        /* Ampliar área do draft para preencher o espaço extra */
+        #draft-area { flex: 1 !important; }
+        .draft-board-capture { padding: 28px 22px 22px !important; gap: 16px !important; }
+
+        /* Nomes nos brawlers da seleção */
+        .brawler-name { font-size: 13px !important; margin-top: 8px !important; }
+
+        /* Barra de busca */
+        .search-bar { font-size: 15px !important; padding: 12px 14px !important; }
+
+        /* Grid de brawlers — cards maiores */
+        .roster-grid .brawler-icon { border-radius: 10px !important; }
+    `;
+    (document.head || document.documentElement).appendChild(style);
+})();
 function inicializarSistema() {
     gerarRoster();
     document.getElementById('btn-iniciar-draft').addEventListener('click', iniciarSetup);
