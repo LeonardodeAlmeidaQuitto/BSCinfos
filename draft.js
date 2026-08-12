@@ -590,7 +590,13 @@ const MAPAS_ALVO = {
  * Retorna brawlers do mapa ordenados por WR% (mínimo MIN_PICKS picks).
  * Usa window.dadosBrutos que o app.js já carregou do CSV.
  */
-function calcularMetaMapa(nomeMapa, minPicks = 2) {
+/**
+ * Calcula TOP N brawlers para um mapa/modo — lógica idêntica às tabelas do geral.html:
+ *   - Filtra por modo E mapa (quando modoAtual fornecido)
+ *   - Ordena por picks desc (como as tabelas), depois WR% como desempate
+ *   - minPicks: mínimo de picks para entrar (padrão 1)
+ */
+function calcularMetaMapa(nomeMapa, minPicks = 1, modoAtual = null) {
     const dados = _getDadosBrutos();
     if (!dados || dados.length === 0) return [];
 
@@ -598,7 +604,11 @@ function calcularMetaMapa(nomeMapa, minPicks = 2) {
     dados.forEach(row => {
         const mapa = (row.mapa || '').trim();
         const pick = (row.pick || '').trim().toUpperCase();
-        if (!pick || normalizarChaveDraft(mapa) !== normalizarChaveDraft(nomeMapa)) return;
+        const modo = (row.modo || '').trim();
+        if (!pick) return;
+        if (normalizarChaveDraft(mapa) !== normalizarChaveDraft(nomeMapa)) return;
+        // Se modo fornecido, filtra pelo modo também (igual às tabelas do geral.html)
+        if (modoAtual && normalizarChaveDraft(modo) !== normalizarChaveDraft(modoAtual)) return;
         if (!stats[pick]) stats[pick] = { picks: 0, wins: 0 };
         stats[pick].picks++;
         if (parseInt(row.win) === 1) stats[pick].wins++;
@@ -607,11 +617,12 @@ function calcularMetaMapa(nomeMapa, minPicks = 2) {
     return Object.entries(stats)
         .filter(([, s]) => s.picks >= minPicks)
         .sort((a, b) => {
-            const wrA = a[1].wins / a[1].picks;
-            const wrB = b[1].wins / b[1].picks;
-            return wrB - wrA;
+            // Primário: picks desc (como as tabelas do geral.html)
+            if (b[1].picks !== a[1].picks) return b[1].picks - a[1].picks;
+            // Desempate: WR% desc
+            return (b[1].wins / b[1].picks) - (a[1].wins / a[1].picks);
         })
-        .map(([nome]) => nome);
+        .map(([nome, s]) => ({ nome, picks: s.picks, wins: s.wins, wr: (s.wins / s.picks) * 100 }));
 }
 
 /**
@@ -887,34 +898,43 @@ function abrirModalSugestao(nomeBrawler, event) {
             </div>
         </div>
 
-        ${statsMapaHTML}
+        <!-- TOP 15 META DO MAPA (coluna esquerda) + STATS (coluna direita) -->
+        <div style="display:flex; gap:16px; align-items:flex-start;">
 
-        <!-- TOP 15 META DO MAPA -->
+        <!-- COLUNA ESQUERDA: TOP 15 -->
         ${mapaEscolhido ? (() => {
-            const top15 = calcularMetaMapa(mapaEscolhido, 1).slice(0, 15);
-            if (top15.length === 0) return '';
-            const destacado = top15.includes(nomeBrawler.toUpperCase());
+            const top15 = calcularMetaMapa(mapaEscolhido, 1, modoEscolhido).slice(0, 15);
+            if (top15.length === 0) return '<div style="width:80px;"></div>';
+            const totalPicksTabela = top15.reduce((s, b) => s + b.picks, 0);
             return `
-        <div style="margin-bottom:18px;">
-            <div style="font-size:13px; font-weight:800; color:#f59e0b; margin-bottom:10px;">
-                🏆 TOP 15 META — <span style="font-weight:600; color:#94a3b8;">${mapaEscolhido}</span>
-                ${destacado ? `<span style="margin-left:8px; background:#f59e0b22; color:#f59e0b; font-size:10px; padding:2px 7px; border-radius:10px; font-weight:800;">✦ ESTÁ AQUI</span>` : ''}
+        <div style="flex:0 0 auto; width:88px;">
+            <div style="font-size:10px; font-weight:900; color:#f59e0b; margin-bottom:8px; text-align:center; letter-spacing:.5px;">
+                🏆 TOP 15<br><span style="color:#64748b; font-weight:600; font-size:9px;">${mapaEscolhido}</span>
             </div>
-            <div style="display:flex; flex-wrap:wrap; gap:6px;">
-                ${top15.map((nome, i) => {
-                    const tid = limparNome(nome);
-                    const isThis = nome === nomeBrawler.toUpperCase();
-                    const border = isThis ? '2px solid #f59e0b' : '1px solid #1e293b';
-                    const bg = isThis ? '#1c1600' : '#0f172a';
-                    return `<div style="display:flex; flex-direction:column; align-items:center; gap:3px; width:52px; cursor:pointer; background:${bg}; border:${border}; border-radius:8px; padding:5px 3px;" onclick="abrirModalSugestao('${nome}', event)">
-                        <span style="font-size:9px; font-weight:900; color:${isThis ? '#f59e0b' : '#64748b'};">#${i+1}</span>
-                        <img src="brawlers/${tid}.png" onerror="this.style.display='none'" style="width:36px; height:36px; border-radius:6px; object-fit:cover;">
-                        <span style="font-size:8px; font-weight:800; color:${isThis ? '#fbbf24' : '#e2e8f0'}; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:48px;">${nome}</span>
+            <div style="display:flex; flex-direction:column; gap:3px;">
+                ${top15.map((b, i) => {
+                    const tid = limparNome(b.nome);
+                    const isThis = b.nome === nomeBrawler.toUpperCase();
+                    const corBg   = isThis ? '#1c1200' : '#0f172a';
+                    const corBrd  = isThis ? '#f59e0b' : '#1e293b';
+                    const corNum  = isThis ? '#f59e0b' : '#475569';
+                    const pr = totalPicksTabela > 0 ? ((b.picks / totalPicksTabela) * 100).toFixed(0) : 0;
+                    return `<div style="display:flex; align-items:center; gap:4px; background:${corBg}; border:1px solid ${corBrd}; border-radius:6px; padding:3px 5px; cursor:pointer;"
+                        onclick="abrirModalSugestao('${b.nome}', event)">
+                        <span style="font-size:8px; font-weight:900; color:${corNum}; width:14px; text-align:right; flex-shrink:0;">${i+1}</span>
+                        <img src="brawlers/${tid}.png" onerror="this.style.display='none'" style="width:24px; height:24px; border-radius:4px; object-fit:cover; flex-shrink:0;">
+                        <div style="min-width:0; overflow:hidden;">
+                            <div style="font-size:8px; font-weight:800; color:${isThis ? '#fbbf24' : '#e2e8f0'}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${b.nome}</div>
+                            <div style="font-size:7px; color:#64748b; font-weight:600;">P:${b.picks} WR:${b.wr.toFixed(0)}%</div>
+                        </div>
                     </div>`;
                 }).join('')}
             </div>
         </div>`;
         })() : ''}
+
+        <!-- COLUNA DIREITA: todas as stats -->
+        <div style="flex:1; min-width:0;">${statsMapaHTML}
 
         ${semDados ? `<p style="color:#64748b; font-size:12px; text-align:center; padding:20px 0;">Sem partidas registradas para este brawler.</p>` : `
 
@@ -942,6 +962,8 @@ function abrirModalSugestao(nomeBrawler, event) {
             ${dados.sinergiasTop.length > 0 ? dados.sinergiasTop.map(renderSinergiaCard).join('') : '<p style="color:#475569; font-size:11px;">Sem dados suficientes</p>'}
         </div>
         `}
+        </div><!-- fim coluna direita -->
+        </div><!-- fim wrapper duas colunas -->
     </div>`;
 
     document.body.appendChild(modal);
@@ -1100,11 +1122,11 @@ window.atualizarMeta = function() {
         return;
     }
 
-    const metaBrawlers = calcularMetaMapa(mapaEscolhido);
+    const metaBrawlers = calcularMetaMapa(mapaEscolhido, 1, modoEscolhido);
     if (metaBrawlers && metaBrawlers.length > 0) {
-        metaBrawlers.forEach(nome => {
-            const id = limparNome(nome);
-            container.innerHTML += `<div class="mini-brawler" title="Top Pick: ${nome}"><img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="fallback-initials">${nome.substring(0,2).toUpperCase()}</div></div>`;
+        metaBrawlers.forEach(b => {
+            const id = limparNome(b.nome);
+            container.innerHTML += `<div class="mini-brawler" title="Top Pick: ${b.nome}"><img src="brawlers/${id}.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="fallback-initials">${b.nome.substring(0,2).toUpperCase()}</div></div>`;
         });
     } else {
         container.innerHTML = '<p style="color:#555; font-size:11px; width: 100%; text-align:center;">Sem dados de meta para este mapa ainda.</p>';
@@ -1485,30 +1507,29 @@ window.baixarImagemDraft = function() {
         /* Oculta o painel META TOP 10 e COUNTERS */
         #info-panels { display: none !important; }
 
+        /* Draft ocupa muito mais espaço que a seleção de brawlers */
+        .draft-area   { flex: 6 !important; }
+        .roster-area  { flex: 1 !important; min-width: 160px !important; max-width: 200px !important; }
+
         /* Aumenta variáveis de tamanho do draft */
         :root {
-            --ban-slot-size:  88px  !important;   /* era 66px  → +33% */
-            --pick-slot-size: 178px !important;   /* era 138px → +29% */
-            --map-w: 480px          !important;   /* era 390px */
-            --map-h: 700px          !important;   /* era 570px */
+            --ban-slot-size:  90px  !important;
+            --pick-slot-size: 185px !important;
+            --map-w: 500px          !important;
+            --map-h: 720px          !important;
         }
 
-        /* Fonte dos labels do mapa */
+        /* Labels do mapa */
         #map-nome-label { font-size: 22px !important; }
         #map-modo-icon  { width: 52px !important; height: 52px !important; }
 
-        /* Ampliar área do draft para preencher o espaço extra */
-        #draft-area { flex: 1 !important; }
+        /* Área do draft */
         .draft-board-capture { padding: 28px 22px 22px !important; gap: 16px !important; }
 
-        /* Nomes nos brawlers da seleção */
-        .brawler-name { font-size: 13px !important; margin-top: 8px !important; }
-
-        /* Barra de busca */
-        .search-bar { font-size: 15px !important; padding: 12px 14px !important; }
-
-        /* Grid de brawlers — cards maiores */
-        .roster-grid .brawler-icon { border-radius: 10px !important; }
+        /* Grid de brawlers — compacto para caber na coluna estreita */
+        .roster-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 6px !important; }
+        .brawler-name { font-size: 10px !important; margin-top: 4px !important; }
+        .search-bar   { font-size: 13px !important; padding: 8px 10px !important; }
     `;
     (document.head || document.documentElement).appendChild(style);
 })();
