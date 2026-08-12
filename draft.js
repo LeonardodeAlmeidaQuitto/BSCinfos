@@ -876,94 +876,92 @@ function abrirModalSugestao(nomeBrawler, event) {
 
     const modal = document.createElement('div');
     modal.id = 'modal-sugestao-draft';
-    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;';
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:10px;box-sizing:border-box;';
     modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
 
     const wrCorGeral = dados ? (parseFloat(dados.wrGeral) >= 50 ? '#4ade80' : '#f87171') : '#94a3b8';
 
-    modal.innerHTML = `
-    <div style="background:#1a1d26; border:1px solid #334155; border-radius:14px; width:480px; max-width:96vw; max-height:92vh; overflow-y:auto; padding:20px; position:relative;">
-        <button onclick="document.getElementById('modal-sugestao-draft').remove()" style="position:absolute;top:12px;right:14px;background:transparent;border:none;color:#64748b;font-size:20px;cursor:pointer;line-height:1;">✕</button>
-
-        <!-- HEADER -->
-        <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid #334155;">
-            <img src="brawlers/${id}.png" onerror="this.style.display='none'" style="width:60px; height:60px; border-radius:12px; object-fit:cover; border:2px solid #60a5fa;">
-            <div>
-                <div style="font-size:20px; font-weight:900; color:#fff;">${nomeBrawler}</div>
-                ${dados ? `<div style="font-size:12px; color:#64748b; margin-top:4px; font-weight:700;">
-                    PICKS: <span style="color:#fff">${dados.totalPicks}</span> &nbsp;|&nbsp;
-                    W: <span style="color:#fff">${dados.wins}</span> &nbsp;|&nbsp;
-                    WR%: <span style="color:${wrCorGeral}">${dados.wrGeral}%</span>
-                </div>` : `<div style="font-size:11px; color:#475569; margin-top:4px;">${nRegistros} registros carregados</div>`}
-            </div>
-        </div>
-
-        <!-- TOP 15 META DO MAPA (coluna esquerda) + STATS (coluna direita) -->
-        <div style="display:flex; gap:16px; align-items:flex-start;">
-
-        <!-- COLUNA ESQUERDA: TOP 15 -->
-        ${mapaEscolhido ? (() => {
-            const top15 = calcularMetaMapa(mapaEscolhido, 1, modoEscolhido).slice(0, 15);
-            if (top15.length === 0) return '<div style="width:80px;"></div>';
-            const totalPicksTabela = top15.reduce((s, b) => s + b.picks, 0);
-            return `
-        <div style="flex:0 0 auto; width:88px;">
-            <div style="font-size:10px; font-weight:900; color:#f59e0b; margin-bottom:8px; text-align:center; letter-spacing:.5px;">
-                🏆 TOP 15<br><span style="color:#64748b; font-weight:600; font-size:9px;">${mapaEscolhido}</span>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:3px;">
-                ${top15.map((b, i) => {
-                    const tid = limparNome(b.nome);
-                    const isThis = b.nome === nomeBrawler.toUpperCase();
-                    const corBg   = isThis ? '#1c1200' : '#0f172a';
-                    const corBrd  = isThis ? '#f59e0b' : '#1e293b';
-                    const corNum  = isThis ? '#f59e0b' : '#475569';
-                    const pr = totalPicksTabela > 0 ? ((b.picks / totalPicksTabela) * 100).toFixed(0) : 0;
-                    return `<div style="display:flex; align-items:center; gap:4px; background:${corBg}; border:1px solid ${corBrd}; border-radius:6px; padding:3px 5px; cursor:pointer;"
-                        onclick="abrirModalSugestao('${b.nome}', event)">
-                        <span style="font-size:8px; font-weight:900; color:${corNum}; width:14px; text-align:right; flex-shrink:0;">${i+1}</span>
-                        <img src="brawlers/${tid}.png" onerror="this.style.display='none'" style="width:24px; height:24px; border-radius:4px; object-fit:cover; flex-shrink:0;">
-                        <div style="min-width:0; overflow:hidden;">
-                            <div style="font-size:8px; font-weight:800; color:${isThis ? '#fbbf24' : '#e2e8f0'}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${b.nome}</div>
-                            <div style="font-size:7px; color:#64748b; font-weight:600;">P:${b.picks} WR:${b.wr.toFixed(0)}%</div>
-                        </div>
-                    </div>`;
-                }).join('')}
+    // Pré-calcula o TOP 15 fora do template
+    const top15List = mapaEscolhido ? calcularMetaMapa(mapaEscolhido, 1, modoEscolhido).slice(0, 15) : [];
+    const top15Rows = top15List.map((b, i) => {
+        const tid = limparNome(b.nome);
+        const isThis = b.nome.toUpperCase() === nomeBrawler.toUpperCase();
+        const corBg  = isThis ? '#1c1200' : (i % 2 === 0 ? '#0f172a' : '#0d1525');
+        const corBrd = isThis ? '#f59e0b' : '#1e293b';
+        const numColor = i === 0 ? '#ffd700' : i === 1 ? '#c0c0c0' : i === 2 ? '#cd7f32' : (isThis ? '#f59e0b' : '#475569');
+        return `<div style="display:flex;align-items:center;gap:5px;background:${corBg};border:1px solid ${corBrd};border-radius:6px;padding:4px 6px;cursor:pointer;margin-bottom:2px;"
+            onclick="abrirModalSugestao('${b.nome}', event)">
+            <span style="font-size:9px;font-weight:900;color:${numColor};width:14px;text-align:right;flex-shrink:0;">${i+1}</span>
+            <img src="brawlers/${tid}.png" onerror="this.style.display='none'" style="width:26px;height:26px;border-radius:5px;object-fit:cover;flex-shrink:0;">
+            <div style="min-width:0;flex:1;overflow:hidden;">
+                <div style="font-size:9px;font-weight:800;color:${isThis?'#fbbf24':'#e2e8f0'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${b.nome}</div>
+                <div style="font-size:8px;color:#64748b;font-weight:600;">P:${b.picks} WR:${b.wr.toFixed(0)}%</div>
             </div>
         </div>`;
-        })() : ''}
+    }).join('');
 
-        <!-- COLUNA DIREITA: todas as stats -->
-        <div style="flex:1; min-width:0;">${statsMapaHTML}
+    modal.innerHTML = `
+    <div style="background:#1a1d26;border:1px solid #334155;border-radius:14px;width:min(1080px,98vw);height:min(88vh,700px);display:flex;flex-direction:column;padding:14px 16px;position:relative;box-sizing:border-box;">
+        <button onclick="document.getElementById('modal-sugestao-draft').remove()" style="position:absolute;top:10px;right:12px;background:transparent;border:none;color:#64748b;font-size:20px;cursor:pointer;line-height:1;z-index:2;">✕</button>
 
-        ${semDados ? `<p style="color:#64748b; font-size:12px; text-align:center; padding:20px 0;">Sem partidas registradas para este brawler.</p>` : `
-
-        <!-- TOP 3 MAPAS -->
-        <div style="font-size:13px; font-weight:800; color:#a78bfa; margin-bottom:10px;">🗺️ TOP 3 MAPAS</div>
-        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; margin-bottom:18px;">
-            ${dados.topMapas.map(renderMapaCard).join('') || '<p style="color:#475569; font-size:11px;">Sem dados</p>'}
+        <!-- HEADER -->
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #334155;flex-shrink:0;">
+            <img src="brawlers/${id}.png" onerror="this.style.display='none'" style="width:50px;height:50px;border-radius:10px;object-fit:cover;border:2px solid #60a5fa;">
+            <div>
+                <div style="font-size:18px;font-weight:900;color:#fff;">${nomeBrawler}</div>
+                ${dados
+                    ? `<div style="font-size:11px;color:#64748b;margin-top:3px;font-weight:700;">PICKS: <span style="color:#fff">${dados.totalPicks}</span> &nbsp;|&nbsp; W: <span style="color:#fff">${dados.wins}</span> &nbsp;|&nbsp; WR%: <span style="color:${wrCorGeral}">${dados.wrGeral}%</span></div>`
+                    : `<div style="font-size:10px;color:#475569;margin-top:3px;">${nRegistros} registros carregados</div>`}
+            </div>
         </div>
 
-        <!-- BOM CONTRA -->
-        <div style="font-size:13px; font-weight:800; color:#4ade80; margin-bottom:8px;">✅ BOM CONTRA <span style="font-size:10px; color:#475569; font-weight:400;">(WR ≥ 50%)</span></div>
-        <div style="margin-bottom:16px;">
-            ${dados.countersTop.length > 0 ? dados.countersTop.map(c => renderMatchupRow(c, true)).join('') : '<p style="color:#475569; font-size:11px; padding:4px 0;">Sem dados suficientes</p>'}
-        </div>
+        <!-- 3 COLUNAS — ocupam todo o espaço restante sem scroll externo -->
+        <div style="display:grid;grid-template-columns:190px 1fr 210px;gap:12px;flex:1;min-height:0;">
 
-        <!-- RUIM CONTRA -->
-        <div style="font-size:13px; font-weight:800; color:#f87171; margin-bottom:8px; padding-top:12px; border-top:1px solid #1e293b;">⚠️ RUIM CONTRA <span style="font-size:10px; color:#475569; font-weight:400;">(WR < 50%)</span></div>
-        <div style="margin-bottom:16px;">
-            ${dados.counteradosTop.length > 0 ? dados.counteradosTop.map(c => renderMatchupRow(c, false)).join('') : '<p style="color:#475569; font-size:11px; padding:4px 0;">Sem dados suficientes</p>'}
-        </div>
+            <!-- ESQUERDA: TOP 15 (scrollável internamente) -->
+            <div style="display:flex;flex-direction:column;border-right:1px solid #1e293b;padding-right:10px;min-height:0;">
+                <div style="font-size:10px;font-weight:900;color:#f59e0b;margin-bottom:6px;text-align:center;letter-spacing:.5px;flex-shrink:0;">
+                    🏆 TOP 15&nbsp;<span style="color:#64748b;font-weight:600;font-size:8px;">${mapaEscolhido||''}</span>
+                </div>
+                <div style="overflow-y:auto;flex:1;">
+                    ${top15List.length > 0 ? top15Rows : '<div style="color:#475569;font-size:10px;text-align:center;padding:16px 0;">Sem dados para este mapa</div>'}
+                </div>
+            </div>
 
-        <!-- SINERGIAS -->
-        <div style="font-size:13px; font-weight:800; color:#c084fc; margin-bottom:10px; padding-top:12px; border-top:1px solid #1e293b;">🤝 TOP 5 SINERGIAS</div>
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap:8px;">
-            ${dados.sinergiasTop.length > 0 ? dados.sinergiasTop.map(renderSinergiaCard).join('') : '<p style="color:#475569; font-size:11px;">Sem dados suficientes</p>'}
-        </div>
-        `}
-        </div><!-- fim coluna direita -->
-        </div><!-- fim wrapper duas colunas -->
+            <!-- CENTRO: stats no mapa + TOP 3 Mapas + Sinergias (scrollável internamente) -->
+            <div style="overflow-y:auto;padding-right:6px;">
+                ${statsMapaHTML}
+                ${semDados ? `<p style="color:#64748b;font-size:12px;text-align:center;padding:20px 0;">Sem partidas registradas.</p>` : `
+                <div style="font-size:12px;font-weight:800;color:#a78bfa;margin-bottom:8px;">🗺️ TOP 3 MAPAS</div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px;">
+                    ${dados.topMapas.map(renderMapaCard).join('') || '<p style="color:#475569;font-size:10px;">Sem dados</p>'}
+                </div>
+                <div style="font-size:12px;font-weight:800;color:#c084fc;margin-bottom:8px;padding-top:10px;border-top:1px solid #1e293b;">🤝 TOP 5 SINERGIAS</div>
+                <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;">
+                    ${dados.sinergiasTop.length > 0
+                        ? dados.sinergiasTop.map(renderSinergiaCard).join('')
+                        : '<p style="color:#475569;font-size:10px;grid-column:span 5;">Sem dados</p>'}
+                </div>`}
+            </div>
+
+            <!-- DIREITA: Bom/Ruim Contra (scrollável internamente) -->
+            <div style="overflow-y:auto;border-left:1px solid #1e293b;padding-left:10px;">
+                ${semDados ? `<p style="color:#64748b;font-size:11px;text-align:center;padding:20px 0;">Sem dados.</p>` : `
+                <div style="font-size:12px;font-weight:800;color:#4ade80;margin-bottom:7px;">✅ BOM CONTRA <span style="font-size:9px;color:#475569;font-weight:400;">(WR≥50%)</span></div>
+                <div style="margin-bottom:12px;">
+                    ${dados.countersTop.length > 0
+                        ? dados.countersTop.map(c => renderMatchupRow(c, true)).join('')
+                        : '<p style="color:#475569;font-size:10px;padding:3px 0;">Sem dados</p>'}
+                </div>
+                <div style="font-size:12px;font-weight:800;color:#f87171;margin-bottom:7px;padding-top:10px;border-top:1px solid #1e293b;">⚠️ RUIM CONTRA <span style="font-size:9px;color:#475569;font-weight:400;">(WR&lt;50%)</span></div>
+                <div>
+                    ${dados.counteradosTop.length > 0
+                        ? dados.counteradosTop.map(c => renderMatchupRow(c, false)).join('')
+                        : '<p style="color:#475569;font-size:10px;padding:3px 0;">Sem dados</p>'}
+                </div>`}
+            </div>
+
+        </div><!-- fim 3 colunas -->
     </div>`;
 
     document.body.appendChild(modal);
@@ -1058,7 +1056,7 @@ window.escolherMapa = function(mapa) {
     if (placeholder) placeholder.style.display = 'none';
     if (modoIcon) { modoIcon.src = `element/modes/${chaveModo}.png`; modoIcon.style.display = 'block'; modoIcon.onerror = function() { this.style.display = 'none'; }; }
     if (nomeLabel) { nomeLabel.innerText = mapa; nomeLabel.style.display = 'block'; }
-    document.getElementById('vertical-layout').style.display = 'flex';
+    // vertical-layout só aparece depois de escolher o lado
     document.getElementById('setup-mapa').style.display = 'none';
     document.getElementById('setup-lado').style.display = 'block';
     window.atualizarMeta();
@@ -1067,6 +1065,9 @@ window.escolherMapa = function(mapa) {
 window.escolherLado = function(lado) {
     firstPick = lado;
     document.getElementById('setup-overlay').style.display = 'none';
+    // Agora revela o layout do draft
+    const vl = document.getElementById('vertical-layout');
+    if (vl) vl.style.display = 'flex';
     const coinTopo = document.getElementById('coin-topo');
     const coinTopoImg = document.getElementById('coin-topo-img');
     if (coinTopo && coinTopoImg) {
@@ -1507,28 +1508,28 @@ window.baixarImagemDraft = function() {
         /* Oculta o painel META TOP 10 e COUNTERS */
         #info-panels { display: none !important; }
 
-        /* Draft ocupa muito mais espaço que a seleção de brawlers */
-        .draft-area   { flex: 6 !important; }
-        .roster-area  { flex: 1 !important; min-width: 160px !important; max-width: 200px !important; }
+        /* Draft menor, roster maior */
+        .draft-area   { flex: 3 !important; }
+        .roster-area  { flex: 2 !important; min-width: 200px !important; max-width: 320px !important; }
 
-        /* Aumenta variáveis de tamanho do draft */
+        /* Variáveis de tamanho — draft menor na vertical */
         :root {
-            --ban-slot-size:  90px  !important;
-            --pick-slot-size: 185px !important;
-            --map-w: 500px          !important;
-            --map-h: 720px          !important;
+            --ban-slot-size:  72px  !important;
+            --pick-slot-size: 145px !important;
+            --map-w: 400px          !important;
+            --map-h: 560px          !important;
         }
 
         /* Labels do mapa */
-        #map-nome-label { font-size: 22px !important; }
-        #map-modo-icon  { width: 52px !important; height: 52px !important; }
+        #map-nome-label { font-size: 17px !important; }
+        #map-modo-icon  { width: 40px !important; height: 40px !important; }
 
         /* Área do draft */
-        .draft-board-capture { padding: 28px 22px 22px !important; gap: 16px !important; }
+        .draft-board-capture { padding: 16px 14px 14px !important; gap: 10px !important; }
 
-        /* Grid de brawlers — compacto para caber na coluna estreita */
-        .roster-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 6px !important; }
-        .brawler-name { font-size: 10px !important; margin-top: 4px !important; }
+        /* Grid de brawlers — 3 colunas na área maior */
+        .roster-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 5px !important; }
+        .brawler-name { font-size: 10px !important; margin-top: 3px !important; }
         .search-bar   { font-size: 13px !important; padding: 8px 10px !important; }
     `;
     (document.head || document.documentElement).appendChild(style);
@@ -1546,5 +1547,3 @@ function inicializarSistema() {
 
 if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', inicializarSistema); }
 else { inicializarSistema(); }
-
-                
