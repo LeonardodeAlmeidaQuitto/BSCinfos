@@ -274,9 +274,11 @@ const _DRAFT_ROSTERS_POR_DATA = {
 // =====================================================================================
 // HELPERS DE ROSTERS / MD3 — cópia exata do app.js
 // =====================================================================================
-// Mesma lógica do app.js: usa window.REGIAO_ATUAL se definido, senão "SA"
+// Mesma lógica do app.js: usa window.REGIAO_ATUAL se definido.
+// O geral.html define window.REGIAO_ATUAL = "ALL" — usamos "ALL" como padrão
+// para que os dados do draft batam com os do geral.html sem filtro de região.
 const _DRAFT_REGIAO = (typeof window !== 'undefined' && window.REGIAO_ATUAL)
-    ? window.REGIAO_ATUAL.toUpperCase() : "SA";
+    ? window.REGIAO_ATUAL.toUpperCase() : "ALL";
 
 let _draftConfiguracaoTimes = JSON.parse(JSON.stringify(_DRAFT_ROSTERS_POR_DATA["PADRAO"]));
 
