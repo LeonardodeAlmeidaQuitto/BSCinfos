@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — BSCinfos</title>
+    <script src="users.js"></script>
+    <script src="auth.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0d0f14;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .login-card {
+            background: #16181f;
+            border: 1px solid #2a2d3a;
+            border-radius: 18px;
+            padding: 44px 40px 36px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 8px 48px rgba(0,0,0,0.6);
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .login-logo-title {
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            color: #ffffff;
+        }
+
+        .login-logo-title span {
+            color: #f030a0;
+        }
+
+        .login-logo-sub {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .login-form label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: #94a3b8;
+            margin-bottom: 6px;
+            letter-spacing: .5px;
+            text-transform: uppercase;
+        }
+
+        .login-form input {
+            width: 100%;
+            padding: 11px 14px;
+            background: #0f1117;
+            border: 1px solid #2a2d3a;
+            border-radius: 9px;
+            color: #f1f5f9;
+            font-size: 15px;
+            margin-bottom: 18px;
+            outline: none;
+            transition: border-color .2s;
+        }
+
+        .login-form input:focus {
+            border-color: #f030a0;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 13px;
+            background: #f030a0;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 800;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            letter-spacing: .5px;
+            transition: background .2s, transform .1s;
+        }
+
+        .login-btn:hover {
+            background: #d4208a;
+        }
+
+        .login-btn:active {
+            transform: scale(.98);
+        }
+
+        .login-error {
+            display: none;
+            background: rgba(248, 113, 113, 0.12);
+            border: 1px solid #f87171;
+            color: #f87171;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .login-error.visible {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <div class="login-logo">
+        <div class="login-logo-title">BSC<span>Infos</span></div>
+        <div class="login-logo-sub">Acesso restrito — faça login para continuar</div>
+    </div>
+
+    <form class="login-form" id="loginForm" onsubmit="tentarLogin(event)">
+        <div class="login-error" id="loginErro">Usuário ou senha incorretos.</div>
+
+        <label for="inputUser">Usuário</label>
+        <input type="text" id="inputUser" placeholder="Seu usuário" autocomplete="username" autofocus>
+
+        <label for="inputPass">Senha</label>
+        <input type="password" id="inputPass" placeholder="Sua senha" autocomplete="current-password">
+
+        <button type="submit" class="login-btn">ENTRAR</button>
+    </form>
+</div>
+
+<script>
+    // Se já está logado, redireciona direto para o índice
+    if (window.BSC_USER && window.BSC_USER()) {
+        var dest = sessionStorage.getItem('bsc_redirect') || 'index.html';
+        sessionStorage.removeItem('bsc_redirect');
+        window.location.replace(dest);
+    }
+
+    function tentarLogin(e) {
+        e.preventDefault();
+        var user = document.getElementById('inputUser').value;
+        var pass = document.getElementById('inputPass').value;
+        var erro = document.getElementById('loginErro');
+
+        if (window.BSC_LOGIN(user, pass)) {
+            erro.classList.remove('visible');
+            var dest = sessionStorage.getItem('bsc_redirect') || 'index.html';
+            sessionStorage.removeItem('bsc_redirect');
+            window.location.replace(dest);
+        } else {
+            erro.classList.add('visible');
+            document.getElementById('inputPass').value = '';
+            document.getElementById('inputPass').focus();
+        }
+    }
+</script>
+
+</body>
+</html>
