@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AO VIVO — BCSInfos</title>
+    <script src="users.js"></script>
+    <script src="auth.js"></script>
+    <link rel="stylesheet" href="draft.css">
+    <style>
+        :root {
+            --fundo: #121218;
+            --card: #1a1d26;
+            --borda: #2a2d3a;
+            --texto: #e2e8f0;
+            --sub: #94a3b8;
+            --mut: #64748b;
+            --azul: #3b82f6;
+            --vermelho: #ef4444;
+            --verde: #22c55e;
+            --rosa: #f030a0;
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; background: var(--fundo); color: var(--texto); font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+        .navbar { display: flex; background: #000; padding: 15px 30px; border-bottom: 1px solid var(--borda); gap: 30px; align-items: center; }
+        .navbar a { color: #fff; text-decoration: none; font-weight: 700; font-size: 13px; text-transform: uppercase; }
+        .navbar a.active { color: var(--rosa); }
+        .wrapper { max-width: 1100px; margin: 0 auto; padding: 24px 18px; }
+        .card { background: var(--card); border: 1px solid var(--borda); border-radius: 14px; padding: 20px; margin-bottom: 16px; }
+        h2 { margin: 0 0 14px; font-size: 18px; }
+        h3 { margin: 0 0 10px; font-size: 14px; color: var(--sub); }
+        .teams-grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: center; }
+        .team-box { background: #0f1117; border: 1px solid var(--borda); border-radius: 12px; padding: 16px; }
+        .team-box.blue { border-color: #3b82f655; }
+        .team-box.red { border-color: #ef444455; }
+        label { display: block; font-size: 11px; font-weight: 700; color: var(--sub); text-transform: uppercase; letter-spacing: .5px; margin: 10px 0 4px; }
+        input, select {
+            width: 100%; padding: 9px 11px; background: #0d0f14; border: 1px solid var(--borda);
+            border-radius: 8px; color: #fff; font-size: 13px; outline: none;
+        }
+        input:focus, select:focus { border-color: var(--rosa); }
+        .logo-row { display: flex; align-items: center; gap: 10px; }
+        .team-logo { width: 46px; height: 46px; border-radius: 8px; object-fit: cover; border: 1px solid var(--borda); background: #000; }
+        .vs { font-size: 26px; font-weight: 900; color: var(--mut); }
+        .btn {
+            background: var(--rosa); color: #fff; border: none; border-radius: 9px; padding: 12px 20px;
+            font-size: 14px; font-weight: 800; cursor: pointer; letter-spacing: .5px;
+        }
+        .btn.green { background: var(--verde); color: #000; }
+        .btn.blue { background: var(--azul); }
+        .btn.red { background: var(--vermelho); }
+        .btn.gray { background: #334155; }
+        .btn:active { transform: scale(.98); }
+        .btn:disabled { opacity: .4; cursor: not-allowed; }
+        .scoreboard { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center; text-align: center; }
+        .score-team .tlogo { width: 54px; height: 54px; border-radius: 50%; object-fit: cover; margin: 0 auto 6px; border: 2px solid var(--borda); }
+        .score-team.blue .tlogo { border-color: var(--azul); }
+        .score-team.red .tlogo { border-color: var(--vermelho); }
+        .score-team .tname { font-weight: 800; font-size: 14px; }
+        .score-team .tpts { font-size: 34px; font-weight: 900; }
+        .score-team.blue .tpts { color: var(--azul); }
+        .score-team.red .tpts { color: var(--vermelho); }
+        .score-center { color: var(--mut); font-size: 12px; font-weight: 700; text-transform: uppercase; line-height: 1.6; }
+        .match-meta { display: flex; gap: 12px; flex-wrap: wrap; }
+        .match-meta select { flex: 1; min-width: 160px; }
+        .phase-title { font-size: 13px; font-weight: 800; color: var(--rosa); text-transform: uppercase; letter-spacing: .5px; margin: 14px 0 8px; }
+        .picks-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        .slot {
+            width: 88px; height: 88px; border-radius: 12px; border: 1px solid var(--borda);
+            background: #0d0f14; position: relative; cursor: pointer; overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .slot.ban { width: 70px; height: 70px; }
+        .slot img { width: 100%; height: 100%; object-fit: cover; }
+        .slot .slot-label { position: absolute; bottom: 0; left: 0; right: 0; font-size: 9px; font-weight: 800; background: rgba(0,0,0,.7); padding: 2px; text-align: center; }
+        .slot.empty { border-style: dashed; opacity: .5; }
+        .slot.empty::after { content: "+"; font-size: 26px; color: var(--mut); }
+        .slot.active { border-color: var(--rosa); box-shadow: 0 0 12px var(--rosa); }
+        .team-col-label { font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 6px; }
+        .team-col-label.blue { color: var(--azul); }
+        .team-col-label.red { color: var(--vermelho); }
+        /* Seletor de brawlers */
+        .picker-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.85); z-index: 999; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .picker { background: var(--card); border: 1px solid var(--borda); border-radius: 14px; width: min(760px, 95vw); max-height: 86vh; display: flex; flex-direction: column; }
+        .picker-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--borda); }
+        .picker-head input { width: 240px; }
+        .picker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(74px, 1fr)); gap: 8px; padding: 16px; overflow-y: auto; }
+        .pick-cell { cursor: pointer; border-radius: 8px; overflow: hidden; border: 1px solid var(--borda); background: #0f1117; }
+        .pick-cell:hover { border-color: var(--rosa); }
+        .pick-cell img { width: 100%; height: 62px; object-fit: cover; display: block; }
+        .pick-cell span { display: block; text-align: center; font-size: 9px; font-weight: 700; padding: 2px 0; }
+        .close-x { background: none; border: none; color: var(--mut); font-size: 20px; cursor: pointer; }
+        /* Histórico */
+        .hist-item { background: #0f1117; border: 1px solid var(--borda); border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+        .hist-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+        .hist-head .when { color: var(--mut); font-size: 11px; }
+        .hist-picks { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .hist-picks .picks { display: flex; gap: 5px; flex-wrap: wrap; }
+        .hist-picks img { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; }
+        .mini-tag { font-size: 10px; font-weight: 700; color: var(--sub); }
+        .empty-msg { color: var(--mut); text-align: center; padding: 30px 0; font-size: 14px; }
+        .step { display: none; }
+        .step.active { display: block; }
+        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+        .team-tag { display: inline-block; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 20px; }
+        .tag-win { background: #22c55e22; color: #4ade80; }
+        .tag-vs { background: #3b82f622; color: #60a5fa; }
+        .pts-needed { color: var(--mut); font-size: 12px; }
+        .win-banner { text-align: center; padding: 24px; }
+        .win-banner .trophy { font-size: 44px; }
+        .win-banner h2 { font-size: 22px; margin: 8px 0; }
+        @media (max-width: 700px) {
+            .teams-grid { grid-template-columns: 1fr; }
+            .vs { text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html">MENU</a>
+        <a href="geral.html">GERAL</a>
+        <a href="draft.html">DRAFT</a>
+        <a href="vivo.html" class="active">AO VIVO</a>
+    </nav>
+
+    <div class="wrapper">
+
+        <!-- PASSO 1: CONFIGURAÇÃO -->
+        <div class="step active" id="step-setup">
+            <div class="card">
+                <h2>🔴🔵 Configurar Partida Ao Vivo</h2>
+
+                <div class="teams-grid">
+                    <div class="team-box blue">
+                        <h3>Time Azul</h3>
+                        <label>Nome do Time</label>
+                        <input type="text" id="nome-azul" placeholder="Ex: Bounty Hunters">
+                        <label>Logo do Time</label>
+                        <div class="logo-row">
+                            <img class="team-logo" id="logo-azul-preview" src="element/teams/unknow.png" alt="logo">
+                            <input type="text" id="logo-azul-url" placeholder="URL da logo (ou deixa em branco)">
+                        </div>
+                        <label>ID Jogador 1</label>
+                        <input type="text" id="azul-1" placeholder="#PLLRJC2V">
+                        <label>ID Jogador 2</label>
+                        <input type="text" id="azul-2" placeholder="#GYCYCLRJL">
+                        <label>ID Jogador 3</label>
+                        <input type="text" id="azul-3" placeholder="#YGQYGCR">
+                    </div>
+
+                    <div class="vs">VS</div>
+
+                    <div class="team-box red">
+                        <h3>Time Vermelho</h3>
+                        <label>Nome do Time</label>
+                        <input type="text" id="nome-vermelho" placeholder="Ex: RED CANIDS">
+                        <label>Logo do Time</label>
+                        <div class="logo-row">
+                            <img class="team-logo" id="logo-vermelho-preview" src="element/teams/unknow.png" alt="logo">
+                            <input type="text" id="logo-vermelho-url" placeholder="URL da logo (ou deixa em branco)">
+                        </div>
+                        <label>ID Jogador 1</label>
+                        <input type="text" id="vermelho-1" placeholder="#GVYLVUGR">
+                        <label>ID Jogador 2</label>
+                        <input type="text" id="vermelho-2" placeholder="#JQ8L0YYL">
+                        <label>ID Jogador 3</label>
+                        <input type="text" id="vermelho-3" placeholder="#R2LR2QLG">
+                    </div>
+                </div>
+
+                <label style="margin-top:18px;">Tipo de Partida (formato da série)</label>
+                <select id="formato">
+                    <option value="MD3">MD3 — melhor de 3 (1º a 2 vitórias)</option>
+                    <option value="MD5">MD5 — melhor de 5 (1º a 3 vitórias)</option>
+                    <option value="MD7">MD7 — melhor de 7 (1º a 4 vitórias)</option>
+                    <option value="MD10">MD10 — melhor de 10 (1º a 6 vitórias)</option>
+                </select>
+
+                <div class="btn-row">
+                    <button class="btn green" onclick="iniciarSessao()">▶️ COMEÇAR AO VIVO</button>
+                    <button class="btn gray" onclick="verHistorico()">📁 Histórico</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PASSO 2: DRAFT AO VIVO -->
+        <div class="step" id="step-vivo">
+            <div class="card">
+                <!-- Placar -->
+                <div class="scoreboard">
+                    <div class="score-team blue">
+                        <img class="tlogo" id="s-logo-azul" src="" alt="">
+                        <div class="tname" id="s-nome-azul">Azul</div>
+                        <div class="tpts" id="s-pontos-azul">0</div>
+                    </div>
+                    <div class="score-center">
+                        <div>Partida <span id="s-num-partida">1</span></div>
+                        <div id="s-formato">MD3</div>
+                        <div class="pts-needed" id="s-vitorias-necessarias">1º a 2 vitórias</div>
+                        <button class="btn gray" onclick="voltarSetup()" style="margin-top:10px;font-size:11px;padding:6px 12px;">← Voltar</button>
+                    </div>
+                    <div class="score-team red">
+                        <img class="tlogo" id="s-logo-vermelho" src="" alt="">
+                        <div class="tname" id="s-nome-vermelho">Vermelho</div>
+                        <div class="tpts" id="s-pontos-vermelho">0</div>
+                    </div>
+                </div>
+
+                <!-- Meta: modo + mapa -->
+                <div class="match-meta" style="margin-top:18px;">
+                    <select id="modo-partida"><option value="">— Escolha o MODO —</option></select>
+                    <select id="mapa-partida"><option value="">— Escolha o MAPA —</option></select>
+                </div>
+
+                <!-- Fases de pick -->
+                <div id="draft-board"></div>
+
+                <div class="btn-row" id="vivo-acoes">
+                    <button class="btn blue" id="btn-finalizar-azul" onclick="finalizarPartida('azul')">🏆 Azul vence a partida</button>
+                    <button class="btn red" id="btn-finalizar-vermelho" onclick="finalizarPartida('vermelho')">🏆 Vermelho vence a partida</button>
+                    <button class="btn gray" onclick="reiniciarPartida()">↺ Limpar picks desta partida</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PASSO 3: FIM DA SÉRIE -->
+        <div class="step" id="step-fim">
+            <div class="card win-banner">
+                <div class="trophy">🏆</div>
+                <h2 id="fim-campeao">TIME X</h2>
+                <div id="fim-placar">2 x 1</div>
+                <p class="sub" id="fim-resumo" style="color:var(--mut);font-size:14px;"></p>
+                <div class="btn-row" style="justify-content:center;">
+                    <button class="btn green" onclick="novaSessao()">➕ Nova partida</button>
+                    <button class="btn gray" onclick="verHistorico()">📁 Ver histórico</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PASSO 4: HISTÓRICO -->
+        <div class="step" id="step-historico">
+            <div class="card">
+                <h2>📁 Histórico de Partidas</h2>
+                <div id="historico-lista"><div class="empty-msg">Nenhuma partida registrada ainda.</div></div>
+                <div class="btn-row">
+                    <button class="btn green" onclick="novaSessao()">➕ Nova partida</button>
+                    <button class="btn gray" onclick="voltarSetup()">← Voltar</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Seletor de brawlers -->
+    <div class="picker-overlay" id="picker-overlay">
+        <div class="picker">
+            <div class="picker-head">
+                <strong id="picker-title">Escolha um brawler</strong>
+                <input type="text" id="picker-search" placeholder="Buscar brawler..." oninput="filtrarPicker()">
+                <button class="close-x" onclick="fecharPicker()">✕</button>
+            </div>
+            <div class="picker-grid" id="picker-grid"></div>
+        </div>
+    </div>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+//  DADOS
+// ════════════════════════════════════════════════════════════════
+var BRAWLERS = ["8bit","alli","amber","angelo","ash","barley","bea","belle","berry","bibi","bo","bolt","bonnie","brock","bull","buster","buzz","byron","carl","charlie","chester","chuck","clancy","colette","colt","cordelius","crow","damian","darryl","doug","draco","dynamike","edgar","elprimo","emz","eve","fang","finx","frank","gale","gene","gigi","glowy","gray","griff","grom","gus","hank","jacky","jaeyong","janet","jessie","juju","kaze","kenji","kit","larrylawrie","leon","lily","lola","lou","lumi","maisie","mandy","max","meeple","meg","melodie","mico","mina","moe","mortis","mrp","najia","nani","nita","nori","ollie","otis","pam","pearl","penny","pierce","piper","poco","rico","rosa","rt","ruffs","sam","sandy","shade","shelly","sirius","spike","sprout","squeak","starrnova","stu","surge","tara","tick","trunk","wendy","willow","ziggy"];
+
+// Nomes legíveis (capitaliza)
+function nomeBonito(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+function limparId(id) { return id.replace(/[^0-9a-zA-Z#]/g, '').toUpperCase(); }
+
+var MAPAS = {
+    "GEM GRAB": ["Crystal Arcade", "Double Swoosh", "Hard Rock Mine", "Undermine"],
+    "BOUNTY": ["Canal Grande", "Goldarm Gulch", "Out in the Open", "Shooting Star"],
+    "BRAWL BALL": ["Backyard Bowl", "Beach Ball", "Field Goal", "Pinhole Punt"],
+    "HEIST": ["Belles Rock", "Kaboom Canyon", "Safe Zone", "Snake Prairie"],
+    "KNOCKOUT": ["Belle's Rock", "Flaring Phoenix", "Goldarm Gulch", "New Horizon"],
+    "HOT ZONE": ["Dueling Beetles", "Open Zone", "Parallel Plays", "Ring of Fire"]
+};
+
+// ════════════════════════════════════════════════════════════════
+//  ESTADO
+// ════════════════════════════════════════════════════════════════
+var sessao = null;   // { azul:{nome,logo,ids:[...]}, vermelho:{...}, formato, pontos:{azul,vermelho}, partidaAtual }
+var estadoDraft = null; // slots da partida atual
+
+// ════════════════════════════════════════════════════════════════
+//  FUNÇÕES GERAIS
+// ════════════════════════════════════════════════════════════════
+function mostrarStep(nome) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.getElementById('step-' + nome).classList.add('active');
+}
+function vitoriasNecessarias(formato) {
+    return ({ "MD3": 2, "MD5": 3, "MD7": 4, "MD10": 6 })[formato] || 2;
+}
+function voltarSetup() {
+    mostrarStep('setup');
+    fecharPicker();
+}
+function novaSessao() { sessao = null; estadoDraft = null; voltarSetup(); }
+
+// ════════════════════════════════════════════════════════════════
+//  SETUP
+// ════════════════════════════════════════════════════════════════
+document.getElementById('logo-azul-url').addEventListener('input', function() {
+    var u = this.value.trim();
+    document.getElementById('logo-azul-preview').src = u || 'element/teams/unknow.png';
+});
+document.getElementById('logo-vermelho-url').addEventListener('input', function() {
+    var u = this.value.trim();
+    document.getElementById('logo-vermelho-preview').src = u || 'element/teams/unknow.png';
+});
+
+function iniciarSessao() {
+    var formato = document.getElementById('formato').value;
+    var azul = {
+        nome: document.getElementById('nome-azul').value.trim() || 'Time Azul',
+        logo: document.getElementById('logo-azul-url').value.trim() || 'element/teams/unknow.png',
+        ids: [1,2,3].map(i => limparId(document.getElementById('azul-' + i).value))
+    };
+    var vermelho = {
+        nome: document.getElementById('nome-vermelho').value.trim() || 'Time Vermelho',
+        logo: document.getElementById('logo-vermelho-url').value.trim() || 'element/teams/unknow.png',
+        ids: [1,2,3].map(i => limparId(document.getElementById('vermelho-' + i).value))
+    };
+    sessao = { azul: azul, vermelho: vermelho, formato: formato, pontos: { azul: 0, vermelho: 0 }, partidaAtual: 1 };
+    estadoDraft = criarDraftVazio();
+    iniciarPartida();
+}
+
+function iniciarPartida() {
+    atualizarPlacar();
+    document.getElementById('s-formato').textContent = sessao.formato;
+    document.getElementById('s-vitorias-necessarias').textContent = '1º a ' + vitoriasNecessarias(sessao.formato) + ' vitórias';
+    document.getElementById('s-num-partida').textContent = sessao.partidaAtual;
+    estadoDraft = criarDraftVazio();
+    renderDraftBoard();
+    mostrarStep('vivo');
+}
+
+function criarDraftVazio() {
+    return {
+        bans: { azul: [null,null], vermelho: [null,null] },
+        picks: { azul: [null,null,null], vermelho: [null,null,null] }
+    };
+}
+
+// ════════════════════════════════════════════════════════════════
+//  PLACAR
+// ════════════════════════════════════════════════════════════════
+function atualizarPlacar() {
+    document.getElementById('s-logo-azul').src = sessao.azul.logo;
+    document.getElementById('s-nome-azul').textContent = sessao.azul.nome;
+    document.getElementById('s-pontos-azul').textContent = sessao.pontos.azul;
+    document.getElementById('s-logo-vermelho').src = sessao.vermelho.logo;
+    document.getElementById('s-nome-vermelho').textContent = sessao.vermelho.nome;
+    document.getElementById('s-pontos-vermelho').textContent = sessao.pontos.vermelho;
+}
+
+// ════════════════════════════════════════════════════════════════
+//  MODO / MAPA
+// ════════════════════════════════════════════════════════════════
+(function preencherModos() {
+    var sel = document.getElementById('modo-partida');
+    Object.keys(MAPAS).forEach(m => {
+        var o = document.createElement('option');
+        o.value = m; o.textContent = m;
+        sel.appendChild(o);
+    });
+})();
+document.getElementById('modo-partida').addEventListener('change', function() {
+    var sel = document.getElementById('mapa-partida');
+    sel.innerHTML = '<option value="">— Escolha o MAPA —</option>';
+    var mapas = MAPAS[this.value] || [];
+    mapas.forEach(m => {
+        var o = document.createElement('option');
+        o.value = m; o.textContent = m;
+        sel.appendChild(o);
+    });
+});
+
+// ════════════════════════════════════════════════════════════════
+//  DRAFT BOARD
+// ════════════════════════════════════════════════════════════════
+var slotAtivo = null; // {tipo:'ban'|'pick', time:'azul'|'vermelho', idx:0}
+
+function renderDraftBoard() {
+    var board = document.getElementById('draft-board');
+    var html = '';
+
+    // Fase de ban
+    html += '<div class="phase-title">🚫 BANS</div>';
+    html += '<div style="display:flex;gap:20px;">';
+    html += renderColuna('ban', 'azul');
+    html += renderColuna('ban', 'vermelho');
+    html += '</div>';
+
+    // Fase de pick
+    html += '<div class="phase-title">🎯 PICKS</div>';
+    html += '<div style="display:flex;gap:20px;">';
+    html += renderColuna('pick', 'azul');
+    html += renderColuna('pick', 'vermelho');
+    html += '</div>';
+
+    board.innerHTML = html;
+}
+
+function renderColuna(tipo, time) {
+    var arr = estadoDraft[tipo === 'ban' ? 'bans' : 'picks'][time];
+    var label = (time === 'azul' ? sessao.azul.nome : sessao.vermelho.nome) + ' — ' + (tipo === 'ban' ? 'BAN' : 'PICK');
+    var cls = time === 'azul' ? 'blue' : 'red';
+    var sizeCls = tipo === 'ban' ? 'ban' : '';
+    var html = '<div style="flex:1;">';
+    html += '<div class="team-col-label ' + cls + '">' + label + '</div>';
+    html += '<div class="picks-row">';
+    for (var i = 0; i < arr.length; i++) {
+        var val = arr[i];
+        var isSlotAtivo = slotAtivo && slotAtivo.tipo === tipo && slotAtivo.time === time && slotAtivo.idx === i;
+        if (val) {
+            html += '<div class="slot ' + sizeCls + '" title="' + nomeBonito(val) + '" onclick="abrirSlot(\'' + tipo + '\',\'' + time + '\',' + i + ')">';
+            html += '<img src="brawlers/' + val + '.png" onerror="this.style.display=\'none\'">';
+            html += '<div class="slot-label">' + nomeBonito(val) + '</div>';
+            html += '</div>';
+        } else {
+            html += '<div class="slot ' + sizeCls + ' empty ' + (isSlotAtivo ? 'active' : '') + '" onclick="abrirSlot(\'' + tipo + '\',\'' + time + '\',' + i + ')"></div>';
+        }
+    }
+    html += '</div></div>';
+    return html;
+}
+
+function abrirSlot(tipo, time, idx) {
+    slotAtivo = { tipo: tipo, time: time, idx: idx };
+    abrirPicker();
+}
+
+// ════════════════════════════════════════════════════════════════
+//  SELECTOR DE BRAWLERS
+// ════════════════════════════════════════════════════════════════
+function abrirPicker() {
+    document.getElementById('picker-overlay').style.display = 'flex';
+    document.getElementById('picker-search').value = '';
+    renderPickerGrid(BRAWLERS);
+    document.getElementById('picker-search').focus();
+}
+function fecharPicker() {
+    document.getElementById('picker-overlay').style.display = 'none';
+    slotAtivo = null;
+}
+function filtrarPicker() {
+    var t = document.getElementById('picker-search').value.toLowerCase();
+    var list = BRAWLERS.filter(b => b.toLowerCase().includes(t));
+    renderPickerGrid(list);
+}
+function renderPickerGrid(list) {
+    var grid = document.getElementById('picker-grid');
+    grid.innerHTML = '';
+    list.forEach(b => {
+        var cell = document.createElement('div');
+        cell.className = 'pick-cell';
+        cell.innerHTML = '<img src="brawlers/' + b + '.png" onerror="this.style.display=\'none\'"><span>' + nomeBonito(b) + '</span>';
+        cell.onclick = function() { escolherBrawler(b); };
+        grid.appendChild(cell);
+    });
+}
+function escolherBrawler(b) {
+    if (!slotAtivo) { fecharPicker(); return; }
+    var tipo = slotAtivo.tipo, time = slotAtivo.time, idx = slotAtivo.idx;
+    if (tipo === 'ban') estadoDraft.bans[time][idx] = b;
+    else estadoDraft.picks[time][idx] = b;
+    fecharPicker();
+    renderDraftBoard();
+}
+document.getElementById('picker-overlay').addEventListener('click', function(e) {
+    if (e.target === this) fecharPicker();
+});
+
+// ════════════════════════════════════════════════════════════════
+//  FINALIZAR PARTIDA
+// ════════════════════════════════════════════════════════════════
+function validarPartida() {
+    var modo = document.getElementById('modo-partida').value;
+    var mapa = document.getElementById('mapa-partida').value;
+    if (!modo) { alert('Escolha o MODO da partida.'); return null; }
+    if (!mapa) { alert('Escolha o MAPA da partida.'); return null; }
+    var picksOk = true;
+    ['azul','vermelho'].forEach(t => {
+        if (estadoDraft.picks[t].some(p => !p)) picksOk = false;
+    });
+    if (!picksOk) { alert('Preencha os 6 picks (3 de cada time) antes de finalizar.'); return null; }
+    return { modo: modo, mapa: mapa };
+}
+
+function finalizarPartida(time) {
+    var meta = validarPartida();
+    if (!meta) return;
+
+    var registro = {
+        ts: Date.now(),
+        formato: sessao.formato,
+        partida: sessao.partidaAtual,
+        modo: meta.modo,
+        mapa: meta.mapa,
+        azul: { nome: sessao.azul.nome, logo: sessao.azul.logo, ids: sessao.azul.ids, bans: estadoDraft.bans.azul.slice(), picks: estadoDraft.picks.azul.slice() },
+        vermelho: { nome: sessao.vermelho.nome, logo: sessao.vermelho.logo, ids: sessao.vermelho.ids, bans: estadoDraft.bans.vermelho.slice(), picks: estadoDraft.picks.vermelho.slice() },
+        vencedor: time,
+        placarApos: null
+    };
+
+    sessao.pontos[time]++;
+    registro.placarApos = { azul: sessao.pontos.azul, vermelho: sessao.pontos.vermelho };
+    salvarRegistro(registro);
+
+    var necessario = vitoriasNecessarias(sessao.formato);
+    if (sessao.pontos[time] >= necessario) {
+        // Fim da série
+        mostrarFim(time);
+    } else {
+        sessao.partidaAtual++;
+        iniciarPartida();
+    }
+}
+
+function mostrarFim(time) {
+    var campeao = time === 'azul' ? sessao.azul : sessao.vermelho;
+    document.getElementById('fim-campeao').textContent = '🏆 ' + campeao.nome;
+    document.getElementById('fim-placar').textContent = sessao.pontos.azul + ' x ' + sessao.pontos.vermelho;
+    document.getElementById('fim-resumo').textContent = 'Campeão em ' + sessao.partidaAtual + ' partidas (' + sessao.formato + ')';
+    mostrarStep('fim');
+}
+
+function reiniciarPartida() {
+    estadoDraft = criarDraftVazio();
+    renderDraftBoard();
+}
+
+// ════════════════════════════════════════════════════════════════
+//  HISTÓRICO (localStorage)
+// ════════════════════════════════════════════════════════════════
+var CHAVE_HIST = 'bsc_hist_vivo';
+
+function salvarRegistro(reg) {
+    var hist = getHistorico();
+    hist.push(reg);
+    localStorage.setItem(CHAVE_HIST, JSON.stringify(hist));
+}
+function getHistorico() {
+    try { return JSON.parse(localStorage.getItem(CHAVE_HIST)) || []; }
+    catch (e) { return []; }
+}
+function limparHistorico() {
+    if (confirm('Apagar TODO o histórico de partidas?')) {
+        localStorage.removeItem(CHAVE_HIST);
+        verHistorico();
+    }
+}
+
+function verHistorico() {
+    mostrarStep('historico');
+    var container = document.getElementById('historico-lista');
+    var hist = getHistorico();
+    if (hist.length === 0) {
+        container.innerHTML = '<div class="empty-msg">Nenhuma partida registrada ainda.</div>';
+        return;
+    }
+    container.innerHTML = '';
+    for (var i = hist.length - 1; i >= 0; i--) {
+        container.appendChild(renderHistItem(hist[i]));
+    }
+    // botão limpar
+    var clear = document.createElement('div');
+    clear.style.marginTop = '10px';
+    clear.innerHTML = '<button class="btn red" onclick="limparHistorico()" style="font-size:12px;padding:8px 14px;">🗑️ Limpar histórico</button>';
+    container.appendChild(clear);
+}
+
+function renderHistItem(r) {
+    var div = document.createElement('div');
+    div.className = 'hist-item';
+    var vencedorNome = r.vencedor === 'azul' ? r.azul.nome : r.vermelho.nome;
+    var d = new Date(r.ts);
+    var dataStr = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    var emoji = r.vencedor === 'azul' ? '🔵' : '🔴';
+    div.innerHTML = `
+        <div class="hist-head">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <span class="mini-tag">${r.formato} · Partida ${r.partida}</span>
+                <span class="mini-tag">🗺️ ${r.modo} / ${r.mapa}</span>
+                <span class="team-tag tag-win">${emoji} ${vencedorNome} venceu</span>
+            </div>
+            <span class="when">${dataStr}</span>
+        </div>
+        <div class="hist-picks">
+            <div>
+                <div class="mini-tag" style="margin-bottom:4px;">🔵 ${r.azul.nome} (${r.placarApos.azul})</div>
+                <div class="picks">
+                    ${r.azul.bans.map(p => p ? '<img src="brawlers/'+p+'.png" title="BAN: '+nomeBonito(p)+'" style="opacity:.5">' : '').join('')}
+                    ${r.azul.picks.map(p => p ? '<img src="brawlers/'+p+'.png" title="PICK: '+nomeBonito(p)+'">' : '').join('')}
+                </div>
+            </div>
+            <div>
+                <div class="mini-tag" style="margin-bottom:4px;">🔴 ${r.vermelho.nome} (${r.placarApos.vermelho})</div>
+                <div class="picks">
+                    ${r.vermelho.bans.map(p => p ? '<img src="brawlers/'+p+'.png" title="BAN: '+nomeBonito(p)+'" style="opacity:.5">' : '').join('')}
+                    ${r.vermelho.picks.map(p => p ? '<img src="brawlers/'+p+'.png" title="PICK: '+nomeBonito(p)+'">' : '').join('')}
+                </div>
+            </div>
+        </div>`;
+    return div;
+}
+</script>
+</body>
+</html>
