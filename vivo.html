@@ -423,7 +423,7 @@ function renderColuna(tipo, time) {
         var isSlotAtivo = slotAtivo && slotAtivo.tipo === tipo && slotAtivo.time === time && slotAtivo.idx === i;
         if (val) {
             html += '<div class="slot ' + sizeCls + '" title="' + nomeBonito(val) + '" onclick="abrirSlot(\'' + tipo + '\',\'' + time + '\',' + i + ')">';
-            html += '<img src="brawlers/' + val + '.png" onerror="this.style.display=\'none\'">';
+            html += '<img loading="lazy" decoding="async" src="brawlers/' + val + '.png" onerror="this.style.display=\'none\'">';
             html += '<div class="slot-label">' + nomeBonito(val) + '</div>';
             html += '</div>';
         } else {
@@ -463,7 +463,7 @@ function renderPickerGrid(list) {
     list.forEach(b => {
         var cell = document.createElement('div');
         cell.className = 'pick-cell';
-        cell.innerHTML = '<img src="brawlers/' + b + '.png" onerror="this.style.display=\'none\'"><span>' + nomeBonito(b) + '</span>';
+        cell.innerHTML = '<img loading="lazy" decoding="async" src="brawlers/' + b + '.png" onerror="this.style.display=\'none\'"><span>' + nomeBonito(b) + '</span>';
         cell.onclick = function() { escolherBrawler(b); };
         grid.appendChild(cell);
     });
@@ -612,6 +612,24 @@ function renderHistItem(r) {
             </div>
         </div>`;
     return div;
+}
+
+// ════════════════════════════════════════════════════════════════
+//  OTIMIZAÇÃO DE VELOCIDADE
+//  Pré-carrega as imagens dos brawlers em segundo plano para o
+//  seletor abrir instantâneo, sem travar nem esperar download.
+// ════════════════════════════════════════════════════════════════
+if ('requestIdleCallback' in window) {
+    requestIdleCallback(preloadBrawlerImgs, { timeout: 2000 });
+} else {
+    setTimeout(preloadBrawlerImgs, 800);
+}
+function preloadBrawlerImgs() {
+    for (var i = 0; i < BRAWLERS.length; i++) {
+        var im = new Image();
+        im.decoding = 'async';
+        im.src = 'brawlers/' + BRAWLERS[i] + '.png';
+    }
 }
 </script>
 </body>
