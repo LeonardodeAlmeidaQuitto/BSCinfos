@@ -661,6 +661,10 @@ function atualizarDropdownTimesScrims(timesNaScrimMap, valorAtual) {
 // ==========================================
 
 function estruturarMD3(dadosPeriodo) {
+    const partidas = estruturarMD3(dadosCSV); 
+    analisarMelhoresComposicoes(partidas);
+    renderizarGraficoMeta(partidas);
+    
     let rawMatches = {};
     dadosPeriodo.forEach(r => { if(!rawMatches[r.id_partida]) rawMatches[r.id_partida] = []; rawMatches[r.id_partida].push(r); });
 
@@ -1747,6 +1751,156 @@ function aplicarCoresTabelaMeta() {
                     wrCell.style.color = 'red';
                 } else if (wrValor >= 0 && wrValor <= 9) {
                     wrCell.style.color = 'darkred';
+                }
+            }
+        }
+    });
+}
+
+/**
+ * 1. Calcula e exibe as melhores composições (Trios)
+ */
+function analisarMelhoresComposicoes(partidasEstruturadas) {
+    let composicoes = {};
+
+    partidasEstruturadas.forEach(partida => {
+        // Validação: Garante que o time tem exatamente 3 picks registrados
+        if (!partida.picksA || partida.picksA.length !== 3) return;
+        if (!partida.picksB || partida.picksB.length !== 3) return;
+
+        // Ordena os nomes em ordem alfabética para a comp "Gene+Max+Sandy" ser igual a "Sandy+Gene+Max"
+        let compA = partida.picksA.slice().sort().join(' + ');
+        let compB = partida.picksB.slice().sort().join(' + ');
+
+        // Inicializa no objeto
+        if (!composicoes[compA]) composicoes[compA] = { wins: 0, total: 0 };
+        if (!composicoes[compB]) composicoes[compB] = { wins: 0, total: 0 };
+
+        // Adiciona aos totais
+        composicoes[compA].total++;
+        composicoes[compB].total++;
+
+        // Checa quem venceu a partida (usando o tAId ou tBId)
+        if (partida.vencedor === partida.tAId) {
+            composicoes[compA].wins++;
+        } else if (partida.vencedor === partida.tBId) {
+            composicoes[compB].wins++;
+        }
+    });
+
+    // Converte o objeto para Array para podermos ordenar
+    let arrayComps = Object.keys(composicoes).map(comp => {
+        let winRate = (composicoes[comp].wins / composicoes[comp].total) * 100;
+        return {
+            nome: comp,
+            total: composicoes[comp].total,
+            wins: composicoes[comp].wins,
+            winRate: winRate
+        };
+    });
+
+    // Filtra comps com poucas partidas (ex: mínimo de 3 jogos para ter relevância)
+    arrayComps = arrayComps.filter(c => c.total >= 3);
+    
+    // Ordena por Win Rate (do maior para o menor)
+    arrayComps.sort((a, b) => b.winRate - a.winRate);
+
+    renderizarTabelaComps(arrayComps.slice(0, 10)); // Pega o Top 10
+}
+
+function renderizarTabelaComps(topComps) {
+    const tbody = document.querySelector('#tabela-comps tbody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = ''; // Limpa a tabela
+
+    topComps.forEach(comp => {
+        let tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><strong>${comp.nome}</strong></td>
+            <td>${comp.total}</td>
+            <td>${comp.wins}</td>
+            <td style="color: ${comp.winRate >= 50 ? 'green' : 'red'}; font-weight: bold;">
+                ${comp.winRate.toFixed(1)}%
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+/**
+ * 2. Calcula os dados e gera o Gráfico de Dispersão (Scatter Plot) Pick vs Win Rate
+ */
+function renderizarGraficoMeta(partidasEstruturadas) {
+    let brawlersStats = {};
+    let totalPartidas = partidasEstruturadas.length;
+
+    // Contabiliza picks e vitórias por brawler
+    partidasEstruturadas.forEach(partida => {
+        const todosPicks = [...(partida.picksA || []), ...(partida.picksB || [])];
+        
+        todosPicks.forEach(brawler => {
+            if (!brawlersStats[brawler]) brawlersStats[brawler] = { picks: 0, wins: 0 };
+            brawlersStats[brawler].picks++;
+            
+            // Se o brawler estava no time A e o time A ganhou, ou no time B e o B ganhou
+            if (partida.picksA && partida.picksA.includes(brawler) && partida.vencedor === partida.tAId) {
+                brawlersStats[brawler].wins++;
+            } else if (partida.picksB && partida.picksB.includes(brawler) && partida.vencedor === partida.tBId) {
+                brawlersStats[brawler].wins++;
+            }
+        });
+    });
+
+    // Formata dados para o Chart.js
+    const dadosGrafico = Object.keys(brawlersStats).map(brawler => {
+        let stats = brawlersStats[brawler];
+        let pickRate = (stats.picks / (totalPartidas * 2)) * 100; // *2 porque são 2 times por partida
+        let winRate = (stats.wins / stats.picks) * 100;
+
+        return {
+            x: pickRate,
+            y: winRate,
+            name: brawler,
+            totalPicks: stats.picks
+        };
+    }).filter(d => d.totalPicks >= 5); // Oculta brawlers com menos de 5 picks para evitar ruído estatístico
+
+    const ctx = document.getElementById('graficoQuadrantes');
+    if (!ctx) return;
+
+    new Chart(ctx.getContext('2d'), {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Desempenho dos Brawlers',
+                data: dadosGrafico,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                pointRadius: 6,
+                pointHoverRadius: 9
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: (context) => {
+                            const data = context.raw;
+                            return `${data.name}: Win Rate ${data.y.toFixed(1)}% | Pick Rate ${data.x.toFixed(1)}%`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: { 
+                    title: { display: true, text: 'Taxa de Escolha (Pick Rate %)', font: {weight: 'bold'} } 
+                },
+                y: { 
+                    title: { display: true, text: 'Taxa de Vitória (Win Rate %)', font: {weight: 'bold'} },
+                    min: 0,
+                    max: 100
                 }
             }
         }
