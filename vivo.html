@@ -82,7 +82,7 @@
         /* Seletor de brawlers */
         .picker-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.85); z-index: 999; display: none; align-items: center; justify-content: center; padding: 20px; }
         .picker { background: var(--card); border: 1px solid var(--borda); border-radius: 14px; width: min(760px, 95vw); max-height: 86vh; display: flex; flex-direction: column; }
-        .picker-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--borda); }
+        .picker-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--borda); gap: 10px; }
         .picker-head input { width: 240px; }
         .picker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(74px, 1fr)); gap: 8px; padding: 16px; overflow-y: auto; }
         .pick-cell { cursor: pointer; border-radius: 8px; overflow: hidden; border: 1px solid var(--borda); background: #0f1117; }
@@ -109,9 +109,81 @@
         .win-banner { text-align: center; padding: 24px; }
         .win-banner .trophy { font-size: 44px; }
         .win-banner h2 { font-size: 22px; margin: 8px 0; }
+        .hint { font-size: 11px; color: var(--mut); margin-top: 6px; line-height: 1.6; }
+
+        /* ════════ OVERLAY DE TRANSMISSÃO (OBS / janela separada) ════════ */
+        .tx-body { background: #0b0d14; }
+        .tx-root { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; overflow: hidden; }
+        .tx-frame { width: 100%; height: 100%; display: flex; flex-direction: column; color: #fff;
+            background: radial-gradient(circle at 50% 20%, #16213e 0%, #0b0d14 65%); }
+
+        /* --- Modo DRAFT (estilo print 1) --- */
+        .tx-draft { display: flex; flex-direction: column; height: 100%; padding: 18px 26px; gap: 12px; }
+        .tx-map-banner { display: flex; align-items: center; justify-content: center; gap: 10px;
+            background: #000c; border: 1px solid #6d28d966; border-radius: 12px; padding: 10px 22px;
+            color: #fff; font-size: 22px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; }
+        .tx-map-banner .gem { font-size: 20px; }
+        .tx-draft-mid { flex: 1; display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 18px; align-items: stretch; }
+        .tx-team-col { display: flex; flex-direction: column; gap: 12px; }
+        .tx-team-head { display: flex; align-items: center; gap: 12px; }
+        .tx-team-head img { width: 46px; height: 46px; border-radius: 50%; object-fit: cover; border: 2px solid var(--azul); background: #000; }
+        .tx-team-head.red img { border-color: var(--vermelho); }
+        .tx-team-head .tx-name { font-size: 18px; font-weight: 900; }
+        .tx-picks { display: flex; flex-direction: column; gap: 12px; flex: 1; }
+        .tx-pick { display: flex; align-items: center; gap: 12px; background: #ffffff08; border: 1px solid #ffffff1a; border-radius: 12px; padding: 8px; }
+        .tx-pick img { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; background: #000; }
+        .tx-pick .tx-pick-name { font-size: 14px; font-weight: 800; }
+        .tx-pick .tx-pick-id { font-size: 11px; color: var(--mut); }
+        .tx-map-center { display: flex; align-items: center; justify-content: center; border: 1px solid #ffffff1a; border-radius: 16px;
+            background: radial-gradient(circle at 50% 50%, #1e3a5f 0%, #0b0d14 70%); position: relative; overflow: hidden; }
+        .tx-map-center .map-name { font-size: 26px; font-weight: 900; text-align: center; letter-spacing: 1px; }
+        .tx-map-center .map-mode { color: var(--mut); font-size: 13px; text-align: center; margin-top: 6px; }
+        .tx-scorebar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; text-align: center;
+            background: #000c; border-radius: 14px; padding: 12px 20px; border: 1px solid #ffffff1a; }
+        .tx-scorebar .sb-team { display: flex; align-items: center; gap: 12px; }
+        .tx-scorebar .sb-team.right { justify-content: flex-end; }
+        .tx-scorebar .sb-team img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; }
+        .tx-scorebar .sb-score { font-size: 40px; font-weight: 900; }
+        .tx-scorebar.blue .sb-score.az { color: #60a5fa; }
+        .tx-scorebar.red .sb-score.vm { color: #f87171; }
+        .tx-scorebar .sb-name { font-weight: 800; font-size: 15px; }
+        .tx-scorebar .sb-vs { font-size: 20px; font-weight: 900; color: #f87171; padding: 0 22px; }
+
+        /* --- Modo TRANSMISSÃO OBS (estilo print 2) --- */
+        .tx-obs { display: flex; flex-direction: column; height: 100%; padding: 18px 26px; gap: 14px; }
+        .tx-obs-mapbar { text-align: center; font-size: 15px; font-weight: 800; color: #cbd5e1; letter-spacing: 1px; text-transform: uppercase; }
+        .tx-obs-halves { flex: 1; display: grid; grid-template-columns: 1fr auto 1fr; gap: 22px; align-items: center; }
+        .tx-obs-half { display: flex; flex-direction: column; gap: 12px; padding: 18px; border-radius: 16px; }
+        .tx-obs-half.blue { background: linear-gradient(160deg, #1e3a5f88 0%, #0b1d33 100%); border: 1px solid #3b82f655; }
+        .tx-obs-half.red { background: linear-gradient(160deg, #5f1e2e88 0%, #330b15 100%); border: 1px solid #ef444455; }
+        .tx-obs-team { display: flex; align-items: center; gap: 12px; }
+        .tx-obs-team img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--azul); }
+        .tx-obs-half.red .tx-obs-team img { border-color: var(--vermelho); }
+        .tx-obs-team .tx-name { font-size: 18px; font-weight: 900; }
+        .tx-obs-slots { display: flex; flex-direction: column; gap: 12px; }
+        .tx-obs-slot { height: 88px; border-radius: 14px; display: flex; align-items: center; justify-content: center;
+            background: #000a; border: 1px solid #ffffff1a; position: relative; overflow: hidden; }
+        .tx-obs-slot img { width: 100%; height: 100%; object-fit: cover; }
+        .tx-obs-slot .qmark { font-size: 44px; font-weight: 900; color: #ffffff66; }
+        .tx-obs-slot .timer { font-size: 40px; font-weight: 900; color: #fff; text-shadow: 0 0 16px var(--rosa); }
+        .tx-obs-slot.picking { border-color: var(--rosa); box-shadow: 0 0 18px var(--rosa); animation: pulse 1s infinite; }
+        .tx-obs-slot.picked { border-color: #22c55e88; }
+        @keyframes pulse { 0%,100% { box-shadow: 0 0 12px var(--rosa); } 50% { box-shadow: 0 0 26px var(--rosa); } }
+        .tx-obs-center { display: flex; flex-direction: column; align-items: center; gap: 12px; min-width: 180px; }
+        .tx-obs-score { display: flex; align-items: center; gap: 14px; background: #000; border-radius: 12px; padding: 10px 20px; }
+        .tx-obs-score .num { font-size: 34px; font-weight: 900; }
+        .tx-obs-score .num.az { color: #60a5fa; }
+        .tx-obs-score .num.vm { color: #f87171; }
+        .tx-obs-score .sep { color: #fff; font-size: 22px; font-weight: 900; }
+        .tx-obs-round { font-size: 13px; font-weight: 800; color: #cbd5e1; text-transform: uppercase; letter-spacing: 1px; }
+        .tx-obs-map { font-size: 15px; font-weight: 800; color: #fff; }
+        .tx-obs-mode { font-size: 12px; color: var(--mut); }
+
         @media (max-width: 700px) {
             .teams-grid { grid-template-columns: 1fr; }
             .vs { text-align: center; }
+            .tx-draft-mid { grid-template-columns: 1fr; }
+            .tx-obs-halves { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -176,6 +248,17 @@
                     <option value="MD10">MD10 — melhor de 10 (1º a 6 vitórias)</option>
                 </select>
 
+                <label style="margin-top:18px;">Tipo de Transmissão</label>
+                <select id="tipo-trans">
+                    <option value="draft">🖼️ Draft — placar estilo escore (mapa no centro, logo nos bans)</option>
+                    <option value="obs">🔴 Transmissão OBS — slots com "?" e cronômetro (print 2)</option>
+                </select>
+                <div class="hint">
+                    Você escolhe como a janela de transmissão vai se parecer. Em qualquer um dos dois, há um botão
+                    <strong style="color:var(--texto)">Abrir Transmissão</strong> que cria uma aba separada sincronizada,
+                    pronta para capturar no OBS.
+                </div>
+
                 <div class="btn-row">
                     <button class="btn green" onclick="iniciarSessao()">▶️ COMEÇAR AO VIVO</button>
                     <button class="btn gray" onclick="verHistorico()">📁 Histórico</button>
@@ -204,6 +287,11 @@
                         <div class="tname" id="s-nome-vermelho">Vermelho</div>
                         <div class="tpts" id="s-pontos-vermelho">0</div>
                     </div>
+                </div>
+
+                <!-- Botão de transmissão -->
+                <div class="btn-row" style="justify-content:center;margin-top:16px;">
+                    <button class="btn" onclick="abrirTransmissao()">🖥️ Abrir Janela de Transmissão (para o OBS)</button>
                 </div>
 
                 <!-- Meta: modo + mapa -->
@@ -263,13 +351,17 @@
         </div>
     </div>
 
+    <!-- Overlay de transmissão (usado na janela separada ?tx=1) -->
+    <div class="tx-root" id="tx-root">
+        <div class="tx-frame" id="tx-frame"></div>
+    </div>
+
 <script>
 // ════════════════════════════════════════════════════════════════
 //  DADOS
 // ════════════════════════════════════════════════════════════════
 var BRAWLERS = ["8bit","alli","amber","angelo","ash","barley","bea","belle","berry","bibi","bo","bolt","bonnie","brock","bull","buster","buzz","byron","carl","charlie","chester","chuck","clancy","colette","colt","cordelius","crow","damian","darryl","doug","draco","dynamike","edgar","elprimo","emz","eve","fang","finx","frank","gale","gene","gigi","glowy","gray","griff","grom","gus","hank","jacky","jaeyong","janet","jessie","juju","kaze","kenji","kit","larrylawrie","leon","lily","lola","lou","lumi","maisie","mandy","max","meeple","meg","melodie","mico","mina","moe","mortis","mrp","najia","nani","nita","nori","ollie","otis","pam","pearl","penny","pierce","piper","poco","rico","rosa","rt","ruffs","sam","sandy","shade","shelly","sirius","spike","sprout","squeak","starrnova","stu","surge","tara","tick","trunk","wendy","willow","ziggy"];
 
-// Nomes legíveis (capitaliza)
 function nomeBonito(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 function limparId(id) { return id.replace(/[^0-9a-zA-Z#]/g, '').toUpperCase(); }
 
@@ -285,8 +377,158 @@ var MAPAS = {
 // ════════════════════════════════════════════════════════════════
 //  ESTADO
 // ════════════════════════════════════════════════════════════════
-var sessao = null;   // { azul:{nome,logo,ids:[...]}, vermelho:{...}, formato, pontos:{azul,vermelho}, partidaAtual }
-var estadoDraft = null; // slots da partida atual
+var sessao = null;
+var estadoDraft = null;
+var slotAtivo = null; // {tipo, time, idx}
+var slotStart = 0;    // timestamp do início do pick atual (cronômetro 35s)
+var modoSel = '', mapaSel = '';
+var TEMPO_PICK = 35;  // segundos
+
+// ════════════════════════════════════════════════════════════════
+//  TRANSMISSÃO (janela separada / OBS)
+//  Usa localStorage + BroadcastChannel p/ sincronizar abas do mesmo navegador
+// ════════════════════════════════════════════════════════════════
+var CHAVE_TX = 'bsc_vivo_tx';
+var canal = ('BroadcastChannel' in window) ? new BroadcastChannel('bsc_vivo') : null;
+var isTx = new URLSearchParams(location.search).get('tx') === '1';
+
+function estadoTx() {
+    return {
+        sessao: sessao,
+        estadoDraft: estadoDraft,
+        slotAtivo: slotAtivo,
+        slotStart: slotStart,
+        modo: modoSel,
+        mapa: mapaSel,
+        tipoTransmissao: sessao ? sessao.tipoTransmissao : null
+    };
+}
+function publicarTx() {
+    if (!sessao) return;
+    var data = estadoTx();
+    try { localStorage.setItem(CHAVE_TX, JSON.stringify(data)); } catch (e) {}
+    if (canal) { try { canal.postMessage(data); } catch (e) {} }
+}
+function iniciarModoTransmissao() {
+    document.querySelector('.navbar').style.display = 'none';
+    document.querySelector('.wrapper').style.display = 'none';
+    document.body.classList.add('tx-body');
+    var root = document.getElementById('tx-root');
+    root.style.display = 'flex';
+    carregarTx();
+    if (canal) canal.addEventListener('message', function(e) { aplicarTx(e.data); });
+    window.addEventListener('storage', function(e) { if (e.key === CHAVE_TX) carregarTx(); });
+    setInterval(renderCronometroObs, 200);
+}
+function carregarTx() {
+    try { aplicarTx(JSON.parse(localStorage.getItem(CHAVE_TX))); } catch (e) {}
+}
+function aplicarTx(d) {
+    if (!d || !d.sessao) {
+        document.getElementById('tx-frame').innerHTML = '<div style="margin:auto;color:var(--mut);font-size:18px;">Aguardando partida...<br><span style="font-size:13px;">Inicie a partida na página AO VIVO principal.</span></div>';
+        return;
+    }
+    sessao = d.sessao;
+    estadoDraft = d.estadoDraft;
+    slotAtivo = d.slotAtivo;
+    slotStart = d.slotStart;
+    modoSel = d.modo || '';
+    mapaSel = d.mapa || '';
+    renderTxFrame();
+}
+function abrirTransmissao() {
+    window.open('vivo.html?tx=1', '_blank', 'width=1280,height=720');
+    publicarTx();
+}
+
+// ════════════════════════════════════════════════════════════════
+//  RENDERIZAÇÃO DA JANELA DE TRANSMISSÃO
+// ════════════════════════════════════════════════════════════════
+function renderTxFrame() {
+    var frame = document.getElementById('tx-frame');
+    frame.innerHTML = (sessao && sessao.tipoTransmissao === 'obs') ? overlayObs() : overlayDraft();
+}
+
+function overlayDraft() {
+    var a = sessao.azul, r = sessao.vermelho;
+    var mapaDisplay = mapaSel ? (modoSel ? modoSel + ' · ' : '') + mapaSel : (modoSel || '—');
+    return `
+        <div class="tx-draft">
+            <div class="tx-map-banner"><span class="gem">💎</span><span>${esc(mapaDisplay)}</span></div>
+            <div class="tx-draft-mid">
+                <div class="tx-team-col">
+                    <div class="tx-team-head"><img src="${esc(a.logo)}" alt=""><span class="tx-name">${esc(a.nome)}</span></div>
+                    <div class="tx-picks">${a.ids.map((id,i) => `
+                        <div class="tx-pick">
+                            <img src="brawlers/${estadoDraft.picks.azul[i]||'unknow'}.png" onerror="this.style.visibility='hidden'">
+                            <div><div class="tx-pick-name">${id?'Jogador '+(i+1):'Jogador '+(i+1)}</div><div class="tx-pick-id">${esc(id||'ID não informado')}</div></div>
+                        </div>`).join('')}</div>
+                </div>
+                <div class="tx-map-center">
+                    <div><div class="map-name">${esc(mapaSel||modoSel||'AGUARDANDO')}</div><div class="map-mode">${esc(modoSel||'')}</div></div>
+                </div>
+                <div class="tx-team-col">
+                    <div class="tx-team-head"><img src="${esc(r.logo)}" alt=""><span class="tx-name">${esc(r.nome)}</span></div>
+                    <div class="tx-picks">${r.ids.map((id,i) => `
+                        <div class="tx-pick">
+                            <img src="brawlers/${estadoDraft.picks.vermelho[i]||'unknow'}.png" onerror="this.style.visibility='hidden'">
+                            <div><div class="tx-pick-name">${'Jogador '+(i+1)}</div><div class="tx-pick-id">${esc(id||'ID não informado')}</div></div>
+                        </div>`).join('')}</div>
+                </div>
+            </div>
+            <div class="tx-scorebar">
+                <div class="sb-team"><img src="${esc(a.logo)}" alt=""><div><div class="sb-name">${esc(a.nome)}</div><div class="sb-score az">${sessao.pontos.azul}</div></div></div>
+                <div class="sb-vs">VS</div>
+                <div class="sb-team right"><div><div class="sb-name">${esc(r.nome)}</div><div class="sb-score vm">${sessao.pontos.vermelho}</div></div><img src="${esc(r.logo)}" alt=""></div>
+            </div>
+        </div>`;
+}
+
+function overlayObs() {
+    var a = sessao.azul, r = sessao.vermelho;
+    return `
+        <div class="tx-obs">
+            <div class="tx-obs-mapbar">${esc(mapaSel ? (modoSel?modoSel+' · ':'')+mapaSel : (modoSel||'Partida Ao Vivo'))}</div>
+            <div class="tx-obs-halves">
+                <div class="tx-obs-half blue">
+                    <div class="tx-obs-team"><img src="${esc(a.logo)}" alt=""><span class="tx-name">${esc(a.nome)}</span></div>
+                    <div class="tx-obs-slots">${[0,1,2].map(i => obsSlot('azul', i)).join('')}</div>
+                </div>
+                <div class="tx-obs-center">
+                    <div class="tx-obs-score"><span class="num az">${sessao.pontos.azul}</span><span class="sep">-</span><span class="num vm">${sessao.pontos.vermelho}</span></div>
+                    <div class="tx-obs-round">Partida ${sessao.partidaAtual} · ${sessao.formato}</div>
+                    <div class="tx-obs-map">${esc(mapaSel||'—')}</div>
+                    <div class="tx-obs-mode">${esc(modoSel||'')}</div>
+                </div>
+                <div class="tx-obs-half red">
+                    <div class="tx-obs-team"><img src="${esc(r.logo)}" alt=""><span class="tx-name">${esc(r.nome)}</span></div>
+                    <div class="tx-obs-slots">${[0,1,2].map(i => obsSlot('vermelho', i)).join('')}</div>
+                </div>
+            </div>
+        </div>`;
+}
+
+function obsSlot(time, i) {
+    var val = estadoDraft.picks[time][i];
+    var ativo = slotAtivo && slotAtivo.tipo === 'pick' && slotAtivo.time === time && slotAtivo.idx === i;
+    if (val) {
+        return `<div class="tx-obs-slot picked"><img loading="lazy" decoding="async" src="brawlers/${val}.png" onerror="this.style.visibility='hidden'"></div>`;
+    }
+    if (ativo) {
+        return `<div class="tx-obs-slot picking"><div class="timer" id="tx-timer"></div></div>`;
+    }
+    return `<div class="tx-obs-slot"><span class="qmark">?</span></div>`;
+}
+
+function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// Cronômetro de 35s mostrado na janela de transmissão (modo OBS)
+function renderCronometroObs() {
+    var el = document.getElementById('tx-timer');
+    if (!el || !slotAtivo) return;
+    var rest = Math.max(0, TEMPO_PICK - Math.floor((Date.now() - slotStart) / 1000));
+    el.textContent = rest + 's';
+}
 
 // ════════════════════════════════════════════════════════════════
 //  FUNÇÕES GERAIS
@@ -298,37 +540,38 @@ function mostrarStep(nome) {
 function vitoriasNecessarias(formato) {
     return ({ "MD3": 2, "MD5": 3, "MD7": 4, "MD10": 6 })[formato] || 2;
 }
-function voltarSetup() {
-    mostrarStep('setup');
-    fecharPicker();
-}
-function novaSessao() { sessao = null; estadoDraft = null; voltarSetup(); }
+function voltarSetup() { mostrarStep('setup'); fecharPicker(); }
+function novaSessao() { sessao = null; estadoDraft = null; slotAtivo = null; voltarSetup(); }
 
 // ════════════════════════════════════════════════════════════════
 //  SETUP
 // ════════════════════════════════════════════════════════════════
 document.getElementById('logo-azul-url').addEventListener('input', function() {
-    var u = this.value.trim();
-    document.getElementById('logo-azul-preview').src = u || 'element/teams/unknow.png';
+    document.getElementById('logo-azul-preview').src = this.value.trim() || 'element/teams/unknow.png';
 });
 document.getElementById('logo-vermelho-url').addEventListener('input', function() {
-    var u = this.value.trim();
-    document.getElementById('logo-vermelho-preview').src = u || 'element/teams/unknow.png';
+    document.getElementById('logo-vermelho-preview').src = this.value.trim() || 'element/teams/unknow.png';
 });
 
 function iniciarSessao() {
     var formato = document.getElementById('formato').value;
-    var azul = {
-        nome: document.getElementById('nome-azul').value.trim() || 'Time Azul',
-        logo: document.getElementById('logo-azul-url').value.trim() || 'element/teams/unknow.png',
-        ids: [1,2,3].map(i => limparId(document.getElementById('azul-' + i).value))
+    var tipoTrans = document.getElementById('tipo-trans').value;
+    sessao = {
+        azul: {
+            nome: document.getElementById('nome-azul').value.trim() || 'Time Azul',
+            logo: document.getElementById('logo-azul-url').value.trim() || 'element/teams/unknow.png',
+            ids: [1,2,3].map(i => limparId(document.getElementById('azul-' + i).value))
+        },
+        vermelho: {
+            nome: document.getElementById('nome-vermelho').value.trim() || 'Time Vermelho',
+            logo: document.getElementById('logo-vermelho-url').value.trim() || 'element/teams/unknow.png',
+            ids: [1,2,3].map(i => limparId(document.getElementById('vermelho-' + i).value))
+        },
+        formato: formato,
+        tipoTransmissao: tipoTrans,
+        pontos: { azul: 0, vermelho: 0 },
+        partidaAtual: 1
     };
-    var vermelho = {
-        nome: document.getElementById('nome-vermelho').value.trim() || 'Time Vermelho',
-        logo: document.getElementById('logo-vermelho-url').value.trim() || 'element/teams/unknow.png',
-        ids: [1,2,3].map(i => limparId(document.getElementById('vermelho-' + i).value))
-    };
-    sessao = { azul: azul, vermelho: vermelho, formato: formato, pontos: { azul: 0, vermelho: 0 }, partidaAtual: 1 };
     estadoDraft = criarDraftVazio();
     iniciarPartida();
 }
@@ -339,8 +582,12 @@ function iniciarPartida() {
     document.getElementById('s-vitorias-necessarias').textContent = '1º a ' + vitoriasNecessarias(sessao.formato) + ' vitórias';
     document.getElementById('s-num-partida').textContent = sessao.partidaAtual;
     estadoDraft = criarDraftVazio();
+    modoSel = ''; mapaSel = '';
+    document.getElementById('modo-partida').value = '';
+    document.getElementById('mapa-partida').innerHTML = '<option value="">— Escolha o MAPA —</option>';
     renderDraftBoard();
     mostrarStep('vivo');
+    publicarTx();
 }
 
 function criarDraftVazio() {
@@ -374,33 +621,34 @@ function atualizarPlacar() {
     });
 })();
 document.getElementById('modo-partida').addEventListener('change', function() {
+    modoSel = this.value;
     var sel = document.getElementById('mapa-partida');
     sel.innerHTML = '<option value="">— Escolha o MAPA —</option>';
-    var mapas = MAPAS[this.value] || [];
-    mapas.forEach(m => {
+    (MAPAS[this.value] || []).forEach(m => {
         var o = document.createElement('option');
         o.value = m; o.textContent = m;
         sel.appendChild(o);
     });
+    publicarTx();
+});
+document.getElementById('mapa-partida').addEventListener('change', function() {
+    mapaSel = this.value;
+    publicarTx();
 });
 
 // ════════════════════════════════════════════════════════════════
-//  DRAFT BOARD
+//  DRAFT BOARD (controle na página principal)
 // ════════════════════════════════════════════════════════════════
-var slotAtivo = null; // {tipo:'ban'|'pick', time:'azul'|'vermelho', idx:0}
-
 function renderDraftBoard() {
     var board = document.getElementById('draft-board');
     var html = '';
 
-    // Fase de ban
     html += '<div class="phase-title">🚫 BANS</div>';
     html += '<div style="display:flex;gap:20px;">';
     html += renderColuna('ban', 'azul');
     html += renderColuna('ban', 'vermelho');
     html += '</div>';
 
-    // Fase de pick
     html += '<div class="phase-title">🎯 PICKS</div>';
     html += '<div style="display:flex;gap:20px;">';
     html += renderColuna('pick', 'azul');
@@ -436,7 +684,9 @@ function renderColuna(tipo, time) {
 
 function abrirSlot(tipo, time, idx) {
     slotAtivo = { tipo: tipo, time: time, idx: idx };
+    slotStart = Date.now(); // inicia cronômetro de 35s
     abrirPicker();
+    publicarTx();
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -451,11 +701,11 @@ function abrirPicker() {
 function fecharPicker() {
     document.getElementById('picker-overlay').style.display = 'none';
     slotAtivo = null;
+    publicarTx();
 }
 function filtrarPicker() {
     var t = document.getElementById('picker-search').value.toLowerCase();
-    var list = BRAWLERS.filter(b => b.toLowerCase().includes(t));
-    renderPickerGrid(list);
+    renderPickerGrid(BRAWLERS.filter(b => b.toLowerCase().includes(t)));
 }
 function renderPickerGrid(list) {
     var grid = document.getElementById('picker-grid');
@@ -473,8 +723,10 @@ function escolherBrawler(b) {
     var tipo = slotAtivo.tipo, time = slotAtivo.time, idx = slotAtivo.idx;
     if (tipo === 'ban') estadoDraft.bans[time][idx] = b;
     else estadoDraft.picks[time][idx] = b;
+    slotAtivo = null;
     fecharPicker();
     renderDraftBoard();
+    publicarTx();
 }
 document.getElementById('picker-overlay').addEventListener('click', function(e) {
     if (e.target === this) fecharPicker();
@@ -488,10 +740,7 @@ function validarPartida() {
     var mapa = document.getElementById('mapa-partida').value;
     if (!modo) { alert('Escolha o MODO da partida.'); return null; }
     if (!mapa) { alert('Escolha o MAPA da partida.'); return null; }
-    var picksOk = true;
-    ['azul','vermelho'].forEach(t => {
-        if (estadoDraft.picks[t].some(p => !p)) picksOk = false;
-    });
+    var picksOk = ['azul','vermelho'].every(t => estadoDraft.picks[t].every(p => p));
     if (!picksOk) { alert('Preencha os 6 picks (3 de cada time) antes de finalizar.'); return null; }
     return { modo: modo, mapa: mapa };
 }
@@ -515,10 +764,9 @@ function finalizarPartida(time) {
     sessao.pontos[time]++;
     registro.placarApos = { azul: sessao.pontos.azul, vermelho: sessao.pontos.vermelho };
     salvarRegistro(registro);
+    publicarTx();
 
-    var necessario = vitoriasNecessarias(sessao.formato);
-    if (sessao.pontos[time] >= necessario) {
-        // Fim da série
+    if (sessao.pontos[time] >= vitoriasNecessarias(sessao.formato)) {
         mostrarFim(time);
     } else {
         sessao.partidaAtual++;
@@ -532,11 +780,14 @@ function mostrarFim(time) {
     document.getElementById('fim-placar').textContent = sessao.pontos.azul + ' x ' + sessao.pontos.vermelho;
     document.getElementById('fim-resumo').textContent = 'Campeão em ' + sessao.partidaAtual + ' partidas (' + sessao.formato + ')';
     mostrarStep('fim');
+    publicarTx();
 }
 
 function reiniciarPartida() {
     estadoDraft = criarDraftVazio();
+    slotAtivo = null;
     renderDraftBoard();
+    publicarTx();
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -572,7 +823,6 @@ function verHistorico() {
     for (var i = hist.length - 1; i >= 0; i--) {
         container.appendChild(renderHistItem(hist[i]));
     }
-    // botão limpar
     var clear = document.createElement('div');
     clear.style.marginTop = '10px';
     clear.innerHTML = '<button class="btn red" onclick="limparHistorico()" style="font-size:12px;padding:8px 14px;">🗑️ Limpar histórico</button>';
@@ -615,14 +865,17 @@ function renderHistItem(r) {
 }
 
 // ════════════════════════════════════════════════════════════════
-//  OTIMIZAÇÃO DE VELOCIDADE
-//  Pré-carrega as imagens dos brawlers em segundo plano para o
-//  seletor abrir instantâneo, sem travar nem esperar download.
+//  INICIALIZAÇÃO
 // ════════════════════════════════════════════════════════════════
-if ('requestIdleCallback' in window) {
-    requestIdleCallback(preloadBrawlerImgs, { timeout: 2000 });
+if (isTx) {
+    iniciarModoTransmissao();
 } else {
-    setTimeout(preloadBrawlerImgs, 800);
+    // Pré-carrega as imagens dos brawlers em segundo plano
+    if ('requestIdleCallback' in window) {
+        requestIdleCallback(preloadBrawlerImgs, { timeout: 2000 });
+    } else {
+        setTimeout(preloadBrawlerImgs, 800);
+    }
 }
 function preloadBrawlerImgs() {
     for (var i = 0; i < BRAWLERS.length; i++) {
