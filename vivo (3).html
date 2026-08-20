@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AO VIVO — BCSInfos</title>
+    <script src="users.js"></script>
+    <script src="auth.js"></script>
+    <link rel="stylesheet" href="draft.css">
+    <link rel="stylesheet" href="vivo.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html">MENU</a>
+        <a href="geral.html">GERAL</a>
+        <a href="draft.html">DRAFT</a>
+        <a href="vivo.html" class="active">AO VIVO</a>
+    </nav>
+
+    <div class="wrapper">
+
+        <!-- PASSO 1: CONFIGURAÇÃO -->
+        <div class="step active" id="step-setup">
+            <div class="card">
+                <h2>🔴🔵 Configurar Partida Ao Vivo</h2>
+
+                <div class="teams-grid">
+                    <div class="team-box blue">
+                        <h3>Time Azul</h3>
+                        <label>Nome do Time</label>
+                        <input type="text" id="nome-azul" placeholder="Ex: Bounty Hunters">
+                        <label>Logo do Time</label>
+                        <div class="logo-row">
+                            <img class="team-logo" id="logo-azul-preview" src="element/teams/unknow.png" alt="logo">
+                            <input type="text" id="logo-azul-url" placeholder="URL da logo (ou deixa em branco)">
+                        </div>
+                        <label>ID Jogador 1</label>
+                        <input type="text" id="azul-1" placeholder="#PLLRJC2V">
+                        <label>ID Jogador 2</label>
+                        <input type="text" id="azul-2" placeholder="#GYCYCLRJL">
+                        <label>ID Jogador 3</label>
+                        <input type="text" id="azul-3" placeholder="#YGQYGCR">
+                    </div>
+
+                    <div class="vs">VS</div>
+
+                    <div class="team-box red">
+                        <h3>Time Vermelho</h3>
+                        <label>Nome do Time</label>
+                        <input type="text" id="nome-vermelho" placeholder="Ex: RED CANIDS">
+                        <label>Logo do Time</label>
+                        <div class="logo-row">
+                            <img class="team-logo" id="logo-vermelho-preview" src="element/teams/unknow.png" alt="logo">
+                            <input type="text" id="logo-vermelho-url" placeholder="URL da logo (ou deixa em branco)">
+                        </div>
+                        <label>ID Jogador 1</label>
+                        <input type="text" id="vermelho-1" placeholder="#GVYLVUGR">
+                        <label>ID Jogador 2</label>
+                        <input type="text" id="vermelho-2" placeholder="#JQ8L0YYL">
+                        <label>ID Jogador 3</label>
+                        <input type="text" id="vermelho-3" placeholder="#R2LR2QLG">
+                    </div>
+                </div>
+
+                <label style="margin-top:18px;">Tipo de Partida (formato da série)</label>
+                <select id="formato">
+                    <option value="MD3">MD3 — melhor de 3 (1º a 2 vitórias)</option>
+                    <option value="MD5">MD5 — melhor de 5 (1º a 3 vitórias)</option>
+                    <option value="MD7">MD7 — melhor de 7 (1º a 4 vitórias)</option>
+                    <option value="MD10">MD10 — melhor de 10 (1º a 6 vitórias)</option>
+                </select>
+
+                <label style="margin-top:18px;">Tipo de Transmissão</label>
+                <select id="tipo-trans">
+                    <option value="draft">🖼️ Draft — placar estilo escore (mapa no centro, logo nos bans)</option>
+                    <option value="obs">🔴 Transmissão OBS — slots com "?" e cronômetro (print 2)</option>
+                </select>
+                <div class="hint">
+                    Você escolhe como a janela de transmissão vai se parecer. Em qualquer um dos dois, há um botão
+                    <strong style="color:var(--texto)">Abrir Transmissão</strong> que cria uma aba separada sincronizada,
+                    pronta para capturar no OBS.
+                </div>
+
+                <label style="margin-top:18px;">🔑 API Key do Brawl Stars (opcional — leitura de perfil/battlelog)</label>
+                <input type="password" id="brawl-api-key" placeholder="Cole aqui sua API key (ex: eyJhbGci...)">
+                <div class="btn-row" style="margin-top:8px;">
+                    <button class="btn gray" style="font-size:12px;padding:8px 14px;" onclick="testarAPI()">🔍 Testar conexão com a API</button>
+                </div>
+                <div class="hint">
+                    A key fica salva apenas no seu navegador e é enviada ao proxy do servidor para consultar os 3 IDs.
+                    Em site 100% estático (GitHub Pages) sem backend, a leitura automática não funciona — veja a explicação
+                    junto dos arquivos. O botão testa a conexão quando o backend estiver no ar.
+                </div>
+                <div id="api-status" style="font-size:12px;margin-top:8px;line-height:1.7;"></div>
+
+                <div class="btn-row">
+                    <button class="btn green" onclick="iniciarSessao()">▶️ COMEÇAR AO VIVO</button>
+                    <button class="btn gray" onclick="verHistorico()">📁 Histórico</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PASSO 2: DRAFT AO VIVO -->
+        <div class="step" id="step-vivo">
+            <div class="card">
+                <!-- Placar -->
+                <div class="scoreboard">
+                    <div class="score-team blue">
+                        <img class="tlogo" id="s-logo-azul" src="" alt="">
+                        <div class="tname" id="s-nome-azul">Azul</div>
+                        <div class="tpts" id="s-pontos-azul">0</div>
+                    </div>
+                    <div class="score-center">
+                        <div>Partida <span id="s-num-partida">1</span></div>
+                        <div id="s-formato">MD3</div>
+                        <div class="pts-needed" id="s-vitorias-necessarias">1º a 2 vitórias</div>
+                        <button class="btn gray" onclick="voltarSetup()" style="margin-top:10px;font-size:11px;padding:6px 12px;">← Voltar</button>
+                    </div>
+                    <div class="score-team red">
+                        <img class="tlogo" id="s-logo-vermelho" src="" alt="">
+                        <div class="tname" id="s-nome-vermelho">Vermelho</div>
+                        <div class="tpts" id="s-pontos-vermelho">0</div>
+                    </div>
+                </div>
+
+                <!-- Botão de transmissão -->
+                <div class="btn-row" style="justify-content:center;margin-top:16px;">
+                    <button class="btn" onclick="abrirTransmissao()">🖥️ Abrir Janela de Transmissão (para o OBS)</button>
+                </div>
+
+                <!-- Meta: modo + mapa -->
+                <div class="match-meta" style="margin-top:18px;">
+                    <select id="modo-partida"><option value="">— Escolha o MODO —</option></select>
+                    <select id="mapa-partida"><option value="">— Escolha o MAPA —</option></select>
+                </div>
+
+                <!-- Fases de pick -->
+                <div id="draft-board"></div>
+
+                <div class="btn-row" id="vivo-acoes">
+                    <button class="btn blue" id="btn-finalizar-azul" onclick="finalizarPartida('azul')">🏆 Azul vence a partida</button>
+                    <button class="btn red" id="btn-finalizar-vermelho" onclick="finalizarPartida('vermelho')">🏆 Vermelho vence a partida</button>
+                    <button class="btn gray" onclick="reiniciarPartida()">↺ Limpar picks desta partida</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PASSO 3: FIM DA SÉRIE -->
+        <div class="step" id="step-fim">
+            <div class="card win-banner">
+                <div class="trophy">🏆</div>
+                <h2 id="fim-campeao">TIME X</h2>
+                <div id="fim-placar">2 x 1</div>
+                <p class="sub" id="fim-resumo" style="color:var(--mut);font-size:14px;"></p>
+                <div class="btn-row" style="justify-content:center;">
+                    <button class="btn green" onclick="novaSessao()">➕ Nova partida</button>
+                    <button class="btn gray" onclick="verHistorico()">📁 Ver histórico</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PASSO 4: HISTÓRICO -->
+        <div class="step" id="step-historico">
+            <div class="card">
+                <h2>📁 Histórico de Partidas</h2>
+                <div id="historico-lista"><div class="empty-msg">Nenhuma partida registrada ainda.</div></div>
+                <div class="btn-row">
+                    <button class="btn green" onclick="novaSessao()">➕ Nova partida</button>
+                    <button class="btn gray" onclick="voltarSetup()">← Voltar</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Seletor de brawlers -->
+    <div class="picker-overlay" id="picker-overlay">
+        <div class="picker">
+            <div class="picker-head">
+                <strong id="picker-title">Escolha um brawler</strong>
+                <input type="text" id="picker-search" placeholder="Buscar brawler..." oninput="filtrarPicker()">
+                <button class="close-x" onclick="fecharPicker()">✕</button>
+            </div>
+            <div class="picker-grid" id="picker-grid"></div>
+        </div>
+    </div>
+
+    <!-- Overlay de transmissão (usado na janela separada ?tx=1) -->
+    <div class="tx-root" id="tx-root">
+        <div class="tx-frame" id="tx-frame"></div>
+    </div>
+
+    <script src="vivo.js"></script>
+</body>
+</html>
