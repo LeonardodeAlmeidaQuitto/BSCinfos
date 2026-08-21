@@ -29,6 +29,15 @@ const ROTACAO_MAPAS = {
             "Bounty": ["Hideout", "Dry Season", "Layer Cake"],
             "Knockout": ["Goldarm Gulch", "Out in the Open", "New Horizons"]        
             }
+        },
+    "08": { 
+            "Brawl Ball": ["Beach Ball", "Pinball Dreams", "Triple Dribble"], 
+            "Gem Grab": ["Hard Rock Mine", "Crystal Arcade", "Deathcap Trap"],
+            "Hot Zone": ["Dueling Beetles", "Open Business", "Ring of Fire"],
+            "Heist": ["Safe Zone", "Kaboom Canyon", "Hot Potato"],
+            "Bounty": ["Hideout", "Dry Season", "Layer Cake"],
+            "Knockout": ["Goldarm Gulch", "Out in the Open", "Belle's Rock"]        
+            }
         }
     };
 
