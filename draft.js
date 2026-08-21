@@ -574,7 +574,7 @@ _dispararCarregamentoCSV(0);
 
 // --- CONFIGURAÇÃO DE MAPAS ---
 const MAPAS_ALVO = {
-    "Brawl Ball": ["Super Beach", "Pinhole Punt", "Sneaky Fields", "Triple Dribble", "Pinball Dreams"],
+    "Brawl Ball": ["Super Beach", "Pinhole Punt", "Sneaky Fields", "Triple Dribble", "Pinball Dreams", "Beach Ball"],
     "Bounty": ["Shooting Star", "Hideout", "Layer Cake", "Dry Season"],
     "Heist": ["Hot Potato", "Safe Zone", "Bridge Too Far", "Pit Stop", "Kaboom Canyon"],
     "Knockout": ["Goldarm Gulch", "Belle's Rock", "Out in the Open", "New Horizons"],
