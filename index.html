@@ -3,116 +3,42 @@
 <head>
     <script src="users.js"></script>
     <script src="auth.js"></script>
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BCSInfos — Menu Principal</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .menu-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 80vh;
-            padding: 40px 20px;
-        }
-        .menu-title {
-            font-size: 42px;
-            font-weight: 800;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-        .menu-subtitle {
-            font-size: 16px;
-            color: var(--texto-secundario, #a0a0b0);
-            margin-bottom: 50px;
-            text-align: center;
-        }
-        .region-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 25px;
-            max-width: 900px;
-            width: 100%;
-        }
-        .region-card {
-            background: var(--bg-cards, #181820);
-            border: 1px solid var(--borda-destaque, #2a2a35);
-            border-radius: 12px;
-            padding: 30px 20px;
-            text-align: center;
-            text-decoration: none;
-            color: white;
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-        }
-        .region-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--accent, #e91e63);
-            box-shadow: 0 8px 24px rgba(233, 30, 99, 0.2);
-        }
-        .region-card img {
-            width: 60px;
-            height: 60px;
-            object-fit: contain;
-            border-radius: 8px;
-        }
-        .region-card .region-name {
-            font-size: 20px;
-            font-weight: 700;
-        }
-        .region-card .region-desc {
-            font-size: 13px;
-            color: var(--texto-secundario, #a0a0b0);
-        }
+        .menu-container{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;padding:40px 20px}
+        .menu-title{font-size:42px;font-weight:800;margin-bottom:10px;text-align:center}
+        .menu-subtitle{font-size:16px;color:var(--texto-secundario,#a0a0b0);margin-bottom:50px;text-align:center}
+        .region-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:25px;max-width:900px;width:100%}
+        .region-card{background:var(--bg-cards,#181820);border:1px solid var(--borda-destaque,#2a2a35);border-radius:12px;padding:30px 20px;text-align:center;text-decoration:none;color:white;transition:all .3s;display:flex;flex-direction:column;align-items:center;gap:12px}
+        .region-card:hover{transform:translateY(-5px);border-color:var(--accent,#e91e63);box-shadow:0 8px 24px rgba(233,30,99,.2)}
+        .region-card img{width:60px;height:60px;object-fit:contain;border-radius:8px}
+        .region-card .region-name{font-size:20px;font-weight:700}
+        .region-card .region-desc{font-size:13px;color:var(--texto-secundario,#a0a0b0)}
     </style>
-<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
 </head>
 <body>
-
-    <nav class="navbar">
-        <a href="index.html" class="nav-link">MENU</a>
-        <a href="geral.html" class="nav-link">GERAL</a>
-        <a href="draft.html" class="nav-link">DRAFT</a>
-        <a href="vivo.html" class="nav-link">AO VIVO</a>
-    </nav>
-
-    <main class="main-container">
-        <div class="menu-container">
-            <h1 class="menu-title">BCSInfos <span class="accent">ANALYSIS</span></h1>
-            <p class="menu-subtitle">Selecione uma região para visualizar os dados competitivos</p>
-            
-            <div class="region-grid">
-                <a href="sa.html" class="region-card">
-                    <img src="element/sa.png" alt="SA" onerror="this.style.display='none'">
-                    <span class="region-name">SOUTH AMÉRICA</span>
-                    <span class="region-desc">Times e scrins da América do Sul</span>
-                </a>
-                <a href="na.html" class="region-card">
-                    <img src="element/na.png" alt="NA" onerror="this.style.display='none'">
-                    <span class="region-name">NORTH AMÉRICA</span>
-                    <span class="region-desc">Times e scrins da América do Norte</span>
-                </a>
-                <a href="emea.html" class="region-card">
-                    <img src="element/emea.png" alt="EMEA" onerror="this.style.display='none'">
-                    <span class="region-name">EMEA</span>
-                    <span class="region-desc">Europe, Middle East & Africa</span>
-                </a>
-                <a href="ea.html" class="region-card">
-                    <img src="element/ea.png" alt="EA" onerror="this.style.display='none'">
-                    <span class="region-name">EAST ASIA</span>
-                    <span class="region-desc">Times e scrins do Leste Asiático</span>
-                </a>
-                <a href="geral.html" class="region-card" style="grid-column: 1 / -1;">
-                    <span class="region-name">GERAL (Todas as Regiões)</span>
-                    <span class="region-desc">Visão geral com dados de todas as regiões combinadas</span>
-                </a>
-            </div>
-        </div>
-    </main>
-
+<nav class="navbar">
+    <a href="index.html" class="nav-link">MENU</a>
+    <a href="geral.html" class="nav-link">GERAL</a>
+    <a href="draft.html" class="nav-link">DRAFT</a>
+    <a href="vivo.html" class="nav-link">AO VIVO</a>
+    <a href="found.html" class="nav-link">FOUND</a>
+</nav>
+<main class="main-container">
+<div class="menu-container">
+    <h1 class="menu-title">BCSInfos <span class="accent">ANALYSIS</span></h1>
+    <p class="menu-subtitle">Selecione uma região para visualizar os dados competitivos</p>
+    <div class="region-grid">
+        <a href="sa.html" class="region-card"><img src="element/sa.png" alt="SA" onerror="this.style.display='none'"><span class="region-name">SOUTH AMÉRICA</span><span class="region-desc">Times e scrins da América do Sul</span></a>
+        <a href="na.html" class="region-card"><img src="element/na.png" alt="NA" onerror="this.style.display='none'"><span class="region-name">NORTH AMÉRICA</span><span class="region-desc">Times e scrins da América do Norte</span></a>
+        <a href="emea.html" class="region-card"><img src="element/emea.png" alt="EMEA" onerror="this.style.display='none'"><span class="region-name">EMEA</span><span class="region-desc">Europe, Middle East & Africa</span></a>
+        <a href="ea.html" class="region-card"><img src="element/ea.png" alt="EA" onerror="this.style.display='none'"><span class="region-name">EAST ASIA</span><span class="region-desc">Times e scrins do Leste Asiático</span></a>
+        <a href="geral.html" class="region-card" style="grid-column:1/-1"><span class="region-name">GERAL (Todas as Regiões)</span><span class="region-desc">Visão geral com dados de todas as regiões combinadas</span></a>
+    </div>
+</div>
+</main>
 </body>
 </html>
