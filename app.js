@@ -1760,6 +1760,3 @@ function aplicarCoresTabelaMeta() {
         }
     });
 }
-
-
-SEM REMOVER NENHUMA função que não tenha haver com roster automático adicione a mecânica de roster AUTOMÁTICO para que ele sempre se atualize SOZINHO, me devolva o app.js completo
