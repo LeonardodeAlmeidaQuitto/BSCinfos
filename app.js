@@ -1,5 +1,6 @@
 let dadosBrutos = [];
 let dadosFiltrados = [];
+let mapaSelecionadoInfo = null;
 let dadosBans = [];
 let dadosBansFiltrados = [];
 let listaBrawlers = [];
@@ -19,14 +20,31 @@ const ROTACAO_MAPAS = {
             "Heist": ["Safe Zone", "Kaboom Canyon", "Pit Stop"],
             "Bounty": ["Hideout", "Shooting Star", "Layer Cake"],
             "Knockout": ["Goldarm Gulch", "Out in the Open", "New Horizons"]
+            },
+        "07": { 
+            "Brawl Ball": ["Pinhole Punt", "Pinball Dreams", "Triple Dribble"], 
+            "Gem Grab": ["Hard Rock Mine", "Crystal Arcade", "Gem Fort"],
+            "Hot Zone": ["Dueling Beetles", "Open Business", "Ring of Fire"],
+            "Heist": ["Safe Zone", "Kaboom Canyon", "Pit Stop"],
+            "Bounty": ["Hideout", "Dry Season", "Layer Cake"],
+            "Knockout": ["Goldarm Gulch", "Out in the Open", "New Horizons"]        
+            };
+        "08": { 
+            "Brawl Ball": ["Beach Ball", "Pinball Dreams", "Triple Dribble"], 
+            "Gem Grab": ["Hard Rock Mine", "Crystal Arcade", "Deathcap Trap"],
+            "Hot Zone": ["Dueling Beetles", "Open Business", "Ring of Fire"],
+            "Heist": ["Safe Zone", "Kaboom Canyon", "Hot Potato"],
+            "Bounty": ["Hideout", "Dry Season", "Layer Cake"],
+            "Knockout": ["Goldarm Gulch", "Belle's Rock", "Out in the Open"]        
+            }
         }
-    }
-};
+    };
 
+       
 // ========================================================
 // 2. CONFIGURAÇÃO DE ROSTERS MENSAIS
 // ========================================================
-let ROSTERS_POR_DATA = {
+const ROSTERS_POR_DATA = {
     "2026": {
         "06": { 
            "SA": {
@@ -35,13 +53,13 @@ let ROSTERS_POR_DATA = {
             { id_time: "PIZZA", nome_time: "Pizza Congelado F/A", jogadores: [ { nick: "Jubileubr", tag: "#GVYLVUGR" }, { nick: "CAUEBR", tag: "#JQ8L0YYL" }, { nick: "Mohtep", tag: "#R2LR2QLG" } ] }
         ],
         "TIER A": [
-            { id_time: "LOUD", nome_time: "LOUD", jogadores: [ { nick: "KaioDog", tag: "#GGUQCG0G" }, { nick: "FireCrow", tag: "#2GV09VJJP" }, { nick: "Edinho", tag: "#QJULVGU" } ] },
-            { id_time: "OS", nome_time: "Olimpo Squad", jogadores: [ { nick: "Golden", tag: "#9QCJPL20" }, { nick: "Brabao", tag: "#L9PQUV0YC" }, { nick: "Pekka", tag: "#QJULVGU" } ] },
+            { id_time: "LOUD", nome_time: "LOUD", jogadores: [ { nick: "KaioDog", tag: "#GGUQCG0G" }, { nick: "FireCrow", tag: "#JQ8LLLY" }, { nick: "Edinho", tag: "#QJULVGU" } ] },
+            { id_time: "OS", nome_time: "OLIMPO SQUAD", jogadores: [ { nick: "Golden", tag: "#9QCJPL20" }, { nick: "Brabao", tag: "#L9PQUV0YC" }, { nick: "Pekka", tag: "#JVRCVJ9Q" } ] },
             { id_time: "GLXY", nome_time: "GALAXY", jogadores: [ { nick: "Doritos🐉", tag: "#202GJJR28" }, { nick: "Derpp🐰ᩚ", tag: "#2QG9LQQC8Y" }, { nick: "IceCrow", tag: "#9CPYUCGQC" } ] },
             { id_time: "SKC", nome_time: "SKCalalas SA", jogadores: [ { nick: "Kr ;)", tag: "#PR0P8QVQ" }, { nick: "Rhz", tag: "#89PVJG9R0" }, { nick: "Juan Carlos", tag: "#PR9U2JL" } ] },
             { id_time: "ENO", nome_time: "ENOSIS", jogadores: [ { nick: "Magic🎩", tag: "#2QCCC29QV" }, { nick: "REI DO FUT", tag: "#RVL0RPR9" }, { nick: "Fantas🌖", tag: "#PU20LUCQG" } ] },
             { id_time: "OCX", nome_time: "OCX Division", jogadores: [ { nick: "Tufa", tag: "#CQLR0Y80" }, { nick: "Enid", tag: "#2JGP0LYV2Q" }, { nick: "Red Eyes", tag: "#CUGVUYPG" } ] },
-            { id_time: "AL", nome_time: "ACRE LOVERS", jogadores: [ { nick: "FireMirillo", tag: "#JQ8LLLY" }, { nick: "Satisfiyer", tag: "#PLJ8VQY2C" }, { nick: "Star Lipi", tag: "#2UQCCG92VG" } ] }
+            { id_time: "AL", nome_time: "ACRE LOVERS", jogadores: [ { nick: "FireMirillo", tag: "#2GV09VJJP" }, { nick: "Satisfiyer", tag: "#PLJ8VQY2C" }, { nick: "Star Lipi", tag: "#2UQCCG92VG" } ] }
         ],
        "TIER B": [
                 { id_time: "CB", nome_time: "CRECHE BRAWL", jogadores: [ { nick: "Tilo", tag: "#80VLPJCCC" }, { nick: "Bielz", tag: "#9Q22C88V8" }, { nick: "Yichy", tag: "#2LVGCJ2UQR" } ] },
@@ -63,7 +81,7 @@ let ROSTERS_POR_DATA = {
         ],
         "TIER A": [
             { id_time: "TE", nome_time: "TEAM ELEKTROS", jogadores: [ { nick: "Snoiy", tag: "#YUJ8PJ0LR" }, { nick: "Memxn", tag: "#PJPPY9LRC" }, { nick: "Doin", tag: "#8CRU0PQRQ" } ] },
-            { id_time: "HML", nome_time: "F/A Homeless", jogadores: [ { nick: "Tyrant", tag: "#VPVLG2" }, { nick: "Xemp", tag: "#2P9CJVGJ8" }, { nick: "Ducky", tag: "#20P2GP99" } ] },
+            { id_time: "HML", nome_time: "F/A HOMELESS", jogadores: [ { nick: "Tyrant", tag: "#VPVLG2" }, { nick: "Xemp", tag: "#2P9CJVGJ8" }, { nick: "Ducky", tag: "#20P2GP99" } ] },
             { id_time: "NOVA", nome_time: "NOVA", jogadores: [ { nick: "PaiN", tag: "#GVLRUG9Q" }, { nick: "Roledu", tag: "#LPQQLYL2" }, { nick: "Kiritom", tag: "#LU8C9YJU" } ] },
             { id_time: "VTC", nome_time: "VATIC", jogadores: [ { nick: "Ezlivi", tag: "#QURVLPG" }, { nick: "Belal", tag: "#Q2VCLG9Y9" }, { nick: "Duckie", tag: "#22JR2JLYC" } ] },
             { id_time: "LGCY", nome_time: "LEGACY", jogadores: [ { nick: "Rafiki", tag: "#R9CCLP8Q" }, { nick: "Zoulan", tag: "#LYR0Q9C" }, { nick: "Zeus", tag: "#2Q028GQQP" } ] },
@@ -79,7 +97,7 @@ let ROSTERS_POR_DATA = {
     "EMEA": {
         "TIER S": [
             { id_time: "FUT", nome_time: "FUT ESPORTS", jogadores: [ { nick: "AngelBoy", tag: "#9PCV9L982" }, { nick: "Guesti", tag: "#2R0JLJJ9PP" }, { nick: "Nob", tag: "#P2808PRC" } ] },
-            { id_time: "HMB", nome_time: "HMBLE", jogadores: [ { nick: "Symantec", tag: "#YQUCCJ2"}, { nick: "BosS", tag: "#V89Y2GP0" }, { nick: "Lukii", tag: "#8V92UYCJ" } ] }
+            { id_time: "HMBLE", nome_time: "HMBLE", jogadores: [ { nick: "Symantec", tag: "#YQUCCJ2"}, { nick: "BosS", tag: "#V89Y2GP0" }, { nick: "Lukii", tag: "#8V92UYCJ" } ] }
 
         ],
     "TIER A": [
@@ -104,7 +122,7 @@ let ROSTERS_POR_DATA = {
         ],
     "TIER A": [
             { id_time: "SKCEA", nome_time: "SKC EA", jogadores: [ { nick: "Kuru", tag: "#J99YU9QY" }, { nick: "Ghost T", tag: "#2CJJJGUJ20" }, { nick: "Naipishu", tag: "#2P0V0CQQ2" } ] },
-            { id_time: "FG", nome_time: "IGM", jogadores: [ { nick: "Shigemyon", tag: "#2RQQ9PGC" }, { nick: "Drake", tag: "#2CJG2GGCGP" }, { nick: "Nyade", tag: "2UQVY2JL2V#" } ] },
+            { id_time: "IGM", nome_time: "IGNUM", jogadores: [ { nick: "Shigemyon", tag: "#2RQQ9PGC" }, { nick: "Drake", tag: "#2CJG2GGCGP" }, { nick: "Nyade", tag: "2UQVY2JL2V#" } ] },
             { id_time: "AXIS", nome_time: "AXIS", jogadores: [ { nick: "Terry", tag: "#LJ0288PRG" }, { nick: "Yume", tag: "#PJ80QPVL2" }, { nick: "Menmi", tag: "#QCLV9CL" } ] },
             { id_time: "RVL", nome_time: "RIVAL", jogadores: [ { nick: "Yutapin", tag: "#82CJYJPG2" }, { nick: "Ryohei", tag: "#82PQUPGU0" }, { nick: "Totoro", tag: "#2ULLCRYJ2Y" } ] },
             { id_time: "RC", nome_time: "REJECT", jogadores: [ { nick: "Melty", tag: "#8J9GUJJVY" }, { nick: "Levi", tag: "#29UGLJV2G" }, { nick: "Shu", tag: "#2G0RRLU2R" } ] },
@@ -116,26 +134,115 @@ let ROSTERS_POR_DATA = {
             }
         }
     },
+
+    "2026": {
+        "07": { 
+           "SA": {
+        "TIER S": [
+            { id_time: "BH", nome_time: "Bounty Hunters", jogadores: [ { nick: "Wesley", tag: "#PLLRJC2V" }, { nick: "Prozy", tag: "#GYCYCLRJL" }, { nick: "Portox", tag: "#YGQYGCR" } ] },
+            { id_time: "RED", nome_time: "RED CANIDS", jogadores: [ { nick: "Jubileubr", tag: "#GVYLVUGR" }, { nick: "CAUEBR", tag: "#JQ8L0YYL" }, { nick: "Mohtep", tag: "#R2LR2QLG" } ] }
+        ],
+        "TIER A": [
+            { id_time: "LOUD", nome_time: "LOUD", jogadores: [ { nick: "KaioDog", tag: "#GGUQCG0G" }, { nick: "FireCrow", tag: "#JQ8LLLY" }, { nick: "Edinho", tag: "#QJULVGU" } ] },
+            { id_time: "OS", nome_time: "OLIMPO SQUAD", jogadores: [ { nick: "Golden", tag: "#9QCJPL20" }, { nick: "Brabao", tag: "#L9PQUV0YC" }, { nick: "Pekka", tag: "#JVRCVJ9Q" } ] },
+            { id_time: "GLXY", nome_time: "GALAXY", jogadores: [ { nick: "Doritos🐉", tag: "#202GJJR28" }, { nick: "Derpp🐰ᩚ", tag: "#2QG9LQQC8Y" }, { nick: "IceCrow", tag: "#9CPYUCGQC" } ] },
+            { id_time: "SKC", nome_time: "SKCalalas SA", jogadores: [ { nick: "Kr ;)", tag: "#PR0P8QVQ" }, { nick: "Rhz", tag: "#89PVJG9R0" }, { nick: "Juan Carlos", tag: "#PR9U2JL" } ] },
+            { id_time: "ENO", nome_time: "ENOSIS", jogadores: [ { nick: "Magic🎩", tag: "#2QCCC29QV" }, { nick: "REI DO FUT", tag: "#RVL0RPR9" }, { nick: "Fantas🌖", tag: "#PU20LUCQG" } ] },
+            { id_time: "NS", nome_time: "NINGUEM SEGURA", jogadores: [ { nick: "Tufa", tag: "#CQLR0Y80" }, { nick: "Enid", tag: "#2JGP0LYV2Q" }, { nick: "Red Eyes", tag: "#CUGVUYPG" } ] },
+            { id_time: "OCX", nome_time: "OCX DIVISION", jogadores: [ { nick: "FireMirillo", tag: "#2GV09VJJP" }, { nick: "Satisfiyer", tag: "#PLJ8VQY2C" }, { nick: "Star Lipi", tag: "#2UQCCG92VG" } ] }
+        ],
+       "TIER B": [
+                { id_time: "CB", nome_time: "CRECHE BRAWL", jogadores: [ { nick: "Tilo", tag: "#80VLPJCCC" }, { nick: "Bielz", tag: "#9Q22C88V8" }, { nick: "Yichy", tag: "#2LVGCJ2UQR" } ] },
+                { id_time: "ZRT", nome_time: "ZURITA GANG", jogadores: [ { nick: "Jxcccr", tag: "#820JCJJG" }, { nick: "Exic", tag: "#RCYQUJU0" }, { nick: "", tag: "#" } ] },
+                { id_time: "OCXA", nome_time: "OCX DIVISION ACADEMY", jogadores: [ { nick: "Sterixx", tag: "#2P8RVJVUY" }, { nick: "", tag: "#" }, { nick: "", tag: "#" } ] },
+                { id_time: "QQQ", nome_time: "QUEROQUEQUE", jogadores: [ { nick: "Deykonn", tag: "#GJPVYUQG" }, { nick: "B4st", tag: "#2CJ0RCJ" }, { nick: "Todd", tag: "#22PGQU98R" } ] }
+         ],
+            "TIER B-/C+": [
+                { id_time: "HAWK", nome_time: "RED HAWK", jogadores: [ { nick: "BeBaxo", tag: "#2YRRL8GG2" }, { nick: "Marcellus", tag: "#9J0R0GQL" }, { nick: "Migz Labubu", tag: "#82P9JCJV8" } ] },
+                { id_time: "LVLA", nome_time: "LEVEL ESPORTS ACADEMY", jogadores: [ { nick: "JoeFav", tag: "#VQ8YP9C0" }, { nick: "Levi", tag: "#YQVPY0J9" }, { nick: "xJnn", tag: "#GLQG9CU20" } ] },
+                { id_time: "AG", nome_time: "AG ESPORTS", jogadores: [ { nick: "Lion", tag: "#8OYUV29GR" }, { nick: "Bieel", tag: "#9JVUGR2JG" }, { nick: "Brennox🎩", tag: "#LLCURQVY2" }, { nick: "Puda", tag: "#829QUYGP0" } ] },
+                { id_time: "JPFC", nome_time: "JAPÃO FC ESPORTS", jogadores: [ { nick: "Azuri", tag: "#YCUGURU89" }, { nick: "Raze", tag: "#2GP98PQOG" }, { nick: "Esoteric", tag: "#8C8988222" } ] }
+        ]
+    },
+    "NA": {
+        "TIER S": [
+            { id_time: "BOB", nome_time: "BOBBY F/A", jogadores: [ { nick: "Bobby", tag: "#LVRRYPV" }, { nick: "Patch", tag: "#RLLRJ2" }, { nick: "Sans", tag: "#QUYCVC2" } ] },
+            { id_time: "TRB", nome_time: "TRIBE GAMING", jogadores: [ { nick: "Lxffy", tag: "#82RCQCVG" }, { nick: "RBM", tag: "#U9GC8G02" }, { nick: "Diegogamer", tag: "#QLCJGQUP" } ] },
+        ],
+        "TIER A": [
+            { id_time: "TE", nome_time: "TEAM ELEKTROS", jogadores: [ { nick: "Snoiy", tag: "#YUJ8PJ0LR" }, { nick: "Memxn", tag: "#PJPPY9LRC" }, { nick: "Doin", tag: "#8CRU0PQRQ" } ] },
+            { id_time: "HML", nome_time: "F/A HOMELESS", jogadores: [ { nick: "Tyrant", tag: "#VPVLG2" }, { nick: "Xemp", tag: "#2P9CJVGJ8" }, { nick: "Ducky", tag: "#20P2GP99" } ] },
+            { id_time: "NOVA", nome_time: "NOVA", jogadores: [ { nick: "PaiN", tag: "#GVLRUG9Q" }, { nick: "Squeezy", tag: "#R80QRP0G" }, { nick: "Kiritom", tag: "#LU8C9YJU" } ] },
+            { id_time: "VTC", nome_time: "VATIC", jogadores: [ { nick: "Ezlivi", tag: "#QURVLPG" }, { nick: "Belal", tag: "#Q2VCLG9Y9" }, { nick: "Duckie", tag: "#22JR2JLYC" } ] },
+            { id_time: "LGCY", nome_time: "LEGACY", jogadores: [ { nick: "Rafiki", tag: "#R9CCLP8Q" }, { nick: "Zoulan", tag: "#LYR0Q9C" }, { nick: "Zeus", tag: "#2Q028GQQP" } ] },
+            { id_time: "VIC", nome_time: "VIC", jogadores: [ { nick: "OG", tag: "#28LUY98" }, { nick: "Juice", tag: "#RP0UL9QUG" }, { nick: "SecondBest", tag: "#PVQ9QUY" } ] },
+            { id_time: "VICD", nome_time: "VIC Day", jogadores: [ { nick: "Vegeta", tag: "#JJ09PC0P" }, { nick: "Tacos", tag: "#GCJCRVQ8" }, { nick: "Chino", tag: "#VJUQ0Y" } ] }
+        ],
+        "TIER B": [
+            { id_time: "RLMA", nome_time: "ONLY REALM Academy", jogadores: [ { nick: "Winq", tag: "#8UL0U08V" }, { nick: "Nerf", tag: "#9YYUPGJ2V" }, { nick: "Juni", tag: "#PL0GRVJRJ" } ] },
+            { id_time: "PFZ", nome_time: "PFZ", jogadores: [ { nick: "Squeezy", tag: "#R80QRP0G" }, { nick: "Diegofr", tag: "#8CC2CL8Q" }, { nick: "Alyanys", tag: "#2LQ0RGCRU" } ] },
+            { id_time: "ENONA", nome_time: "ENOSIS NA", jogadores: [ { nick: "David", tag: "#88PL8L2JC" }, { nick: "GN", tag: "#9GPQR8CGL" }, { nick: "Razuen", tag: "#8Q2QUV00J" } ] }
+        ]
+    },
+    "EMEA": {
+        "TIER S": [
+            { id_time: "FUT", nome_time: "FUT ESPORTS", jogadores: [ { nick: "AngelBoy", tag: "#9PCV9L982" }, { nick: "Guesti", tag: "#2R0JLJJ9PP" }, { nick: "Nob", tag: "#P2808PRC" } ] },
+            { id_time: "HMBLE", nome_time: "HMBLE", jogadores: [ { nick: "Symantec", tag: "#YQUCCJ2"}, { nick: "BosS", tag: "#V89Y2GP0" }, { nick: "Lukii", tag: "#8V92UYCJ" } ] }
+
+        ],
+    "TIER A": [
+            { id_time: "KUMA", nome_time: "KUMA", jogadores: [ { nick: "Dompe", tag: "#2208QGGGL" }, { nick: "Mine", tag: "#V888YPGU" }, { nick: "Nes", tag: "#Q808R2CV" } ] },
+            { id_time: "NAVI", nome_time: "NAVI", jogadores: [ { nick: "Enraged", tag: "#80PVPCC29" }, { nick: "GeRo", tag: "#2VJCCCQGP" }, { nick: "Drage", tag: "#J089RQ" } ] },
+            { id_time: "MZP", nome_time: "METIZPORT", jogadores: [ { nick: "Decaii", tag: "#2Y822YJYJC" }, { nick: "Ćiro", tag: "#2RR2RU8UL" }, { nick: "Remica", tag: "#Y8PLP8VY" } ] },     
+            { id_time: "SK", nome_time: "SK GAMING", jogadores: [ { nick: "Ope", tag: "#9LVUC2PY" }, { nick: "Yoshi825", tag: "#CJV2PJ0R" }, { nick: "Yoko", tag: "#29VRJU08C" } ] },
+            { id_time: "TH", nome_time: "TEAM HERETICS", jogadores: [ { nick: "IKaoss", tag: "#PCPRPJV" }, { nick: "Marco", tag: "#Q22ULY9JY" }, { nick: "Subeme", tag: "#2JQU8JQ2G" } ] },
+            { id_time: "TTM", nome_time: "REPLY TOTEM", jogadores: [ { nick: "Maru", tag: "#2Q892QVU" }, { nick: "Joker", tag: "#9JCG0VY8U" }, { nick: "Maury", tag: "#82RGU8PR" } ] },
+            { id_time: "NOVO", nome_time: "NOVO ESPORTS", jogadores: [ { nick: "Filippo", tag: "#9PQQ8GQQ" }, { nick: "MeOw", tag: "#90JCYPQU" }, { nick: "Jus", tag: "#JJ92RGPL" } ] },
+            { id_time: "BIG", nome_time: "BIG", jogadores: [ { nick: "Salty", tag: "#PLV89CGP" }, { nick: "Arthur🥥", tag: "#9RVPL0Q0P" }, { nick: "Melih🥥", tag: "#GLPJRCLYL" } ] }
+        ],
+     "TIER B": [
+            { id_time: "REV", nome_time: "REVERSO HIVE", jogadores: [ { nick: "Fayelo", tag: "#LLV82LQPU" }, { nick: "Ethan", tag: "#2Y20JR8CQ" }, { nick: "Natrix", tag: "#CJ9YRGGC" } ] },
+            { id_time: "TLB", nome_time: "TALENTS LAB", jogadores: [ { nick: "Yei Yei", tag: "#8RVLRVYYP" }, { nick: "Agachi", tag: "#YYUG20PQV" }, { nick: "Stas", tag: "#9LYQR9QC" } ] },
+        ],
+    },
+    "EA": {
+        "TIER S": [
+            { id_time: "CR", nome_time: "CRAZY RACCOON", jogadores: [ { nick: "Tensai", tag: "#9ULYPV8" }, { nick: "Milkreo", tag: "#20C0LL00" }, { nick: "Moya", tag: "#UR2UL8YR" } ] },
+            { id_time: "ZETA", nome_time: "ZETA DIVISION", jogadores: [ { nick: "Battoman", tag: "#P0Y8JGL0U" }, { nick: "Sizuku", tag: "#P90RJQ8C" }, { nick: "Sitetampo", tag: "#8Y98Q8U" } ] }
+        ],
+    "TIER A": [
+            { id_time: "SKCEA", nome_time: "SKC EA", jogadores: [ { nick: "Kuru", tag: "#J99YU9QY" }, { nick: "Ghost T", tag: "#2CJJJGUJ20" }, { nick: "Naipishu", tag: "#2P0V0CQQ2" } ] },
+            { id_time: "IGM", nome_time: "IGNUM", jogadores: [ { nick: "Shigemyon", tag: "#2RQQ9PGC" }, { nick: "Drake", tag: "#2CJG2GGCGP" }, { nick: "Nyade", tag: "2UQVY2JL2V#" } ] },
+            { id_time: "AXIS", nome_time: "AXIS", jogadores: [ { nick: "Terry", tag: "#LJ0288PRG" }, { nick: "Yume", tag: "#PJ80QPVL2" }, { nick: "Menmi", tag: "#QCLV9CL" } ] },
+            { id_time: "RVL", nome_time: "RIVAL", jogadores: [ { nick: "Yutapin", tag: "#82CJYJPG2" }, { nick: "Ryohei", tag: "#82PQUPGU0" }, { nick: "Totoro", tag: "#2ULLCRYJ2Y" } ] },
+            { id_time: "RC", nome_time: "REJECT", jogadores: [ { nick: "Melty", tag: "#8J9GUJJVY" }, { nick: "Levi", tag: "#29UGLJV2G" }, { nick: "Shu", tag: "#2G0RRLU2R" } ] },
+            { id_time: "FL", nome_time: "FENNEL", jogadores: [ { nick: "Achapi", tag: "#28PU0P9L0" }, { nick: "Ken-G", tag: "#2282LR0YG" }, { nick: "I see", tag: "#8Y2Y0GYYG" } ] },
+            { id_time: "INS", nome_time: "INSOMNIA", jogadores: [ { nick: "Koga", tag: "#28VP0G808" }, { nick: "Wahochi", tag: "#80YVJGRY" }, { nick: "Jene", tag: "#8GUPLYY" } ] },
+            { id_time: "FZ", nome_time: "FRENZY", jogadores: [ { nick: "Toridesu", tag: "#89UUQLJCC" }, { nick: "Danshari", tag: "#99GGUPY2U" }, { nick: "Ferkel", tag: "#CV9Y9VPP" } ] },
+            { id_time: "F0", nome_time: "FAZE ZERO", jogadores: [ { nick: "Rennosuke", tag: "#8R0JY2UJ2" }, { nick: "Telpny", tag: "#9GJ8GYCY2" }, { nick: "Mira", tag: "#88LLQGP0Q" } ] }
+                ]
+            }
+        }
+    },
+
     // PADRÃO DE SEGURANÇA (Se a pessoa filtrar "Todos" ou um mês não cadastrado)
     "PADRAO": {
         "SA": {
         "TIER S": [
             { id_time: "BH", nome_time: "Bounty Hunters", jogadores: [ { nick: "Wesley", tag: "#PLLRJC2V" }, { nick: "Prozy", tag: "#GYCYCLRJL" }, { nick: "Portox", tag: "#YGQYGCR" } ] },
-            { id_time: "PIZZA", nome_time: "Pizza Congelado F/A", jogadores: [ { nick: "Jubileubr", tag: "#GVYLVUGR" }, { nick: "CAUEBR", tag: "#JQ8L0YYL" }, { nick: "Mohtep", tag: "#R2LR2QLG" } ] }
+            { id_time: "RED", nome_time: "RED CANIDS", jogadores: [ { nick: "Jubileubr", tag: "#GVYLVUGR" }, { nick: "CAUEBR", tag: "#JQ8L0YYL" }, { nick: "Mohtep", tag: "#R2LR2QLG" } ] }
         ],
         "TIER A": [
-            { id_time: "LOUD", nome_time: "LOUD", jogadores: [ { nick: "KaioDog", tag: "#GGUQCG0G" }, { nick: "FireCrow", tag: "#2GV09VJJP" }, { nick: "Edinho", tag: "#QJULVGU" } ] },
-            { id_time: "OS", nome_time: "Olimpo Squad", jogadores: [ { nick: "Golden", tag: "#9QCJPL20" }, { nick: "Brabao", tag: "#L9PQUV0YC" }, { nick: "Pekka", tag: "#QJULVGU" } ] },
+            { id_time: "LOUD", nome_time: "LOUD", jogadores: [ { nick: "KaioDog", tag: "#GGUQCG0G" }, { nick: "FireCrow", tag: "#JQ8LLLY" }, { nick: "Edinho", tag: "#QJULVGU" } ] },
+            { id_time: "OS", nome_time: "OLIMPO SQUAD", jogadores: [ { nick: "Golden", tag: "#9QCJPL20" }, { nick: "Brabao", tag: "#L9PQUV0YC" }, { nick: "Pekka", tag: "#JVRCVJ9Q" } ] },
             { id_time: "GLXY", nome_time: "GALAXY", jogadores: [ { nick: "Doritos🐉", tag: "#202GJJR28" }, { nick: "Derpp🐰ᩚ", tag: "#2QG9LQQC8Y" }, { nick: "IceCrow", tag: "#9CPYUCGQC" } ] },
             { id_time: "SKC", nome_time: "SKCalalas SA", jogadores: [ { nick: "Kr ;)", tag: "#PR0P8QVQ" }, { nick: "Rhz", tag: "#89PVJG9R0" }, { nick: "Juan Carlos", tag: "#PR9U2JL" } ] },
             { id_time: "ENO", nome_time: "ENOSIS", jogadores: [ { nick: "Magic🎩", tag: "#2QCCC29QV" }, { nick: "REI DO FUT", tag: "#RVL0RPR9" }, { nick: "Fantas🌖", tag: "#PU20LUCQG" } ] },
-            { id_time: "OCX", nome_time: "OCX Division", jogadores: [ { nick: "Tufa", tag: "#CQLR0Y80" }, { nick: "Enid", tag: "#2JGP0LYV2Q" }, { nick: "Red Eyes", tag: "#CUGVUYPG" } ] },
-            { id_time: "AL", nome_time: "ACRE LOVERS", jogadores: [ { nick: "FireMirillo", tag: "#JQ8LLLY" }, { nick: "Satisfiyer", tag: "#PLJ8VQY2C" }, { nick: "Star Lipi", tag: "#2UQCCG92VG" } ] }
+            { id_time: "OCX", nome_time: "OCX DIVISION", jogadores: [ { nick: "FireMirillo", tag: "#2GV09VJJP" }, { nick: "Satisfiyer", tag: "#PLJ8VQY2C" }, { nick: "Star Lipi", tag: "#2UQCCG92VG" } ] }
         ],
         "TIER B": [
                 { id_time: "CB", nome_time: "CRECHE BRAWL", jogadores: [ { nick: "Tilo", tag: "#80VLPJCCC" }, { nick: "Bielz", tag: "#9Q22C88V8" }, { nick: "Yichy", tag: "#2LVGCJ2UQR" } ] },
                 { id_time: "ZRT", nome_time: "ZURITA GANG", jogadores: [ { nick: "Jxcccr", tag: "#820JCJJG" }, { nick: "Exic", tag: "#RCYQUJU0" }, { nick: "", tag: "#" } ] },
-                { id_time: "OCXA", nome_time: "OCX DIVISION ACADEMY", jogadores: [ { nick: "Sterixx", tag: "#2P8RVJVUY" }, { nick: "", tag: "#" }, { nick: "", tag: "#" } ] },
                 { id_time: "LVL", nome_time: "LEVEL ESPORTS", jogadores: [ { nick: "Deykonn", tag: "#GJPVYUQG" }, { nick: "B4st", tag: "#2CJ0RCJ" }, { nick: "Todd", tag: "#22PGQU98R" } ] }
          ],
             "TIER B-/C+": [
@@ -152,7 +259,7 @@ let ROSTERS_POR_DATA = {
         ],
         "TIER A": [
             { id_time: "TE", nome_time: "TEAM ELEKTROS", jogadores: [ { nick: "Snoiy", tag: "#YUJ8PJ0LR" }, { nick: "Memxn", tag: "#PJPPY9LRC" }, { nick: "Doin", tag: "#8CRU0PQRQ" } ] },
-            { id_time: "HML", nome_time: "F/A Homeless", jogadores: [ { nick: "Tyrant", tag: "#VPVLG2" }, { nick: "Xemp", tag: "#2P9CJVGJ8" }, { nick: "Ducky", tag: "#20P2GP99" } ] },
+            { id_time: "HML", nome_time: "F/A HOMELESS", jogadores: [ { nick: "Tyrant", tag: "#VPVLG2" }, { nick: "Xemp", tag: "#2P9CJVGJ8" }, { nick: "Ducky", tag: "#20P2GP99" } ] },
             { id_time: "NOVA", nome_time: "NOVA", jogadores: [ { nick: "PaiN", tag: "#GVLRUG9Q" }, { nick: "Roledu", tag: "#LPQQLYL2" }, { nick: "Kiritom", tag: "#LU8C9YJU" } ] },
             { id_time: "VTC", nome_time: "VATIC", jogadores: [ { nick: "Ezlivi", tag: "#QURVLPG" }, { nick: "Belal", tag: "#Q2VCLG9Y9" }, { nick: "Duckie", tag: "#22JR2JLYC" } ] },
             { id_time: "LGCY", nome_time: "LEGACY", jogadores: [ { nick: "Rafiki", tag: "#R9CCLP8Q" }, { nick: "Zoulan", tag: "#LYR0Q9C" }, { nick: "Zeus", tag: "#2Q028GQQP" } ] },
@@ -168,7 +275,7 @@ let ROSTERS_POR_DATA = {
     "EMEA": {
         "TIER S": [
             { id_time: "FUT", nome_time: "FUT ESPORTS", jogadores: [ { nick: "AngelBoy", tag: "#9PCV9L982" }, { nick: "Guesti", tag: "#2R0JLJJ9PP" }, { nick: "Nob", tag: "#P2808PRC" } ] },
-            { id_time: "HMB", nome_time: "HMBLE", jogadores: [ { nick: "Symantec", tag: "#YQUCCJ2"}, { nick: "BosS", tag: "#V89Y2GP0" }, { nick: "Lukii", tag: "#8V92UYCJ" } ] }
+            { id_time: "HMBLE", nome_time: "HMBLE", jogadores: [ { nick: "Symantec", tag: "#YQUCCJ2"}, { nick: "BosS", tag: "#V89Y2GP0" }, { nick: "Lukii", tag: "#8V92UYCJ" } ] }
 
         ],
     "TIER A": [
@@ -193,7 +300,7 @@ let ROSTERS_POR_DATA = {
         ],
     "TIER A": [
             { id_time: "SKCEA", nome_time: "SKC EA", jogadores: [ { nick: "Kuru", tag: "#J99YU9QY" }, { nick: "Ghost T", tag: "#2CJJJGUJ20" }, { nick: "Naipishu", tag: "#2P0V0CQQ2" } ] },
-            { id_time: "FG", nome_time: "IGM", jogadores: [ { nick: "Shigemyon", tag: "#2RQQ9PGC" }, { nick: "Drake", tag: "#2CJG2GGCGP" }, { nick: "Nyade", tag: "2UQVY2JL2V#" } ] },
+            { id_time: "IGM", nome_time: "IGNUM", jogadores: [ { nick: "Shigemyon", tag: "#2RQQ9PGC" }, { nick: "Drake", tag: "#2CJG2GGCGP" }, { nick: "Nyade", tag: "2UQVY2JL2V#" } ] },
             { id_time: "AXIS", nome_time: "AXIS", jogadores: [ { nick: "Terry", tag: "#LJ0288PRG" }, { nick: "Yume", tag: "#PJ80QPVL2" }, { nick: "Menmi", tag: "#QCLV9CL" } ] },
             { id_time: "RVL", nome_time: "RIVAL", jogadores: [ { nick: "Yutapin", tag: "#82CJYJPG2" }, { nick: "Ryohei", tag: "#82PQUPGU0" }, { nick: "Totoro", tag: "#2ULLCRYJ2Y" } ] },
             { id_time: "RC", nome_time: "REJECT", jogadores: [ { nick: "Melty", tag: "#8J9GUJJVY" }, { nick: "Levi", tag: "#29UGLJV2G" }, { nick: "Shu", tag: "#2G0RRLU2R" } ] },
@@ -208,63 +315,17 @@ let ROSTERS_POR_DATA = {
 
 let CONFIGURACAO_MANUAL_TIMES = {};
 
-function obterRostersPeriodoAtual() {
-    if (!ROSTERS_POR_DATA || typeof ROSTERS_POR_DATA !== 'object') return {};
-
-    const selectAno = document.getElementById('select-ano');
-    const selectMes = document.getElementById('select-mes');
-    const anoSelecionado = selectAno ? selectAno.value : 'todos';
-    const mesSelecionado = selectMes ? selectMes.value : 'todos';
-
-    // 1. Se o usuario escolheu ano + mes, usa exatamente esse periodo.
-    if (anoSelecionado !== 'todos' && mesSelecionado !== 'todos' &&
-        ROSTERS_POR_DATA[anoSelecionado] && ROSTERS_POR_DATA[anoSelecionado][mesSelecionado]) {
-        return ROSTERS_POR_DATA[anoSelecionado][mesSelecionado];
-    }
-
-    // 2. Se existir PADRAO, usa o padrao.
-    if (ROSTERS_POR_DATA.PADRAO && typeof ROSTERS_POR_DATA.PADRAO === 'object') {
-        return ROSTERS_POR_DATA.PADRAO;
-    }
-
-    // 3. Sem PADRAO, usa automaticamente o periodo mais recente disponivel.
-    const anos = Object.keys(ROSTERS_POR_DATA)
-        .filter(a => /^\d{4}$/.test(a))
-        .sort((a, b) => Number(b) - Number(a));
-
-    for (const ano of anos) {
-        const meses = ROSTERS_POR_DATA[ano];
-        if (!meses || typeof meses !== 'object') continue;
-
-        const listaMeses = Object.keys(meses)
-            .filter(m => /^\d{1,2}$/.test(m))
-            .sort((a, b) => Number(b) - Number(a));
-
-        for (const mes of listaMeses) {
-            if (meses[mes] && typeof meses[mes] === 'object') {
-                console.log(`[ROSTERS] Usando periodo mais recente: ${ano}-${String(mes).padStart(2, '0')}`);
-                return meses[mes];
-            }
-        }
-    }
-
-    return {};
-}
-
 function atualizarRostersAtuais() {
-    const periodo = obterRostersPeriodoAtual();
-    CONFIGURACAO_MANUAL_TIMES = JSON.parse(JSON.stringify(periodo || {}));
+    let selectAno = document.getElementById('select-ano');
+    let selectMes = document.getElementById('select-mes');
+    const ano = selectAno ? selectAno.value : 'todos';
+    const mes = selectMes ? selectMes.value : 'todos';
 
-    // Garante que a regiao atual sempre exista, mesmo que o arquivo automatico
-    // nao tenha dados para ela. Isso evita que o restante do app pare de renderizar.
-    if (_REGIAO !== 'ALL' && !CONFIGURACAO_MANUAL_TIMES[_REGIAO]) {
-        CONFIGURACAO_MANUAL_TIMES[_REGIAO] = {};
+    if (ano !== 'todos' && mes !== 'todos' && ROSTERS_POR_DATA[ano] && ROSTERS_POR_DATA[ano][mes]) {
+        CONFIGURACAO_MANUAL_TIMES = JSON.parse(JSON.stringify(ROSTERS_POR_DATA[ano][mes]));
+    } else {
+        CONFIGURACAO_MANUAL_TIMES = JSON.parse(JSON.stringify(ROSTERS_POR_DATA["PADRAO"]));
     }
-
-    if (_REGIAO === 'ALL' && !CONFIGURACAO_MANUAL_TIMES.ALL) {
-        CONFIGURACAO_MANUAL_TIMES.ALL = { 'TIER ?': [], 'TIMES REGISTRADOS': [] };
-    }
-
     carregarTimesSalvosLocal();
 }
 
@@ -276,23 +337,17 @@ function carregarTimesSalvosLocal() {
     let regAlvo = _REGIAO === "ALL" ? "ALL" : _REGIAO;
     if (!CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIMES REGISTRADOS"]) CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIMES REGISTRADOS"] = [];
 
-    // Cada time salvo carrega consigo o tier escolhido no cadastro (campo "tier").
-    // Times salvos antes dessa funcionalidade existir caem em "TIMES REGISTRADOS" (comportamento antigo).
     salvos.forEach(t => {
         let tierAlvo = t.tier && t.tier.trim() !== '' ? t.tier : 'TIMES REGISTRADOS';
         if (!CONFIGURACAO_MANUAL_TIMES[regAlvo][tierAlvo]) CONFIGURACAO_MANUAL_TIMES[regAlvo][tierAlvo] = [];
         CONFIGURACAO_MANUAL_TIMES[regAlvo][tierAlvo].push(t);
     });
 
-    // Tenta também mesclar os times salvos dentro de ROSTERS_POR_DATA (PADRAO + mês/ano atual),
-    // para que fiquem disponíveis automaticamente em "const ROSTERS_POR_DATA" durante a sessão.
     mesclarTimesSalvosEmRostersPorData();
 }
 
-// Mantém os times cadastrados manualmente também dentro de ROSTERS_POR_DATA (em memória),
-// assim eles "aparecem" automaticamente na constante sem precisar editar o arquivo na mão.
 function mesclarTimesSalvosEmRostersPorData() {
-    if (_REGIAO === "ALL") return; // "ALL" é agregador, não existe como chave própria em ROSTERS_POR_DATA
+    if (_REGIAO === "ALL") return; 
     let salvos = JSON.parse(localStorage.getItem('customTeams_' + _REGIAO)) || [];
     if (salvos.length === 0) return;
 
@@ -301,19 +356,10 @@ function mesclarTimesSalvosEmRostersPorData() {
     const ano = selectAno ? selectAno.value : 'todos';
     const mes = selectMes ? selectMes.value : 'todos';
 
-    let alvos = [];
-    if (ROSTERS_POR_DATA && ROSTERS_POR_DATA.PADRAO) {
-        alvos.push(ROSTERS_POR_DATA.PADRAO);
-    }
-
+    let alvos = [ROSTERS_POR_DATA["PADRAO"]];
     if (ano !== 'todos' && mes !== 'todos' && ROSTERS_POR_DATA[ano] && ROSTERS_POR_DATA[ano][mes]) {
         alvos.push(ROSTERS_POR_DATA[ano][mes]);
-    } else {
-        const periodoAtual = obterRostersPeriodoAtual();
-        if (periodoAtual && !alvos.includes(periodoAtual)) alvos.push(periodoAtual);
     }
-
-    alvos = alvos.filter(Boolean);
 
     alvos.forEach(alvo => {
         if (!alvo[_REGIAO]) alvo[_REGIAO] = {};
@@ -327,7 +373,6 @@ function mesclarTimesSalvosEmRostersPorData() {
     });
 }
 
-// Lista os tiers já existentes na região atual (para popular o <select> de cadastro)
 function obterTiersDisponiveis() {
     let regAlvo = _REGIAO === "ALL" ? "ALL" : _REGIAO;
     let base = CONFIGURACAO_MANUAL_TIMES[regAlvo] || {};
@@ -338,12 +383,10 @@ function obterTiersDisponiveis() {
 }
 
 const formatImg = n => { if(!n) return 'default'; return n.toLowerCase().replace(/[^a-z0-9]/g, ''); };
-// Normaliza nomes de modo/mapa para comparação, ignorando espaços, maiúsculas/minúsculas
-// e diferenças de camelCase (ex: "brawlBall" === "Brawl Ball" === "brawl ball").
 const normalizarChave = n => { if(!n) return ''; return n.toLowerCase().replace(/[^a-z0-9]/g, ''); };
 
 // ========================================================
-// HELPERS DE LOGO DE TIME (com fallback inteligente p/ Unknow)
+// HELPERS DE LOGO DE TIME
 // ========================================================
 const teamLogoUrl = (id) => `element/teams/${(id || '').toLowerCase()}.png`;
 const teamLogoFallback = (id) => (id && id.toUpperCase().startsWith('UNK')) ? 'element/teams/unknow.png' : 'element/teams/default.png';
@@ -380,6 +423,33 @@ function encontrarTimePorRoster(tagsArray) {
     return null;
 }
 
+// ========================================================
+// HELPER: valida se os 3 titulares de um time cadastrado
+// realmente estao jogando a partida (exige 3/3, nao 2/3).
+// Usado para so contar uma partida como "scrim do time"
+// quando o roster completo esta em campo.
+// Times "UNKxx" gerados automaticamente ja nascem com os
+// 3 tags batendo (ver processarTimesDesconhecidos), entao
+// sao aceitos diretamente.
+// ========================================================
+function timeRosterCompleto(tagsDaPartida, idTime) {
+    if (!idTime) return false;
+    if (idTime.toUpperCase().startsWith('UNK')) return true;
+    for (let reg in CONFIGURACAO_MANUAL_TIMES) {
+        for (let tier in CONFIGURACAO_MANUAL_TIMES[reg]) {
+            if (tier === "TIER ?") continue;
+            let time = CONFIGURACAO_MANUAL_TIMES[reg][tier].find(t => t.id_time === idTime);
+            if (time) {
+                let tagsRoster = time.jogadores.map(j => j.tag).filter(t => t && t !== '#');
+                if (tagsRoster.length < 3) return false;
+                let matchCount = tagsDaPartida.filter(t => tagsRoster.includes(t)).length;
+                return matchCount === 3;
+            }
+        }
+    }
+    return false;
+}
+
 function parseDateBR(dataStr) {
     if (!dataStr) return 0;
     try {
@@ -389,122 +459,7 @@ function parseDateBR(dataStr) {
     } catch (e) { return 0; }
 }
 
-async function carregarRostersAutomaticos() {
-    // Carrega o roster gerado automaticamente pelo gerador.py.
-    // Compatível com:
-    // 1) rosters.json contendo JSON puro;
-    // 2) rosters.json contendo: window.ROSTERS_POR_DATA = {...};
-    // 3) rosters.js contendo: window.ROSTERS_POR_DATA = {...};
-    // Se qualquer uma das opções falhar, o roster interno deste app continua funcionando.
-
-    const fontes = [
-        `rosters.json?v=${Date.now()}`,
-        `rosters.js?v=${Date.now()}`
-    ];
-
-    for (const fonte of fontes) {
-        try {
-            const resposta = await fetch(fonte, {
-                cache: 'no-store',
-                headers: { 'Cache-Control': 'no-cache' }
-            });
-
-            if (!resposta.ok) {
-                throw new Error(`HTTP ${resposta.status}`);
-            }
-
-            const texto = await resposta.text();
-            if (!texto || !texto.trim()) {
-                throw new Error('arquivo vazio');
-            }
-
-            let dados = null;
-
-            // Primeiro tenta JSON puro.
-            try {
-                dados = JSON.parse(texto);
-            } catch (_) {
-                // O gerador pode produzir um arquivo com sintaxe JS mesmo usando
-                // a extensão .json, por exemplo:
-                // window.ROSTERS_POR_DATA = { ... };
-                const inicio = texto.indexOf('{');
-                const fim = texto.lastIndexOf('}');
-
-                if (inicio !== -1 && fim > inicio) {
-                    const objetoTexto = texto.slice(inicio, fim + 1);
-                    try {
-                        dados = JSON.parse(objetoTexto);
-                    } catch (_) {
-                        // Último fallback para arquivos JS confiáveis do próprio
-                        // repositório. Isso também aceita const/let/window.
-                        try {
-                            const sandbox = {};
-                            const executor = new Function(
-                                'window',
-                                `${texto}\n; return window.ROSTERS_POR_DATA || null;`
-                            );
-                            dados = executor(sandbox);
-                        } catch (erroExecucao) {
-                            throw new Error(`formato inválido: ${erroExecucao.message}`);
-                        }
-                    }
-                }
-            }
-
-            // Alguns geradores salvam o objeto dentro de uma propriedade.
-            if (dados && dados.ROSTERS_POR_DATA && typeof dados.ROSTERS_POR_DATA === 'object') {
-                dados = dados.ROSTERS_POR_DATA;
-            }
-
-            if (!dados || typeof dados !== 'object' || Array.isArray(dados)) {
-                throw new Error('ROSTERS_POR_DATA não encontrado');
-            }
-
-            // Não substitui o roster interno por um arquivo vazio/incompleto.
-            const regioesValidas = ['SA', 'NA', 'EMEA', 'EA', 'ALL'];
-            let encontrouRegiao = false;
-            Object.keys(dados).forEach(chaveAno => {
-                if (chaveAno === 'PADRAO') {
-                    const padrao = dados[chaveAno];
-                    if (padrao && typeof padrao === 'object') {
-                        regioesValidas.forEach(reg => {
-                            if (padrao[reg] && typeof padrao[reg] === 'object') encontrouRegiao = true;
-                        });
-                    }
-                    return;
-                }
-                const porMes = dados[chaveAno];
-                if (!porMes || typeof porMes !== 'object') return;
-                Object.keys(porMes).forEach(chaveMes => {
-                    const periodo = porMes[chaveMes];
-                    if (!periodo || typeof periodo !== 'object') return;
-                    regioesValidas.forEach(reg => {
-                        if (periodo[reg] && typeof periodo[reg] === 'object') encontrouRegiao = true;
-                    });
-                });
-            });
-
-            if (!encontrouRegiao) {
-                throw new Error('arquivo não contém regiões/tiers de roster válidos');
-            }
-
-            // Mantém a variável usada pelo restante deste app.
-            ROSTERS_POR_DATA = dados;
-            window.ROSTERS_POR_DATA = dados;
-
-            console.log(`[ROSTERS] Roster automático carregado de ${fonte}.`);
-            return true;
-        } catch (erro) {
-            console.warn(`[ROSTERS] Falha ao carregar ${fonte}:`, erro);
-        }
-    }
-
-    console.warn('[ROSTERS] Nenhum arquivo automático válido encontrado. Usando o roster interno do app.js.');
-    return false;
-}
-
-document.addEventListener("DOMContentLoaded", async () => { 
-    await carregarRostersAutomaticos();
+document.addEventListener("DOMContentLoaded", () => { 
     atualizarRostersAtuais();
     carregarCSV(); 
 });
@@ -615,9 +570,6 @@ function popularFiltrosGlobais() {
         fScrim.onchange = () => { if (window.currentScrims) renderizarListaScrims(window.currentScrims); };
         sTipo.parentNode.insertBefore(fScrim, sTipo.nextSibling);
 
-        // Dropdown visual customizado (com a logo do time ao lado esquerdo do nome).
-        // O <select> nativo acima continua existindo como "fonte da verdade" (mesmo id/valor),
-        // só que escondido — todo o resto do código que lê scrims-team-filter.value continua igual.
         let customWrap = document.createElement('div');
         customWrap.id = 'scrims-team-filter-custom';
         customWrap.style.cssText = 'position:relative; display:none; min-width:230px; user-select:none;';
@@ -657,8 +609,6 @@ function popularFiltrosGlobais() {
     }
 }
 
-// Monta o dropdown visual de filtro de times das scrims, com a logo de cada time
-// ao lado esquerdo do nome (tanto no botão quanto na lista de opções).
 function atualizarDropdownTimesScrims(timesNaScrimMap, valorAtual) {
     const selectFiltro = document.getElementById('scrims-team-filter');
     const optionsBox = document.getElementById('scrims-team-filter-options');
@@ -714,6 +664,113 @@ function atualizarDropdownTimesScrims(timesNaScrimMap, valorAtual) {
 }
 
 
+// ==========================================
+// 4. NOVA LÓGICA MD3: ESTRUTURAR E PROCESSAR DADOS
+// ==========================================
+
+function estruturarMD3(dadosPeriodo) {
+    let rawMatches = {};
+    dadosPeriodo.forEach(r => { if(!rawMatches[r.id_partida]) rawMatches[r.id_partida] = []; rawMatches[r.id_partida].push(r); });
+
+    let partidasEstruturadas = [];
+    Object.values(rawMatches).forEach(linhas => {
+        if(linhas.length < 6) return;
+        let t0 = linhas.slice(0,3), t1 = linhas.slice(3,6);
+        let t0Id = t0[0].id_time, t1Id = t1[0].id_time;
+        if (_REGIAO !== "ALL" && !isTimeDaRegiaoAtual(t0Id) && !isTimeDaRegiaoAtual(t1Id)) return;
+
+        // Ordem dos picks preservada EXATAMENTE como veio da biblioteca de dados (CSV),
+        // pois t0/t1 sao fatias sequenciais das linhas originais (0-3 e 3-6), sem reordenar.
+        partidasEstruturadas.push({
+            id: linhas[0].id_partida, modo: linhas[0].modo, mapa: linhas[0].mapa,
+            tAId: t0Id, tBId: t1Id, tANome: t0[0].nome_time, tBNome: t1[0].nome_time,
+            picksA: t0.map(p => (p.pick||'').toUpperCase()), picksB: t1.map(p => (p.pick||'').toUpperCase()),
+            tagsA: t0.map(p => p.player_tag), tagsB: t1.map(p => p.player_tag),
+            t0Full: t0, t1Full: t1, vencedor: parseInt(t0[0].win) === 1 ? t0Id : t1Id, timestamp: parseDateBR(linhas[0].data_adicao),
+            dataFormatada: linhas[0].data_adicao, tipo: linhas[0].tipo || 'scrim', isMatcherino: linhas[0].id_partida && linhas[0].id_partida.startsWith('mtcr_'),
+            linhasOriginais: linhas
+        });
+    });
+
+    let scrims = [];
+    partidasEstruturadas.sort((a,b) => a.timestamp - b.timestamp).forEach(partida => {
+        // Só conta como scrim do time quando os 3 titulares cadastrados do roster
+        // realmente estiverem jogando dos dois lados (evita agrupar partidas com
+        // jogadores substitutos/errados como se fossem do time oficial).
+        if (!timeRosterCompleto(partida.tagsA, partida.tAId) || !timeRosterCompleto(partida.tagsB, partida.tBId)) return;
+
+        let chaveTimes = [partida.tAId, partida.tBId].sort().join(' VS ');
+        let scrimExistente = scrims.find(s => s.chave === chaveTimes && (partida.timestamp - s.ultimoUpdate) <= (2 * 60 * 60 * 1000));
+        if(scrimExistente) {
+            scrimExistente.sets.push(partida); scrimExistente.ultimoUpdate = partida.timestamp;
+            if(partida.isMatcherino) scrimExistente.temMatcherino = true;
+        } else {
+            scrims.push({
+                chave: chaveTimes, tAId: partida.tAId, tBId: partida.tBId, tANome: partida.tANome, tBNome: partida.tBNome,
+                inicio: partida.timestamp, ultimoUpdate: partida.timestamp, dataFormatada: partida.dataFormatada.split(' ')[0], sets: [partida], tipo: partida.tipo, temMatcherino: partida.isMatcherino || false
+            });
+        }
+    });
+
+    let dadosMD3Condensados = [];
+    scrims.forEach(scrim => {
+        let roundsMD3 = [];
+        let currentSets = [];
+        let winsA = 0, winsB = 0;
+        let scoreScrimA = 0, scoreScrimB = 0;
+
+        const fecharRound = (setsDoRound) => {
+            if (setsDoRound.length === 0) return;
+            let vencedorRound = winsA > winsB ? scrim.tAId : scrim.tBId;
+            if(winsA > winsB) scoreScrimA++; else if(winsB > winsA) scoreScrimB++;
+            
+            let firstSet = setsDoRound[0];
+            roundsMD3.push({
+                sets: setsDoRound,
+                vencedor: vencedorRound,
+                scoreA: winsA,
+                scoreB: winsB,
+                modo: firstSet.modo,
+                mapa: firstSet.mapa,
+                dataFormatada: firstSet.dataFormatada,
+                tAId: scrim.tAId, tBId: scrim.tBId,
+                tANome: scrim.tANome, tBNome: scrim.tBNome,
+                firstSet: firstSet 
+            });
+
+            firstSet.linhasOriginais.forEach(linha => {
+                let novaLinha = { ...linha };
+                novaLinha.win = (novaLinha.id_time === vencedorRound) ? "1" : "0";
+                dadosMD3Condensados.push(novaLinha);
+            });
+        };
+
+        scrim.sets.forEach(set => {
+            if(currentSets.length > 0 && currentSets[0].mapa !== set.mapa) {
+                fecharRound(currentSets);
+                currentSets = []; winsA = 0; winsB = 0;
+            }
+            currentSets.push(set);
+            if (set.vencedor === scrim.tAId) winsA++;
+            else if (set.vencedor === scrim.tBId) winsB++;
+
+            if (winsA === 2 || winsB === 2) {
+                fecharRound(currentSets);
+                currentSets = []; winsA = 0; winsB = 0;
+            }
+        });
+        if (currentSets.length > 0) fecharRound(currentSets);
+
+        scrim.roundsMD3 = roundsMD3;
+        scrim.scoreA = scoreScrimA;
+        scrim.scoreB = scoreScrimB;
+    });
+
+    scrims = scrims.filter(s => s.roundsMD3.length > 0).reverse();
+    return { dadosCondensados: dadosMD3Condensados, scrimsMD3: scrims };
+}
+
+
 function processarDadosGlobais() {
     atualizarRostersAtuais();
     processarTimesDesconhecidos(dadosBrutos); 
@@ -735,38 +792,68 @@ function processarDadosGlobais() {
         return mA && mM && mD && mT && isTimeDaRegiaoAtual(row.id_time);
     };
 
-    dadosFiltrados = dadosBrutos.filter(filterFn);
+    let dadosRaw = dadosBrutos.filter(filterFn);
     dadosBansFiltrados = dadosBans.filter(filterFn);
+
+    let estruturado = estruturarMD3(dadosRaw);
+    dadosFiltrados = estruturado.dadosCondensados; 
 
     renderizarMeta();
     renderizarSidebarBrawlers();
     if(brawlerSelecionado) renderizarDetalhesBrawler(brawlerSelecionado);
     renderizarSidebarTimes();
     if(timeSelecionado) renderizarDetalhesTime(timeSelecionado);
-    processarScrimes(dadosBrutos.filter(filterFn));
+    
+    processarScrimesMD3(estruturado.scrimsMD3);
 }
 
 // ==========================================
-// 4. TELA META
+// 5. TELA META
 // ==========================================
 window.toggleModoMeta = function(idModo) {
     const c = document.getElementById(`modo-content-${idModo}`);
     if(c) c.style.display = (c.style.display === 'none' || !c.style.display) ? 'block' : 'none';
 }
 
-// Pega a rotação de mapas (Modo -> [3 mapas]) a ser usada na tela META: a configurada para o
-// ano/mês filtrado, ou, se "Todos os Anos/Meses" estiver selecionado, a configuração mais recente
-// cadastrada em ROTACAO_MAPAS (assim a tela nunca mostra mapas fora da rotação atual).
 function obterRotacaoAtiva(ano, mes) {
-    if (ano !== 'todos' && mes !== 'todos' && ROTACAO_MAPAS[ano] && ROTACAO_MAPAS[ano][mes]) {
-        return ROTACAO_MAPAS[ano][mes];
+    let mapasAgregados = {};
+
+    // Função auxiliar para juntar mapas sem duplicá-los
+    const adicionarMapas = (rotacao) => {
+        for (let modo in rotacao) {
+            if (!mapasAgregados[modo]) mapasAgregados[modo] = new Set();
+            rotacao[modo].forEach(mapa => mapasAgregados[modo].add(mapa));
+        }
+    };
+
+    if (ano !== 'todos' && mes !== 'todos') {
+        // Filtro específico (Ex: Ano 2026, Mês 07)
+        if (ROTACAO_MAPAS[ano] && ROTACAO_MAPAS[ano][mes]) {
+            adicionarMapas(ROTACAO_MAPAS[ano][mes]);
+        }
+    } else if (ano !== 'todos' && mes === 'todos') {
+        // Filtro de ano específico, mas pegando todos os meses
+        if (ROTACAO_MAPAS[ano]) {
+            for (let m in ROTACAO_MAPAS[ano]) {
+                adicionarMapas(ROTACAO_MAPAS[ano][m]);
+            }
+        }
+    } else {
+        // Filtro "TODOS": Agrega todos os anos e todos os meses cadastrados
+        for (let a in ROTACAO_MAPAS) {
+            for (let m in ROTACAO_MAPAS[a]) {
+                adicionarMapas(ROTACAO_MAPAS[a][m]);
+            }
+        }
     }
-    let anos = Object.keys(ROTACAO_MAPAS).sort().reverse();
-    for (let a of anos) {
-        let meses = Object.keys(ROTACAO_MAPAS[a]).sort().reverse();
-        for (let m of meses) return ROTACAO_MAPAS[a][m];
+
+    // Converte os Sets (que evitaram repetição) de volta para Arrays para a renderização
+    let resultado = {};
+    for (let modo in mapasAgregados) {
+        resultado[modo] = Array.from(mapasAgregados[modo]);
     }
-    return null;
+
+    return Object.keys(resultado).length > 0 ? resultado : null;
 }
 
 function renderizarMeta() {
@@ -809,6 +896,8 @@ function renderizarMeta() {
         let valid = brawlers ? Object.entries(brawlers).filter(x => x[1].picks >= samplePicks).sort((a,b) => b[1].picks - a[1].picks) : [];
         let bNMap = (modeKeyReal && mapaKeyReal && bMap[modeKeyReal] && bMap[modeKeyReal][mapaKeyReal]) ? bMap[modeKeyReal][mapaKeyReal] : {};
         let tJM = (modeKeyReal && mapaKeyReal && jBMap[modeKeyReal] && jBMap[modeKeyReal][mapaKeyReal]) ? jBMap[modeKeyReal][mapaKeyReal].size : 0, tBM = tJM > 0;
+        // PR% = picks do brawler / soma dos picks de TODOS os brawlers desta mesma tabela (mesmo modo+mapa, respeitando os filtros ativos)
+        let totalPicksTabela = brawlers ? Object.values(brawlers).reduce((acc, x) => acc + x.picks, 0) : 0;
 
         return `
             <div style="background:var(--bg-geral); border:1px solid var(--borda-destaque); border-radius:8px; padding:15px; min-width:0;">
@@ -817,21 +906,21 @@ function renderizarMeta() {
                 <div style="overflow-x:auto;">
                 <table class="excel-table" style="width:100%; table-layout:auto; border-collapse:collapse;">
                     <thead><tr>
-                        <th style="text-align:left; white-space:nowrap; padding:5px 8px;">BRAWLER</th>
-                        <th style="white-space:nowrap; padding:5px 8px;">P</th>
-                        <th style="white-space:nowrap; padding:5px 8px;">PR%</th>
-                        <th style="white-space:nowrap; padding:5px 8px;">W</th>
-                        <th style="white-space:nowrap; padding:5px 8px;">WR%</th>
-                        <th style="white-space:nowrap; padding:5px 8px; color:#b06aff;">B</th>
-                        <th style="white-space:nowrap; padding:5px 8px; color:#b06aff;">BR%</th>
+                        <th style="text-align:left; white-space:nowrap; padding:5px 8px; color:#898989;">BRAWLER</th>
+                        <th style="white-space:nowrap; padding:5px 8px; color:#898989;" >P</th>
+                        <th style="white-space:nowrap; padding:5px 8px; color:#00ffff;">PR%</th>
+                        <th style="white-space:nowrap; padding:5px 8px; color:#898989;">W</th>
+                        <th style="white-space:nowrap; padding:5px 8px; color:#00ff00;">WR%</th>
+                        <th style="white-space:nowrap; padding:5px 8px; color:#898989;">B</th>
+                        <th style="white-space:nowrap; padding:5px 8px; color:#ff0000;">BR%</th>
                     </tr></thead>
                     <tbody>
                         ${valid.map(([b, s]) => {
                             let bc = bNMap[b] || 0, brPct = tBM ? ((bc / tJM) * 100).toFixed(1) : '0.0';
                             return `<tr>
-                                <td style="text-align:left; font-weight:bold; color:var(--accent-hover); white-space:nowrap; padding:5px 8px;"><img src="brawlers/${formatImg(b)}.png" style="width:24px; vertical-align:middle; margin-right:5px; border-radius:4px;" onerror="this.src='brawlers/default.png'">${b}</td>
-                                <td style="padding:5px 8px;">${s.picks}</td><td style="color:var(--texto-secundario); padding:5px 8px;">${((s.picks/(dadosFiltrados.length||1))*100).toFixed(1)}%</td><td style="padding:5px 8px;">${s.wins}</td><td class="winrate-cell" style="padding:5px 8px;">${((s.wins/s.picks)*100).toFixed(1)}%</td>
-                                <td style="color:#b06aff; font-weight:bold; padding:5px 8px;">${bc}</td><td style="color:#b06aff; font-weight:bold; padding:5px 8px;">${brPct}%</td>
+                                <td style="text-align:left; font-weight:bold; color:var(#898989); white-space:nowrap; padding:5px 8px;"><img src="brawlers/${formatImg(b)}.png" style="width:24px; vertical-align:middle; margin-right:5px; border-radius:4px;" onerror="this.src='brawlers/default.png'">${b}</td>
+                                <td style="padding:5px 8px;">${s.picks}</td><td style="color: #00ffff; padding:5px 8px;">${(totalPicksTabela > 0 ? ((s.picks/totalPicksTabela)*100) : 0).toFixed(1)}%</td><td style="padding:5px 8px;">${s.wins}</td><td style="color: #00ff00; padding:5px 8px;">${((s.wins/s.picks)*100).toFixed(1)}%</td>
+                                <td style="color:#898989; font-weight:bold; padding:5px 8px;">${bc}</td><td style="color:#ff0000; font-weight:bold; padding:5px 8px;">${brPct}%</td>
                             </tr>`;
                         }).join('')}
                     </tbody>
@@ -843,8 +932,6 @@ function renderizarMeta() {
     let html = ``;
 
     if (rotacaoAtiva) {
-        // Mostra SOMENTE os modos/mapas configurados em ROTACAO_MAPAS, com os 3 mapas
-        // de cada modo lado a lado (em linha horizontal), nessa ordem.
         Object.entries(rotacaoAtiva).forEach(([modoConfig, mapasConfig]) => {
             let modeKeyReal = Object.keys(sMap).find(m => normalizarChave(m) === normalizarChave(modoConfig)) || null;
             let cleanMode = formatImg(modoConfig);
@@ -852,7 +939,6 @@ function renderizarMeta() {
             html += `<div class="modo-card" onclick="toggleModoMeta('${cleanMode}')"><img src="element/modes/${cleanMode}.png" style="width:40px; margin-right:15px;" onerror="this.src='element/modes/default.png'">${modoConfig}</div><div id="modo-content-${cleanMode}" class="modo-section" style="display:none; padding:15px;"><div class="mapa-content" style="display:grid; grid-template-columns:repeat(3, minmax(300px, 1fr)); gap:15px; align-items:start;">${conteudoMapa}</div></div>`;
         });
     } else {
-        // Fallback de segurança: nenhuma rotação cadastrada em ROTACAO_MAPAS para nenhum período.
         Object.entries(sMap).forEach(([mode, mapasDict]) => {
             let cleanMode = formatImg(mode);
             let conteudoMapa = Object.keys(mapasDict).map(mapa => montarCardMapa(mode, mapa)).join('');
@@ -861,16 +947,19 @@ function renderizarMeta() {
     }
 
     let bAllVal = Object.entries(sAll).filter(x => x[1].picks >= samplePicks).sort((a,b) => b[1].picks - a[1].picks);
+    // PR% = picks do brawler / soma dos picks de TODOS os brawlers desta mesma tabela (ALL MAPS), respeitando os filtros ativos
+    let totalPicksAllMaps = Object.values(sAll).reduce((acc, x) => acc + x.picks, 0);
     if (bAllVal.length > 0) {
         html += `<div class="modo-card" style="margin-top:40px; border-color:var(--winrate-color); color:var(--winrate-color);" onclick="toggleModoMeta('allmaps')">ALL MAPS (GERAL)</div><div id="modo-content-allmaps" class="modo-section" style="display:none; padding:15px;"><div class="mapa-content" style="display:block;">
             <table class="excel-table">
-                <thead><tr><th style="text-align:left;">BRAWLER</th><th>P</th><th>W</th><th>WR%</th><th style="color:#b06aff;">B</th><th style="color:#b06aff;">BR%</th></tr></thead>
+                <thead><tr><th style="text-align:left;">BRAWLER</th><th>P</th><th>PR%</th><th>W</th><th>WR%</th><th style="color:#b06aff;">B</th><th style="color:#b06aff;">BR%</th></tr></thead>
                 <tbody>
                     ${bAllVal.map(([b, s]) => {
                         let bc = bAll[b] || 0, brPct = jBT.size > 0 ? ((bc / jBT.size) * 100).toFixed(1) : '0.0';
+                        let prPct = totalPicksAllMaps > 0 ? ((s.picks/totalPicksAllMaps)*100).toFixed(1) : '0.0';
                         return `<tr>
                             <td style="text-align:left; font-weight:bold; color:var(--winrate-color)"><img src="brawlers/${formatImg(b)}.png" style="width:28px; vertical-align:middle; margin-right:10px; border-radius:4px;" onerror="this.src='brawlers/default.png'">${b}</td>
-                            <td>${s.picks}</td><td>${s.wins}</td><td class="winrate-cell">${((s.wins/s.picks)*100).toFixed(1)}%</td><td style="color:#b06aff; font-weight:bold;">${bc}</td><td style="color:#b06aff; font-weight:bold;">${brPct}%</td>
+                            <td>${s.picks}</td><td style="color:var(--texto-secundario);">${prPct}%</td><td>${s.wins}</td><td class="winrate-cell">${((s.wins/s.picks)*100).toFixed(1)}%</td><td style="color:#b06aff; font-weight:bold;">${bc}</td><td style="color:#b06aff; font-weight:bold;">${brPct}%</td>
                         </tr>`;
                     }).join('')}
                 </tbody>
@@ -882,7 +971,7 @@ function renderizarMeta() {
 }
 
 // ==========================================
-// 5. TELA BRAWLERS
+// 6. TELA BRAWLERS
 // ==========================================
 function renderizarSidebarBrawlers() {
     let pickCounts = {};
@@ -962,7 +1051,7 @@ function renderizarDetalhesBrawler(brawler) {
         <div class="brawler-profile-header"><img src="brawlers/${formatImg(brawler)}.png" class="brawler-large-avatar" onerror="this.src='brawlers/default.png'"><div><h2 style="font-size:28px;">${brawler}</h2><p style="color:var(--texto-secundario); font-size:14px; font-weight:bold; margin-top:5px;">PICKS: <span style="color:#fff">${totalPicks}</span> | W: <span style="color:#fff">${wins}</span> | WR%: <span class="winrate-cell">${wrGeral}</span> ${totalJogosComBans > 0 ? ` | B: <span style="color:#b06aff">${totalBans}</span> | BR%: <span style="color:#b06aff">${brPct}%</span>` : ''}</p></div></div>
         <h3 style="color:var(--accent-purple); font-size:16px; margin-bottom:15px;">TOP 3 MAPAS (DO BRAWLER)</h3>
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:15px; margin-bottom:30px;">
-            ${topMapas.map(([m, s]) => `<div style="background:var(--bg-cards); padding:15px; border-radius:8px; border:1px solid var(--borda-destaque); text-align:center;"><div style="font-weight:900; font-size:14px; margin-bottom:8px;">${m}</div><div style="font-size:13px; color:var(--texto-secundario); display:flex; justify-content:center; gap:10px;"><span>P: <strong style="color:#fff">${s.picks}</strong></span><span>PR: <strong style="color:#fff">${((s.picks/totalPicks)*100).toFixed(1)}%</strong></span></div><div style="font-size:13px; color:var(--texto-secundario); display:flex; justify-content:center; gap:10px; margin-top:5px;"><span>W: <strong style="color:#fff">${s.wins}</strong></span><span>WR: <strong class="winrate-cell">${((s.wins/s.picks)*100).toFixed(1)}%</strong></span></div></div>`).join('')}
+            ${topMapas.map(([m, s]) => `<div style="background:var(--bg-cards); padding:15px; border-radius:8px; border:1px solid var(--borda-destaque); text-align:center;"><img src="element/maps/${formatImg(m)}.png" style="width:100%; max-width:220px; height:100px; object-fit:cover; border-radius:6px; margin-bottom:10px; border:1px solid var(--borda-suave);" onerror="this.src='element/maps/default.png'"><div style="font-weight:900; font-size:14px; margin-bottom:8px;">${m}</div><div style="font-size:13px; color:var(--texto-secundario); display:flex; justify-content:center; gap:10px;"><span>P: <strong style="color:#fff">${s.picks}</strong></span><span>PR: <strong style="color:#fff">${((s.picks/totalPicks)*100).toFixed(1)}%</strong></span></div><div style="font-size:13px; color:var(--texto-secundario); display:flex; justify-content:center; gap:10px; margin-top:5px;"><span>W: <strong style="color:#fff">${s.wins}</strong></span><span>WR: <strong class="winrate-cell">${((s.wins/s.picks)*100).toFixed(1)}%</strong></span></div></div>`).join('')}
         </div>
         <div class="synergy-grid">
             <div class="synergy-box"><h3 style="color:var(--winrate-color); margin-bottom:15px; font-size:14px;">BOM CONTRA (Adversários)</h3>${countersTop.map(c => `<div class="synergy-item"><div style="display:flex; align-items:center;"><img src="brawlers/${formatImg(c.nome)}.png" onerror="this.src='brawlers/default.png'"><span style="font-weight:bold; font-size:13px;">${c.nome}</span></div><div style="text-align:right; font-size:12px; display:flex; gap:10px; font-weight:bold;"><div style="display:flex; flex-direction:column; color:var(--texto-secundario);"><span>P: ${c.matches}</span><span>PR%: ${c.pr.toFixed(1)}%</span></div><div style="display:flex; flex-direction:column;"><span>W: <span style="color:#fff">${c.wins}</span></span><span style="color:var(--winrate-color);">WR%: ${c.wr.toFixed(1)}%</span></div></div></div>`).join('') || '<p style="font-size:12px; color:var(--texto-secundario);">Sem dados</p>'}</div>
@@ -972,7 +1061,7 @@ function renderizarDetalhesBrawler(brawler) {
 }
 
 // ==========================================
-// 6. TELA TIMES
+// 7. TELA TIMES
 // ==========================================
 function renderizarSidebarTimes() {
     const sidebar = document.getElementById('lista-times-sidebar');
@@ -1064,7 +1153,6 @@ function renderizarDetalhesTime(time) {
     if(painel) painel.innerHTML = html + `</div>`;
 }
 
-// Registra um time que estava em "TIER ?" (desconhecido) com um nome/sigla/tier definitivos.
 window.registrarTimeCustom = function(idAntigo) {
     let inputId = document.getElementById('custom-id'), inputName = document.getElementById('custom-name'), selectTier = document.getElementById('custom-tier');
     if (!inputId || !inputName) return;
@@ -1079,7 +1167,6 @@ window.registrarTimeCustom = function(idAntigo) {
         tierEscolhido = novoTierInput && novoTierInput.value.trim() !== '' ? novoTierInput.value.trim() : 'TIMES REGISTRADOS';
     }
 
-    // Pega o roster original (tags reais) a partir do time que estava selecionado em "TIER ?"
     let timeOriginal = timeSelecionado && timeSelecionado.id_time === idAntigo ? timeSelecionado : null;
     let jogadoresFinais = (timeOriginal ? timeOriginal.jogadores : []).map((j, idx) => {
         let inputNick = document.getElementById(`nick-${idx}`);
@@ -1088,13 +1175,11 @@ window.registrarTimeCustom = function(idAntigo) {
 
     let novoTime = { id_time: novoId, nome_time: novoNome, jogadores: jogadoresFinais, tier: tierEscolhido };
 
-    // Persiste no localStorage da região atual (sobrevive a reload)
     let salvos = JSON.parse(localStorage.getItem('customTeams_' + _REGIAO)) || [];
     salvos = salvos.filter(t => t.id_time !== novoId && t.id_time !== idAntigo);
     salvos.push(novoTime);
     localStorage.setItem('customTeams_' + _REGIAO, JSON.stringify(salvos));
 
-    // Atualiza a configuração em memória imediatamente (CONFIGURACAO_MANUAL_TIMES + ROSTERS_POR_DATA)
     let regAlvo = _REGIAO === "ALL" ? "ALL" : _REGIAO;
     if (CONFIGURACAO_MANUAL_TIMES[regAlvo] && CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIER ?"]) {
         CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIER ?"] = CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIER ?"].filter(t => t.id_time !== idAntigo);
@@ -1103,8 +1188,6 @@ window.registrarTimeCustom = function(idAntigo) {
     CONFIGURACAO_MANUAL_TIMES[regAlvo][tierEscolhido].push(novoTime);
     mesclarTimesSalvosEmRostersPorData();
 
-    // Mostra um snippet pronto para colar em gerador.py (MAPEAMENTO_PLAYERS), já que o navegador
-    // não tem permissão para editar arquivos no servidor/repositório automaticamente.
     let exportBox = document.getElementById('custom-team-export-box');
     if (exportBox) {
         let regiaoPy = _REGIAO === "ALL" ? "SA" : _REGIAO;
@@ -1130,46 +1213,10 @@ window.registrarTimeCustom = function(idAntigo) {
 };
 
 // ==========================================
-// 7. TELA SCRIMS
+// 8. TELA SCRIMS (MD3)
 // ==========================================
-function processarScrimes(dadosPeriodo) {
-    let rawMatches = {};
-    dadosPeriodo.forEach(r => { if(!rawMatches[r.id_partida]) rawMatches[r.id_partida] = []; rawMatches[r.id_partida].push(r); });
 
-    let partidasEstruturadas = [];
-    Object.values(rawMatches).forEach(linhas => {
-        if(linhas.length < 6) return;
-        let t0 = linhas.slice(0,3), t1 = linhas.slice(3,6);
-        let t0Id = t0[0].id_time, t1Id = t1[0].id_time;
-        if (_REGIAO !== "ALL" && !isTimeDaRegiaoAtual(t0Id) && !isTimeDaRegiaoAtual(t1Id)) return;
-
-        partidasEstruturadas.push({
-            id: linhas[0].id_partida, modo: linhas[0].modo, mapa: linhas[0].mapa,
-            tAId: t0Id, tBId: t1Id, tANome: t0[0].nome_time, tBNome: t1[0].nome_time,
-            picksA: t0.map(p => (p.pick||'').toUpperCase()), picksB: t1.map(p => (p.pick||'').toUpperCase()),
-            t0Full: t0, t1Full: t1, vencedor: parseInt(t0[0].win) === 1 ? t0Id : t1Id, timestamp: parseDateBR(linhas[0].data_adicao),
-            dataFormatada: linhas[0].data_adicao, tipo: linhas[0].tipo || 'scrim', isMatcherino: linhas[0].id_partida && linhas[0].id_partida.startsWith('mtcr_')
-        });
-    });
-
-    let scrims = [];
-    partidasEstruturadas.sort((a,b) => a.timestamp - b.timestamp).forEach(partida => {
-        let chaveTimes = [partida.tAId, partida.tBId].sort().join(' VS ');
-        let scrimExistente = scrims.find(s => s.chave === chaveTimes && (partida.timestamp - s.ultimoUpdate) <= (2 * 60 * 60 * 1000));
-        if(scrimExistente) {
-            scrimExistente.rounds.push(partida); scrimExistente.ultimoUpdate = partida.timestamp;
-            if(partida.vencedor === partida.tAId) scrimExistente.scoreA++; if(partida.vencedor === partida.tBId) scrimExistente.scoreB++;
-            if(partida.isMatcherino) scrimExistente.temMatcherino = true;
-        } else {
-            scrims.push({
-                chave: chaveTimes, tAId: partida.tAId, tBId: partida.tBId, tANome: partida.tANome, tBNome: partida.tBNome,
-                scoreA: partida.vencedor === partida.tAId ? 1 : 0, scoreB: partida.vencedor === partida.tBId ? 1 : 0,
-                inicio: partida.timestamp, ultimoUpdate: partida.timestamp, dataFormatada: partida.dataFormatada.split(' ')[0], rounds: [partida], tipo: partida.tipo, temMatcherino: partida.isMatcherino || false
-            });
-        }
-    });
-
-    scrims = scrims.filter(s => s.rounds.length > 1).reverse();
+function processarScrimesMD3(scrims) {
     window.currentScrims = scrims;
     
     let selectFiltro = document.getElementById('scrims-team-filter');
@@ -1198,15 +1245,13 @@ function renderizarListaScrims(scrimsOriginais) {
 
     scrims.forEach((scrim) => {
         let div = document.createElement('div'); div.className = 'scrim-card';
-        let isTournament = scrim.rounds.some(r => r.tipo === 'tournament') || scrim.temMatcherino;
+        let isTournament = scrim.sets.some(r => r.tipo === 'tournament') || scrim.temMatcherino;
         let icon = isTournament ? `<img src="element/play/matcherino.png" style="position:absolute; top:10px; right:12px; width:22px; height:22px; object-fit:contain;" onerror="this.style.display='none'" title="Torneio">` : '';
 
         let aGanhou = scrim.scoreA > scrim.scoreB, bGanhou = scrim.scoreB > scrim.scoreA;
         let corA = aGanhou ? 'var(--winrate-color, #2ecc71)' : '#fff';
         let corB = bGanhou ? 'var(--winrate-color, #2ecc71)' : '#fff';
 
-        // Layout 100% inline (grid de 3 colunas) para não depender do CSS externo e nunca
-        // "quebrar" para layout vertical, mesmo com nomes de time longos.
         div.style.cssText = 'position:relative; display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:14px; min-height:120px; padding:22px 20px 34px; cursor:pointer;';
 
         div.innerHTML = `
@@ -1220,7 +1265,7 @@ function renderizarListaScrims(scrimsOriginais) {
                 <img src="${teamLogoUrl(scrim.tBId)}" class="scrim-team-logo" style="width:42px; height:42px; object-fit:contain; border-radius:6px; flex-shrink:0;" onerror="${teamLogoOnError(scrim.tBId)}">
                 <span style="font-weight:900; font-size:15px; color:${corB}; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${scrim.tBNome}">${scrim.tBNome}</span>
             </div>
-            <div style="position:absolute; bottom:10px; left:18px; font-size:11px; color:var(--texto-secundario); font-weight:bold;">${scrim.dataFormatada}</div><div style="position:absolute; bottom:10px; right:18px; font-size:11px; color:var(--texto-secundario); font-weight:bold;">Rounds: ${scrim.rounds.length}</div>
+            <div style="position:absolute; bottom:10px; left:18px; font-size:11px; color:var(--texto-secundario); font-weight:bold;">${scrim.dataFormatada}</div><div style="position:absolute; bottom:10px; right:18px; font-size:11px; color:var(--texto-secundario); font-weight:bold;">Rounds: ${scrim.roundsMD3.length}</div>
         `;
         div.onclick = () => renderizarDetalheScrim(scrim);
         lista.appendChild(div);
@@ -1231,8 +1276,8 @@ function renderizarDetalheScrim(scrim) {
     const lista = document.getElementById('scrims-lista'), detalhe = document.getElementById('scrims-detalhe');
     lista.style.display = 'none'; detalhe.style.display = 'block';
 
-    let playersA = [...new Set(scrim.rounds.flatMap(r => r.t0Full.map(p => p.player_name)))].slice(0,3);
-    let playersB = [...new Set(scrim.rounds.flatMap(r => r.t1Full.map(p => p.player_name)))].slice(0,3);
+    let playersA = [...new Set(scrim.sets.flatMap(r => r.t0Full.map(p => p.player_name)))].slice(0,3);
+    let playersB = [...new Set(scrim.sets.flatMap(r => r.t1Full.map(p => p.player_name)))].slice(0,3);
 
     let aGanhou = scrim.scoreA > scrim.scoreB, bGanhou = scrim.scoreB > scrim.scoreA;
     let corA = aGanhou ? 'var(--winrate-color, #2ecc71)' : '#fff';
@@ -1240,105 +1285,481 @@ function renderizarDetalheScrim(scrim) {
 
     detalhe.innerHTML = `
         <button onclick="document.getElementById('scrims-lista').style.display='grid'; document.getElementById('scrims-detalhe').style.display='none';" style="background:transparent; border:2px solid var(--accent-purple); color:var(--accent-purple); padding:8px 20px; font-weight:bold; border-radius:6px; cursor:pointer; margin-bottom:30px;">← VOLTAR</button>
-        <div class="scrim-detail-header"><div style="display:flex; justify-content:center; align-items:flex-start; gap:40px;"><div style="text-align:center;"><img src="${teamLogoUrl(scrim.tAId)}" style="height:80px; object-fit:contain; background:var(--bg-cards); border-radius:8px; border:2px solid var(--borda-destaque);" onerror="${teamLogoOnError(scrim.tAId)}"><div style="font-size:11px; color:var(--texto-secundario); display:flex; gap:8px; justify-content:center; margin-top:8px; font-weight:bold;">${playersA.map(p => `<span>${p}</span>`).join('')}</div></div><div style="font-size:42px; font-weight:900; line-height:80px;"><span style="color:${corA};">${scrim.scoreA}</span> <span style="color:var(--accent-purple)">-</span> <span style="color:${corB};">${scrim.scoreB}</span></div><div style="text-align:center;"><img src="${teamLogoUrl(scrim.tBId)}" style="height:80px; object-fit:contain; background:var(--bg-cards); border-radius:8px; border:2px solid var(--borda-destaque);" onerror="${teamLogoOnError(scrim.tBId)}"><div style="font-size:11px; color:var(--texto-secundario); display:flex; gap:8px; justify-content:center; margin-top:8px; font-weight:bold;">${playersB.map(p => `<span>${p}</span>`).join('')}</div></div></div></div>
-        <div class="scrim-rounds-container" id="rounds-scroll" style="display:flex; flex-wrap:wrap; gap:10px; overflow:visible; max-height:none; width:100%;">${scrim.rounds.map((r, i) => {
+        <div class="scrim-detail-header">
+            <div style="display:flex; justify-content:center; align-items:flex-start; gap:40px;">
+                <div style="text-align:center;">
+                    <!-- Logos maiores e sem moldura no fundo -->
+                    <img src="${teamLogoUrl(scrim.tAId)}" style="height:120px; object-fit:contain; background:transparent; border:none;" onerror="${teamLogoOnError(scrim.tAId)}">
+                    <div style="font-size:11px; color:var(--texto-secundario); display:flex; gap:8px; justify-content:center; margin-top:8px; font-weight:bold;">${playersA.map(p => `<span>${p}</span>`).join('')}</div>
+                </div>
+                <div style="font-size:42px; font-weight:900; line-height:120px;">
+                    <span style="color:${corA};">${scrim.scoreA}</span> <span style="color:var(--accent-purple)">-</span> <span style="color:${corB};">${scrim.scoreB}</span>
+                </div>
+                <div style="text-align:center;">
+                    <!-- Logos maiores e sem moldura no fundo -->
+                    <img src="${teamLogoUrl(scrim.tBId)}" style="height:120px; object-fit:contain; background:transparent; border:none;" onerror="${teamLogoOnError(scrim.tBId)}">
+                    <div style="font-size:11px; color:var(--texto-secundario); display:flex; gap:8px; justify-content:center; margin-top:8px; font-weight:bold;">${playersB.map(p => `<span>${p}</span>`).join('')}</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="scrim-rounds-container" id="rounds-scroll" style="display:flex; flex-wrap:wrap; gap:10px; overflow:visible; max-height:none; width:100%; margin-top: 20px;">
+        ${scrim.roundsMD3.map((r, i) => {
             let venceuA = r.vencedor === r.tAId;
-            let corSet = venceuA ? 'var(--winrate-color, #2ecc71)' : 'var(--loss-color, #e74c3c)';
-            let nomeVencedorSet = venceuA ? r.tANome : r.tBNome;
-            return `<div class="scrim-round-btn ${i === 0 ? 'active' : ''}" onclick="selecionarRound(${i}, this)" style="flex:0 0 auto;">
-                <span style="font-size:11px; font-weight:900; color:var(--accent-purple); display:block; margin-bottom:5px;">SET ${i+1}</span>
+            let corRound = venceuA ? 'var(--winrate-color, #2ecc71)' : 'var(--loss-color, #e74c3c)';
+            let nomeVencedorRound = venceuA ? r.tANome : r.tBNome;
+            return `<div class="scrim-round-btn ${i === 0 ? 'active' : ''}" onclick="window.selecionarRoundMD3(${i}, this)" style="flex:0 0 auto; padding: 10px;">
+                <div style="display: flex; align-items: baseline; gap: 6px; margin-bottom: 5px;">
+                    <!-- Número do round maior -->
+                    <span style="font-size:15px; font-weight:900; color:var(--accent-purple);">ROUND ${i+1}</span>
+                    <!-- Placar de Sets ao lado e menor -->
+                    <span style="font-size:11px; font-weight:bold; color:var(--texto-secundario);">(Sets: ${r.scoreA}-${r.scoreB})</span>
+                </div>
                 <img src="element/modes/${formatImg(r.modo)}.png" onerror="this.src='element/modes/default.png'">
-                <span style="display:block; margin-top:4px; font-size:9px; font-weight:900; color:${corSet}; max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${nomeVencedorSet}">${nomeVencedorSet}</span>
+                <span style="display:block; margin-top:4px; font-size:11px; font-weight:900; color:${corRound}; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${nomeVencedorRound}">${nomeVencedorRound}</span>
             </div>`;
-        }).join('')}</div>
-        <div id="round-view-container"></div>
+        }).join('')}
+        </div>
+        <div id="round-view-container" style="margin-top: 25px;"></div>
     `;
-    window.scrimAtual = scrim; selecionarRound(0, detalhe.querySelector('.scrim-round-btn'));
+    window.scrimAtual = scrim; 
+    window.selecionarRoundMD3(0, detalhe.querySelector('.scrim-round-btn'));
 }
 
-window.selecionarRound = function(index, btnElement) {
+window.selecionarRoundMD3 = function(index, btnElement) {
     document.querySelectorAll('.scrim-round-btn').forEach(b => b.classList.remove('active'));
     if(btnElement) btnElement.classList.add('active');
 
-    let round = window.scrimAtual.rounds[index];
+    let roundMD3 = window.scrimAtual.roundsMD3[index];
+    let firstSet = roundMD3.firstSet; 
     const container = document.getElementById('round-view-container');
 
-    let venceuA = round.vencedor === round.tAId, venceuB = round.vencedor === round.tBId;
+    let venceuA = roundMD3.vencedor === window.scrimAtual.tAId;
     let corSetA = venceuA ? 'var(--winrate-color, #2ecc71)' : '#fff';
-    let corSetB = venceuB ? 'var(--winrate-color, #2ecc71)' : '#fff';
+    let corSetB = !venceuA ? 'var(--winrate-color, #2ecc71)' : '#fff';
 
-    let playersA = round.t0Full.map(p => p.player_name), playersB = round.t1Full.map(p => p.player_name);
-    let bansDoRound = dadosBans.filter(r => r.id_partida === round.id);
-    let bansTimeA   = bansDoRound.filter(r => r.id_time === round.tAId), bansTimeB   = bansDoRound.filter(r => r.id_time === round.tBId);
+    let playersA = firstSet.t0Full.map(p => p.player_name), playersB = firstSet.t1Full.map(p => p.player_name);
+    let bansDoRound = dadosBans.filter(r => r.id_partida === firstSet.id);
+    let bansTimeA   = bansDoRound.filter(r => r.id_time === window.scrimAtual.tAId), bansTimeB   = bansDoRound.filter(r => r.id_time === window.scrimAtual.tBId);
     let temBans     = bansTimeA.length > 0 || bansTimeB.length > 0;
 
-    container.innerHTML = `
-        <div class="round-details-view">
-            <div style="text-align:center;"><p style="font-size:12px; color:var(--texto-secundario); font-weight:bold;">${round.dataFormatada.split(' ')[1] || ''} | ${round.modo.toUpperCase()}</p></div>
-            <div class="player-names-scrim" style="justify-content:space-around;"><div style="display:flex; gap:35px; color:${corSetA}; font-weight:900;">${playersA.map(p => `<span>${p}</span>`).join('')}</div><div style="display:flex; gap:35px; color:${corSetB}; font-weight:900;">${playersB.map(p => `<span>${p}</span>`).join('')}</div></div>
-            ${temBans ? `<div style="display:flex; justify-content:space-between; align-items:center; margin:12px 0; padding:10px 20px; background:rgba(176,0,0,0.08); border-radius:8px; border:1px solid rgba(200,50,50,0.35);"><div style="display:flex; align-items:center; gap:8px;"><span style="font-size:10px; font-weight:900; color:#ff5555; letter-spacing:1px; white-space:nowrap;">BANS ▶</span>${bansTimeA.map(b => `<div style="position:relative; display:inline-block;" title="${b.brawler_banido}"><img src="brawlers/${formatImg(b.brawler_banido)}.png" style="width:32px; height:32px; border-radius:4px; filter:grayscale(80%) brightness(0.5);" onerror="this.src='brawlers/default.png'"><span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#ff4444; font-size:16px; font-weight:900; text-shadow:0 0 4px #000;">✕</span></div>`).join('')}</div><div style="display:flex; align-items:center; gap:8px; flex-direction:row-reverse;"><span style="font-size:10px; font-weight:900; color:#ff5555; letter-spacing:1px; white-space:nowrap;">◀ BANS</span>${bansTimeB.map(b => `<div style="position:relative; display:inline-block;" title="${b.brawler_banido}"><img src="brawlers/${formatImg(b.brawler_banido)}.png" style="width:32px; height:32px; border-radius:4px; filter:grayscale(80%) brightness(0.5);" onerror="this.src='brawlers/default.png'"><span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#ff4444; font-size:16px; font-weight:900; text-shadow:0 0 4px #000;">✕</span></div>`).join('')}</div></div>` : ''}
-            <div class="scrim-picks-container">
-                <div class="team-picks-scrim" style="flex-direction:row; justify-content:flex-end;">${round.picksA.map(pick => `<div class="pick-row"><img src="brawlers/${formatImg(pick)}.png" onerror="this.src='brawlers/default.png'"></div>`).join('')}</div>
-                <div class="map-middle-scrim"><img src="element/maps/${formatImg(round.mapa)}.png" onerror="this.src='element/maps/default.png'"><p style="font-size:12px; font-weight:900; margin-top:8px;">${round.mapa}</p></div>
-                <div class="team-picks-scrim" style="flex-direction:row; justify-content:flex-start;">${round.picksB.map(pick => `<div class="pick-row"><img src="brawlers/${formatImg(pick)}.png" onerror="this.src='brawlers/default.png'"></div>`).join('')}</div>
+container.innerHTML = `
+    <div class="round-details-view" style="background: var(--bg-cards); padding: 25px; border-radius: 12px; border: 1px solid var(--borda-destaque);">
+        
+        <div class="picks-container" style="display:flex; justify-content:center; align-items:center; gap: 40px; margin-top: 15px;">
+            
+            <div style="display:flex; flex-direction:column; gap:15px; color:${corSetA};">
+                ${playersA.map((p, index) => {
+                    let pickBrawler = firstSet.picksA ? firstSet.picksA[index] : '';
+                    return `<div style="display:flex; flex-direction:column; align-items:center; gap:5px; position:relative;">
+                        <span style="position:absolute; top:-8px; left:-8px; background:var(--accent-purple); color:#fff; font-size:10px; font-weight:900; padding:2px 6px; border-radius:10px; z-index:1;">PICK ${index+1}</span>
+                        <img src="brawlers/${formatImg(pickBrawler)}.png" style="width: 75px; height: 75px; border-radius: 8px; object-fit: cover; border: 2px solid ${venceuA ? 'var(--winrate-color, #2ecc71)' : 'var(--borda-suave, #555)'};" onerror="this.src='brawlers/default.png'">
+                        <span style="font-size:12px; font-weight:900;">${p}</span>
+                    </div>`;
+                }).join('')}
             </div>
-        </div>`;
+            
+            <div style="text-align:center;">
+                <img src="element/maps/${formatImg(roundMD3.mapa)}.png" style="width: 250px; border-radius: 10px; object-fit: cover; border: 2px solid var(--borda-destaque);" onerror="this.src='element/maps/default.png'">
+                <p style="margin-top:10px; font-size:14px; color:var(--texto-secundario); font-weight:bold;">
+                    ${roundMD3.mapa.toUpperCase()}
+                </p>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:15px; color:${corSetB};">
+                ${playersB.map((p, index) => {
+                    let pickBrawler = firstSet.picksB ? firstSet.picksB[index] : '';
+                    return `<div style="display:flex; flex-direction:column; align-items:center; gap:5px; position:relative;">
+                        <span style="position:absolute; top:-8px; left:-8px; background:var(--accent-purple); color:#fff; font-size:10px; font-weight:900; padding:2px 6px; border-radius:10px; z-index:1;">PICK ${index+1}</span>
+                        <img src="brawlers/${formatImg(pickBrawler)}.png" style="width: 75px; height: 75px; border-radius: 8px; object-fit: cover; border: 2px solid ${!venceuA ? 'var(--winrate-color, #2ecc71)' : 'var(--borda-suave, #555)'};" onerror="this.src='brawlers/default.png'">
+                        <span style="font-size:12px; font-weight:900;">${p}</span>
+                    </div>`;
+                }).join('')}
+            </div>
+
+        </div>
+    </div>
+`;
 };
 
-
 // ==========================================
-// 8. FUNÇÃO PARA ORDENAR TABELAS (META)
+// 9. FUNÇÃO PARA ORDENAR TABELAS (META)
 // ==========================================
 function tornarTabelasOrdenaveis() {
-    // Seleciona todas as tabelas geradas na tela Meta
     document.querySelectorAll('table.excel-table').forEach(table => {
         const headers = table.querySelectorAll('th');
-        
         headers.forEach((th, index) => {
-            // Estiliza o cabeçalho para parecer clicável
             th.style.cursor = 'pointer';
             th.title = "Clique para ordenar";
-
-            th.addEventListener('click', () => {
+            
+            // Remove listener antigo se existir (evita duplicidade caso seja chamado várias vezes)
+            const newTh = th.cloneNode(true);
+            th.parentNode.replaceChild(newTh, th);
+            
+            newTh.addEventListener('click', () => {
                 const tbody = table.querySelector('tbody');
                 if (!tbody) return;
-
                 const rows = Array.from(tbody.querySelectorAll('tr'));
-                const isAscending = th.classList.contains('asc');
-
-                // Reseta a classe de todos os cabeçalhos
-                headers.forEach(h => h.classList.remove('asc', 'desc'));
-
-                // Define a nova direção da ordenação
-                th.classList.add(isAscending ? 'desc' : 'asc');
-
+                const isAscending = newTh.classList.contains('asc');
+                
+                table.querySelectorAll('th').forEach(h => h.classList.remove('asc', 'desc'));
+                newTh.classList.add(isAscending ? 'desc' : 'asc');
+                
                 rows.sort((rowA, rowB) => {
-                    // Pega o texto da célula (ignorando a tag <img> do Brawler)
                     let cellA = rowA.children[index].innerText.trim();
                     let cellB = rowB.children[index].innerText.trim();
-
-                    // Função auxiliar para converter strings (ex: "50.5%", "15") em números, ou manter texto
+                    
                     const parseCell = (val) => {
                         let num = parseFloat(val.replace('%', '').replace(',', '.'));
                         return isNaN(num) ? val : num;
                     };
-
+                    
                     let valA = parseCell(cellA);
                     let valB = parseCell(cellB);
-
-                    // Se for texto (Nome do Brawler), ordena em ordem alfabética
+                    
                     if (typeof valA === 'string' && typeof valB === 'string') {
                         return isAscending ? valB.localeCompare(valA) : valA.localeCompare(valB);
-                    } 
-                    // Se for número (Picks, Wins, Taxas %), ordena numericamente
-                    else {
+                    } else {
                         return isAscending ? valA - valB : valB - valA;
                     }
                 });
-
-                // Reinjeta as linhas reordenadas no corpo da tabela
                 tbody.append(...rows);
             });
         });
     });
 }
+
+// ==========================================
+// MÓDULO MAPAS: RENDERIZAÇÃO E ESTATÍSTICAS
+// ==========================================
+
+function renderizarSidebarMapas() {
+    const sidebar = document.getElementById('sidebar-mapas');
+    if (!sidebar) return;
+    
+    // Identificar todos os modos e mapas disponíveis nos dados filtrados
+    let modosMapas = {};
+    dadosFiltrados.forEach(r => {
+        let modo = r.modo || "Desconhecido";
+        let mapa = r.mapa || "Desconhecido";
+        if(!modosMapas[modo]) modosMapas[modo] = new Set();
+        modosMapas[modo].add(mapa);
+    });
+
+    let html = `<h3 style="margin-bottom: 15px; color: var(--accent-hover, #fff);">MODOS E MAPAS</h3>`;
+    
+    Object.keys(modosMapas).sort().forEach(modo => {
+        let cleanMode = formatImg(modo);
+        html += `
+            <div style="margin-bottom: 15px;">
+                <div style="display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 14px; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 4px;">
+                    <img src="element/modes/${cleanMode}.png" style="width: 20px;" onerror="this.src='element/modes/default.png'">
+                    ${modo.toUpperCase()}
+                </div>
+                <div style="padding-left: 10px; margin-top: 5px;">
+        `;
+        
+        Array.from(modosMapas[modo]).sort().forEach(mapa => {
+            let cleanMap = formatImg(mapa);
+            html += `
+                <div class="sidebar-item" onclick="selecionarMapa('${modo}', '${mapa}')" style="display: flex; align-items: center; gap: 8px; padding: 6px; cursor: pointer; font-size: 13px;">
+                    <img src="element/maps/${cleanMap}.png" style="width: 30px; height: 30px; object-fit: cover; border-radius: 4px;" onerror="this.src='element/maps/default.png'">
+                    <span>${mapa}</span>
+                </div>
+            `;
+        });
+        html += `</div></div>`;
+    });
+    
+    sidebar.innerHTML = html;
+}
+
+function selecionarMapa(modo, mapa) {
+    mapaSelecionadoInfo = { modo, mapa };
+    renderizarDetalhesMapa(modo, mapa);
+}
+
+function renderizarDetalhesMapa(modo, mapa) {
+    const painel = document.getElementById('painel-info-mapa');
+    if(!painel) return;
+
+    // 1. Filtrar dados exclusivos deste mapa e modo
+    let dadosMapa = dadosFiltrados.filter(r => r.modo === modo && r.mapa === mapa);
+    if(dadosMapa.length === 0) {
+        painel.innerHTML = `<p>Sem dados para este mapa nos filtros atuais.</p>`;
+        return;
+    }
+
+    // 2. Agrupar por Partida e por Time para formar as Composições (3 Brawlers)
+    let partidasAgrupadas = {}; 
+    dadosMapa.forEach(r => {
+        if(!partidasAgrupadas[r.id_partida]) partidasAgrupadas[r.id_partida] = {};
+        if(!partidasAgrupadas[r.id_partida][r.id_time]) partidasAgrupadas[r.id_partida][r.id_time] = { brawlers: [], win: parseInt(r.win) === 1, timeNome: r.nome_time, data: r.data_adicao };
+        partidasAgrupadas[r.id_partida][r.id_time].brawlers.push((r.pick||'').toUpperCase());
+    });
+
+    let statsBrawlers = {};
+    let statsComps = {};
+    let statsSinergias = {};
+    let statsTimes = {};
+    let historicoTimes = {}; // Para guardar as últimas comps de cada time
+
+    let totalTimesJogaram = 0; // Usado para calcular o PickRate% base de Comps e Times
+
+    Object.values(partidasAgrupadas).forEach(timesNaPartida => {
+        Object.entries(timesNaPartida).forEach(([idTime, dadosTime]) => {
+            if(dadosTime.brawlers.length !== 3) return; // Só avalia times com 3 picks registrados
+            totalTimesJogaram++;
+
+            let win = dadosTime.win;
+            let brawlersOrdenados = [...dadosTime.brawlers].sort();
+            
+            // --- Brawlers Individuais ---
+            brawlersOrdenados.forEach(b => {
+                if(!statsBrawlers[b]) statsBrawlers[b] = { picks: 0, wins: 0 };
+                statsBrawlers[b].picks++;
+                if(win) statsBrawlers[b].wins++;
+            });
+
+            // --- Composições (3 Juntos) ---
+            let compKey = brawlersOrdenados.join(' + ');
+            if(!statsComps[compKey]) statsComps[compKey] = { picks: 0, wins: 0, brawlers: brawlersOrdenados };
+            statsComps[compKey].picks++;
+            if(win) statsComps[compKey].wins++;
+
+            // --- Sinergias (2 Juntos) ---
+            let pares = [
+                [brawlersOrdenados[0], brawlersOrdenados[1]].join(' + '),
+                [brawlersOrdenados[0], brawlersOrdenados[2]].join(' + '),
+                [brawlersOrdenados[1], brawlersOrdenados[2]].join(' + ')
+            ];
+            pares.forEach(par => {
+                if(!statsSinergias[par]) statsSinergias[par] = { picks: 0, wins: 0, brawlers: par.split(' + ') };
+                statsSinergias[par].picks++;
+                if(win) statsSinergias[par].wins++;
+            });
+
+            // --- Times ---
+            if(!statsTimes[idTime]) statsTimes[idTime] = { nome: dadosTime.timeNome, matches: 0, wins: 0 };
+            statsTimes[idTime].matches++;
+            if(win) statsTimes[idTime].wins++;
+
+            // --- Histórico de Comps do Time (Para o click) ---
+            if(!historicoTimes[idTime]) historicoTimes[idTime] = [];
+            historicoTimes[idTime].push({ comp: brawlersOrdenados, win: win, data: parseDateBR(dadosTime.data) || 0 });
+        });
+    });
+
+    // Ordenar históricos (mais recentes primeiro)
+    Object.keys(historicoTimes).forEach(id => {
+        historicoTimes[id].sort((a,b) => b.data - a.data);
+    });
+
+    // Formatar arrays para renderização
+    const formatRow = (obj, totalBase) => {
+        let pr = ((obj.picks || obj.matches) / totalBase * 100).toFixed(1);
+        let wr = ((obj.wins / (obj.picks || obj.matches)) * 100).toFixed(1);
+        return { ...obj, pr, wr };
+    };
+
+    let arrBrawlers = Object.entries(statsBrawlers).map(([nome, d]) => formatRow({...d, nome}, totalTimesJogaram)).sort((a,b) => b.picks - a.picks);
+    let arrComps = Object.values(statsComps).map(d => formatRow(d, totalTimesJogaram)).sort((a,b) => b.picks - a.picks).slice(0,5);
+    let arrSinergias = Object.values(statsSinergias).map(d => formatRow(d, totalTimesJogaram)).sort((a,b) => b.picks - a.picks).slice(0,5);
+    let arrTimes = Object.entries(statsTimes).map(([id, d]) => formatRow({...d, id}, totalTimesJogaram)).sort((a,b) => b.matches - a.matches).slice(0, 10);
+
+    let cleanMap = formatImg(mapa);
+    let cleanMode = formatImg(modo);
+
+    // Salvar o histórico globalmente para o popup de clique
+    window.historicoTimesMapa = historicoTimes;
+
+    let html = `
+        <!-- Cabeçalho do Mapa (Foto Média + Título) -->
+        <div style="display: flex; gap: 20px; align-items: center; margin-bottom: 25px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;">
+            <img src="element/maps/${cleanMap}.png" style="width: 250px; height: 140px; object-fit: cover; border-radius: 8px; border: 2px solid var(--borda-destaque);" onerror="this.src='element/maps/default.png'">
+            <div>
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px;">
+                    <img src="element/modes/${cleanMode}.png" style="width:24px;" onerror="this.src='element/modes/default.png'">
+                    <span style="color:var(--texto-secundario); font-weight:bold;">${modo.toUpperCase()}</span>
+                </div>
+                <h2 style="font-size: 32px; margin: 0;">${mapa}</h2>
+                <div style="margin-top:10px; font-size:12px; color:#888;">Total de Partidas no Filtro: ${totalTimesJogaram / 2}</div>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            
+            <!-- Principais Comps (3 Brawlers) -->
+            <div style="background: var(--bg-geral); padding: 15px; border-radius: 8px; border: 1px solid var(--borda-destaque);">
+                <h3 style="margin-bottom: 15px; font-size: 14px;">👑 PRINCIPAIS COMPS (3 JUNTOS)</h3>
+                <table class="excel-table" style="width: 100%;">
+                    <thead><tr><th style="text-align:left;">Composição</th><th>P</th><th>PR%</th><th>W</th><th>WR%</th></tr></thead>
+                    <tbody>
+                        ${arrComps.map(c => `
+                            <tr>
+                                <td style="text-align:left; display:flex; gap:5px;">
+                                    <img src="brawlers/${formatImg(c.brawlers[0])}.png" style="width:24px; border-radius:4px;" onerror="this.src='brawlers/default.png'">
+                                    <img src="brawlers/${formatImg(c.brawlers[1])}.png" style="width:24px; border-radius:4px;" onerror="this.src='brawlers/default.png'">
+                                    <img src="brawlers/${formatImg(c.brawlers[2])}.png" style="width:24px; border-radius:4px;" onerror="this.src='brawlers/default.png'">
+                                </td>
+                                <td>${c.picks}</td><td style="color:gray;">${c.pr}%</td><td>${c.wins}</td><td class="winrate-cell">${c.wr}%</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Principais Sinergias (2 Brawlers) -->
+            <div style="background: var(--bg-geral); padding: 15px; border-radius: 8px; border: 1px solid var(--borda-destaque);">
+                <h3 style="margin-bottom: 15px; font-size: 14px;">🤝 PRINCIPAIS SINERGIAS (2 JUNTOS)</h3>
+                <table class="excel-table" style="width: 100%;">
+                    <thead><tr><th style="text-align:left;">Sinergia</th><th>P</th><th>PR%</th><th>W</th><th>WR%</th></tr></thead>
+                    <tbody>
+                        ${arrSinergias.map(c => `
+                            <tr>
+                                <td style="text-align:left; display:flex; gap:5px; align-items:center;">
+                                    <img src="brawlers/${formatImg(c.brawlers[0])}.png" style="width:24px; border-radius:4px;" onerror="this.src='brawlers/default.png'">
+                                    <span style="font-size:12px; color:gray;">+</span>
+                                    <img src="brawlers/${formatImg(c.brawlers[1])}.png" style="width:24px; border-radius:4px;" onerror="this.src='brawlers/default.png'">
+                                </td>
+                                <td>${c.picks}</td><td style="color:gray;">${c.pr}%</td><td>${c.wins}</td><td class="winrate-cell">${c.wr}%</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Melhores Brawlers no Mapa -->
+            <div style="background: var(--bg-geral); padding: 15px; border-radius: 8px; border: 1px solid var(--borda-destaque);">
+                <h3 style="margin-bottom: 15px; font-size: 14px;">⭐ MELHORES BRAWLERS</h3>
+                <div style="max-height: 250px; overflow-y: auto;">
+                    <table class="excel-table" style="width: 100%;">
+                        <thead><tr><th style="text-align:left;">Brawler</th><th>P</th><th>PR%</th><th>W</th><th>WR%</th></tr></thead>
+                        <tbody>
+                            ${arrBrawlers.map(b => `
+                                <tr>
+                                    <td style="text-align:left; font-weight:bold;">
+                                        <img src="brawlers/${formatImg(b.nome)}.png" style="width:20px; vertical-align:middle; margin-right:5px; border-radius:4px;" onerror="this.src='brawlers/default.png'">
+                                        ${b.nome}
+                                    </td>
+                                    <td>${b.picks}</td><td style="color:gray;">${b.pr}%</td><td>${b.wins}</td><td class="winrate-cell">${b.wr}%</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Melhores Times no Mapa -->
+            <div style="background: var(--bg-geral); padding: 15px; border-radius: 8px; border: 1px solid var(--borda-destaque);">
+                <h3 style="margin-bottom: 15px; font-size: 14px;">🛡️ MELHORES TIMES NESTE MAPA</h3>
+                <div style="max-height: 250px; overflow-y: auto;">
+                    <table class="excel-table" style="width: 100%;">
+                        <thead><tr><th style="text-align:left;">Time (Clique)</th><th>Partidas</th><th>W</th><th>WR%</th></tr></thead>
+                        <tbody>
+                            ${arrTimes.map(t => `
+                                <tr style="cursor:pointer;" onclick="mostrarHistoricoTimeMapa('${t.id}', '${t.nome}')" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                                    <td style="text-align:left; font-weight:bold; display:flex; align-items:center; gap:8px;">
+                                        <img src="${teamLogoUrl(t.id)}" style="width:20px; border-radius:4px;" onerror="this.onerror=null; this.src='${teamLogoFallback(t.id)}';">
+                                        ${t.nome}
+                                    </td>
+                                    <td>${t.matches}</td><td>${t.wins}</td><td class="winrate-cell">${t.wr}%</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+        
+        <!-- Container Modal para Histórico de Time (escondido por padrão) -->
+        <div id="modal-historico-time-mapa" style="display:none; margin-top:20px; padding:15px; background:rgba(0,0,0,0.4); border-radius:8px; border:1px solid var(--borda-destaque);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h3 id="modal-historico-titulo" style="font-size:14px; margin:0;">ÚLTIMAS COMPS DO TIME</h3>
+                <button onclick="document.getElementById('modal-historico-time-mapa').style.display='none'" style="background:transparent; border:none; color:white; cursor:pointer;">❌</button>
+            </div>
+            <div id="modal-historico-conteudo" style="display:flex; gap:15px; overflow-x:auto;"></div>
+        </div>
+    `;
+    
+    painel.innerHTML = html;
+    
+    // ==========================================
+    // ALTERAÇÃO: Chamar a função de ordenação aqui
+    // ==========================================
+    tornarTabelasOrdenaveis();
+}
+
+// Função para exibir as últimas 3 comps de um time ao clicar nele na tabela
+function mostrarHistoricoTimeMapa(idTime, nomeTime) {
+    const modal = document.getElementById('modal-historico-time-mapa');
+    const titulo = document.getElementById('modal-historico-titulo');
+    const conteudo = document.getElementById('modal-historico-conteudo');
+    
+    if(!modal || !window.historicoTimesMapa) return;
+    
+    let historico = window.historicoTimesMapa[idTime] || [];
+    let ultimas3 = historico.slice(0, 3); // Pega apenas as 3 mais recentes
+
+    titulo.innerText = `ÚLTIMAS 3 COMPS DE ${nomeTime.toUpperCase()}`;
+    
+    if(ultimas3.length === 0) {
+        conteudo.innerHTML = `<p style="font-size:12px; color:gray;">Nenhum histórico recente encontrado.</p>`;
+    } else {
+        conteudo.innerHTML = ultimas3.map((h, i) => `
+            <div style="background:var(--bg-geral); padding:10px; border-radius:8px; text-align:center; min-width:120px; border: 1px solid ${h.win ? 'rgba(0,255,0,0.2)' : 'rgba(255,0,0,0.2)'};">
+                <div style="font-size:10px; color:gray; margin-bottom:5px;">${h.win ? '<span style="color:#4caf50;">VITÓRIA</span>' : '<span style="color:#f44336;">DERROTA</span>'}</div>
+                <div style="display:flex; justify-content:center; gap:5px;">
+                    ${h.comp.map(b => `<img src="brawlers/${formatImg(b)}.png" style="width:28px; border-radius:4px;" onerror="this.src='brawlers/default.png'" title="${b}">`).join('')}
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    modal.style.display = 'block';
+}
+
+function aplicarCoresTabelaMeta() {
+    // Nota: Os seletores (.meta-table, .brawler-name, etc.) precisarão corresponder às suas classes reais no HTML
+    const linhas = document.querySelectorAll('.meta-table tbody tr'); 
+
+    linhas.forEach(linha => {
+        const nomeCell = linha.querySelector('.brawler-name');
+        const prCell = linha.querySelector('.pr-cell');
+        const banCell = linha.querySelector('.ban-cell');
+        const brCell = linha.querySelector('.br-cell');
+        const wrCell = linha.querySelector('.wr-cell');
+
+        // Aplicando cores estáticas
+        if (nomeCell) nomeCell.style.color = 'white';
+        if (prCell) prCell.style.color = 'cyan';
+        if (banCell) banCell.style.color = 'red';
+        if (brCell) brCell.style.color = 'red';
+
+        // Aplicando cores dinâmicas no Win Rate (WR%)
+        if (wrCell) {
+            const wrTexto = wrCell.textContent.replace('%', '').trim();
+            const wrValor = parseFloat(wrTexto);
+            
+            if (!isNaN(wrValor)) {
+                if (wrValor >= 90 && wrValor <= 100) {
+                    wrCell.style.color = 'darkgreen';
+                } else if (wrValor >= 51 && wrValor <= 89) {
+                    wrCell.style.color = 'green';
+                } else if (wrValor >= 40 && wrValor <= 50) {
+                    wrCell.style.color = 'yellow';
+                } else if (wrValor >= 21 && wrValor <= 39) {
+                    wrCell.style.color = 'orange';
+                } else if (wrValor >= 10 && wrValor <= 20) {
+                    wrCell.style.color = 'red';
+                } else if (wrValor >= 0 && wrValor <= 9) {
+                    wrCell.style.color = 'darkred';
+                }
+            }
+        }
+    });
+}
+
+
+SEM REMOVER NENHUMA função que não tenha haver com roster automático adicione a mecânica de roster AUTOMÁTICO para que ele sempre se atualize SOZINHO, me devolva o app.js completo
