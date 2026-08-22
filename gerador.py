@@ -117,6 +117,12 @@ def minerar_dados():
     global MAPEAMENTO_PLAYERS
     tags_torneio = set()
 
+    if not API_KEY:
+        raise RuntimeError(
+            "BRAWL_API_KEY não configurada. "
+            "Crie uma variável/Secret com esse nome no ambiente do GitHub Actions."
+        )
+
     # Automatização do Matcherino via arquivo 'torneios.txt'
     if os.path.exists('torneios.txt'):
         with open('torneios.txt', 'r') as f:
@@ -162,10 +168,22 @@ def minerar_dados():
         'items_ja_existentes': 0, 'items_novos': 0, 'erros_processamento': 0,
     }
 
+    # Contadores individuais: mostram quantas partidas a leitura captou para cada jogador.
+    stats_jogadores = {}
+
     for tag_busca, info_busca in list(MAPEAMENTO_PLAYERS.items()):
         sigla_busca = info_busca.get("regiao", "SA")
         tag_url = tag_busca.replace("#", "%23")
         stats['total_players'] += 1
+
+        stats_jogadores[tag_busca] = {
+            'nome': info_busca.get('nome', 'Player'),
+            'lidas': 0,
+            'validas_3v3': 0,
+            'novas': 0,
+            'existentes': 0,
+            'erros': 0,
+        }
 
         resp, origem, erro = buscar_battlelog(tag_url, headers_api)
         if resp is None:
@@ -182,6 +200,7 @@ def minerar_dados():
         except Exception:
             items = []
         stats['total_items_lidos'] += len(items)
+        stats_jogadores[tag_busca]['lidas'] = len(items)
 
         for item in items:
             try:
@@ -227,6 +246,7 @@ def minerar_dados():
 
                 if pid not in ids_registrados:
                     stats['items_novos'] += 1
+                    stats_jogadores[tag_busca]['novas'] += 1
                     for i in range(6):
                         venceu = 1 if (i < 3 and res == 'victory') or (i >= 3 and res == 'defeat') else 0
                         id_t, nm_t = (t0_id, t0_nome) if i < 3 else (t1_id, t1_nome)
@@ -238,6 +258,7 @@ def minerar_dados():
                     ids_registrados.add(pid)
                 else:
                     stats['items_ja_existentes'] += 1
+                    stats_jogadores[tag_busca]['existentes'] += 1
 
                 if bans_raw and pid not in ids_bans:
                     bans_a, bans_b = [], []
@@ -259,6 +280,7 @@ def minerar_dados():
 
             except Exception as e:
                 stats['erros_processamento'] += 1
+                stats_jogadores[tag_busca]['erros'] += 1
                 if stats['erros_processamento'] <= 5:
                     print(f"  [ERRO processamento] {tag_busca}: {e}")
 
@@ -284,6 +306,18 @@ def minerar_dados():
     print(f"  Ja existentes no historico: {stats['items_ja_existentes']}")
     print(f"  Novas partidas: {stats['items_novos']}")
     print(f"  Erros ao processar item: {stats['erros_processamento']}")
+
+    print("\n========== PARTIDAS POR JOGADOR ==========")
+    for tag, dados in stats_jogadores.items():
+        print(
+            f"{tag} | {dados['nome']} | "
+            f"Lidas: {dados['lidas']} | "
+            f"3v3: {dados['validas_3v3']} | "
+            f"Novas: {dados['novas']} | "
+            f"Existentes: {dados['existentes']} | "
+            f"Erros: {dados['erros']}"
+        )
+    print("===========================================")
     print("==============================================\n")
 
 if __name__ == "__main__":
