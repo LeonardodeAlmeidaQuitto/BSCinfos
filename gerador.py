@@ -17,6 +17,8 @@ API_OFICIAL_URL = "https://api.brawlstars.com/v1"
 
 ARQUIVO_BRUTO = "historico_bruto.csv"
 ARQUIVO_BANS = "bans_matcherino.csv"
+ARQUIVO_ROSTERS = "rosters.js"
+ARQUIVO_ROSTERS_SEED = "rosters_seed.json"
 
 COLUNAS_PICKS = ["id_partida", "regiao", "id_players", "name_players", "pick", "win", "win_rate", "modo", "mapa", "data_adicao", "player_tag", "player_name", "id_time", "nome_time", "tipo"]
 COLUNAS_BANS = ["id_partida", "regiao", "mapa", "modo", "id_time", "nome_time", "brawler_banido", "data_adicao", "tipo"]
@@ -113,15 +115,213 @@ def buscar_battlelog(tag_url, headers_api):
             ultimo_erro = f"Exceção via {origem} -> {e}"
     return None, None, ultimo_erro
 
+
+def _carregar_rosters_existentes():
+    """Carrega rosters.js para preservar meses anteriores."""
+    if not os.path.exists(ARQUIVO_ROSTERS):
+        return {}
+    try:
+        texto = open(ARQUIVO_ROSTERS, "r", encoding="utf-8").read()
+        marcador = "window.ROSTERS_POR_DATA = "
+        if marcador not in texto:
+            return {}
+        texto = texto.split(marcador, 1)[1].strip()
+        if texto.endswith(";"):
+            texto = texto[:-1]
+        return json.loads(texto)
+    except Exception as e:
+        print(f"[ROSTERS] Não foi possível ler {ARQUIVO_ROSTERS}: {e}")
+        return {}
+
+
+def _salvar_rosters_js(dados):
+    """Salva rosters.js em formato JSON válido dentro de uma variável global."""
+    texto = json.dumps(dados, ensure_ascii=False, indent=2)
+    with open(ARQUIVO_ROSTERS, "w", encoding="utf-8") as f:
+        f.write("// GERADO AUTOMATICAMENTE PELO gerador.py - NÃO EDITE MANUALMENTE.\n")
+        f.write("window.ROSTERS_POR_DATA = ")
+        f.write(texto)
+        f.write(";\n")
+
+
+def _extrair_ano_mes(data_str):
+    try:
+        dt = datetime.strptime(str(data_str).strip(), "%d/%m/%Y %H:%M:%S")
+        return str(dt.year), f"{dt.month:02d}"
+    except Exception:
+        return None, None
+
+
+def atualizar_rosters_do_historico():
+    """Reconstrói os rosters usando todo o historico_bruto.csv."""
+    if not os.path.exists(ARQUIVO_BRUTO):
+        print("[ROSTERS] historico_bruto.csv não existe; nada para atualizar.")
+        return
+
+    try:
+        df = pd.read_csv(ARQUIVO_BRUTO, dtype=str, keep_default_na=False)
+    except Exception as e:
+        print(f"[ROSTERS] Erro lendo {ARQUIVO_BRUTO}: {e}")
+        return
+
+    obrigatorias = {"id_partida", "player_tag", "player_name", "id_time", "nome_time", "regiao", "data_adicao"}
+    faltantes = obrigatorias - set(df.columns)
+    if faltantes:
+        print(f"[ROSTERS] Colunas ausentes: {', '.join(sorted(faltantes))}")
+        return
+
+    rosters = _carregar_rosters_existentes()
+    if not isinstance(rosters, dict):
+        rosters = {}
+
+    # Descobre o tier já usado para cada time.
+    tier_por_time = {}
+    for ano_data in rosters.values():
+        if not isinstance(ano_data, dict):
+            continue
+        for mes_data in ano_data.values():
+            if not isinstance(mes_data, dict):
+                continue
+            for reg_data in mes_data.values():
+                if not isinstance(reg_data, dict):
+                    continue
+                for tier, times in reg_data.items():
+                    if not isinstance(times, list):
+                        continue
+                    for time in times:
+                        if isinstance(time, dict) and time.get("id_time"):
+                            tier_por_time[str(time["id_time"])] = tier
+
+    # Nick mais recente encontrado para cada tag.
+    ultimo_nick = {}
+    ultima_data = {}
+    for _, row in df.iterrows():
+        tag = str(row.get("player_tag", "")).strip()
+        nick = str(row.get("player_name", "")).strip()
+        data = str(row.get("data_adicao", "")).strip()
+        if not tag or tag == "#" or not nick:
+            continue
+        if tag not in ultima_data or data >= ultima_data[tag]:
+            ultima_data[tag] = data
+            ultimo_nick[tag] = nick
+
+    # Uma partida aparece em 6 linhas. Agrupamos pelo id_partida.
+    partidas = {}
+    for _, row in df.iterrows():
+        pid = str(row.get("id_partida", "")).strip()
+        if pid:
+            partidas.setdefault(pid, []).append(row)
+
+    # (ano, mês, id_time, jogador-base) -> {companheiro: quantidade}
+    contagens = {}
+    dados_time = {}
+
+    for pid, linhas in partidas.items():
+        if len(linhas) < 6:
+            continue
+
+        for inicio in (0, 3):
+            lado = linhas[inicio:inicio + 3]
+            if len(lado) != 3:
+                continue
+
+            primeira = lado[0]
+            ano, mes = _extrair_ano_mes(primeira.get("data_adicao", ""))
+            if not ano or not mes:
+                continue
+
+            id_time = str(primeira.get("id_time", "")).strip()
+            regiao = str(primeira.get("regiao", "SA")).strip() or "SA"
+            nome_time = str(primeira.get("nome_time", "")).strip() or id_time
+            tags_lado = [str(x.get("player_tag", "")).strip() for x in lado]
+            tags_lado = [t for t in tags_lado if t and t != "#"]
+
+            if not id_time or len(tags_lado) != 3:
+                continue
+
+            dados_time[(ano, mes, id_time)] = {"regiao": regiao, "nome_time": nome_time}
+
+            for base_tag in tags_lado:
+                if base_tag not in MAPEAMENTO_PLAYERS:
+                    continue
+                chave = (ano, mes, id_time, base_tag)
+                contagens.setdefault(chave, {})
+                for companheiro in tags_lado:
+                    if companheiro != base_tag:
+                        contagens[chave][companheiro] = contagens[chave].get(companheiro, 0) + 1
+
+    # IDs cadastrados no gerador são os únicos que o algoritmo altera.
+    controlados = {str(info.get("id_time")) for info in MAPEAMENTO_PLAYERS.values() if info.get("id_time")}
+
+    # Remove os times controlados dos meses calculados para reconstruí-los do zero.
+    meses_calculados = sorted({(ano, mes) for ano, mes, _ in dados_time.keys()})
+    for ano, mes in meses_calculados:
+        rosters.setdefault(ano, {})
+        rosters[ano].setdefault(mes, {})
+        for regiao, tiers in list(rosters[ano][mes].items()):
+            if not isinstance(tiers, dict):
+                continue
+            for tier, times in list(tiers.items()):
+                if isinstance(times, list):
+                    tiers[tier] = [t for t in times if str(t.get("id_time", "")) not in controlados]
+
+    total = 0
+
+    for base_tag, info in MAPEAMENTO_PLAYERS.items():
+        id_time = str(info.get("id_time", "")).strip()
+        if not id_time:
+            continue
+
+        chaves = sorted(
+            [k for k in contagens if k[2] == id_time and k[3] == base_tag],
+            key=lambda k: (k[0], k[1])
+        )
+
+        for ano, mes, _, _ in chaves:
+            ranking = sorted(contagens[(ano, mes, id_time, base_tag)].items(), key=lambda x: (-x[1], x[0]))
+            melhores = [tag for tag, _qtd in ranking[:2]]
+            if len(melhores) < 2:
+                print(f"[ROSTER] {ano}/{mes} | {id_time} | {base_tag}: menos de 2 companheiros encontrados.")
+                continue
+
+            base_nick = ultimo_nick.get(base_tag, str(info.get("nome", "Player")).split("|", 1)[-1])
+            jogadores = [{"nick": base_nick, "tag": base_tag}]
+            jogadores.extend({"nick": ultimo_nick.get(tag, tag), "tag": tag} for tag in melhores)
+
+            dados = dados_time.get((ano, mes, id_time), {})
+            regiao = str(info.get("regiao") or dados.get("regiao") or "SA")
+            nome_time = str(info.get("nome_time") or dados.get("nome_time") or id_time)
+            tier = tier_por_time.get(id_time, "TIMES REGISTRADOS")
+
+            rosters.setdefault(ano, {}).setdefault(mes, {}).setdefault(regiao, {}).setdefault(tier, [])
+            rosters[ano][mes][regiao][tier].append({
+                "id_time": id_time,
+                "nome_time": nome_time,
+                "jogadores": jogadores
+            })
+
+            total += 1
+            print(f"[ROSTER] {ano}/{mes} | {id_time} | {base_tag} -> {melhores[0]} ({ranking[0][1]}) + {melhores[1]} ({ranking[1][1]})")
+
+    for meses in rosters.values():
+        if not isinstance(meses, dict):
+            continue
+        for regioes in meses.values():
+            if not isinstance(regioes, dict):
+                continue
+            for tiers in regioes.values():
+                if not isinstance(tiers, dict):
+                    continue
+                for times in tiers.values():
+                    if isinstance(times, list):
+                        times.sort(key=lambda t: str(t.get("id_time", "")))
+
+    _salvar_rosters_js(rosters)
+    print(f"[ROSTERS] {total} rosters atualizados automaticamente em {ARQUIVO_ROSTERS}.")
+
 def minerar_dados():
     global MAPEAMENTO_PLAYERS
     tags_torneio = set()
-
-    if not API_KEY:
-        raise RuntimeError(
-            "BRAWL_API_KEY não configurada. "
-            "Crie uma variável/Secret com esse nome no ambiente do GitHub Actions."
-        )
 
     # Automatização do Matcherino via arquivo 'torneios.txt'
     if os.path.exists('torneios.txt'):
@@ -168,22 +368,10 @@ def minerar_dados():
         'items_ja_existentes': 0, 'items_novos': 0, 'erros_processamento': 0,
     }
 
-    # Contadores individuais: mostram quantas partidas a leitura captou para cada jogador.
-    stats_jogadores = {}
-
     for tag_busca, info_busca in list(MAPEAMENTO_PLAYERS.items()):
         sigla_busca = info_busca.get("regiao", "SA")
         tag_url = tag_busca.replace("#", "%23")
         stats['total_players'] += 1
-
-        stats_jogadores[tag_busca] = {
-            'nome': info_busca.get('nome', 'Player'),
-            'lidas': 0,
-            'validas_3v3': 0,
-            'novas': 0,
-            'existentes': 0,
-            'erros': 0,
-        }
 
         resp, origem, erro = buscar_battlelog(tag_url, headers_api)
         if resp is None:
@@ -200,7 +388,6 @@ def minerar_dados():
         except Exception:
             items = []
         stats['total_items_lidos'] += len(items)
-        stats_jogadores[tag_busca]['lidas'] = len(items)
 
         for item in items:
             try:
@@ -246,7 +433,6 @@ def minerar_dados():
 
                 if pid not in ids_registrados:
                     stats['items_novos'] += 1
-                    stats_jogadores[tag_busca]['novas'] += 1
                     for i in range(6):
                         venceu = 1 if (i < 3 and res == 'victory') or (i >= 3 and res == 'defeat') else 0
                         id_t, nm_t = (t0_id, t0_nome) if i < 3 else (t1_id, t1_nome)
@@ -258,7 +444,6 @@ def minerar_dados():
                     ids_registrados.add(pid)
                 else:
                     stats['items_ja_existentes'] += 1
-                    stats_jogadores[tag_busca]['existentes'] += 1
 
                 if bans_raw and pid not in ids_bans:
                     bans_a, bans_b = [], []
@@ -280,7 +465,6 @@ def minerar_dados():
 
             except Exception as e:
                 stats['erros_processamento'] += 1
-                stats_jogadores[tag_busca]['erros'] += 1
                 if stats['erros_processamento'] <= 5:
                     print(f"  [ERRO processamento] {tag_busca}: {e}")
 
@@ -297,6 +481,9 @@ def minerar_dados():
     if not novas_picks and not novos_bans:
         print("Nenhum dado novo.")
 
+    # Depois de atualizar o histórico, reconstrói automaticamente os rosters.
+    atualizar_rosters_do_historico()
+
     print("\n========== DIAGNOSTICO DA EXECUCAO ==========")
     print(f"Jogadores consultados: {stats['total_players']}")
     print(f"  Respostas OK: {stats['status_ok']}  (proxy: {stats['origem_sucesso'].get('proxy',0)}, direto: {stats['origem_sucesso'].get('direto',0)})")
@@ -306,18 +493,6 @@ def minerar_dados():
     print(f"  Ja existentes no historico: {stats['items_ja_existentes']}")
     print(f"  Novas partidas: {stats['items_novos']}")
     print(f"  Erros ao processar item: {stats['erros_processamento']}")
-
-    print("\n========== PARTIDAS POR JOGADOR ==========")
-    for tag, dados in stats_jogadores.items():
-        print(
-            f"{tag} | {dados['nome']} | "
-            f"Lidas: {dados['lidas']} | "
-            f"3v3: {dados['validas_3v3']} | "
-            f"Novas: {dados['novas']} | "
-            f"Existentes: {dados['existentes']} | "
-            f"Erros: {dados['erros']}"
-        )
-    print("===========================================")
     print("==============================================\n")
 
 if __name__ == "__main__":
