@@ -2,10 +2,7 @@ name: Bot Minerador do Brawl Stars
 
 on:
   schedule:
-    # Roda a cada 15 minutos
     - cron: '*/15 * * * *'
-
-  # Permite executar manualmente pelo GitHub
   workflow_dispatch:
 
 jobs:
@@ -13,73 +10,60 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      TZ: 'America/Sao_Paulo'
+      TZ: America/Sao_Paulo
+      BRAWL_API_KEY: ${{ secrets.BRAWL_API_KEY }}
 
     permissions:
       contents: write
 
     steps:
-
-      # ==========================================
-      # BAIXAR REPOSITÓRIO
-      # ==========================================
-      - name: Baixando os arquivos do repositório
+      - name: Baixando o repositório
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      # ==========================================
-      # INSTALAR PYTHON
-      # ==========================================
       - name: Instalando o Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
 
-      # ==========================================
-      # INSTALAR BIBLIOTECAS
-      # ==========================================
-      - name: Instalando as bibliotecas
+      - name: Instalando dependências
         run: |
-          pip install pandas brawlstats
+          python -m pip install --upgrade pip
+          pip install pandas requests
 
-      # ==========================================
-      # CONFIGURAR GIT
-      # ==========================================
-      - name: Sincronizar e Configurar Git
+      - name: Configurando Git
         run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
 
-          # Puxa alterações mais recentes antes de gerar os dados
+      - name: Atualizando o repositório antes da leitura
+        run: |
           git pull --rebase origin main
 
-      # ==========================================
-      # RODAR GERADOR
-      # ==========================================
-      - name: Rodando o Gerador (Bot)
+      - name: Rodando o Gerador e atualizando os Rosters
         run: |
           python gerador.py
 
-      # ==========================================
-      # SALVAR ALTERAÇÕES
-      # ==========================================
+      - name: Verificando arquivos gerados
+        run: |
+          echo '--- rosters.js ---'
+          if [ -f rosters.js ]; then
+            echo 'rosters.js encontrado.'
+            wc -c rosters.js
+          else
+            echo 'ERRO: gerador.py não criou rosters.js'
+            exit 1
+          fi
+
       - name: Salvando as alterações no GitHub
         run: |
+          git add -A historico_bruto.csv bans_matcherino.csv rosters.js api/ 2>/dev/null || true
+          if [ -f estatisticas_finais.csv ]; then git add estatisticas_finais.csv; fi
 
-          # Adiciona os arquivos gerados/atualizados
-          git add historico_bruto.csv
-          git add estatisticas_finais.csv
-          git add rosters.json
-          git add api/
-
-          # Verifica se houve alguma alteração
-          if ! git diff --cached --quiet; then
-
-            git commit -m "🤖 Atualização Automática de Partidas e Rosters"
-
-            git push origin main
-
+          if git diff --cached --quiet; then
+            echo 'Sem alterações para enviar.'
           else
-
-            echo "Sem mudanças para atualizar"
-
+            git commit -m '🤖 Atualização automática de partidas e rosters'
+            git push origin main
           fi
