@@ -208,17 +208,63 @@ let ROSTERS_POR_DATA = {
 
 let CONFIGURACAO_MANUAL_TIMES = {};
 
-function atualizarRostersAtuais() {
-    let selectAno = document.getElementById('select-ano');
-    let selectMes = document.getElementById('select-mes');
-    const ano = selectAno ? selectAno.value : 'todos';
-    const mes = selectMes ? selectMes.value : 'todos';
+function obterRostersPeriodoAtual() {
+    if (!ROSTERS_POR_DATA || typeof ROSTERS_POR_DATA !== 'object') return {};
 
-    if (ano !== 'todos' && mes !== 'todos' && ROSTERS_POR_DATA[ano] && ROSTERS_POR_DATA[ano][mes]) {
-        CONFIGURACAO_MANUAL_TIMES = JSON.parse(JSON.stringify(ROSTERS_POR_DATA[ano][mes]));
-    } else {
-        CONFIGURACAO_MANUAL_TIMES = JSON.parse(JSON.stringify(ROSTERS_POR_DATA["PADRAO"]));
+    const selectAno = document.getElementById('select-ano');
+    const selectMes = document.getElementById('select-mes');
+    const anoSelecionado = selectAno ? selectAno.value : 'todos';
+    const mesSelecionado = selectMes ? selectMes.value : 'todos';
+
+    // 1. Se o usuario escolheu ano + mes, usa exatamente esse periodo.
+    if (anoSelecionado !== 'todos' && mesSelecionado !== 'todos' &&
+        ROSTERS_POR_DATA[anoSelecionado] && ROSTERS_POR_DATA[anoSelecionado][mesSelecionado]) {
+        return ROSTERS_POR_DATA[anoSelecionado][mesSelecionado];
     }
+
+    // 2. Se existir PADRAO, usa o padrao.
+    if (ROSTERS_POR_DATA.PADRAO && typeof ROSTERS_POR_DATA.PADRAO === 'object') {
+        return ROSTERS_POR_DATA.PADRAO;
+    }
+
+    // 3. Sem PADRAO, usa automaticamente o periodo mais recente disponivel.
+    const anos = Object.keys(ROSTERS_POR_DATA)
+        .filter(a => /^\d{4}$/.test(a))
+        .sort((a, b) => Number(b) - Number(a));
+
+    for (const ano of anos) {
+        const meses = ROSTERS_POR_DATA[ano];
+        if (!meses || typeof meses !== 'object') continue;
+
+        const listaMeses = Object.keys(meses)
+            .filter(m => /^\d{1,2}$/.test(m))
+            .sort((a, b) => Number(b) - Number(a));
+
+        for (const mes of listaMeses) {
+            if (meses[mes] && typeof meses[mes] === 'object') {
+                console.log(`[ROSTERS] Usando periodo mais recente: ${ano}-${String(mes).padStart(2, '0')}`);
+                return meses[mes];
+            }
+        }
+    }
+
+    return {};
+}
+
+function atualizarRostersAtuais() {
+    const periodo = obterRostersPeriodoAtual();
+    CONFIGURACAO_MANUAL_TIMES = JSON.parse(JSON.stringify(periodo || {}));
+
+    // Garante que a regiao atual sempre exista, mesmo que o arquivo automatico
+    // nao tenha dados para ela. Isso evita que o restante do app pare de renderizar.
+    if (_REGIAO !== 'ALL' && !CONFIGURACAO_MANUAL_TIMES[_REGIAO]) {
+        CONFIGURACAO_MANUAL_TIMES[_REGIAO] = {};
+    }
+
+    if (_REGIAO === 'ALL' && !CONFIGURACAO_MANUAL_TIMES.ALL) {
+        CONFIGURACAO_MANUAL_TIMES.ALL = { 'TIER ?': [], 'TIMES REGISTRADOS': [] };
+    }
+
     carregarTimesSalvosLocal();
 }
 
@@ -255,10 +301,19 @@ function mesclarTimesSalvosEmRostersPorData() {
     const ano = selectAno ? selectAno.value : 'todos';
     const mes = selectMes ? selectMes.value : 'todos';
 
-    let alvos = [ROSTERS_POR_DATA["PADRAO"]];
+    let alvos = [];
+    if (ROSTERS_POR_DATA && ROSTERS_POR_DATA.PADRAO) {
+        alvos.push(ROSTERS_POR_DATA.PADRAO);
+    }
+
     if (ano !== 'todos' && mes !== 'todos' && ROSTERS_POR_DATA[ano] && ROSTERS_POR_DATA[ano][mes]) {
         alvos.push(ROSTERS_POR_DATA[ano][mes]);
+    } else {
+        const periodoAtual = obterRostersPeriodoAtual();
+        if (periodoAtual && !alvos.includes(periodoAtual)) alvos.push(periodoAtual);
     }
+
+    alvos = alvos.filter(Boolean);
 
     alvos.forEach(alvo => {
         if (!alvo[_REGIAO]) alvo[_REGIAO] = {};
