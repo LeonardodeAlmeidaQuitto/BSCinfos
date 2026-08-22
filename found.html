@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<script src="users.js"></script><script src="auth.js"></script>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BCSInfos — FOUND</title>
+<link rel="stylesheet" href="style.css"><link rel="stylesheet" href="found.css">
+</head>
+<body>
+<nav class="navbar">
+<a href="index.html" class="nav-link">MENU</a><a href="geral.html" class="nav-link">GERAL</a>
+<a href="draft.html" class="nav-link">DRAFT</a><a href="vivo.html" class="nav-link">AO VIVO</a>
+<a href="found.html" class="nav-link active">FOUND</a>
+</nav>
+<main class="main-container"><section class="found-page">
+<header class="found-header"><h1>PLAYER <span class="accent">FOUND</span></h1>
+<p>Digite a tag do jogador para encontrar o nick mais recente registrado.</p></header>
+<form id="found-form" class="found-search">
+<label for="player-tag">Player Tag</label>
+<div class="found-input-row"><input id="player-tag" type="text" autocomplete="off" spellcheck="false" placeholder="#ABC123" maxlength="20" required><button id="found-button" type="submit">PROCURAR</button></div>
+<div id="found-status" class="found-status" aria-live="polite"></div>
+</form>
+<section class="found-results-section"><div class="found-results-title"><h2>JOGADORES ENCONTRADOS</h2><button id="clear-found" class="clear-button" type="button">LIMPAR TODOS</button></div>
+<div id="found-results" class="found-results"></div></section>
+</section></main>
+<script src="found.js"></script>
+</body>
+</html>
