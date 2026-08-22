@@ -2,50 +2,84 @@ name: Bot Minerador do Brawl Stars
 
 on:
   schedule:
-    # Roda a cada 30 minutos exatos
+    # Roda a cada 15 minutos
     - cron: '*/15 * * * *'
-  workflow_dispatch: # Permite rodar manualmente no GitHub
+
+  # Permite executar manualmente pelo GitHub
+  workflow_dispatch:
 
 jobs:
   minerar_e_atualizar:
     runs-on: ubuntu-latest
+
     env:
-      TZ: 'America/Sao_Paulo' # Garante que a máquina use o horário de Brasília
+      TZ: 'America/Sao_Paulo'
+
     permissions:
       contents: write
 
     steps:
+
+      # ==========================================
+      # BAIXAR REPOSITÓRIO
+      # ==========================================
       - name: Baixando os arquivos do repositório
         uses: actions/checkout@v4
 
+      # ==========================================
+      # INSTALAR PYTHON
+      # ==========================================
       - name: Instalando o Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
+      # ==========================================
+      # INSTALAR BIBLIOTECAS
+      # ==========================================
       - name: Instalando as bibliotecas
         run: |
           pip install pandas brawlstats
 
+      # ==========================================
+      # CONFIGURAR GIT
+      # ==========================================
       - name: Sincronizar e Configurar Git
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          # Puxa as mudanças ANTES de gerar novos dados para evitar conflitos
+
+          # Puxa alterações mais recentes antes de gerar os dados
           git pull --rebase origin main
 
+      # ==========================================
+      # RODAR GERADOR
+      # ==========================================
       - name: Rodando o Gerador (Bot)
-        run: python gerador.py
+        run: |
+          python gerador.py
 
+      # ==========================================
+      # SALVAR ALTERAÇÕES
+      # ==========================================
       - name: Salvando as alterações no GitHub
         run: |
-          # Adiciona os arquivos atualizados
-          git add historico_bruto.csv estatisticas_finais.csv api/
-          
-          # Só faz o commit e push se o Python realmente encontrou partidas novas
+
+          # Adiciona os arquivos gerados/atualizados
+          git add historico_bruto.csv
+          git add estatisticas_finais.csv
+          git add rosters.json
+          git add api/
+
+          # Verifica se houve alguma alteração
           if ! git diff --cached --quiet; then
-            git commit -m "🤖 Atualização Automática de Partidas"
+
+            git commit -m "🤖 Atualização Automática de Partidas e Rosters"
+
             git push origin main
+
           else
+
             echo "Sem mudanças para atualizar"
+
           fi
