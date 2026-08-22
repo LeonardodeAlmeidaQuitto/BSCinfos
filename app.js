@@ -36,7 +36,7 @@ const ROTACAO_MAPAS = {
             "Heist": ["Safe Zone", "Kaboom Canyon", "Hot Potato"],
             "Bounty": ["Hideout", "Dry Season", "Layer Cake"],
             "Knockout": ["Goldarm Gulch", "Belle's Rock", "Out in the Open"]        
-            };
+            }
         }
     };
 
