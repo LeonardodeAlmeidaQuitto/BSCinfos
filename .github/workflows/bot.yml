@@ -2,55 +2,106 @@ name: Bot Minerador do Brawl Stars
 
 on:
   schedule:
-    - cron: '*/20 * * * *'
+    # Executa a cada 15 minutos
+    - cron: "*/15 * * * *"
+
+  # Permite executar manualmente pelo GitHub
   workflow_dispatch:
 
 jobs:
   minerar_e_atualizar:
     runs-on: ubuntu-latest
+
     env:
-      TZ: 'America/Sao_Paulo'
+      TZ: "America/Sao_Paulo"
+
     permissions:
       contents: write
 
     steps:
+      # ==========================================
+      # BAIXAR REPOSITÓRIO
+      # ==========================================
       - name: Baixando os arquivos do repositório
         uses: actions/checkout@v4
         with:
-          lfs: false
-          fetch-depth: 1 # Pega apenas o estado atual para evitar conflitos de histórico
+          fetch-depth: 0
 
+      # ==========================================
+      # INSTALAR PYTHON
+      # ==========================================
       - name: Instalando o Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: "3.10"
 
+      # ==========================================
+      # INSTALAR BIBLIOTECAS
+      # ==========================================
       - name: Instalando as bibliotecas
         run: |
-          pip install pandas brawlstats requests
+          python -m pip install --upgrade pip
+          pip install pandas brawlstats
 
-      - name: Configurar Git
+      # ==========================================
+      # CONFIGURAR GIT
+      # ==========================================
+      - name: Configurando Git
         run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Rodando o Gerador (Bot)
-        run: python gerador.py
+      # ==========================================
+      # SINCRONIZAR COM O REPOSITÓRIO
+      # ==========================================
+      - name: Sincronizando com a branch main
+        run: |
+          git pull --rebase origin main
 
+      # ==========================================
+      # RODAR GERADOR
+      # ==========================================
+      - name: Rodando o Gerador
+        env:
+          BRAWL_API_KEY: ${{ secrets.BRAWL_API_KEY }}
+        run: |
+          python gerador.py
+
+      # ==========================================
+      # VERIFICAR ALTERAÇÕES
+      # ==========================================
+      - name: Verificando arquivos atualizados
+        run: |
+          echo "=========================================="
+          echo "ALTERAÇÕES DETECTADAS:"
+          echo "=========================================="
+
+          git status --short
+
+          echo ""
+          echo "=========================================="
+          echo "ROSTER:"
+          echo "=========================================="
+
+          if [ -f rosters.json ]; then
+            cat rosters.json
+          else
+            echo "rosters.json não encontrado."
+          fi
+
+      # ==========================================
+      # SALVAR ALTERAÇÕES NO GITHUB
+      # ==========================================
       - name: Salvando as alterações no GitHub
         run: |
-          # Garante que o .gitattributes não tenha a regra LFS para CSV
-          if [ -f .gitattributes ]; then
-            sed -i '/\*\.csv/d' .gitattributes
-          fi
-          
-          # Adiciona os arquivos gerados
-          git add .gitattributes historico_bruto.csv estatisticas_finais.csv api/ || true
-          
-          # Verifica se há mudanças e faz o commit e push direto
+          git add historico_bruto.csv
+          git add estatisticas_finais.csv
+          git add rosters.json
+          git add api/
+
           if ! git diff --cached --quiet; then
-            git commit -m "🤖 Atualização Automática de Partidas"
+            git commit -m "🤖 Atualização automática de partidas e rosters"
             git push origin main
           else
-            echo "Sem mudanças para atualizar"
+            echo "Nenhuma alteração para salvar."
           fi
