@@ -24,293 +24,108 @@ const ROTACAO_MAPAS = {
 };
 
 // ========================================================
-// 2. ROSTER AUTOMÁTICO (SEM DATA)
+// 2. CONFIGURAÇÃO DE ROSTERS MENSAIS
 // ========================================================
-// O arquivo rosters.json é a única fonte dos rosters.
-// Formato esperado:
-//
-// {
-//   "#TAG_PRINCIPAL": {
-//      "nome": "Nick principal",
-//      "id_time": "OCX",
-//      "nome_time": "OCX DIVISION",
-//      "regiao": "SA",
-//      "jogadores": [
-//          { "tag": "#TAG2", "nome": "Player 2" },
-//          { "tag": "#TAG3", "nome": "Player 3" }
-//      ]
-//   }
-// }
-//
-// O próprio #TAG_PRINCIPAL também vira um jogador do roster.
-// Assim, cada time terá automaticamente o principal + os outros 2.
+let ROSTERS_AUTOMATICOS = {};
 
-let ROSTERS_JSON = {};
 let CONFIGURACAO_MANUAL_TIMES = {};
 
-function normalizarRosterAutomatico(dados) {
-    const resultado = {
-        SA: { "TIMES REGISTRADOS": [] },
-        NA: { "TIMES REGISTRADOS": [] },
-        EMEA: { "TIMES REGISTRADOS": [] },
-        EA: { "TIMES REGISTRADOS": [] }
-    };
+function obterRostersAutomaticosPorRegiao() {
+    const resultado = {};
+    const origem = (ROSTERS_AUTOMATICOS && typeof ROSTERS_AUTOMATICOS === 'object') ? ROSTERS_AUTOMATICOS : {};
 
-    if (!dados || typeof dados !== 'object' || Array.isArray(dados)) {
-        throw new Error('rosters.json precisa conter um objeto de rosters.');
-    }
-
-    const timesPorRegiao = new Map();
-
-    Object.entries(dados).forEach(([tagPrincipal, registro]) => {
+    Object.values(origem).forEach(registro => {
         if (!registro || typeof registro !== 'object') return;
+        const regiao = String(registro.regiao || 'SA').toUpperCase();
+        if (!resultado[regiao]) resultado[regiao] = { 'TIMES AUTOMÁTICOS': [] };
 
-        const idTime = String(registro.id_time || '').trim().toUpperCase();
-        const nomeTime = String(registro.nome_time || '').trim();
-        const regiao = String(registro.regiao || '').trim().toUpperCase();
+        const jogadores = Array.isArray(registro.jogadores) ? registro.jogadores : [];
+        const principal = {
+            tag: registro.tag || registro.id || '',
+            nick: registro.nome || registro.nick || ''
+        };
+        const outros = jogadores.slice(0, 2).map(j => ({
+            tag: j.tag || j.id || '',
+            nick: j.nome || j.nick || ''
+        }));
 
-        if (!idTime || !nomeTime || !resultado[regiao]) return;
+        const lista = [principal, ...outros].filter(j => j.tag && j.tag !== '#');
+        if (!lista.length) return;
 
-        // Principal + os 2 jogadores cadastrados no rosters.json.
-        const jogadores = [];
-        const tagsUsadas = new Set();
-
-        const principalTag = String(tagPrincipal || '').trim();
-        const principalNome = String(registro.nome || '').trim();
-
-        if (principalTag && principalNome) {
-            jogadores.push({
-                tag: principalTag,
-                nick: principalNome
-            });
-            tagsUsadas.add(principalTag.toUpperCase());
-        }
-
-        (Array.isArray(registro.jogadores) ? registro.jogadores : []).forEach(j => {
-            if (!j || typeof j !== 'object') return;
-
-            const tag = String(j.tag || '').trim();
-            const nick = String(j.nome || j.nick || '').trim();
-
-            if (!tag || !nick || tag === '#') return;
-
-            const chaveTag = tag.toUpperCase();
-            if (tagsUsadas.has(chaveTag)) return;
-
-            // Limita ao roster de 3 jogadores.
-            if (jogadores.length >= 3) return;
-
-            jogadores.push({ tag, nick });
-            tagsUsadas.add(chaveTag);
-        });
-
-        if (jogadores.length === 0) return;
-
-        const timeNovo = {
-            id_time: idTime,
-            nome_time: nomeTime,
-            jogadores,
-            tier: registro.tier || 'TIMES REGISTRADOS'
+        const time = {
+            id_time: registro.id_time || 'UNK',
+            nome_time: registro.nome_time || 'TIME DESCONHECIDO',
+            jogadores: lista,
+            tier: 'TIMES AUTOMÁTICOS'
         };
 
-        // Se o mesmo id de time aparecer mais de uma vez no JSON,
-        // mantém um único time na lista e usa o primeiro roster válido.
-        const chave = `${regiao}::${idTime}`;
-        if (!timesPorRegiao.has(chave)) {
-            timesPorRegiao.set(chave, timeNovo);
-        } else {
-            const existente = timesPorRegiao.get(chave);
-
-            // Completa jogadores que eventualmente estejam faltando.
-            const tagsExistentes = new Set(
-                existente.jogadores.map(j => String(j.tag || '').toUpperCase())
-            );
-
-            timeNovo.jogadores.forEach(j => {
-                if (existente.jogadores.length < 3 && !tagsExistentes.has(String(j.tag || '').toUpperCase())) {
-                    existente.jogadores.push(j);
-                    tagsExistentes.add(String(j.tag || '').toUpperCase());
-                }
-            });
-        }
-    });
-
-    timesPorRegiao.forEach(time => {
-        const regiao = Object.keys(resultado).find(reg =>
-            resultado[reg]["TIMES REGISTRADOS"].some(t => t.id_time === time.id_time)
-        );
-
-        // Descobre a região pelo próprio registro salvo no mapa.
-        const chaveEncontrada = Array.from(timesPorRegiao.entries())
-            .find(([chave, valor]) => valor === time)?.[0];
-
-        const reg = chaveEncontrada ? chaveEncontrada.split('::')[0] : null;
-        if (reg && resultado[reg]) {
-            resultado[reg]["TIMES REGISTRADOS"].push(time);
-        }
-    });
-
-    // Ordenação estável dos times por nome.
-    Object.values(resultado).forEach(regiao => {
-        Object.values(regiao).forEach(lista => {
-            if (Array.isArray(lista)) {
-                lista.sort((a, b) => a.nome_time.localeCompare(b.nome_time));
-            }
-        });
+        const existente = resultado[regiao]['TIMES AUTOMÁTICOS'].find(t => t.id_time === time.id_time);
+        if (!existente) resultado[regiao]['TIMES AUTOMÁTICOS'].push(time);
     });
 
     return resultado;
 }
 
-async function carregarRostersAutomaticos() {
-    const fontes = [
-        `rosters.json?v=${Date.now()}`,
-        `./rosters.json?v=${Date.now()}`
-    ];
-
-    for (const fonte of fontes) {
-        try {
-            const resposta = await fetch(fonte, {
-                cache: 'no-store'
-            });
-
-            if (!resposta.ok) {
-                throw new Error(`HTTP ${resposta.status}`);
-            }
-
-            const dados = await resposta.json();
-
-            ROSTERS_JSON = dados;
-            CONFIGURACAO_MANUAL_TIMES = normalizarRosterAutomatico(dados);
-
-            window.ROSTERS_JSON = ROSTERS_JSON;
-            window.CONFIGURACAO_MANUAL_TIMES = CONFIGURACAO_MANUAL_TIMES;
-
-            carregarTimesSalvosLocal();
-
-            console.log(
-                `[ROSTERS] ${Object.keys(dados).length} IDs carregados de ${fonte}.`
-            );
-
-            return true;
-        } catch (erro) {
-            console.warn(`[ROSTERS] Falha ao carregar ${fonte}:`, erro);
-        }
-    }
-
-    console.warn(
-        '[ROSTERS] Não foi possível carregar rosters.json. A lista de times ficará vazia.'
-    );
-
-    CONFIGURACAO_MANUAL_TIMES = {
-        SA: { "TIMES REGISTRADOS": [] },
-        NA: { "TIMES REGISTRADOS": [] },
-        EMEA: { "TIMES REGISTRADOS": [] },
-        EA: { "TIMES REGISTRADOS": [] }
-    };
-
-    return false;
+function obterRostersPeriodoAtual() {
+    // Compatibilidade com o restante do app. O roster automático agora é único,
+    // sem ano/mês/data.
+    return obterRostersAutomaticosPorRegiao();
 }
 
-// Mantém a função existente no restante do app.
-// Agora ela NÃO olha ano/mês: sempre usa o roster atual do rosters.json.
 function atualizarRostersAtuais() {
-    if (!ROSTERS_JSON || typeof ROSTERS_JSON !== 'object' || Array.isArray(ROSTERS_JSON)) {
-        return;
+    const periodo = obterRostersPeriodoAtual();
+    CONFIGURACAO_MANUAL_TIMES = JSON.parse(JSON.stringify(periodo || {}));
+
+    if (_REGIAO !== 'ALL' && !CONFIGURACAO_MANUAL_TIMES[_REGIAO]) {
+        CONFIGURACAO_MANUAL_TIMES[_REGIAO] = { 'TIMES AUTOMÁTICOS': [] };
     }
 
-    CONFIGURACAO_MANUAL_TIMES = normalizarRosterAutomatico(ROSTERS_JSON);
+    if (_REGIAO === 'ALL' && !CONFIGURACAO_MANUAL_TIMES.ALL) {
+        CONFIGURACAO_MANUAL_TIMES.ALL = { 'TIMES AUTOMÁTICOS': [] };
+    }
+
     carregarTimesSalvosLocal();
 }
 
 function carregarTimesSalvosLocal() {
-    const regAlvo = _REGIAO === "ALL" ? "ALL" : _REGIAO;
+    let salvos = JSON.parse(localStorage.getItem('customTeams_' + _REGIAO)) || [];
+    if (!CONFIGURACAO_MANUAL_TIMES[_REGIAO] && _REGIAO !== "ALL") CONFIGURACAO_MANUAL_TIMES[_REGIAO] = {};
+    if (_REGIAO === "ALL" && !CONFIGURACAO_MANUAL_TIMES["ALL"]) CONFIGURACAO_MANUAL_TIMES["ALL"] = { "TIER ?": [], "TIMES REGISTRADOS": [] };
 
-    if (_REGIAO === "ALL") {
-        if (!CONFIGURACAO_MANUAL_TIMES.ALL) {
-            CONFIGURACAO_MANUAL_TIMES.ALL = {};
-        }
+    let regAlvo = _REGIAO === "ALL" ? "ALL" : _REGIAO;
+    if (!CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIMES REGISTRADOS"]) CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIMES REGISTRADOS"] = [];
 
-        // Agrega os times das quatro regiões.
-        const agregados = {};
-        Object.keys(CONFIGURACAO_MANUAL_TIMES).forEach(reg => {
-            if (reg === "ALL") return;
-
-            const configuracaoRegiao = CONFIGURACAO_MANUAL_TIMES[reg];
-            Object.keys(configuracaoRegiao || {}).forEach(tier => {
-                if (!agregados[tier]) agregados[tier] = [];
-
-                (configuracaoRegiao[tier] || []).forEach(time => {
-                    if (!agregados[tier].some(t => t.id_time === time.id_time)) {
-                        agregados[tier].push(time);
-                    }
-                });
-            });
-        });
-
-        CONFIGURACAO_MANUAL_TIMES.ALL = agregados;
-    } else {
-        if (!CONFIGURACAO_MANUAL_TIMES[regAlvo]) {
-            CONFIGURACAO_MANUAL_TIMES[regAlvo] = {};
-        }
-
-        if (!CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIMES REGISTRADOS"]) {
-            CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIMES REGISTRADOS"] = [];
-        }
-    }
-
-    // Mantém os times cadastrados localmente.
-    let salvos = [];
-    try {
-        salvos = JSON.parse(
-            localStorage.getItem('customTeams_' + _REGIAO)
-        ) || [];
-    } catch (e) {
-        salvos = [];
-    }
-
+    // Cada time salvo carrega consigo o tier escolhido no cadastro (campo "tier").
+    // Times salvos antes dessa funcionalidade existir caem em "TIMES REGISTRADOS" (comportamento antigo).
     salvos.forEach(t => {
-        if (!t || !t.id_time) return;
-
-        const tierAlvo =
-            t.tier && String(t.tier).trim() !== ''
-                ? String(t.tier).trim()
-                : 'TIMES REGISTRADOS';
-
-        if (!CONFIGURACAO_MANUAL_TIMES[regAlvo][tierAlvo]) {
-            CONFIGURACAO_MANUAL_TIMES[regAlvo][tierAlvo] = [];
-        }
-
-        // Substitui o time do mesmo ID para refletir o cadastro local.
-        CONFIGURACAO_MANUAL_TIMES[regAlvo][tierAlvo] =
-            CONFIGURACAO_MANUAL_TIMES[regAlvo][tierAlvo]
-                .filter(e => e.id_time !== t.id_time);
-
+        let tierAlvo = t.tier && t.tier.trim() !== '' ? t.tier : 'TIMES REGISTRADOS';
+        if (!CONFIGURACAO_MANUAL_TIMES[regAlvo][tierAlvo]) CONFIGURACAO_MANUAL_TIMES[regAlvo][tierAlvo] = [];
         CONFIGURACAO_MANUAL_TIMES[regAlvo][tierAlvo].push(t);
     });
 }
 
-// Mantém o nome da função antiga para não quebrar nenhum botão/função existente.
-function mesclarTimesSalvosEmRostersPorData() {
-    carregarTimesSalvosLocal();
+    // Os times personalizados continuam locais no navegador.
+// Não são gravados em roster por data.
+function mesclarTimesSalvosNaConfiguracao() {
+    if (_REGIAO === 'ALL') return;
+    const salvos = JSON.parse(localStorage.getItem('customTeams_' + _REGIAO)) || [];
+    const reg = CONFIGURACAO_MANUAL_TIMES[_REGIAO] || (CONFIGURACAO_MANUAL_TIMES[_REGIAO] = {});
+    if (!reg['TIMES REGISTRADOS']) reg['TIMES REGISTRADOS'] = [];
+
+    salvos.forEach(t => {
+        const tier = t.tier && t.tier.trim() ? t.tier : 'TIMES REGISTRADOS';
+        if (!reg[tier]) reg[tier] = [];
+        if (!reg[tier].some(e => e.id_time === t.id_time)) reg[tier].push(t);
+    });
 }
 
-// Novo nome sem referência a "por data".
-function mesclarTimesSalvosNosRosters() {
-    carregarTimesSalvosLocal();
-}
-
-// Lista os tiers já existentes na região atual.
+// Lista os tiers já existentes na região atual (para popular o <select> de cadastro)
 function obterTiersDisponiveis() {
     let regAlvo = _REGIAO === "ALL" ? "ALL" : _REGIAO;
     let base = CONFIGURACAO_MANUAL_TIMES[regAlvo] || {};
-
     let tiers = Object.keys(base).filter(t => t !== 'TIER ?');
-
-    if (!tiers.includes('TIMES REGISTRADOS')) {
-        tiers.push('TIMES REGISTRADOS');
-    }
-
+    let padrao = ['TIER S', 'TIER A', 'TIER B', 'TIER B-/C+', 'TIER C', 'TIMES REGISTRADOS'];
+    padrao.forEach(p => { if (!tiers.includes(p)) tiers.push(p); });
     return tiers;
 }
 
@@ -366,11 +181,66 @@ function parseDateBR(dataStr) {
     } catch (e) { return 0; }
 }
 
-document.addEventListener("DOMContentLoaded", async () => {
-    // Primeiro carrega rosters.json; só depois monta a tela TIMES e processa os dados.
+async function carregarRostersAutomaticos() {
+    // O rosters.json agora é um objeto único, sem ano/mês/data.
+    // Cada chave é o ID do jogador principal cadastrado no gerador.py.
+    try {
+        const resposta = await fetch(`rosters.json?v=${Date.now()}`, {
+            cache: 'no-store',
+            headers: { 'Cache-Control': 'no-cache' }
+        });
+
+        if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`);
+        const texto = await resposta.text();
+        if (!texto.trim()) throw new Error('arquivo vazio');
+
+        let dados = JSON.parse(texto);
+        if (dados && dados.ROSTERS_AUTOMATICOS && typeof dados.ROSTERS_AUTOMATICOS === 'object') {
+            dados = dados.ROSTERS_AUTOMATICOS;
+        }
+        if (!dados || typeof dados !== 'object' || Array.isArray(dados)) {
+            throw new Error('rosters.json deve conter um objeto de jogadores');
+        }
+
+        const normalizado = {};
+        Object.entries(dados).forEach(([tag, item]) => {
+            if (!item || typeof item !== 'object') return;
+            const principalTag = item.tag || item.id || tag;
+            if (!principalTag || principalTag === '#') return;
+
+            normalizado[principalTag] = {
+                tag: principalTag,
+                nome: item.nome || item.nick || '',
+                id_time: item.id_time || 'UNK',
+                nome_time: item.nome_time || 'TIME DESCONHECIDO',
+                regiao: String(item.regiao || 'SA').toUpperCase(),
+                jogadores: Array.isArray(item.jogadores) ? item.jogadores.slice(0, 2).map(j => ({
+                    tag: j.tag || j.id || '',
+                    nome: j.nome || j.nick || ''
+                })) : []
+            };
+        });
+
+        if (Object.keys(normalizado).length === 0) {
+            throw new Error('nenhum jogador válido encontrado');
+        }
+
+        ROSTERS_AUTOMATICOS = normalizado;
+                window.ROSTERS_AUTOMATICOS = normalizado;
+        
+        console.log(`[ROSTERS] ${Object.keys(normalizado).length} jogadores principais carregados de rosters.json.`);
+        return true;
+    } catch (erro) {
+        console.warn('[ROSTERS] Falha ao carregar rosters.json:', erro);
+        ROSTERS_AUTOMATICOS = {};
+        return false;
+    }
+}
+
+document.addEventListener("DOMContentLoaded", async () => { 
     await carregarRostersAutomaticos();
     atualizarRostersAtuais();
-    carregarCSV();
+    carregarCSV(); 
 });
 
 // ==========================================
@@ -958,14 +828,14 @@ window.registrarTimeCustom = function(idAntigo) {
     salvos.push(novoTime);
     localStorage.setItem('customTeams_' + _REGIAO, JSON.stringify(salvos));
 
-    // Atualiza a configuração em memória imediatamente (CONFIGURACAO_MANUAL_TIMES + ROSTERS_POR_DATA)
+    // Atualiza a configuração em memória imediatamente
     let regAlvo = _REGIAO === "ALL" ? "ALL" : _REGIAO;
     if (CONFIGURACAO_MANUAL_TIMES[regAlvo] && CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIER ?"]) {
         CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIER ?"] = CONFIGURACAO_MANUAL_TIMES[regAlvo]["TIER ?"].filter(t => t.id_time !== idAntigo);
     }
     if (!CONFIGURACAO_MANUAL_TIMES[regAlvo][tierEscolhido]) CONFIGURACAO_MANUAL_TIMES[regAlvo][tierEscolhido] = [];
     CONFIGURACAO_MANUAL_TIMES[regAlvo][tierEscolhido].push(novoTime);
-    mesclarTimesSalvosNosRosters();
+    mesclarTimesSalvosNaConfiguracao();
 
     // Mostra um snippet pronto para colar em gerador.py (MAPEAMENTO_PLAYERS), já que o navegador
     // não tem permissão para editar arquivos no servidor/repositório automaticamente.
