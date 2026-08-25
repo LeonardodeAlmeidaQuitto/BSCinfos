@@ -208,7 +208,26 @@ let ROSTERS_POR_DATA = {
 
 let CONFIGURACAO_MANUAL_TIMES = {};
 
+// Roster automático gerado pelo gerador.py.
+// Estrutura interna: { REGIAO: { "TIMES REGISTRADOS": [ ...times ] } }
+// O roster automático tem prioridade sobre o roster antigo por data.
+let ROSTERS_AUTOMATICOS = {};
+
 function atualizarRostersAtuais() {
+    // ========================================================
+    // ROSTER AUTOMÁTICO
+    // ========================================================
+    // Quando o gerador.py já produziu rosters.json/rosters.js,
+    // ele é a fonte principal dos times e não depende de ano/mês.
+    if (ROSTERS_AUTOMATICOS && Object.keys(ROSTERS_AUTOMATICOS).length > 0) {
+        CONFIGURACAO_MANUAL_TIMES = JSON.parse(JSON.stringify(ROSTERS_AUTOMATICOS));
+        carregarTimesSalvosLocal();
+        return;
+    }
+
+    // ========================================================
+    // FALLBACK: ROSTER ANTIGO POR DATA
+    // ========================================================
     let selectAno = document.getElementById('select-ano');
     let selectMes = document.getElementById('select-mes');
     const ano = selectAno ? selectAno.value : 'todos';
@@ -246,6 +265,12 @@ function carregarTimesSalvosLocal() {
 // Mantém os times cadastrados manualmente também dentro de ROSTERS_POR_DATA (em memória),
 // assim eles "aparecem" automaticamente na constante sem precisar editar o arquivo na mão.
 function mesclarTimesSalvosEmRostersPorData() {
+    // No modo automático, os times oficiais vêm do gerador.py.
+    // Os times personalizados continuam sendo adicionados em memória.
+    if (ROSTERS_AUTOMATICOS && Object.keys(ROSTERS_AUTOMATICOS).length > 0) {
+        return;
+    }
+
     if (_REGIAO === "ALL") return; // "ALL" é agregador, não existe como chave própria em ROSTERS_POR_DATA
     let salvos = JSON.parse(localStorage.getItem('customTeams_' + _REGIAO)) || [];
     if (salvos.length === 0) return;
@@ -295,18 +320,27 @@ const teamLogoFallback = (id) => (id && id.toUpperCase().startsWith('UNK')) ? 'e
 const teamLogoOnError = (id) => `this.onerror=null; this.src='${teamLogoFallback(id)}';`;
 
 const isTimeDaRegiaoAtual = (id) => {
+    if (!id) return false;
+    const alvo = String(id).toUpperCase();
+
     if (_REGIAO === "ALL") {
         for (let reg in CONFIGURACAO_MANUAL_TIMES) {
-            for (let tier in CONFIGURACAO_MANUAL_TIMES[reg]) {
-                if (CONFIGURACAO_MANUAL_TIMES[reg][tier].find(t => t.id_time === id)) return true;
+            for (let tier in CONFIGURACAO_MANUAL_TIMES[reg] || {}) {
+                const lista = CONFIGURACAO_MANUAL_TIMES[reg][tier];
+                if (!Array.isArray(lista)) continue;
+                if (lista.some(t => String(t.id_time || '').toUpperCase() === alvo)) return true;
             }
         }
         return false;
     }
+
     let reg = CONFIGURACAO_MANUAL_TIMES[_REGIAO];
-    if(!reg) return false;
-    for(let tier in reg) {
-        if(reg[tier].find(t => t.id_time === id)) return true;
+    if (!reg) return false;
+
+    for (let tier in reg) {
+        const lista = reg[tier];
+        if (!Array.isArray(lista)) continue;
+        if (lista.some(t => String(t.id_time || '').toUpperCase() === alvo)) return true;
     }
     return false;
 };
@@ -334,14 +368,125 @@ function parseDateBR(dataStr) {
     } catch (e) { return 0; }
 }
 
-async function carregarRostersAutomaticos() {
-    // Carrega o roster gerado automaticamente pelo gerador.py.
-    // Compatível com:
-    // 1) rosters.json contendo JSON puro;
-    // 2) rosters.json contendo: window.ROSTERS_POR_DATA = {...};
-    // 3) rosters.js contendo: window.ROSTERS_POR_DATA = {...};
-    // Se qualquer uma das opções falhar, o roster interno deste app continua funcionando.
+function normalizarRostersAutomaticos(dados) {
+    const resultado = {};
 
+    const adicionarTime = (regiao, idTime, nomeTime, jogadores) => {
+        if (!idTime) return;
+
+        const reg = String(regiao || 'SA').toUpperCase();
+        const id = String(idTime).toUpperCase();
+
+        if (!resultado[reg]) resultado[reg] = {};
+        if (!resultado[reg]["TIMES REGISTRADOS"]) {
+            resultado[reg]["TIMES REGISTRADOS"] = [];
+        }
+
+        const roster = Array.isArray(jogadores) ? jogadores
+            .filter(j => j && (j.tag || j.id))
+            .map(j => ({
+                tag: j.tag || j.id,
+                nick: j.nick || j.nome || j.name || 'Player'
+            }))
+            .filter(j => j.tag && j.tag !== '#')
+            .slice(0, 3) : [];
+
+        if (roster.length === 0) return;
+
+        const time = {
+            id_time: id,
+            nome_time: nomeTime || id,
+            jogadores: roster
+        };
+
+        const lista = resultado[reg]["TIMES REGISTRADOS"];
+        const idx = lista.findIndex(t => String(t.id_time).toUpperCase() === id);
+        if (idx >= 0) lista[idx] = time;
+        else lista.push(time);
+    };
+
+    if (!dados || typeof dados !== 'object' || Array.isArray(dados)) return resultado;
+
+    // FORMATO NOVO/FLAT:
+    // { "#ID_PRINCIPAL": { principal_id, principal_nome, id_time, nome_time, jogadores, regiao } }
+    const valores = Object.values(dados);
+    const pareceFlat = valores.some(item => item && typeof item === 'object' &&
+        (item.id_time || item.time_id || item.principal_id || item.id_principal || item.nome_time));
+
+    if (pareceFlat) {
+        Object.entries(dados).forEach(([chave, item]) => {
+            if (!item || typeof item !== 'object') return;
+
+            const principalId = item.principal_id || item.id_principal || item.player_id || chave;
+            const principalNome = item.principal_nome || item.nome_principal || item.player_nome || item.nome || item.name || 'Player';
+            const idTime = item.id_time || item.time_id;
+            const nomeTime = item.nome_time || item.time_nome || item.nomeTime || idTime;
+            const regiao = item.regiao || item.region || item.reg || 'SA';
+
+            let jogadores = Array.isArray(item.jogadores) ? item.jogadores.slice() : [];
+
+            if (jogadores.length === 0) {
+                jogadores.push({ tag: principalId, nick: principalNome });
+
+                const p2Id = item.player2_id || item.outro1_id || item.jogador2_id || item.player_2_id;
+                const p2Nome = item.player2_nome || item.outro1_nome || item.jogador2_nome || item.player_2_nome;
+                if (p2Id) jogadores.push({ tag: p2Id, nick: p2Nome || 'Player' });
+
+                const p3Id = item.player3_id || item.outro2_id || item.jogador3_id || item.player_3_id;
+                const p3Nome = item.player3_nome || item.outro2_nome || item.jogador3_nome || item.player_3_nome;
+                if (p3Id) jogadores.push({ tag: p3Id, nick: p3Nome || 'Player' });
+            } else {
+                // Garante que o principal também apareça caso o gerador entregue
+                // apenas os dois companheiros em jogadores[].
+                const possuiPrincipal = jogadores.some(j => j && (j.tag || j.id) === principalId);
+                if (!possuiPrincipal && principalId && principalId !== '#') {
+                    jogadores.unshift({ tag: principalId, nick: principalNome });
+                }
+            }
+
+            adicionarTime(regiao, idTime, nomeTime, jogadores);
+        });
+
+        return resultado;
+    }
+
+    // FORMATO REGIÃO -> TIME -> OBJETO DO TIME
+    Object.entries(dados).forEach(([regiao, times]) => {
+        if (!times || typeof times !== 'object' || Array.isArray(times)) return;
+
+        Object.entries(times).forEach(([id, time]) => {
+            if (!time || typeof time !== 'object') return;
+
+            if (time.id_time || time.nome_time || Array.isArray(time.jogadores)) {
+                adicionarTime(
+                    time.regiao || regiao,
+                    time.id_time || id,
+                    time.nome_time || time.nome || id,
+                    time.jogadores || []
+                );
+            }
+        });
+    });
+
+    // FORMATO ARRAY DE TIMES
+    if (Array.isArray(dados)) {
+        dados.forEach(time => {
+            if (!time || typeof time !== 'object') return;
+            adicionarTime(
+                time.regiao || 'SA',
+                time.id_time,
+                time.nome_time || time.nome,
+                time.jogadores || []
+            );
+        });
+    }
+
+    return resultado;
+}
+
+async function carregarRostersAutomaticos() {
+    // Aceita tanto o novo roster único automático quanto o formato antigo
+    // por data. O novo formato tem prioridade e não depende de filtros de data.
     const fontes = [
         `rosters.json?v=${Date.now()}`,
         `rosters.js?v=${Date.now()}`
@@ -354,96 +499,102 @@ async function carregarRostersAutomaticos() {
                 headers: { 'Cache-Control': 'no-cache' }
             });
 
-            if (!resposta.ok) {
-                throw new Error(`HTTP ${resposta.status}`);
-            }
+            if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`);
 
             const texto = await resposta.text();
-            if (!texto || !texto.trim()) {
-                throw new Error('arquivo vazio');
-            }
+            if (!texto || !texto.trim()) throw new Error('arquivo vazio');
 
             let dados = null;
 
-            // Primeiro tenta JSON puro.
+            // 1) JSON puro.
             try {
                 dados = JSON.parse(texto);
             } catch (_) {
-                // O gerador pode produzir um arquivo com sintaxe JS mesmo usando
-                // a extensão .json, por exemplo:
-                // window.ROSTERS_POR_DATA = { ... };
-                const inicio = texto.indexOf('{');
-                const fim = texto.lastIndexOf('}');
-
-                if (inicio !== -1 && fim > inicio) {
-                    const objetoTexto = texto.slice(inicio, fim + 1);
-                    try {
-                        dados = JSON.parse(objetoTexto);
-                    } catch (_) {
-                        // Último fallback para arquivos JS confiáveis do próprio
-                        // repositório. Isso também aceita const/let/window.
+                // 2) Arquivo JS com window.ROSTERS_... = {...}
+                try {
+                    const sandbox = {};
+                    const executor = new Function(
+                        'window',
+                        `${texto}\n; return window.ROSTERS_AUTOMATICOS || window.ROSTERS_POR_DATA || null;`
+                    );
+                    dados = executor(sandbox);
+                } catch (erroExecucao) {
+                    // 3) Último fallback: tenta extrair somente o objeto JSON.
+                    const inicio = texto.indexOf('{');
+                    const fim = texto.lastIndexOf('}');
+                    if (inicio !== -1 && fim > inicio) {
                         try {
-                            const sandbox = {};
-                            const executor = new Function(
-                                'window',
-                                `${texto}\n; return window.ROSTERS_POR_DATA || null;`
-                            );
-                            dados = executor(sandbox);
-                        } catch (erroExecucao) {
+                            dados = JSON.parse(texto.slice(inicio, fim + 1));
+                        } catch (_) {
                             throw new Error(`formato inválido: ${erroExecucao.message}`);
                         }
+                    } else {
+                        throw new Error(`formato inválido: ${erroExecucao.message}`);
                     }
                 }
             }
 
-            // Alguns geradores salvam o objeto dentro de uma propriedade.
-            if (dados && dados.ROSTERS_POR_DATA && typeof dados.ROSTERS_POR_DATA === 'object') {
-                dados = dados.ROSTERS_POR_DATA;
+            if (dados && dados.ROSTERS_AUTOMATICOS && typeof dados.ROSTERS_AUTOMATICOS === 'object') {
+                dados = dados.ROSTERS_AUTOMATICOS;
             }
 
-            if (!dados || typeof dados !== 'object' || Array.isArray(dados)) {
-                throw new Error('ROSTERS_POR_DATA não encontrado');
+            // Se for o novo formato, normaliza e usa como fonte principal.
+            const automaticos = normalizarRostersAutomaticos(dados);
+            const qtdAutomaticos = Object.values(automaticos).reduce((total, reg) => {
+                const lista = reg && Array.isArray(reg["TIMES REGISTRADOS"]) ? reg["TIMES REGISTRADOS"] : [];
+                return total + lista.length;
+            }, 0);
+
+            if (qtdAutomaticos > 0) {
+                ROSTERS_AUTOMATICOS = automaticos;
+                window.ROSTERS_AUTOMATICOS = ROSTERS_AUTOMATICOS;
+                console.log(`[ROSTERS] ${qtdAutomaticos} times automáticos carregados de ${fonte}.`);
+                return true;
             }
 
-            // Não substitui o roster interno por um arquivo vazio/incompleto.
-            const regioesValidas = ['SA', 'NA', 'EMEA', 'EA', 'ALL'];
-            let encontrouRegiao = false;
-            Object.keys(dados).forEach(chaveAno => {
-                if (chaveAno === 'PADRAO') {
-                    const padrao = dados[chaveAno];
-                    if (padrao && typeof padrao === 'object') {
+            // Compatibilidade com o roster antigo por data.
+            if (dados && typeof dados === 'object' && !Array.isArray(dados)) {
+                const regioesValidas = ['SA', 'NA', 'EMEA', 'EA', 'ALL'];
+                let encontrouRegiao = false;
+
+                Object.keys(dados).forEach(chaveAno => {
+                    if (chaveAno === 'PADRAO') {
+                        const padrao = dados[chaveAno];
+                        if (padrao && typeof padrao === 'object') {
+                            regioesValidas.forEach(reg => {
+                                if (padrao[reg] && typeof padrao[reg] === 'object') encontrouRegiao = true;
+                            });
+                        }
+                        return;
+                    }
+
+                    const porMes = dados[chaveAno];
+                    if (!porMes || typeof porMes !== 'object') return;
+
+                    Object.keys(porMes).forEach(chaveMes => {
+                        const periodo = porMes[chaveMes];
+                        if (!periodo || typeof periodo !== 'object') return;
                         regioesValidas.forEach(reg => {
-                            if (padrao[reg] && typeof padrao[reg] === 'object') encontrouRegiao = true;
+                            if (periodo[reg] && typeof periodo[reg] === 'object') encontrouRegiao = true;
                         });
-                    }
-                    return;
-                }
-                const porMes = dados[chaveAno];
-                if (!porMes || typeof porMes !== 'object') return;
-                Object.keys(porMes).forEach(chaveMes => {
-                    const periodo = porMes[chaveMes];
-                    if (!periodo || typeof periodo !== 'object') return;
-                    regioesValidas.forEach(reg => {
-                        if (periodo[reg] && typeof periodo[reg] === 'object') encontrouRegiao = true;
                     });
                 });
-            });
 
-            if (!encontrouRegiao) {
-                throw new Error('arquivo não contém regiões/tiers de roster válidos');
+                if (encontrouRegiao) {
+                    ROSTERS_POR_DATA = dados;
+                    window.ROSTERS_POR_DATA = dados;
+                    console.log(`[ROSTERS] Roster antigo carregado de ${fonte}.`);
+                    return true;
+                }
             }
 
-            // Mantém a variável usada pelo restante deste app.
-            ROSTERS_POR_DATA = dados;
-            window.ROSTERS_POR_DATA = dados;
-
-            console.log(`[ROSTERS] Roster automático carregado de ${fonte}.`);
-            return true;
+            throw new Error('nenhum roster válido encontrado');
         } catch (erro) {
             console.warn(`[ROSTERS] Falha ao carregar ${fonte}:`, erro);
         }
     }
 
+    ROSTERS_AUTOMATICOS = {};
     console.warn('[ROSTERS] Nenhum arquivo automático válido encontrado. Usando o roster interno do app.js.');
     return false;
 }
@@ -683,81 +834,17 @@ function processarDadosGlobais() {
     dadosFiltrados = dadosBrutos.filter(filterFn);
     dadosBansFiltrados = dadosBans.filter(filterFn);
 
-    // Estrutura os Games em Sets antes de calcular as estatísticas.
-    // As tabelas usam Sets, nunca Games individuais.
-    processarScrimes(dadosFiltrados);
-
     renderizarMeta();
     renderizarSidebarBrawlers();
     if(brawlerSelecionado) renderizarDetalhesBrawler(brawlerSelecionado);
     renderizarSidebarTimes();
     if(timeSelecionado) renderizarDetalhesTime(timeSelecionado);
+    processarScrimes(dadosBrutos.filter(filterFn));
 }
 
 // ==========================================
 // 4. TELA META
 // ==========================================
-// ========================================================
-// ESTATISTICAS POR SET - AS TABELAS NAO CONTAM GAMES
-// ========================================================
-function obterDadosEstatisticasPorSet() {
-    const scrims = Array.isArray(window.allScrims) ? window.allScrims : [];
-    const linhas = [];
-    const bans = [];
-
-    scrims.forEach(scrim => {
-        (scrim.rounds || []).forEach(set => {
-            const idSet = set.id || `set_${set.inicio}_${set.tAId}_${set.tBId}`;
-            const vencedor = set.vencedor;
-            const addLado = (idTime, nomeTime, picks, ganhou) => {
-                const unicos = new Set();
-                (picks || []).forEach(p => {
-                    const b = String(p || '').trim().toUpperCase();
-                    if (b) unicos.add(b);
-                });
-                unicos.forEach(b => linhas.push({
-                    id_partida: idSet,
-                    id_set: idSet,
-                    id_time: idTime,
-                    nome_time: nomeTime || idTime,
-                    pick: b,
-                    win: ganhou ? 1 : 0,
-                    mapa: set.mapa || 'Desconhecido',
-                    modo: set.modo || 'Desconhecido',
-                    data_adicao: set.dataFormatada || ''
-                }));
-            };
-
-            // A composicao do Set ja representa todos os Games.
-            addLado(set.tAId, set.tANome, set.picksA, vencedor === set.tAId);
-            addLado(set.tBId, set.tBNome, set.picksB, vencedor === set.tBId);
-
-            // Bans tambem contam uma vez por Set.
-            const bansUnicos = new Set();
-            (set.games || []).forEach(game => {
-                (dadosBansFiltrados || []).forEach(row => {
-                    if (String(row.id_partida) !== String(game.id)) return;
-                    const b = String(row.brawler_banido || '').trim().toUpperCase();
-                    if (b) bansUnicos.add(b);
-                });
-            });
-            bansUnicos.forEach(b => bans.push({
-                id_partida: idSet,
-                id_set: idSet,
-                brawler_banido: b,
-                mapa: set.mapa || 'Desconhecido',
-                modo: set.modo || 'Desconhecido'
-            }));
-        });
-    });
-
-    return { linhas, bans };
-}
-
-function obterEstatisticasAtuaisPorSet() {
-    return window._estatisticasPorSetCache || { linhas: [], bans: [] };
-}
-
 window.toggleModoMeta = function(idModo) {
     const c = document.getElementById(`modo-content-${idModo}`);
     if(c) c.style.display = (c.style.display === 'none' || !c.style.display) ? 'block' : 'none';
@@ -786,11 +873,7 @@ function renderizarMeta() {
     const mes = document.getElementById('select-mes') ? document.getElementById('select-mes').value : 'todos';
     const rotacaoAtiva = obterRotacaoAtiva(ano, mes);
 
-    const estatSet = obterEstatisticasAtuaisPorSet();
-    const dadosSet = estatSet.linhas;
-    const bansSet = estatSet.bans;
-
-    dadosSet.forEach(row => {
+    dadosFiltrados.forEach(row => {
         let b = (row.pick || '').toUpperCase(), map = row.mapa || "Desconhecido", mode = row.modo || "Desconhecido";
         if(!b) return;
         
@@ -800,13 +883,13 @@ function renderizarMeta() {
         if(!sMap[mode]) sMap[mode] = {}; if(!sMap[mode][map]) sMap[mode][map] = {}; if(!sMap[mode][map][b]) sMap[mode][map][b] = { picks: 0, wins: 0 };
         sMap[mode][map][b].picks++; if(parseInt(row.win) === 1) sMap[mode][map][b].wins++;
 
-        if(!mSet.has(row.id_set || row.id_partida)) {
-            mSet.add(row.id_set || row.id_partida); tPU++;
+        if(!mSet.has(row.id_partida)) {
+            mSet.add(row.id_partida); tPU++;
             if(!pMap[mode]) pMap[mode] = {}; pMap[mode][map] = (pMap[mode][map] || 0) + 1;
         }
     });
 
-    bansSet.forEach(row => {
+    dadosBansFiltrados.forEach(row => {
         let b = (row.brawler_banido || '').toUpperCase(), map = row.mapa || 'Unknown', mode = row.modo || 'Unknown';
         if (!b) return;
         if (!bMap[mode]) bMap[mode] = {}; if (!bMap[mode][map]) bMap[mode][map] = {};
@@ -843,7 +926,7 @@ function renderizarMeta() {
                             let bc = bNMap[b] || 0, brPct = tBM ? ((bc / tJM) * 100).toFixed(1) : '0.0';
                             return `<tr>
                                 <td style="text-align:left; font-weight:bold; color:var(--accent-hover); white-space:nowrap; padding:5px 8px;"><img src="brawlers/${formatImg(b)}.png" style="width:24px; vertical-align:middle; margin-right:5px; border-radius:4px;" onerror="this.src='brawlers/default.png'">${b}</td>
-                                <td style="padding:5px 8px;">${s.picks}</td><td style="color:var(--texto-secundario); padding:5px 8px;">${((s.picks/(dadosSet.length||1))*100).toFixed(1)}%</td><td style="padding:5px 8px;">${s.wins}</td><td class="winrate-cell" style="padding:5px 8px;">${((s.wins/s.picks)*100).toFixed(1)}%</td>
+                                <td style="padding:5px 8px;">${s.picks}</td><td style="color:var(--texto-secundario); padding:5px 8px;">${((s.picks/(dadosFiltrados.length||1))*100).toFixed(1)}%</td><td style="padding:5px 8px;">${s.wins}</td><td class="winrate-cell" style="padding:5px 8px;">${((s.wins/s.picks)*100).toFixed(1)}%</td>
                                 <td style="color:#b06aff; font-weight:bold; padding:5px 8px;">${bc}</td><td style="color:#b06aff; font-weight:bold; padding:5px 8px;">${brPct}%</td>
                             </tr>`;
                         }).join('')}
@@ -899,8 +982,7 @@ function renderizarMeta() {
 // ==========================================
 function renderizarSidebarBrawlers() {
     let pickCounts = {};
-    const dadosSet = obterEstatisticasAtuaisPorSet().linhas;
-    dadosSet.forEach(r => { let b = (r.pick||'').toUpperCase(); if(b) pickCounts[b] = (pickCounts[b] || 0) + 1; });
+    dadosFiltrados.forEach(r => { let b = (r.pick||'').toUpperCase(); if(b) pickCounts[b] = (pickCounts[b] || 0) + 1; });
     listaBrawlers = Object.keys(pickCounts).filter(b => pickCounts[b] >= 1).sort();
 
     const sidebar = document.getElementById('lista-brawlers-sidebar');
@@ -926,17 +1008,14 @@ function filtrarBrawlersSidebar() {
 
 function renderizarDetalhesBrawler(brawler) {
     const painel = document.getElementById('painel-info-brawler');
-    const estatSet = obterEstatisticasAtuaisPorSet();
-    const dadosSet = estatSet.linhas;
-    const bansSet = estatSet.bans;
-    let partidasDeste = dadosSet.filter(r => (r.pick||'').toUpperCase() === brawler);
+    let partidasDeste = dadosFiltrados.filter(r => (r.pick||'').toUpperCase() === brawler);
     let totalPicks = partidasDeste.length;
     if(totalPicks === 0) return;
 
     let wins = partidasDeste.filter(r => parseInt(r.win) === 1).length;
     let wrGeral = ((wins/totalPicks)*100).toFixed(1) + '%';
-    let totalBans = bansSet.filter(r => (r.brawler_banido||'').toUpperCase() === brawler).length;
-    let totalJogosComBans = new Set(bansSet.map(r => r.id_set || r.id_partida)).size;
+    let totalBans = dadosBansFiltrados.filter(r => (r.brawler_banido||'').toUpperCase() === brawler).length;
+    let totalJogosComBans = new Set(dadosBansFiltrados.map(r => r.id_partida)).size;
     let brPct = totalJogosComBans > 0 ? ((totalBans / totalJogosComBans) * 100).toFixed(1) : '0.0';
 
     let mapasStats = {};
@@ -947,10 +1026,10 @@ function renderizarDetalhesBrawler(brawler) {
     });
     let topMapas = Object.entries(mapasStats).sort((a,b) => b[1].picks - a[1].picks).slice(0,3);
     let statsContra = {}, statsSinergia = {};
-    let idsPartidas = [...new Set(partidasDeste.map(r => r.id_set || r.id_partida))];
+    let idsPartidas = [...new Set(partidasDeste.map(r => r.id_partida))];
 
     idsPartidas.forEach(id => {
-        let todosNaPartida = dadosSet.filter(r => (r.id_set || r.id_partida) === id);
+        let todosNaPartida = dadosFiltrados.filter(r => r.id_partida === id);
         let brawlerRows = todosNaPartida.filter(r => (r.pick||'').toUpperCase() === brawler);
         brawlerRows.forEach(meRow => {
             let timeDoBrawler = meRow.id_time, ganhou = parseInt(meRow.win) === 1;
@@ -999,16 +1078,22 @@ function renderizarSidebarTimes() {
 
     if (_REGIAO === "ALL") {
         for (let r in CONFIGURACAO_MANUAL_TIMES) {
-            for (let tier in CONFIGURACAO_MANUAL_TIMES[r]) {
+            for (let tier in CONFIGURACAO_MANUAL_TIMES[r] || {}) {
+                const lista = CONFIGURACAO_MANUAL_TIMES[r][tier];
+                if (!Array.isArray(lista)) continue;
                 if (!timesRegiao[tier]) timesRegiao[tier] = [];
-                CONFIGURACAO_MANUAL_TIMES[r][tier].forEach(t => { if (!timesRegiao[tier].find(e => e.id_time === t.id_time)) timesRegiao[tier].push(t); });
+                lista.forEach(t => {
+                    if (!timesRegiao[tier].find(e => e.id_time === t.id_time)) timesRegiao[tier].push(t);
+                });
             }
         }
-    } else { timesRegiao = CONFIGURACAO_MANUAL_TIMES[_REGIAO]; }
+    } else {
+        timesRegiao = CONFIGURACAO_MANUAL_TIMES[_REGIAO];
+    }
 
     if(!timesRegiao) return;
     for(let tier in timesRegiao) {
-        if(timesRegiao[tier].length === 0) continue;
+        if(!Array.isArray(timesRegiao[tier]) || timesRegiao[tier].length === 0) continue;
         let tierHeader = document.createElement('div'); tierHeader.className = 'sidebar-header'; tierHeader.innerText = tier; sidebar.appendChild(tierHeader);
         timesRegiao[tier].forEach(t => {
             let div = document.createElement('div'); div.className = 'sidebar-item';
@@ -1021,8 +1106,7 @@ function renderizarSidebarTimes() {
 
 function renderizarDetalhesTime(time) {
     const painel = document.getElementById('painel-info-time');
-    const dadosSet = obterEstatisticasAtuaisPorSet().linhas;
-    let partidasDoTime = dadosSet.filter(r => r.id_time === time.id_time);
+    let partidasDoTime = dadosFiltrados.filter(r => r.id_time === time.id_time);
     let logoUrl = teamLogoUrl(time.id_time);
 
     if (time.id_time.startsWith("UNK")) {
@@ -1150,756 +1234,162 @@ window.registrarTimeCustom = function(idAntigo) {
 // ==========================================
 // 7. TELA SCRIMS
 // ==========================================
-function assinaturaComposicao(picks) {
-    // A ordem dos brawlers não importa para definir a composição.
-    return [...new Set((picks || []).map(p => String(p || '').trim().toUpperCase()).filter(Boolean))]
-        .sort()
-        .join('|');
-}
-
-function mesmaComposicao(a, b) {
-    return assinaturaComposicao(a) === assinaturaComposicao(b);
-}
-
-function resultadoSet(set) {
-    let scoreA = 0;
-    let scoreB = 0;
-
-    (set.games || []).forEach(game => {
-        if (game.vencedor === set.tAId) scoreA++;
-        else if (game.vencedor === set.tBId) scoreB++;
-    });
-
-    return {
-        scoreA,
-        scoreB,
-        vencedor: scoreA > scoreB ? set.tAId : (scoreB > scoreA ? set.tBId : null),
-        completo: scoreA >= 2 || scoreB >= 2 || (set.games || []).length >= 3
-    };
-}
-
-function criarSetAPartirDoGame(game) {
-    return {
-        id: `set_${game.id}`,
-        tAId: game.tAId,
-        tBId: game.tBId,
-        tANome: game.tANome,
-        tBNome: game.tBNome,
-        modo: game.modo,
-        mapa: game.mapa,
-        composicaoA: [...game.picksA],
-        composicaoB: [...game.picksB],
-        assinaturaA: assinaturaComposicao(game.picksA),
-        assinaturaB: assinaturaComposicao(game.picksB),
-        inicio: game.timestamp,
-        ultimoUpdate: game.timestamp,
-        dataFormatada: game.dataFormatada,
-        games: [game]
-    };
-}
-
-function podeAdicionarGameAoSet(set, game) {
-    if (!set || !game) return false;
-
-    // Um Set é obrigatoriamente uma MD3.
-    // Portanto, nunca recebe mais de 3 Games.
-    if ((set.games || []).length >= 3) return false;
-
-    // Se alguém já ganhou 2 Games, o Set terminou (2x0).
-    const atual = resultadoSet(set);
-    if (atual.scoreA >= 2 || atual.scoreB >= 2) return false;
-
-    // Mesmo confronto, mesmo mapa e mesma composição dos dois lados.
-    if (set.tAId !== game.tAId || set.tBId !== game.tBId) return false;
-
-    const mesmoMapa = normalizarChave(set.mapa) === normalizarChave(game.mapa);
-    const mesmoModo = normalizarChave(set.modo) === normalizarChave(game.modo);
-
-    if (!mesmoMapa || !mesmoModo) return false;
-
-    if (!mesmaComposicao(set.composicaoA, game.picksA)) return false;
-    if (!mesmaComposicao(set.composicaoB, game.picksB)) return false;
-
-    // Games de um mesmo Set precisam estar próximos no histórico.
-    // Evita juntar jogos iguais de uma série diferente horas depois.
-    if (Math.abs(game.timestamp - set.ultimoUpdate) > (30 * 60 * 1000)) return false;
-
-    return true;
-}
-
-function finalizarSet(set) {
-    const resultado = resultadoSet(set);
-
-    set.scoreA = resultado.scoreA;
-    set.scoreB = resultado.scoreB;
-    set.vencedor = resultado.vencedor;
-    set.completo = resultado.completo;
-    set.qtdGames = set.games.length;
-
-    // Mantém aliases para compatibilidade com partes antigas do código.
-    set.t0Full = set.games[0]?.t0Full || [];
-    set.t1Full = set.games[0]?.t1Full || [];
-    set.picksA = set.composicaoA;
-    set.picksB = set.composicaoB;
-
-    return set;
-}
-
 function processarScrimes(dadosPeriodo) {
-    /*
-     * HIERARQUIA:
-     *
-     * SCRIM
-     *   └── SET (MD3)
-     *         ├── GAME 1
-     *         ├── GAME 2
-     *         └── GAME 3
-     *
-     * Um Set somente agrupa Games com:
-     * - mesmo confronto;
-     * - mesmo mapa;
-     * - mesma composição dos dois times;
-     * - sequência próxima no histórico;
-     * - no máximo 3 Games;
-     * - termina imediatamente quando um time chega a 2 vitórias.
-     */
-
     let rawMatches = {};
+    dadosPeriodo.forEach(r => { if(!rawMatches[r.id_partida]) rawMatches[r.id_partida] = []; rawMatches[r.id_partida].push(r); });
 
-    dadosPeriodo.forEach(r => {
-        if (!r.id_partida) return;
-        if (!rawMatches[r.id_partida]) rawMatches[r.id_partida] = [];
-        rawMatches[r.id_partida].push(r);
-    });
-
-    let gamesEstruturados = [];
-
+    let partidasEstruturadas = [];
     Object.values(rawMatches).forEach(linhas => {
-        if (linhas.length < 6) return;
+        if(linhas.length < 6) return;
+        let t0 = linhas.slice(0,3), t1 = linhas.slice(3,6);
+        let t0Id = t0[0].id_time, t1Id = t1[0].id_time;
+        if (_REGIAO !== "ALL" && !isTimeDaRegiaoAtual(t0Id) && !isTimeDaRegiaoAtual(t1Id)) return;
 
-        // O histórico possui 3 jogadores de cada lado.
-        let t0 = linhas.slice(0, 3);
-        let t1 = linhas.slice(3, 6);
-
-        // Se por algum motivo a partida vier misturada, rejeita.
-        if (t0.length < 3 || t1.length < 3) return;
-
-        let t0Id = t0[0].id_time;
-        let t1Id = t1[0].id_time;
-
-        if (!t0Id || !t1Id || t0Id === t1Id) return;
-
-        if (_REGIAO !== "ALL" && !isTimeDaRegiaoAtual(t0Id) && !isTimeDaRegiaoAtual(t1Id)) {
-            return;
-        }
-
-        let timestamp = parseDateBR(linhas[0].data_adicao);
-
-        // Se a data não puder ser convertida, ainda mantém o Game,
-        // mas usa 0 somente para ordenação.
-        if (!Number.isFinite(timestamp)) timestamp = 0;
-
-        gamesEstruturados.push({
-            id: linhas[0].id_partida,
-            modo: linhas[0].modo || 'Desconhecido',
-            mapa: linhas[0].mapa || 'Desconhecido',
-
-            tAId: t0Id,
-            tBId: t1Id,
-            tANome: t0[0].nome_time || t0Id,
-            tBNome: t1[0].nome_time || t1Id,
-
-            picksA: t0.map(p => String(p.pick || '').toUpperCase()),
-            picksB: t1.map(p => String(p.pick || '').toUpperCase()),
-
-            t0Full: t0,
-            t1Full: t1,
-
-            vencedor: parseInt(t0[0].win) === 1 ? t0Id : t1Id,
-
-            timestamp,
-            dataFormatada: linhas[0].data_adicao || '',
-            tipo: linhas[0].tipo || 'scrim',
-            isMatcherino: String(linhas[0].id_partida).startsWith('mtcr_')
+        partidasEstruturadas.push({
+            id: linhas[0].id_partida, modo: linhas[0].modo, mapa: linhas[0].mapa,
+            tAId: t0Id, tBId: t1Id, tANome: t0[0].nome_time, tBNome: t1[0].nome_time,
+            picksA: t0.map(p => (p.pick||'').toUpperCase()), picksB: t1.map(p => (p.pick||'').toUpperCase()),
+            t0Full: t0, t1Full: t1, vencedor: parseInt(t0[0].win) === 1 ? t0Id : t1Id, timestamp: parseDateBR(linhas[0].data_adicao),
+            dataFormatada: linhas[0].data_adicao, tipo: linhas[0].tipo || 'scrim', isMatcherino: linhas[0].id_partida && linhas[0].id_partida.startsWith('mtcr_')
         });
-    });
-
-    // Ordem cronológica é importante para identificar os Games que pertencem
-    // ao mesmo Set.
-    gamesEstruturados.sort((a, b) => {
-        if (a.timestamp !== b.timestamp) return a.timestamp - b.timestamp;
-        return String(a.id).localeCompare(String(b.id));
     });
 
     let scrims = [];
-
-    gamesEstruturados.forEach(game => {
-        // Uma Scrim continua sendo identificada pelo confronto entre os times.
-        let chaveTimes = [game.tAId, game.tBId].sort().join(' VS ');
-
-        // Procura uma scrim recente do mesmo confronto.
-        let scrimExistente = scrims.find(s =>
-            s.chave === chaveTimes &&
-            (game.timestamp - s.ultimoUpdate) <= (2 * 60 * 60 * 1000)
-        );
-
-        if (!scrimExistente) {
-            scrimExistente = {
-                chave: chaveTimes,
-                tAId: game.tAId,
-                tBId: game.tBId,
-                tANome: game.tANome,
-                tBNome: game.tBNome,
-
-                // Pontuação da SCRIM = quantidade de SETS vencidos.
-                scoreA: 0,
-                scoreB: 0,
-
-                inicio: game.timestamp,
-                ultimoUpdate: game.timestamp,
-                dataFormatada: String(game.dataFormatada || '').split(' ')[0],
-
-                // Agora rounds representa SETS para manter compatibilidade
-                // com o restante da página.
-                rounds: [],
-
-                tipo: game.tipo,
-                temMatcherino: game.isMatcherino || false
-            };
-
-            scrims.push(scrimExistente);
-        }
-
-        // O Game só entra no Set mais recente se satisfizer TODAS as regras.
-        let ultimoSet = scrimExistente.rounds[scrimExistente.rounds.length - 1];
-
-        if (!podeAdicionarGameAoSet(ultimoSet, game)) {
-            // Começa um novo Set.
-            let novoSet = criarSetAPartirDoGame(game);
-            scrimExistente.rounds.push(novoSet);
+    partidasEstruturadas.sort((a,b) => a.timestamp - b.timestamp).forEach(partida => {
+        let chaveTimes = [partida.tAId, partida.tBId].sort().join(' VS ');
+        let scrimExistente = scrims.find(s => s.chave === chaveTimes && (partida.timestamp - s.ultimoUpdate) <= (2 * 60 * 60 * 1000));
+        if(scrimExistente) {
+            scrimExistente.rounds.push(partida); scrimExistente.ultimoUpdate = partida.timestamp;
+            if(partida.vencedor === partida.tAId) scrimExistente.scoreA++; if(partida.vencedor === partida.tBId) scrimExistente.scoreB++;
+            if(partida.isMatcherino) scrimExistente.temMatcherino = true;
         } else {
-            // Continua o Set atual.
-            ultimoSet.games.push(game);
-            ultimoSet.ultimoUpdate = game.timestamp;
-            ultimoSet.qtdGames = ultimoSet.games.length;
-
-            // Mantém os aliases atualizados.
-            finalizarSet(ultimoSet);
+            scrims.push({
+                chave: chaveTimes, tAId: partida.tAId, tBId: partida.tBId, tANome: partida.tANome, tBNome: partida.tBNome,
+                scoreA: partida.vencedor === partida.tAId ? 1 : 0, scoreB: partida.vencedor === partida.tBId ? 1 : 0,
+                inicio: partida.timestamp, ultimoUpdate: partida.timestamp, dataFormatada: partida.dataFormatada.split(' ')[0], rounds: [partida], tipo: partida.tipo, temMatcherino: partida.isMatcherino || false
+            });
         }
-
-        let setAtual = scrimExistente.rounds[scrimExistente.rounds.length - 1];
-
-        // Finaliza/recalcula o Set.
-        finalizarSet(setAtual);
-
-        scrimExistente.ultimoUpdate = game.timestamp;
-
-        if (game.isMatcherino) {
-            scrimExistente.temMatcherino = true;
-        }
-
-        // A pontuação da Scrim é baseada em SETS, não em Games.
-        // Recalculamos para evitar dupla contagem.
-        scrimExistente.scoreA = scrimExistente.rounds.filter(s => s.vencedor === scrimExistente.tAId).length;
-        scrimExistente.scoreB = scrimExistente.rounds.filter(s => s.vencedor === scrimExistente.tBId).length;
     });
-
-    /*
-     * Remove confrontos que possuem apenas 1 Set.
-     * A tela de Scrims continua mostrando apenas séries com mais de
-     * um Set, como fazia anteriormente.
-     *
-     * Se quiser mostrar também uma única MD3 no futuro, basta trocar
-     * > 1 por > 0 aqui.
-     */
-    // Mantem TODOS os Sets para as estatisticas. A tela pode esconder scrims
-    // de apenas 1 Set, mas as tabelas ainda precisam contar esse Set.
-    window.allScrims = scrims.slice();
-    window._estatisticasPorSetCache = obterDadosEstatisticasPorSet();
 
     scrims = scrims.filter(s => s.rounds.length > 1).reverse();
-
-    // Garante que todos os Sets estejam finalizados e com placar correto.
-    scrims.forEach(scrim => {
-        scrim.rounds.forEach(set => finalizarSet(set));
-
-        scrim.scoreA = scrim.rounds.filter(s => s.vencedor === scrim.tAId).length;
-        scrim.scoreB = scrim.rounds.filter(s => s.vencedor === scrim.tBId).length;
-    });
-
     window.currentScrims = scrims;
-
+    
     let selectFiltro = document.getElementById('scrims-team-filter');
-
     if (selectFiltro) {
         let timesNaScrim = new Map();
-
-        scrims.forEach(s => {
-            timesNaScrim.set(s.tANome, s.tAId);
-            timesNaScrim.set(s.tBNome, s.tBId);
-        });
-
+        scrims.forEach(s => { timesNaScrim.set(s.tANome, s.tAId); timesNaScrim.set(s.tBNome, s.tBId); });
         let valorAtual = selectFiltro.value || 'todos';
-
-        selectFiltro.innerHTML =
-            '<option value="todos">Todos os Times (Scrims)</option>';
-
-        Array.from(timesNaScrim.keys()).sort().forEach(t => {
-            selectFiltro.innerHTML +=
-                `<option value="${t}" ${t === valorAtual ? 'selected' : ''}>${t}</option>`;
-        });
-
+        selectFiltro.innerHTML = '<option value="todos">Todos os Times (Scrims)</option>';
+        Array.from(timesNaScrim.keys()).sort().forEach(t => { selectFiltro.innerHTML += `<option value="${t}" ${t === valorAtual ? 'selected' : ''}>${t}</option>`; });
         atualizarDropdownTimesScrims(timesNaScrim, valorAtual);
     }
-
     renderizarListaScrims(scrims);
 }
 
 function renderizarListaScrims(scrimsOriginais) {
-    const lista = document.getElementById('scrims-lista');
-    const detalhe = document.getElementById('scrims-detalhe');
+    const lista = document.getElementById('scrims-lista'), detalhe = document.getElementById('scrims-detalhe');
+    if(!lista || !detalhe) return;
+    lista.style.display  = 'grid'; lista.style.gridTemplateColumns = 'repeat(auto-fill, minmax(420px, 1fr))'; lista.style.gap = '18px'; detalhe.style.display = 'none'; lista.innerHTML = '';
 
-    if (!lista || !detalhe) return;
+    let filtroValor = document.getElementById('scrims-team-filter') ? document.getElementById('scrims-team-filter').value : 'todos';
+    let scrims = filtroValor !== 'todos' ? scrimsOriginais.filter(s => s.tANome === filtroValor || s.tBNome === filtroValor) : scrimsOriginais;
 
-    lista.style.display = 'grid';
-    lista.style.gridTemplateColumns = 'repeat(auto-fill, minmax(420px, 1fr))';
-    lista.style.gap = '18px';
-    detalhe.style.display = 'none';
-    lista.innerHTML = '';
-
-    let filtroValor = document.getElementById('scrims-team-filter')
-        ? document.getElementById('scrims-team-filter').value
-        : 'todos';
-
-    let scrims = filtroValor !== 'todos'
-        ? scrimsOriginais.filter(s =>
-            s.tANome === filtroValor || s.tBNome === filtroValor
-        )
-        : scrimsOriginais;
-
-    if (scrims.length === 0) {
-        lista.innerHTML =
-            `<p style="padding:20px; color:var(--texto-secundario); font-weight:bold; grid-column:1/-1; text-align:center;">Nenhuma scrim encontrada no filtro atual.</p>`;
-        return;
+    if(scrims.length === 0) {
+        lista.innerHTML = `<p style="padding:20px; color:var(--texto-secundario); font-weight:bold; grid-column:1/-1; text-align:center;">Nenhuma scrim encontrada no filtro atual.</p>`; return;
     }
 
     scrims.forEach((scrim) => {
-        let div = document.createElement('div');
-        div.className = 'scrim-card';
+        let div = document.createElement('div'); div.className = 'scrim-card';
+        let isTournament = scrim.rounds.some(r => r.tipo === 'tournament') || scrim.temMatcherino;
+        let icon = isTournament ? `<img src="element/play/matcherino.png" style="position:absolute; top:10px; right:12px; width:22px; height:22px; object-fit:contain;" onerror="this.style.display='none'" title="Torneio">` : '';
 
-        let isTournament =
-            scrim.rounds.some(r => r.games.some(g => g.tipo === 'tournament')) ||
-            scrim.temMatcherino;
+        let aGanhou = scrim.scoreA > scrim.scoreB, bGanhou = scrim.scoreB > scrim.scoreA;
+        let corA = aGanhou ? 'var(--winrate-color, #2ecc71)' : '#fff';
+        let corB = bGanhou ? 'var(--winrate-color, #2ecc71)' : '#fff';
 
-        let icon = isTournament
-            ? `<img src="element/play/matcherino.png" style="position:absolute; top:10px; right:12px; width:22px; height:22px; object-fit:contain;" onerror="this.style.display='none'" title="Torneio">`
-            : '';
-
-        let aGanhou = scrim.scoreA > scrim.scoreB;
-        let bGanhou = scrim.scoreB > scrim.scoreA;
-
-        let corA = aGanhou
-            ? 'var(--winrate-color, #2ecc71)'
-            : '#fff';
-
-        let corB = bGanhou
-            ? 'var(--winrate-color, #2ecc71)'
-            : '#fff';
-
-        div.style.cssText =
-            'position:relative; display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:14px; min-height:120px; padding:22px 20px 34px; cursor:pointer;';
+        // Layout 100% inline (grid de 3 colunas) para não depender do CSS externo e nunca
+        // "quebrar" para layout vertical, mesmo com nomes de time longos.
+        div.style.cssText = 'position:relative; display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:14px; min-height:120px; padding:22px 20px 34px; cursor:pointer;';
 
         div.innerHTML = `
             ${icon}
-
             <div class="scrim-team-info" style="display:flex; align-items:center; gap:10px; min-width:0;">
-                <img src="${teamLogoUrl(scrim.tAId)}"
-                     class="scrim-team-logo"
-                     style="width:42px; height:42px; object-fit:contain; border-radius:6px; flex-shrink:0;"
-                     onerror="${teamLogoOnError(scrim.tAId)}">
-
-                <span style="font-weight:900; font-size:15px; color:${corA}; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
-                      title="${scrim.tANome}">
-                    ${scrim.tANome}
-                </span>
+                <img src="${teamLogoUrl(scrim.tAId)}" class="scrim-team-logo" style="width:42px; height:42px; object-fit:contain; border-radius:6px; flex-shrink:0;" onerror="${teamLogoOnError(scrim.tAId)}">
+                <span style="font-weight:900; font-size:15px; color:${corA}; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${scrim.tANome}">${scrim.tANome}</span>
             </div>
-
-            <div class="scrim-score"
-                 style="font-size:26px; font-weight:900; white-space:nowrap; text-align:center;">
-                <span style="color:${corA};">${scrim.scoreA}</span>
-                <span style="color:var(--texto-secundario);">-</span>
-                <span style="color:${corB};">${scrim.scoreB}</span>
+            <div class="scrim-score" style="font-size:26px; font-weight:900; white-space:nowrap; text-align:center;"><span style="color:${corA};">${scrim.scoreA}</span> <span style="color:var(--texto-secundario);">-</span> <span style="color:${corB};">${scrim.scoreB}</span></div>
+            <div class="scrim-team-info" style="display:flex; flex-direction:row-reverse; align-items:center; gap:10px; min-width:0;">
+                <img src="${teamLogoUrl(scrim.tBId)}" class="scrim-team-logo" style="width:42px; height:42px; object-fit:contain; border-radius:6px; flex-shrink:0;" onerror="${teamLogoOnError(scrim.tBId)}">
+                <span style="font-weight:900; font-size:15px; color:${corB}; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${scrim.tBNome}">${scrim.tBNome}</span>
             </div>
-
-            <div class="scrim-team-info"
-                 style="display:flex; flex-direction:row-reverse; align-items:center; gap:10px; min-width:0;">
-
-                <img src="${teamLogoUrl(scrim.tBId)}"
-                     class="scrim-team-logo"
-                     style="width:42px; height:42px; object-fit:contain; border-radius:6px; flex-shrink:0;"
-                     onerror="${teamLogoOnError(scrim.tBId)}">
-
-                <span style="font-weight:900; font-size:15px; color:${corB}; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
-                      title="${scrim.tBNome}">
-                    ${scrim.tBNome}
-                </span>
-            </div>
-
-            <div style="position:absolute; bottom:10px; left:18px; font-size:11px; color:var(--texto-secundario); font-weight:bold;">
-                ${scrim.dataFormatada}
-            </div>
-
-            <div style="position:absolute; bottom:10px; right:18px; font-size:11px; color:var(--texto-secundario); font-weight:bold;">
-                Sets: ${scrim.rounds.length}
-            </div>
+            <div style="position:absolute; bottom:10px; left:18px; font-size:11px; color:var(--texto-secundario); font-weight:bold;">${scrim.dataFormatada}</div><div style="position:absolute; bottom:10px; right:18px; font-size:11px; color:var(--texto-secundario); font-weight:bold;">Rounds: ${scrim.rounds.length}</div>
         `;
-
         div.onclick = () => renderizarDetalheScrim(scrim);
         lista.appendChild(div);
     });
 }
 
 function renderizarDetalheScrim(scrim) {
-    const lista = document.getElementById('scrims-lista');
-    const detalhe = document.getElementById('scrims-detalhe');
+    const lista = document.getElementById('scrims-lista'), detalhe = document.getElementById('scrims-detalhe');
+    lista.style.display = 'none'; detalhe.style.display = 'block';
 
-    lista.style.display = 'none';
-    detalhe.style.display = 'block';
+    let playersA = [...new Set(scrim.rounds.flatMap(r => r.t0Full.map(p => p.player_name)))].slice(0,3);
+    let playersB = [...new Set(scrim.rounds.flatMap(r => r.t1Full.map(p => p.player_name)))].slice(0,3);
 
-    let playersA = [
-        ...new Set(
-            scrim.rounds.flatMap(set =>
-                set.games.flatMap(game =>
-                    game.t0Full.map(p => p.player_name)
-                )
-            )
-        )
-    ].slice(0, 3);
-
-    let playersB = [
-        ...new Set(
-            scrim.rounds.flatMap(set =>
-                set.games.flatMap(game =>
-                    game.t1Full.map(p => p.player_name)
-                )
-            )
-        )
-    ].slice(0, 3);
-
-    let aGanhou = scrim.scoreA > scrim.scoreB;
-    let bGanhou = scrim.scoreB > scrim.scoreA;
-
-    let corA = aGanhou
-        ? 'var(--winrate-color, #2ecc71)'
-        : '#fff';
-
-    let corB = bGanhou
-        ? 'var(--winrate-color, #2ecc71)'
-        : '#fff';
+    let aGanhou = scrim.scoreA > scrim.scoreB, bGanhou = scrim.scoreB > scrim.scoreA;
+    let corA = aGanhou ? 'var(--winrate-color, #2ecc71)' : '#fff';
+    let corB = bGanhou ? 'var(--winrate-color, #2ecc71)' : '#fff';
 
     detalhe.innerHTML = `
-        <button
-            onclick="document.getElementById('scrims-lista').style.display='grid'; document.getElementById('scrims-detalhe').style.display='none';"
-            style="background:transparent; border:2px solid var(--accent-purple); color:var(--accent-purple); padding:8px 20px; font-weight:bold; border-radius:6px; cursor:pointer; margin-bottom:30px;">
-            ← VOLTAR
-        </button>
-
-        <div class="scrim-detail-header">
-            <div style="display:flex; justify-content:center; align-items:flex-start; gap:40px;">
-
-                <div style="text-align:center;">
-                    <img src="${teamLogoUrl(scrim.tAId)}"
-                         style="height:80px; object-fit:contain; background:var(--bg-cards); border-radius:8px; border:2px solid var(--borda-destaque);"
-                         onerror="${teamLogoOnError(scrim.tAId)}">
-
-                    <div style="font-size:11px; color:var(--texto-secundario); display:flex; gap:8px; justify-content:center; margin-top:8px; font-weight:bold;">
-                        ${playersA.map(p => `<span>${p}</span>`).join('')}
-                    </div>
-                </div>
-
-                <div style="font-size:42px; font-weight:900; line-height:80px;">
-                    <span style="color:${corA};">${scrim.scoreA}</span>
-                    <span style="color:var(--accent-purple)">-</span>
-                    <span style="color:${corB};">${scrim.scoreB}</span>
-                </div>
-
-                <div style="text-align:center;">
-                    <img src="${teamLogoUrl(scrim.tBId)}"
-                         style="height:80px; object-fit:contain; background:var(--bg-cards); border-radius:8px; border:2px solid var(--borda-destaque);"
-                         onerror="${teamLogoOnError(scrim.tBId)}">
-
-                    <div style="font-size:11px; color:var(--texto-secundario); display:flex; gap:8px; justify-content:center; margin-top:8px; font-weight:bold;">
-                        ${playersB.map(p => `<span>${p}</span>`).join('')}
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
-        <div class="scrim-rounds-container"
-             id="rounds-scroll"
-             style="display:flex; flex-wrap:wrap; gap:10px; overflow:visible; max-height:none; width:100%;">
-
-            ${scrim.rounds.map((set, i) => {
-                let venceuA = set.vencedor === set.tAId;
-                let venceuB = set.vencedor === set.tBId;
-
-                let corSet =
-                    venceuA
-                        ? 'var(--winrate-color, #2ecc71)'
-                        : (venceuB ? 'var(--loss-color, #e74c3c)' : '#fff');
-
-                let nomeVencedorSet =
-                    venceuA
-                        ? set.tANome
-                        : (venceuB ? set.tBNome : 'Em andamento');
-
-                return `
-                    <div class="scrim-round-btn ${i === 0 ? 'active' : ''}"
-                         onclick="selecionarRound(${i}, this)"
-                         style="flex:0 0 auto;">
-
-                        <span style="font-size:11px; font-weight:900; color:var(--accent-purple); display:block; margin-bottom:5px;">
-                            SET ${i + 1}
-                        </span>
-
-                        <img src="element/modes/${formatImg(set.modo)}.png"
-                             onerror="this.src='element/modes/default.png'">
-
-                        <span style="display:block; margin-top:4px; font-size:10px; font-weight:900; color:${corSet}; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                            ${set.scoreA} - ${set.scoreB}
-                        </span>
-
-                        <span style="display:block; margin-top:2px; font-size:8px; font-weight:900; color:var(--texto-secundario); max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
-                              title="${nomeVencedorSet}">
-                            ${nomeVencedorSet}
-                        </span>
-
-                        <span style="display:block; margin-top:2px; font-size:8px; color:var(--texto-secundario);">
-                            ${set.games.length} GAME${set.games.length === 1 ? '' : 'S'}
-                        </span>
-                    </div>
-                `;
-            }).join('')}
-
-        </div>
-
+        <button onclick="document.getElementById('scrims-lista').style.display='grid'; document.getElementById('scrims-detalhe').style.display='none';" style="background:transparent; border:2px solid var(--accent-purple); color:var(--accent-purple); padding:8px 20px; font-weight:bold; border-radius:6px; cursor:pointer; margin-bottom:30px;">← VOLTAR</button>
+        <div class="scrim-detail-header"><div style="display:flex; justify-content:center; align-items:flex-start; gap:40px;"><div style="text-align:center;"><img src="${teamLogoUrl(scrim.tAId)}" style="height:80px; object-fit:contain; background:var(--bg-cards); border-radius:8px; border:2px solid var(--borda-destaque);" onerror="${teamLogoOnError(scrim.tAId)}"><div style="font-size:11px; color:var(--texto-secundario); display:flex; gap:8px; justify-content:center; margin-top:8px; font-weight:bold;">${playersA.map(p => `<span>${p}</span>`).join('')}</div></div><div style="font-size:42px; font-weight:900; line-height:80px;"><span style="color:${corA};">${scrim.scoreA}</span> <span style="color:var(--accent-purple)">-</span> <span style="color:${corB};">${scrim.scoreB}</span></div><div style="text-align:center;"><img src="${teamLogoUrl(scrim.tBId)}" style="height:80px; object-fit:contain; background:var(--bg-cards); border-radius:8px; border:2px solid var(--borda-destaque);" onerror="${teamLogoOnError(scrim.tBId)}"><div style="font-size:11px; color:var(--texto-secundario); display:flex; gap:8px; justify-content:center; margin-top:8px; font-weight:bold;">${playersB.map(p => `<span>${p}</span>`).join('')}</div></div></div></div>
+        <div class="scrim-rounds-container" id="rounds-scroll" style="display:flex; flex-wrap:wrap; gap:10px; overflow:visible; max-height:none; width:100%;">${scrim.rounds.map((r, i) => {
+            let venceuA = r.vencedor === r.tAId;
+            let corSet = venceuA ? 'var(--winrate-color, #2ecc71)' : 'var(--loss-color, #e74c3c)';
+            let nomeVencedorSet = venceuA ? r.tANome : r.tBNome;
+            return `<div class="scrim-round-btn ${i === 0 ? 'active' : ''}" onclick="selecionarRound(${i}, this)" style="flex:0 0 auto;">
+                <span style="font-size:11px; font-weight:900; color:var(--accent-purple); display:block; margin-bottom:5px;">SET ${i+1}</span>
+                <img src="element/modes/${formatImg(r.modo)}.png" onerror="this.src='element/modes/default.png'">
+                <span style="display:block; margin-top:4px; font-size:9px; font-weight:900; color:${corSet}; max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${nomeVencedorSet}">${nomeVencedorSet}</span>
+            </div>`;
+        }).join('')}</div>
         <div id="round-view-container"></div>
     `;
-
-    window.scrimAtual = scrim;
-
-    selecionarRound(
-        0,
-        detalhe.querySelector('.scrim-round-btn')
-    );
+    window.scrimAtual = scrim; selecionarRound(0, detalhe.querySelector('.scrim-round-btn'));
 }
 
 window.selecionarRound = function(index, btnElement) {
     document.querySelectorAll('.scrim-round-btn').forEach(b => b.classList.remove('active'));
+    if(btnElement) btnElement.classList.add('active');
 
-    if (btnElement) btnElement.classList.add('active');
-
-    let set = window.scrimAtual.rounds[index];
-
-    if (!set) return;
-
+    let round = window.scrimAtual.rounds[index];
     const container = document.getElementById('round-view-container');
 
-    let venceuA = set.vencedor === set.tAId;
-    let venceuB = set.vencedor === set.tBId;
+    let venceuA = round.vencedor === round.tAId, venceuB = round.vencedor === round.tBId;
+    let corSetA = venceuA ? 'var(--winrate-color, #2ecc71)' : '#fff';
+    let corSetB = venceuB ? 'var(--winrate-color, #2ecc71)' : '#fff';
 
-    let corSetA = venceuA
-        ? 'var(--winrate-color, #2ecc71)'
-        : '#fff';
+    let playersA = round.t0Full.map(p => p.player_name), playersB = round.t1Full.map(p => p.player_name);
+    let bansDoRound = dadosBans.filter(r => r.id_partida === round.id);
+    let bansTimeA   = bansDoRound.filter(r => r.id_time === round.tAId), bansTimeB   = bansDoRound.filter(r => r.id_time === round.tBId);
+    let temBans     = bansTimeA.length > 0 || bansTimeB.length > 0;
 
-    let corSetB = venceuB
-        ? 'var(--winrate-color, #2ecc71)'
-        : '#fff';
-
-    /*
-     * Dentro do SET mostramos cada GAME separadamente.
-     * Isso preserva a informação individual dos jogos sem contar
-     * cada Game como um Set.
-     */
     container.innerHTML = `
-        <div style="margin-top:20px; margin-bottom:14px; text-align:center;">
-            <div style="font-size:18px; font-weight:900; color:var(--accent-purple);">
-                SET ${index + 1}
+        <div class="round-details-view">
+            <div style="text-align:center;"><p style="font-size:12px; color:var(--texto-secundario); font-weight:bold;">${round.dataFormatada.split(' ')[1] || ''} | ${round.modo.toUpperCase()}</p></div>
+            <div class="player-names-scrim" style="justify-content:space-around;"><div style="display:flex; gap:35px; color:${corSetA}; font-weight:900;">${playersA.map(p => `<span>${p}</span>`).join('')}</div><div style="display:flex; gap:35px; color:${corSetB}; font-weight:900;">${playersB.map(p => `<span>${p}</span>`).join('')}</div></div>
+            ${temBans ? `<div style="display:flex; justify-content:space-between; align-items:center; margin:12px 0; padding:10px 20px; background:rgba(176,0,0,0.08); border-radius:8px; border:1px solid rgba(200,50,50,0.35);"><div style="display:flex; align-items:center; gap:8px;"><span style="font-size:10px; font-weight:900; color:#ff5555; letter-spacing:1px; white-space:nowrap;">BANS ▶</span>${bansTimeA.map(b => `<div style="position:relative; display:inline-block;" title="${b.brawler_banido}"><img src="brawlers/${formatImg(b.brawler_banido)}.png" style="width:32px; height:32px; border-radius:4px; filter:grayscale(80%) brightness(0.5);" onerror="this.src='brawlers/default.png'"><span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#ff4444; font-size:16px; font-weight:900; text-shadow:0 0 4px #000;">✕</span></div>`).join('')}</div><div style="display:flex; align-items:center; gap:8px; flex-direction:row-reverse;"><span style="font-size:10px; font-weight:900; color:#ff5555; letter-spacing:1px; white-space:nowrap;">◀ BANS</span>${bansTimeB.map(b => `<div style="position:relative; display:inline-block;" title="${b.brawler_banido}"><img src="brawlers/${formatImg(b.brawler_banido)}.png" style="width:32px; height:32px; border-radius:4px; filter:grayscale(80%) brightness(0.5);" onerror="this.src='brawlers/default.png'"><span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#ff4444; font-size:16px; font-weight:900; text-shadow:0 0 4px #000;">✕</span></div>`).join('')}</div></div>` : ''}
+            <div class="scrim-picks-container">
+                <div class="team-picks-scrim" style="flex-direction:row; justify-content:flex-end;">${round.picksA.map(pick => `<div class="pick-row"><img src="brawlers/${formatImg(pick)}.png" onerror="this.src='brawlers/default.png'"></div>`).join('')}</div>
+                <div class="map-middle-scrim"><img src="element/maps/${formatImg(round.mapa)}.png" onerror="this.src='element/maps/default.png'"><p style="font-size:12px; font-weight:900; margin-top:8px;">${round.mapa}</p></div>
+                <div class="team-picks-scrim" style="flex-direction:row; justify-content:flex-start;">${round.picksB.map(pick => `<div class="pick-row"><img src="brawlers/${formatImg(pick)}.png" onerror="this.src='brawlers/default.png'"></div>`).join('')}</div>
             </div>
-
-            <div style="font-size:24px; font-weight:900; margin-top:4px;">
-                <span style="color:${corSetA};">${set.scoreA}</span>
-                <span style="color:var(--texto-secundario);"> - </span>
-                <span style="color:${corSetB};">${set.scoreB}</span>
-            </div>
-
-            <div style="font-size:11px; color:var(--texto-secundario); margin-top:3px;">
-                ${set.modo.toUpperCase()} | ${set.mapa}
-                | ${set.games.length} GAME${set.games.length === 1 ? '' : 'S'}
-            </div>
-        </div>
-
-        <div style="display:flex; flex-direction:column; gap:16px;">
-            ${set.games.map((game, gameIndex) => {
-                let gameVenceuA = game.vencedor === game.tAId;
-                let gameVenceuB = game.vencedor === game.tBId;
-
-                let gameCorA = gameVenceuA
-                    ? 'var(--winrate-color, #2ecc71)'
-                    : '#fff';
-
-                let gameCorB = gameVenceuB
-                    ? 'var(--winrate-color, #2ecc71)'
-                    : '#fff';
-
-                let playersA = game.t0Full.map(p => p.player_name);
-                let playersB = game.t1Full.map(p => p.player_name);
-
-                let bansDoGame = dadosBans.filter(
-                    r => r.id_partida === game.id
-                );
-
-                let bansTimeA = bansDoGame.filter(
-                    r => r.id_time === game.tAId
-                );
-
-                let bansTimeB = bansDoGame.filter(
-                    r => r.id_time === game.tBId
-                );
-
-                let temBans =
-                    bansTimeA.length > 0 ||
-                    bansTimeB.length > 0;
-
-                return `
-                    <div class="round-details-view"
-                         style="border:1px solid var(--borda-suave); border-radius:10px; padding:16px;">
-
-                        <div style="text-align:center;">
-                            <p style="font-size:12px; color:var(--texto-secundario); font-weight:bold;">
-                                GAME ${gameIndex + 1}
-                                ${game.dataFormatada ? ` | ${String(game.dataFormatada).split(' ')[1] || ''}` : ''}
-                                | ${game.modo.toUpperCase()}
-                            </p>
-                        </div>
-
-                        <div class="player-names-scrim"
-                             style="justify-content:space-around;">
-
-                            <div style="display:flex; gap:35px; color:${gameCorA}; font-weight:900;">
-                                ${playersA.map(p => `<span>${p}</span>`).join('')}
-                            </div>
-
-                            <div style="display:flex; gap:35px; color:${gameCorB}; font-weight:900;">
-                                ${playersB.map(p => `<span>${p}</span>`).join('')}
-                            </div>
-                        </div>
-
-                        ${temBans ? `
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin:12px 0; padding:10px 20px; background:rgba(176,0,0,0.08); border-radius:8px; border:1px solid rgba(200,50,50,0.35);">
-
-                                <div style="display:flex; align-items:center; gap:8px;">
-                                    <span style="font-size:10px; font-weight:900; color:#ff5555; letter-spacing:1px; white-space:nowrap;">
-                                        BANS ▶
-                                    </span>
-
-                                    ${bansTimeA.map(b => `
-                                        <div style="position:relative; display:inline-block;" title="${b.brawler_banido}">
-                                            <img src="brawlers/${formatImg(b.brawler_banido)}.png"
-                                                 style="width:32px; height:32px; border-radius:4px; filter:grayscale(80%) brightness(0.5);"
-                                                 onerror="this.src='brawlers/default.png'">
-
-                                            <span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#ff4444; font-size:16px; font-weight:900; text-shadow:0 0 4px #000;">
-                                                ✕
-                                            </span>
-                                        </div>
-                                    `).join('')}
-                                </div>
-
-                                <div style="display:flex; align-items:center; gap:8px; flex-direction:row-reverse;">
-                                    <span style="font-size:10px; font-weight:900; color:#ff5555; letter-spacing:1px; white-space:nowrap;">
-                                        ◀ BANS
-                                    </span>
-
-                                    ${bansTimeB.map(b => `
-                                        <div style="position:relative; display:inline-block;" title="${b.brawler_banido}">
-                                            <img src="brawlers/${formatImg(b.brawler_banido)}.png"
-                                                 style="width:32px; height:32px; border-radius:4px; filter:grayscale(80%) brightness(0.5);"
-                                                 onerror="this.src='brawlers/default.png'">
-
-                                            <span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#ff4444; font-size:16px; font-weight:900; text-shadow:0 0 4px #000;">
-                                                ✕
-                                            </span>
-                                        </div>
-                                    `).join('')}
-                                </div>
-
-                            </div>
-                        ` : ''}
-
-                        <div class="scrim-picks-container">
-
-                            <div class="team-picks-scrim"
-                                 style="flex-direction:row; justify-content:flex-end;">
-
-                                ${game.picksA.map(pick => `
-                                    <div class="pick-row">
-                                        <img src="brawlers/${formatImg(pick)}.png"
-                                             onerror="this.src='brawlers/default.png'">
-                                    </div>
-                                `).join('')}
-
-                            </div>
-
-                            <div class="map-middle-scrim">
-                                <img src="element/maps/${formatImg(game.mapa)}.png"
-                                     onerror="this.src='element/maps/default.png'">
-
-                                <p style="font-size:12px; font-weight:900; margin-top:8px;">
-                                    ${game.mapa}
-                                </p>
-                            </div>
-
-                            <div class="team-picks-scrim"
-                                 style="flex-direction:row; justify-content:flex-start;">
-
-                                ${game.picksB.map(pick => `
-                                    <div class="pick-row">
-                                        <img src="brawlers/${formatImg(pick)}.png"
-                                             onerror="this.src='brawlers/default.png'">
-                                    </div>
-                                `).join('')}
-
-                            </div>
-
-                        </div>
-
-                        <div style="text-align:center; margin-top:10px; font-size:11px; font-weight:900;">
-                            <span style="color:${gameCorA};">
-                                ${game.tANome}
-                            </span>
-
-                            <span style="color:var(--texto-secundario); margin:0 8px;">
-                                ${gameVenceuA ? 'VENCEU' : 'PERDEU'}
-                            </span>
-
-                            <span style="color:${gameCorB};">
-                                ${game.tBNome}
-                            </span>
-                        </div>
-
-                    </div>
-                `;
-            }).join('')}
-        </div>
-    `;
+        </div>`;
 };
 
 
 // ==========================================
 // 8. FUNÇÃO PARA ORDENAR TABELAS (META)
-
 // ==========================================
 function tornarTabelasOrdenaveis() {
     // Seleciona todas as tabelas geradas na tela Meta
