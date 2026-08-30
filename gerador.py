@@ -32,7 +32,7 @@ COLUNAS_BANS = ["id_partida", "regiao", "mapa", "modo", "id_time", "nome_time", 
 # (que roda separadamente, minerando dados via API) precisa desse passo manual de copiar/colar.
 MAPEAMENTO_PLAYERS = {
 # SA  
-        "#PLLRJC2V": {"nome": "BH|Wesley", "id_time": "BH", "nome_time": "BH ESPORTS", "regiao": "SA"},
+        "#GYCYCLRJL": {"nome": "BH|Prozy", "id_time": "BH", "nome_time": "BH ESPORTS", "regiao": "SA"},
         "#JQ8LLLY": {"nome": "LOUD|FireCrow", "id_time": "LOUD", "nome_time": "LOUD", "regiao": "SA"},
         "#JVRCVJ9Q": {"nome": "OCX|Pekka", "id_time": "OCX", "nome_time": "OCX DIVISION", "regiao": "SA"},
         "#L9PQUV0YC": {"nome": "OS|BrabaoBs", "id_time": "OS", "nome_time": "OLIMPO SQUAD", "regiao": "SA"},
@@ -55,8 +55,8 @@ MAPEAMENTO_PLAYERS = {
         "#JJ09PC0P": {"nome": "AMN|vgtsauce", "id_time": "AMN", "nome_time": "AMNESIA", "regiao": "NA"},
         "#R80QRP0G": {"nome": "Squeezy", "id_time": "PFZ", "nome_time": "PFZ", "regiao": "NA"},
 # EMEA
-        "#9PCV9L982": {"nome": "FUT|AngelBoy", "id_time": "FUT", "nome_time": "FUT ESPORTS", "regiao": "EMEA"},
-        "#80PVPCC29": {"nome": "NAVI|Enraged", "id_time": "NAVI", "nome_time": "NAVI", "regiao": "EMEA"},
+        "#2R0JLJJ9PP": {"nome": "FUT|Guesti", "id_time": "FUT", "nome_time": "FUT ESPORTS", "regiao": "EMEA"},
+        "#2VJCCCQGP": {"nome": "NAVI|GeRo", "id_time": "NAVI", "nome_time": "NAVI", "regiao": "EMEA"},
         "#YQUCCJ2": {"nome": "HMB|Symantec", "id_time": "HMB", "nome_time": "HMBLE", "regiao": "EMEA"},
         "#9LVUC2PY": {"nome": "SK|Ope", "id_time": "SK", "nome_time": "SK GAMING", "regiao": "EMEA"},
         "#PCPRPJV": {"nome": "TH|IKaoss", "id_time": "TH", "nome_time": "TEAM HERETICS", "regiao": "EMEA"},
