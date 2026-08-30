@@ -52,7 +52,7 @@ MAPEAMENTO_PLAYERS = {
         "#R9CCLP8Q": {"nome": "Rafiki", "id_time": "LGCY", "nome_time": "LEGACY", "regiao": "NA"},
         "#28LUY98": {"nome": "OG", "id_time": "VIC", "nome_time": "VIC", "regiao": "NA"},
         "#8UL0U08V": {"nome": "Winq", "id_time": "UTP", "nome_time": "UTOPIA", "regiao": "NA"},
-        "#JJ09PC0P": {"nome": "Vegeta", "id_time": "VICD", "nome_time": "VIC Day", "regiao": "NA"},
+        "#JJ09PC0P": {"nome": "AMN|vgtsauce", "id_time": "AMN", "nome_time": "AMNESIA", "regiao": "NA"},
         "#R80QRP0G": {"nome": "Squeezy", "id_time": "PFZ", "nome_time": "PFZ", "regiao": "NA"},
 # EMEA
         "#9PCV9L982": {"nome": "FUT|AngelBoy", "id_time": "FUT", "nome_time": "FUT ESPORTS", "regiao": "EMEA"},
@@ -76,6 +76,7 @@ MAPEAMENTO_PLAYERS = {
         "#28PU0P9L0": {"nome": "FL|Achapi", "id_time": "FL", "nome_time": "FENNEL", "regiao": "EA"},
         "#28VP0G808": {"nome": "INS|Koga", "id_time": "INS", "nome_time": "INSOMNIA", "regiao": "EA"},
         "#89UUQLJCC": {"nome": "FZ|Toridesu", "id_time": "FZ", "nome_time": "FRENZY", "regiao": "EA"},
+        "#8CQURRJJY": {"nome": "RNTX|Sergant", "id_time": "RNTX", "nome_time": "REVENANT", "regiao": "EA"},
 
 }
 
