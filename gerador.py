@@ -55,7 +55,7 @@ MAPEAMENTO_PLAYERS = {
         "#JJ09PC0P": {"nome": "AMN|vgtsauce", "id_time": "AMN", "nome_time": "AMNESIA", "regiao": "NA"},
         "#R80QRP0G": {"nome": "Squeezy", "id_time": "PFZ", "nome_time": "PFZ", "regiao": "NA"},
 # EMEA
-        "#2R0JLJJ9PP": {"nome": "FUT|Guesti", "id_time": "FUT", "nome_time": "FUT ESPORTS", "regiao": "EMEA"},
+        "#P2808PRC": {"nome": "FUT|Nob?", "id_time": "FUT", "nome_time": "FUT ESPORTS", "regiao": "EMEA"},
         "#2VJCCCQGP": {"nome": "NAVI|GeRo", "id_time": "NAVI", "nome_time": "NAVI", "regiao": "EMEA"},
         "#YQUCCJ2": {"nome": "HMB|Symantec", "id_time": "HMB", "nome_time": "HMBLE", "regiao": "EMEA"},
         "#9LVUC2PY": {"nome": "SK|Ope", "id_time": "SK", "nome_time": "SK GAMING", "regiao": "EMEA"},
@@ -65,6 +65,7 @@ MAPEAMENTO_PLAYERS = {
         "#PLV89CGP": {"nome": "BIG|Salty", "id_time": "BIG", "nome_time": "BIG", "regiao": "EMEA"},
         "#8RVLRVYYP": {"nome": "TLB|Yei Yei", "id_time": "TLB", "nome_time": "TALENTS LAB", "regiao": "EMEA"},
         "#82GG2RLQG": {"nome": "FUT|ZeyroX", "id_time": "FUTA", "nome_time": "FUT ACADEMY", "regiao": "EMEA"},
+        "#20L88L2J": {"nome": "KUMA|Lenain", "id_time": "KUMA", "nome_time": "KUMA", "regiao": "EMEA"},
 # EA
         "#9ULYPV8": {"nome": "CR|Tensai", "id_time": "CR", "nome_time": "CRAZY RACCOON", "regiao": "EA"},
         "#P0Y8JGL0U": {"nome": "ZETA|Battoman", "id_time": "ZETA", "nome_time": "ZETA DIVISION", "regiao": "EA"},
