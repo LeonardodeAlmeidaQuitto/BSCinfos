@@ -1337,13 +1337,34 @@
      * Se o usuário entrar na tela MAPAS depois do carregamento,
      * ela é renderizada novamente.
      */
+    /*
+     * FALLBACK DEFINITIVO DE CLIQUE DOS MAPAS
+     * O app.js pode reconstruir o #sidebar-mapas depois que esta tela
+     * instala o listener. A delegação no document mantém os cliques
+     * funcionando mesmo quando o sidebar é recriado.
+     */
     document.addEventListener("click", event => {
+        const botaoMapa = event.target.closest?.(".mapas-sidebar-item");
+
+        if (botaoMapa) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const modo = botaoMapa.getAttribute("data-modo") || "";
+            const mapa = botaoMapa.getAttribute("data-mapa") || "";
+
+            if (modo && mapa && typeof window.selecionarMapaAnalise === "function") {
+                window.selecionarMapaAnalise(modo, mapa);
+            }
+            return;
+        }
+
         const alvo = event.target.closest?.('a[onclick*="mudarTela(\'mapas\')"]');
         if (alvo) {
             setTimeout(() => {
                 limparCacheEAtualizarMapas();
             }, 50);
         }
-    });
+    }, true);
 
 })();
