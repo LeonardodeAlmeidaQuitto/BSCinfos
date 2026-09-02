@@ -3,127 +3,460 @@
 <head>
     <script src="users.js"></script>
     <script src="auth.js"></script>
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SOUTH AMÉRICA Infos</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    
+
     <script>window.REGIAO_ATUAL = "SA";</script>
-    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- NÃO REMOVER: app.js continua sendo o arquivo principal -->
     <script src="app.js" defer></script>
+
+    <!-- NOVO: somente adiciona a tela funcional de MAPAS -->
+    <script src="mapas.js" defer></script>
+
+    <style>
+        /* =====================================================
+           TELA MAPAS
+           ===================================================== */
+
+        #tela-mapas {
+            width: 100%;
+        }
+
+        .mapas-layout {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            min-height: 650px;
+        }
+
+        #sidebar-mapas {
+            width: 280px;
+            min-width: 280px;
+            max-height: 720px;
+            overflow-y: auto;
+            background: var(--bg-cards, #181820);
+            border-radius: 10px;
+            padding: 12px;
+            border: 1px solid var(--borda-destaque, #2a2a35);
+        }
+
+        #painel-info-mapa {
+            flex: 1;
+            min-width: 0;
+            max-height: 720px;
+            overflow-y: auto;
+            background: var(--bg-cards, #181820);
+            border-radius: 10px;
+            padding: 22px;
+            border: 1px solid var(--borda-destaque, #2a2a35);
+        }
+
+        .mapas-modo-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 8px 8px;
+            margin-top: 4px;
+            color: var(--accent-purple, #c000ff);
+            font-weight: 900;
+            font-size: 13px;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+        }
+
+        .mapas-modo-title img {
+            width: 25px;
+            height: 25px;
+            object-fit: contain;
+        }
+
+        .mapas-sidebar-item {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 8px;
+            margin-top: 5px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: #fff;
+            border-radius: 7px;
+            cursor: pointer;
+            text-align: left;
+            font-weight: 800;
+            font-size: 12px;
+        }
+
+        .mapas-sidebar-item:hover {
+            background: rgba(255,255,255,.06);
+        }
+
+        .mapas-sidebar-item.active {
+            border-color: var(--accent-purple, #c000ff);
+            background: rgba(192,0,255,.10);
+            box-shadow: 0 0 12px rgba(192,0,255,.10);
+        }
+
+        .mapas-sidebar-item img {
+            width: 42px;
+            height: 28px;
+            object-fit: cover;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .mapas-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            border-bottom: 1px solid rgba(255,255,255,.10);
+            padding-bottom: 18px;
+            margin-bottom: 20px;
+        }
+
+        .mapas-mode-label {
+            color: var(--accent-purple, #c000ff);
+            font-size: 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .mapas-header h2 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 900;
+        }
+
+        .mapas-subtitle {
+            margin-top: 7px;
+            color: var(--texto-secundario, #999);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .mapas-main-image {
+            width: 170px;
+            height: 95px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid var(--borda-destaque, #333);
+        }
+
+        .mapas-section {
+            margin-top: 22px;
+            padding: 16px;
+            background: rgba(255,255,255,.015);
+            border: 1px solid rgba(255,255,255,.07);
+            border-radius: 9px;
+        }
+
+        .mapas-section-title {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            font-weight: 900;
+            color: var(--accent-purple, #c000ff);
+        }
+
+        .mapas-section-title small {
+            color: var(--texto-secundario, #999);
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .mapas-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .mapas-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .mapas-table th,
+        .mapas-table td {
+            padding: 9px 8px;
+            border-bottom: 1px solid rgba(255,255,255,.06);
+            text-align: center;
+            white-space: nowrap;
+            font-size: 11px;
+        }
+
+        .mapas-table th {
+            color: var(--texto-secundario, #999);
+            font-weight: 900;
+        }
+
+        .mapas-team-cell {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mapas-team-cell img {
+            width: 28px;
+            height: 28px;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+
+        .mapas-brawler-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 5px;
+            margin: 1px;
+            border-radius: 4px;
+            background: rgba(255,255,255,.05);
+            font-size: 9px;
+            font-weight: 900;
+        }
+
+        .mapas-brawler-pill img {
+            width: 22px;
+            height: 22px;
+            object-fit: contain;
+            border-radius: 3px;
+        }
+
+        .mapas-empty {
+            padding: 25px;
+            text-align: center;
+            color: var(--texto-secundario, #999);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        @media (max-width: 900px) {
+            .mapas-layout {
+                flex-direction: column;
+            }
+
+            #sidebar-mapas {
+                width: 100%;
+                min-width: 0;
+                max-height: 300px;
+            }
+
+            #painel-info-mapa {
+                max-height: none;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .mapas-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .mapas-main-image {
+                width: 100%;
+                height: 140px;
+            }
+
+            .mapas-section-title {
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
 <body>
 
     <nav class="navbar">
         <a href="index.html" class="nav-link">MENU</a>
+
         <div class="nav-links">
-        <div class="dropdown">
-            <a href="#" class="nav-link" id="sa-menu-btn">SA ▼ (META)</a>
-            <div class="dropdown-content">
-                <a href="#" onclick="mudarTela('meta'); return false;">Meta</a>
-                <a href="#" onclick="mudarTela('brawlers'); return false;">Brawlers</a>
-                <a href="#" onclick="mudarTela('mapas'); return false;">Mapas</a> <!-- NOVO BOTÃO MAPAS -->
-                <a href="#" onclick="mudarTela('times'); return false;">Times</a>
-                <a href="#" onclick="mudarTela('scrims'); return false;">Scrims</a>
-            </div>
-        </div>
-        </div>
-    <div class="dropdown">
-                <a href="#" class="nav-link">OUTROS ▼</a>
+            <div class="dropdown">
+                <a href="#" class="nav-link" id="sa-menu-btn">SA ▼ (META)</a>
+
                 <div class="dropdown-content">
-                    <a href="sa.html" style="display: flex; align-items: center; gap: 8px;">
-                        <img src="element/sa.png" style="width: 20px; height: 20px; object-fit: contain; border-radius: 2px;" onerror="this.style.display='none'"> 
-                        SA
-                    </a>
-                    <a href="emea.html" style="display: flex; align-items: center; gap: 8px;">
-                        <img src="element/emea.png" style="width: 20px; height: 20px; object-fit: contain; border-radius: 2px;" onerror="this.style.display='none'"> 
-                        EMEA
-                    </a>
-                    <a href="na.html" style="display: flex; align-items: center; gap: 8px;">
-                        <img src="element/na.png" style="width: 20px; height: 20px; object-fit: contain; border-radius: 2px;" onerror="this.style.display='none'"> 
-                        NA
-                    </a>
-                    <a href="ea.html" style="display: flex; align-items: center; gap: 8px;">
-                        <img src="element/ea.png" style="width: 20px; height: 20px; object-fit: contain; border-radius: 2px;" onerror="this.style.display='none'"> 
-                        EA
-                    </a>
+                    <a href="#" onclick="mudarTela('meta'); return false;">Meta</a>
+                    <a href="#" onclick="mudarTela('brawlers'); return false;">Brawlers</a>
+                    <a href="#" onclick="mudarTela('mapas'); return false;">Mapas</a>
+                    <a href="#" onclick="mudarTela('times'); return false;">Times</a>
+                    <a href="#" onclick="mudarTela('scrims'); return false;">Scrims</a>
                 </div>
             </div>
-        
-         <a href="geral.html" class="nav-link">GERAL</a>
+        </div>
 
+        <div class="dropdown">
+            <a href="#" class="nav-link">OUTROS ▼</a>
+
+            <div class="dropdown-content">
+                <a href="sa.html" style="display:flex;align-items:center;gap:8px;">
+                    <img src="element/sa.png"
+                         style="width:20px;height:20px;object-fit:contain;border-radius:2px;"
+                         onerror="this.style.display='none'">
+                    SA
+                </a>
+
+                <a href="emea.html" style="display:flex;align-items:center;gap:8px;">
+                    <img src="element/emea.png"
+                         style="width:20px;height:20px;object-fit:contain;border-radius:2px;"
+                         onerror="this.style.display='none'">
+                    EMEA
+                </a>
+
+                <a href="na.html" style="display:flex;align-items:center;gap:8px;">
+                    <img src="element/na.png"
+                         style="width:20px;height:20px;object-fit:contain;border-radius:2px;"
+                         onerror="this.style.display='none'">
+                    NA
+                </a>
+
+                <a href="ea.html" style="display:flex;align-items:center;gap:8px;">
+                    <img src="element/ea.png"
+                         style="width:20px;height:20px;object-fit:contain;border-radius:2px;"
+                         onerror="this.style.display='none'">
+                    EA
+                </a>
+            </div>
+        </div>
+
+        <a href="geral.html" class="nav-link">GERAL</a>
     </nav>
 
     <main class="main-container">
+
         <header class="page-header">
-            <h1>SOUTH AMÉRICA INFOS <span class="accent">ANALYSIS</span></h1>
+            <h1>
+                SOUTH AMÉRICA INFOS
+                <span class="accent">ANALYSIS</span>
+            </h1>
         </header>
 
-        <!-- Filtros Globais (Dia adicionado entre Mês e Tipo) -->
         <div class="filter-container">
-            <select id="select-ano" class="filter-select" onchange="processarDadosGlobais()"></select>
-            <select id="select-mes" class="filter-select" onchange="processarDadosGlobais()"></select>
-            <select id="select-dia" class="filter-select" onchange="processarDadosGlobais()"></select>
-            <select id="select-tipo" class="filter-select" onchange="processarDadosGlobais()">
+            <select id="select-ano" class="filter-select"
+                    onchange="processarDadosGlobais()"></select>
+
+            <select id="select-mes" class="filter-select"
+                    onchange="processarDadosGlobais()"></select>
+
+            <select id="select-dia" class="filter-select"
+                    onchange="processarDadosGlobais()"></select>
+
+            <select id="select-tipo" class="filter-select"
+                    onchange="processarDadosGlobais()">
                 <option value="todos">Overhaul (Todos)</option>
                 <option value="scrim">Scrim</option>
                 <option value="tournament">Tournament</option>
             </select>
         </div>
 
-        <!-- Tela META -->
+        <!-- ==================================================
+             TELA META
+             ================================================== -->
         <div id="tela-meta" class="tela-secao tela-ativa">
-            <div id="conteudo-meta"></div> 
+            <div id="conteudo-meta"></div>
         </div>
 
-        <!-- Tela BRAWLERS -->
+        <!-- ==================================================
+             TELA BRAWLERS
+             ================================================== -->
         <div id="tela-brawlers" class="tela-secao tela-oculta">
             <div class="brawlers-container">
+
                 <div class="sidebar">
-                    <input type="text" id="search-brawler-sidebar" class="sidebar-search" placeholder="Buscar Brawler..." oninput="filtrarBrawlersSidebar()">
-                    <div class="sidebar-list" id="lista-brawlers-sidebar"></div>
+                    <input
+                        type="text"
+                        id="search-brawler-sidebar"
+                        class="sidebar-search"
+                        placeholder="Buscar Brawler..."
+                        oninput="filtrarBrawlersSidebar()"
+                    >
+
+                    <div
+                        class="sidebar-list"
+                        id="lista-brawlers-sidebar"
+                    ></div>
                 </div>
-                <div class="info-panel" id="painel-info-brawler">
-                    <div class="placeholder-text" style="color:var(--texto-secundario); text-align:center;">Selecione um brawler na lateral para ver sinergias e matchups.</div>
+
+                <div
+                    class="info-panel"
+                    id="painel-info-brawler"
+                >
+                    <div
+                        class="placeholder-text"
+                        style="color:var(--texto-secundario);text-align:center;"
+                    >
+                        Selecione um brawler na lateral para ver sinergias e matchups.
+                    </div>
                 </div>
+
             </div>
         </div>
 
-        <!-- Tela MAPAS (NOVA TELA ADICIONADA AQUI) -->
+        <!-- ==================================================
+             TELA MAPAS
+             ================================================== -->
         <div id="tela-mapas" class="tela-secao tela-oculta">
-            <div style="display: flex; gap: 20px; height: 100%;">
-                
-                <!-- Sidebar de Modos e Mapas -->
-                <div id="sidebar-mapas" style="width: 250px; min-width: 250px; background: var(--bg-cards, #181820); border-radius: 8px; padding: 15px; overflow-y: auto; border: 1px solid var(--borda-destaque, #2a2a35);">
-                    <div style="text-align: center; color: var(--texto-secundario, #a0a0b0);">Carregando mapas...</div>
+
+            <div class="mapas-layout">
+
+                <div id="sidebar-mapas">
+                    <div class="mapas-empty">
+                        Carregando mapas...
+                    </div>
                 </div>
-                
-                <!-- Painel de Detalhes do Mapa -->
-                <div id="painel-info-mapa" style="flex: 1; background: var(--bg-cards, #181820); border-radius: 8px; padding: 20px; overflow-y: auto; border: 1px solid var(--borda-destaque, #2a2a35);">
-                    <div style="text-align: center; color: var(--texto-secundario, #a0a0b0); padding-top: 50px;">
+
+                <div id="painel-info-mapa">
+                    <div class="mapas-empty">
                         Selecione um mapa na lista ao lado para ver as estatísticas completas.
                     </div>
                 </div>
-                
+
             </div>
+
         </div>
 
-        <!-- Tela TIMES -->
+        <!-- ==================================================
+             TELA TIMES
+             ================================================== -->
         <div id="tela-times" class="tela-secao tela-oculta">
+
             <div class="times-container">
+
                 <div class="sidebar">
-                    <div class="sidebar-header">EQUIPES DA REGIÃO SA</div>
-                    <div class="sidebar-list" id="lista-times-sidebar"></div>
+                    <div class="sidebar-header">
+                        EQUIPES DA REGIÃO SA
+                    </div>
+
+                    <div
+                        class="sidebar-list"
+                        id="lista-times-sidebar"
+                    ></div>
                 </div>
-                <div class="info-panel" id="painel-info-time">
-                    <div class="placeholder-text" style="color:var(--texto-secundario); text-align:center;">Selecione um time na lateral para ver os dados de seus players.</div>
+
+                <div
+                    class="info-panel"
+                    id="painel-info-time"
+                >
+                    <div
+                        class="placeholder-text"
+                        style="color:var(--texto-secundario);text-align:center;"
+                    >
+                        Selecione um time na lateral para ver os dados de seus players.
+                    </div>
                 </div>
+
             </div>
+
         </div>
 
-        <!-- Tela SCRIMS -->
+        <!-- ==================================================
+             TELA SCRIMS
+             ================================================== -->
         <div id="tela-scrims" class="tela-secao tela-oculta">
             <div id="scrims-lista" class="scrins-grid"></div>
             <div id="scrims-detalhe" style="display:none;"></div>
@@ -132,24 +465,71 @@
     </main>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            window.mudarTela = function(tela) {
-                document.querySelectorAll('.tela-secao').forEach(sec => sec.classList.replace('tela-ativa', 'tela-oculta'));
-                document.getElementById(`tela-${tela}`).classList.replace('tela-oculta', 'tela-ativa');
-                
-                // Mapeamento atualizado com a opção de Mapas
+        /*
+         * Mantém a navegação original e apenas garante
+         * que a tela MAPAS seja reconhecida.
+         */
+        document.addEventListener("DOMContentLoaded", () => {
+
+            window.mudarTela = function (tela) {
+
+                document
+                    .querySelectorAll(".tela-secao")
+                    .forEach(sec => {
+                        sec.classList.replace(
+                            "tela-ativa",
+                            "tela-oculta"
+                        );
+                    });
+
+                const destino =
+                    document.getElementById(`tela-${tela}`);
+
+                if (destino) {
+                    destino.classList.replace(
+                        "tela-oculta",
+                        "tela-ativa"
+                    );
+                }
+
                 const titulos = {
-                    'meta': 'SA ▼ (META)', 
-                    'brawlers': 'SA ▼ (BRAWLERS)', 
-                    'mapas': 'SA ▼ (MAPAS)', 
-                    'times': 'SA ▼ (TIMES)', 
-                    'scrims': 'SA ▼ (SCRIMS)'
+                    meta: "SA ▼ (META)",
+                    brawlers: "SA ▼ (BRAWLERS)",
+                    mapas: "SA ▼ (MAPAS)",
+                    times: "SA ▼ (TIMES)",
+                    scrims: "SA ▼ (SCRIMS)"
                 };
-                document.getElementById('sa-menu-btn').textContent = titulos[tela];
-                
-                document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('active'));
+
+                const menu =
+                    document.getElementById("sa-menu-btn");
+
+                if (menu && titulos[tela]) {
+                    menu.textContent = titulos[tela];
+                }
+
+                document
+                    .querySelectorAll(".dropdown")
+                    .forEach(d => d.classList.remove("active"));
+
+                if (tela === "mapas" &&
+                    typeof window.selecionarMapaAnalise === "function") {
+
+                    setTimeout(() => {
+                        const sidebar =
+                            document.getElementById("sidebar-mapas");
+
+                        if (sidebar && !sidebar.children.length) {
+                            window.selecionarMapaAnalise(
+                                "",
+                                ""
+                            );
+                        }
+                    }, 50);
+                }
             };
+
         });
     </script>
+
 </body>
 </html>
