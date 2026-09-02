@@ -28,7 +28,11 @@
         .replace(/'/g, "&#039;");
 
     const chaveNormalizada = (valor) =>
-        String(valor || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+        String(valor || "")
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, "");
 
     const numero = (valor) => {
         const n = Number(valor);
@@ -48,38 +52,44 @@
 
     function obterRotacaoCompleta() {
         const rotacao =
-            typeof ROTACAO_MAPAS !== "undefined"
+            typeof ROTACAO_MAPAS !== 'undefined'
                 ? ROTACAO_MAPAS
                 : window.ROTACAO_MAPAS;
 
-        if (!rotacao || typeof rotacao !== "object") return {};
+        if (!rotacao || typeof rotacao !== 'object') return {};
 
         const resultado = {};
 
+        const adicionar = (modo, mapas) => {
+            if (!Array.isArray(mapas)) return;
+            if (!resultado[modo]) resultado[modo] = [];
+
+            mapas.forEach(mapa => {
+                const nome = String(mapa || '').trim();
+                if (!nome) return;
+                if (!resultado[modo].some(x => chaveNormalizada(x) === chaveNormalizada(nome))) {
+                    resultado[modo].push(nome);
+                }
+            });
+        };
+
+        /* Estrutura normal do app.js: ano -> mes -> modo -> mapas[] */
         Object.keys(rotacao).forEach(ano => {
             const meses = rotacao[ano];
-            if (!meses || typeof meses !== "object") return;
+            if (!meses || typeof meses !== 'object') return;
 
-            Object.keys(meses).forEach(mes => {
-                const modos = meses[mes];
-                if (!modos || typeof modos !== "object") return;
+            /* Tambem aceita diretamente modo -> mapas[], caso a estrutura mude. */
+            Object.keys(meses).forEach(mesOuModo => {
+                const valor = meses[mesOuModo];
+                if (!valor || typeof valor !== 'object') return;
 
-                Object.keys(modos).forEach(modo => {
-                    if (!Array.isArray(modos[modo])) return;
+                if (Array.isArray(valor)) {
+                    adicionar(mesOuModo, valor);
+                    return;
+                }
 
-                    if (!resultado[modo]) resultado[modo] = [];
-
-                    modos[modo].forEach(mapa => {
-                        const nome = String(mapa || "").trim();
-                        if (
-                            nome &&
-                            !resultado[modo].some(
-                                x => chaveNormalizada(x) === chaveNormalizada(nome)
-                            )
-                        ) {
-                            resultado[modo].push(nome);
-                        }
-                    });
+                Object.keys(valor).forEach(modo => {
+                    adicionar(modo, valor[modo]);
                 });
             });
         });
@@ -107,6 +117,64 @@
         }
 
         return id || "TIME DESCONHECIDO";
+    }
+
+    function obterRostersCadastrados() {
+        const rosters =
+            typeof ROSTERS_AUTOMATICOS !== "undefined"
+                ? ROSTERS_AUTOMATICOS
+                : window.ROSTERS_AUTOMATICOS;
+
+        if (!rosters || typeof rosters !== "object") return [];
+
+        if (Array.isArray(rosters)) return rosters.filter(Boolean);
+
+        return Object.values(rosters).filter(Boolean);
+    }
+
+    function ehTimeCadastrado(idTime, nomeTime) {
+        const id = String(idTime ?? "").trim();
+        const nome = chaveNormalizada(nomeTime || "");
+        if (!id && !nome) return false;
+
+        const rosters = obterRostersCadastrados();
+
+        /*
+         * A partir daqui a tela MAPAS só aceita equipes existentes no
+         * roster.json/ROSTERS_AUTOMATICOS. Assim IDs que aparecem no CSV
+         * mas nunca foram cadastrados não entram nas tabelas.
+         */
+        return rosters.some(item => {
+            const idRoster = String(
+                item.id_time ?? item.teamId ?? item.team_id ?? item.id ?? ""
+            ).trim();
+            const nomeRoster = String(
+                item.nome_time ?? item.teamName ?? item.team_name ?? item.nome ?? item.name ?? ""
+            ).trim();
+
+            if (id && idRoster && idRoster === id) return true;
+            if (nome && nomeRoster && chaveNormalizada(nomeRoster) === nome) return true;
+            return false;
+        });
+    }
+
+    async function carregarRosterAutomatico() {
+        /* Se o app.js já disponibilizou o roster, não fazemos outra requisição. */
+        if (obterRostersCadastrados().length > 0) return true;
+
+        /* Fallback para o arquivo usado pelo projeto. */
+        try {
+            const resposta = await fetch("roster.json", { cache: "no-store" });
+            if (!resposta.ok) return false;
+
+            const json = await resposta.json();
+            if (json && typeof json === "object") {
+                window.ROSTERS_AUTOMATICOS = json;
+                return obterRostersCadastrados().length > 0;
+            }
+        } catch (_) {}
+
+        return false;
     }
 
     function estaNaRegiaoAtual(idTime) {
@@ -175,10 +243,21 @@
     }
 
     function agruparGames(bruto) {
+        /*
+         * IMPORTANTE:
+         * A tela MAPAS precisa trabalhar com TODO o historico_bruto.csv,
+         * e nao com dadosFiltrados/_estatisticasPorSetCache.
+         *
+         * Tambem nao assumimos que as 3 linhas do time A estejam sempre
+         * nas primeiras 3 posições do id_partida. Agrupamos por id_time,
+         * o que evita perder mapas quando a ordem das linhas do CSV muda.
+         */
+        if (!Array.isArray(bruto) || !bruto.length) return [];
+
         const grupos = new Map();
 
         bruto.forEach(row => {
-            const id = String(row.id_partida || "").trim();
+            const id = String(row?.id_partida || '').trim();
             if (!id) return;
 
             if (!grupos.has(id)) grupos.set(id, []);
@@ -188,53 +267,64 @@
         const games = [];
 
         grupos.forEach(linhas => {
-            if (linhas.length < 6) return;
+            if (!linhas || linhas.length < 6) return;
 
-            const ladoA = linhas.slice(0, 3);
-            const ladoB = linhas.slice(3, 6);
+            /* Agrupa as linhas do game pelos dois IDs de time. */
+            const porTime = new Map();
+            linhas.forEach(row => {
+                const idTime = String(row?.id_time || '').trim();
+                if (!idTime) return;
+                if (!porTime.has(idTime)) porTime.set(idTime, []);
+                porTime.get(idTime).push(row);
+            });
+
+            const times = Array.from(porTime.entries())
+                .filter(([, rows]) => rows.length >= 3)
+                .slice(0, 2);
+
+            if (times.length !== 2) return;
+
+            const [teamA, rowsA] = times[0];
+            const [teamB, rowsB] = times[1];
+
+            const ladoA = rowsA.slice(0, 3);
+            const ladoB = rowsB.slice(0, 3);
 
             if (ladoA.length !== 3 || ladoB.length !== 3) return;
-
-            const teamA = String(ladoA[0].id_time || "").trim();
-            const teamB = String(ladoB[0].id_time || "").trim();
-
-            if (!teamA || !teamB || teamA === teamB) return;
-
-            const tagsA = ladoA.map(x => x.player_tag).filter(Boolean);
-            const tagsB = ladoB.map(x => x.player_tag).filter(Boolean);
+            if (teamA === teamB) return;
 
             const compA = ladoA
-                .map(x => String(x.pick || "").toUpperCase())
+                .map(x => String(x?.pick || '').trim().toUpperCase())
                 .filter(Boolean);
-
             const compB = ladoB
-                .map(x => String(x.pick || "").toUpperCase())
+                .map(x => String(x?.pick || '').trim().toUpperCase())
                 .filter(Boolean);
 
             if (compA.length !== 3 || compB.length !== 3) return;
 
-            const vencedor =
-                numero(ladoA[0].win) === 1 ? teamA : teamB;
+            const vencedor = numero(ladoA[0]?.win) === 1
+                ? teamA
+                : teamB;
 
             const timestamp = (() => {
                 try {
-                    if (typeof parseDateBR === "function") {
-                        return parseDateBR(ladoA[0].data_adicao);
+                    if (typeof parseDateBR === 'function') {
+                        return parseDateBR(ladoA[0]?.data_adicao);
                     }
                 } catch (_) {}
                 return 0;
             })();
 
             games.push({
-                id: String(ladoA[0].id_partida),
-                modo: String(ladoA[0].modo || "Desconhecido"),
-                mapa: String(ladoA[0].mapa || "Desconhecido"),
+                id: String(ladoA[0]?.id_partida || ''),
+                modo: String(ladoA[0]?.modo || ladoB[0]?.modo || 'Desconhecido').trim(),
+                mapa: String(ladoA[0]?.mapa || ladoB[0]?.mapa || 'Desconhecido').trim(),
                 teamA,
                 teamB,
-                nomeA: ladoA[0].nome_time || obterNomeTimeAutomatico(teamA),
-                nomeB: ladoB[0].nome_time || obterNomeTimeAutomatico(teamB),
-                tagsA,
-                tagsB,
+                nomeA: String(ladoA[0]?.nome_time || '').trim() || obterNomeTimeAutomatico(teamA),
+                nomeB: String(ladoB[0]?.nome_time || '').trim() || obterNomeTimeAutomatico(teamB),
+                tagsA: ladoA.map(x => x?.player_tag).filter(Boolean),
+                tagsB: ladoB.map(x => x?.player_tag).filter(Boolean),
                 compA,
                 compB,
                 vencedor,
@@ -466,27 +556,31 @@
 
     function obterGamesParaMapa(modo, mapa) {
         /*
-         * Para as tabelas da tela MAPAS, agora a unidade de contagem é GAME.
-         * O histórico bruto possui cada game agrupado por id_partida.
-         * Usamos o histórico bruto primeiro para não transformar um SET 2-1
-         * em apenas um registro.
+         * A fonte da tela MAPAS e SEMPRE o historico bruto completo.
+         * Isso e o que permite consultar qualquer mapa da ROTACAO_MAPAS,
+         * mesmo que o filtro atual do restante do app esteja em outro
+         * ano/mes/dia/tipo.
          */
         let bruto = [];
 
         try {
-            if (typeof dadosBrutos !== "undefined" && Array.isArray(dadosBrutos)) {
+            if (typeof dadosBrutos !== 'undefined' && Array.isArray(dadosBrutos)) {
                 bruto = dadosBrutos;
             }
         } catch (_) {}
 
         if (bruto.length) {
-            return agruparGames(bruto).filter(game =>
-                chaveNormalizada(game.modo) === chaveNormalizada(modo) &&
-                chaveNormalizada(game.mapa) === chaveNormalizada(mapa)
+            const todosGames = agruparGames(bruto);
+            const modoChave = chaveNormalizada(modo);
+            const mapaChave = chaveNormalizada(mapa);
+
+            return todosGames.filter(game =>
+                chaveNormalizada(game.modo) === modoChave &&
+                chaveNormalizada(game.mapa) === mapaChave
             );
         }
 
-        /* Fallback para quando o histórico bruto ainda não estiver disponível. */
+        /* Fallback somente para o caso em que o CSV ainda nao terminou de carregar. */
         const sets = obterSetsParaMapa(modo, mapa);
         const games = [];
 
@@ -496,14 +590,9 @@
                 return;
             }
 
-            /*
-             * Alguns caches antigos guardam somente o SET. Nesse caso não há
-             * como reconstruir os games reais sem o histórico bruto. Mantemos
-             * um game lógico para que a tela continue funcional.
-             */
             if (set.teamA && set.teamB) {
                 games.push({
-                    id: set.id_set || "",
+                    id: set.id_set || '',
                     modo: set.modo || modo,
                     mapa: set.mapa || mapa,
                     teamA: set.teamA,
@@ -519,7 +608,10 @@
             }
         });
 
-        return games;
+        return games.filter(game =>
+            chaveNormalizada(game.modo) === chaveNormalizada(modo) &&
+            chaveNormalizada(game.mapa) === chaveNormalizada(mapa)
+        );
     }
 
     function construirEstatisticas(modo, mapa) {
@@ -538,6 +630,9 @@
             };
 
             if (ehTimeDesconhecido(existente)) return null;
+
+            /* Somente times cadastrados no roster.json podem aparecer. */
+            if (!ehTimeCadastrado(existente.id, existente.nome)) return null;
 
             if (!times.has(String(id))) {
                 times.set(String(id), {
@@ -646,7 +741,11 @@
         });
 
         const timesArray = Array.from(times.values())
-            .filter(t => !ehTimeDesconhecido(t) && estaNaRegiaoAtual(t.id))
+            .filter(t =>
+                !ehTimeDesconhecido(t) &&
+                ehTimeCadastrado(t.id, t.nome) &&
+                estaNaRegiaoAtual(t.id)
+            )
             .map(t => ({
                 ...t,
                 winRate: t.games ? (t.wins / t.games) * 100 : 0
@@ -663,6 +762,7 @@
             .filter(x =>
                 x.games >= 1 &&
                 !ehTimeDesconhecido({ id: x.teamId, nome: x.teamName }) &&
+                ehTimeCadastrado(x.teamId, x.teamName) &&
                 estaNaRegiaoAtual(x.teamId)
             )
             .map(x => ({
@@ -943,7 +1043,7 @@
 
         /* TOP 5 em cada tabela. Unknown/Desconhecido já foi removido na origem. */
         const melhoresTimes = [...dados.times]
-            .filter(t => !ehTimeDesconhecido(t))
+            .filter(t => !ehTimeDesconhecido(t) && ehTimeCadastrado(t.id, t.nome))
             .sort((a, b) =>
                 b.winRate - a.winRate ||
                 b.wins - a.wins ||
@@ -952,7 +1052,7 @@
             .slice(0, 5);
 
         const pioresTimes = [...dados.times]
-            .filter(t => !ehTimeDesconhecido(t))
+            .filter(t => !ehTimeDesconhecido(t) && ehTimeCadastrado(t.id, t.nome))
             .sort((a, b) =>
                 a.winRate - b.winRate ||
                 a.wins - b.wins ||
@@ -969,7 +1069,10 @@
             .slice(0, 5);
 
         const melhoresComps = [...dados.comps]
-            .filter(c => !ehTimeDesconhecido({ id: c.teamId, nome: c.teamName }))
+            .filter(c =>
+                !ehTimeDesconhecido({ id: c.teamId, nome: c.teamName }) &&
+                ehTimeCadastrado(c.teamId, c.teamName)
+            )
             .sort((a, b) =>
                 b.winRate - a.winRate ||
                 b.wins - a.wins ||
@@ -1031,8 +1134,20 @@
 
 
     function limparCacheEAtualizarMapas() {
+        /*
+         * IMPORTANTE: nunca usamos dadosFiltrados para a tela MAPAS.
+         * Os filtros de ano/mes/dia/tipo da tela principal podem mudar
+         * quantos registros existem em dadosFiltrados, mas MAPAS consulta
+         * o historico_bruto.csv inteiro.
+         */
         mapaDadosCache = {};
         renderizarSidebarMapas();
+
+        if (mapaSelecionado) {
+            const modo = mapaSelecionado.modo;
+            const mapa = mapaSelecionado.mapa;
+            setTimeout(() => renderizarDetalhesMapa(modo, mapa), 0);
+        }
     }
 
     function instalarIntegracaoComApp() {
@@ -1060,8 +1175,14 @@
         }
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", async () => {
         instalarIntegracaoComApp();
+
+        /*
+         * Carrega o roster antes de montar as tabelas. Isso garante que
+         * somente equipes cadastradas sejam exibidas.
+         */
+        await carregarRosterAutomatico();
         renderizarSidebarMapas();
 
         /*
@@ -1086,7 +1207,11 @@
                 }
             } catch (_) {}
 
-            if (quantidade > 0 || tentativas >= 30) {
+            if (quantidade > 0) {
+                limparCacheEAtualizarMapas();
+                clearInterval(timer);
+            } else if (tentativas >= 60) {
+                /* Mantem a interface responsiva mesmo se o CSV falhar. */
                 limparCacheEAtualizarMapas();
                 clearInterval(timer);
             }
