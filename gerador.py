@@ -41,7 +41,7 @@ MAPEAMENTO_PLAYERS = {
         "#R2LR2QLG": {"nome": "RED|Mohtep", "id_time": "RED", "nome_time": "RED CANIDS", "regiao": "SA"},
         "#80VLPJCCC": {"nome": "CB|Tilo", "id_time": "CB", "nome_time": "CRECHE BRAWL", "regiao": "SA"},
         "#GJPVYUQG": {"nome": "QQQ|Deykonn", "id_time": "QQQ", "nome_time": "QUERO QUE QUE", "regiao": "SA"},
-        "#LLCURQVY2": {"nome": "PIT|Brennox", "id_time": "PIT", "nome_time": "PIT ESPORTS", "regiao": "SA"},
+        "#9JVUGR2JG": {"nome": "PIT|Xablau🎩", "id_time": "PIT", "nome_time": "PIT ESPORTS", "regiao": "SA"},
 # NA
         "#LVRRYPV": {"nome": "KDS|Bobby", "id_time": "KDS", "nome_time": "KDS", "regiao": "NA"},
         "#82RCQCVG": {"nome": "TRB|Lxffy", "id_time": "TRB", "nome_time": "TRIBE GAMING", "regiao": "NA"},
