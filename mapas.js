@@ -8,9 +8,10 @@
  *   - _estatisticasPorSetCache, quando o app.js disponibilizar
  *   - rosters.json/ROSTERS_AUTOMATICOS, quando disponível
  *
- * As estatísticas são contabilizadas por SET.
- * Um SET é formado por 2 ou 3 games do mesmo confronto,
- * no mesmo modo/mapa e com a mesma composição.
+ * A tela lista todos os mapas encontrados nas rotações do app.js.
+ * As tabelas desta tela são contabilizadas por GAME.
+ * O histórico bruto é usado para preservar cada game individual,
+ * inclusive os games de um mesmo SET 2-0 ou 2-1.
  */
 
 (function () {
@@ -451,8 +452,78 @@
         );
     }
 
-    function construirEstatisticas(modo, mapa) {
+    function ehTimeDesconhecido(time) {
+        const id = String(time?.id ?? time?.id_time ?? "").trim().toLowerCase();
+        const nome = String(time?.nome ?? time?.nome_time ?? "").trim().toLowerCase();
+
+        if (!id && !nome) return true;
+        if (nome === "unknown" || nome.startsWith("unknown ")) return true;
+        if (nome.includes("time desconhecido")) return true;
+        if (nome === "desconhecido" || nome.startsWith("desconhecido ")) return true;
+        if (id === "unknown" || id === "desconhecido") return true;
+        return false;
+    }
+
+    function obterGamesParaMapa(modo, mapa) {
+        /*
+         * Para as tabelas da tela MAPAS, agora a unidade de contagem é GAME.
+         * O histórico bruto possui cada game agrupado por id_partida.
+         * Usamos o histórico bruto primeiro para não transformar um SET 2-1
+         * em apenas um registro.
+         */
+        let bruto = [];
+
+        try {
+            if (typeof dadosBrutos !== "undefined" && Array.isArray(dadosBrutos)) {
+                bruto = dadosBrutos;
+            }
+        } catch (_) {}
+
+        if (bruto.length) {
+            return agruparGames(bruto).filter(game =>
+                chaveNormalizada(game.modo) === chaveNormalizada(modo) &&
+                chaveNormalizada(game.mapa) === chaveNormalizada(mapa)
+            );
+        }
+
+        /* Fallback para quando o histórico bruto ainda não estiver disponível. */
         const sets = obterSetsParaMapa(modo, mapa);
+        const games = [];
+
+        sets.forEach(set => {
+            if (Array.isArray(set.games) && set.games.length) {
+                set.games.forEach(game => games.push(game));
+                return;
+            }
+
+            /*
+             * Alguns caches antigos guardam somente o SET. Nesse caso não há
+             * como reconstruir os games reais sem o histórico bruto. Mantemos
+             * um game lógico para que a tela continue funcional.
+             */
+            if (set.teamA && set.teamB) {
+                games.push({
+                    id: set.id_set || "",
+                    modo: set.modo || modo,
+                    mapa: set.mapa || mapa,
+                    teamA: set.teamA,
+                    teamB: set.teamB,
+                    nomeA: set.nomeA || obterNomeTimeAutomatico(set.teamA),
+                    nomeB: set.nomeB || obterNomeTimeAutomatico(set.teamB),
+                    compA: Array.isArray(set.compA) ? set.compA.slice(0, 3) : [],
+                    compB: Array.isArray(set.compB) ? set.compB.slice(0, 3) : [],
+                    vencedor: set.vencedor,
+                    timestamp: 0,
+                    linhas: []
+                });
+            }
+        });
+
+        return games;
+    }
+
+    function construirEstatisticas(modo, mapa) {
+        const games = obterGamesParaMapa(modo, mapa);
 
         const times = new Map();
         const sinergias = new Map();
@@ -461,36 +532,46 @@
         const registrarTime = (id, nome) => {
             if (!id) return null;
 
-            if (!times.has(id)) {
-                times.set(id, {
-                    id,
-                    nome: nome || obterNomeTimeAutomatico(id),
-                    sets: 0,
-                    wins: 0,
-                    losses: 0,
+            const existente = {
+                id: String(id),
+                nome: nome || obterNomeTimeAutomatico(id)
+            };
+
+            if (ehTimeDesconhecido(existente)) return null;
+
+            if (!times.has(String(id))) {
+                times.set(String(id), {
+                    id: String(id),
+                    nome: existente.nome,
                     games: 0,
-                    gameWins: 0
+                    wins: 0,
+                    losses: 0
                 });
             }
 
-            return times.get(id);
+            return times.get(String(id));
         };
 
         const registrarSinergia = (a, b, venceu) => {
-            const nomes = [a, b].sort();
+            const nomes = [String(a || "").trim().toUpperCase(), String(b || "").trim().toUpperCase()]
+                .filter(Boolean)
+                .sort();
+
+            if (nomes.length !== 2 || nomes[0] === nomes[1]) return;
+
             const chave = nomes.join(" + ");
 
             if (!sinergias.has(chave)) {
                 sinergias.set(chave, {
                     nome: chave,
-                    sets: 0,
+                    games: 0,
                     wins: 0,
                     losses: 0
                 });
             }
 
             const item = sinergias.get(chave);
-            item.sets++;
+            item.games++;
 
             if (venceu) item.wins++;
             else item.losses++;
@@ -499,8 +580,9 @@
         const registrarComp = (time, comp, venceu) => {
             if (!time || !Array.isArray(comp) || comp.length !== 3) return;
 
-            const trio = [...new Set(comp.map(x => String(x).toUpperCase()))]
-                .sort();
+            const trio = [...new Set(
+                comp.map(x => String(x || "").trim().toUpperCase()).filter(Boolean)
+            )].sort();
 
             if (trio.length !== 3) return;
 
@@ -512,83 +594,50 @@
                     teamId: time.id,
                     teamName: time.nome,
                     comp: trio,
-                    sets: 0,
+                    games: 0,
                     wins: 0,
                     losses: 0
                 });
             }
 
             const item = comps.get(chave);
-            item.sets++;
+            item.games++;
 
             if (venceu) item.wins++;
             else item.losses++;
         };
 
-        sets.forEach(set => {
-            const timeA = registrarTime(set.teamA, set.nomeA);
-            const timeB = registrarTime(set.teamB, set.nomeB);
+        games.forEach(game => {
+            const timeA = registrarTime(game.teamA, game.nomeA);
+            const timeB = registrarTime(game.teamB, game.nomeB);
 
+            /* Nunca colocar Unknown/Desconhecido nas tabelas. */
             if (!timeA || !timeB) return;
 
-            const venceuA = String(set.vencedor) === String(set.teamA);
-            const venceuB = String(set.vencedor) === String(set.teamB);
+            const venceuA = String(game.vencedor) === String(game.teamA);
+            const venceuB = String(game.vencedor) === String(game.teamB);
 
-            timeA.sets++;
-            timeB.sets++;
+            timeA.games++;
+            timeB.games++;
 
             if (venceuA) timeA.wins++;
-            else timeA.losses++;
+            else if (venceuB) timeA.losses++;
 
             if (venceuB) timeB.wins++;
-            else timeB.losses++;
+            else if (venceuA) timeB.losses++;
 
-            const games = Array.isArray(set.games) ? set.games : [];
-
-            if (games.length) {
-                timeA.games += games.length;
-                timeB.games += games.length;
-
-                games.forEach(game => {
-                    if (String(game.vencedor) === String(game.teamA)) {
-                        timeA.gameWins++;
-                        timeB.gameWins += 0;
-                    } else {
-                        timeB.gameWins++;
-                    }
-                });
-            } else {
-                /*
-                 * O cache de SET já representa o resultado do SET.
-                 * Mantemos um jogo lógico apenas para não deixar WR vazio.
-                 */
-                timeA.games++;
-                timeB.games++;
-
-                if (venceuA) timeA.gameWins++;
-                if (venceuB) timeB.gameWins++;
-            }
-
-            const compA = set.compA || [];
-            const compB = set.compB || [];
+            const compA = Array.isArray(game.compA) ? game.compA.slice(0, 3) : [];
+            const compB = Array.isArray(game.compB) ? game.compB.slice(0, 3) : [];
 
             for (let i = 0; i < compA.length; i++) {
                 for (let j = i + 1; j < compA.length; j++) {
-                    registrarSinergia(
-                        compA[i],
-                        compA[j],
-                        venceuA
-                    );
+                    registrarSinergia(compA[i], compA[j], venceuA);
                 }
             }
 
             for (let i = 0; i < compB.length; i++) {
                 for (let j = i + 1; j < compB.length; j++) {
-                    registrarSinergia(
-                        compB[i],
-                        compB[j],
-                        venceuB
-                    );
+                    registrarSinergia(compB[i], compB[j], venceuB);
                 }
             }
 
@@ -597,39 +646,42 @@
         });
 
         const timesArray = Array.from(times.values())
-            .filter(t => estaNaRegiaoAtual(t.id))
+            .filter(t => !ehTimeDesconhecido(t) && estaNaRegiaoAtual(t.id))
             .map(t => ({
                 ...t,
-                winRate: t.games ? (t.gameWins / t.games) * 100 : 0,
-                setRate: t.sets ? (t.wins / t.sets) * 100 : 0
+                winRate: t.games ? (t.wins / t.games) * 100 : 0
             }));
 
         const sinergiasArray = Array.from(sinergias.values())
-            .filter(x => x.sets >= 1)
+            .filter(x => x.games >= 1)
             .map(x => ({
                 ...x,
-                winRate: x.sets ? (x.wins / x.sets) * 100 : 0
+                winRate: x.games ? (x.wins / x.games) * 100 : 0
             }));
 
         const compsArray = Array.from(comps.values())
             .filter(x =>
-                x.sets >= 1 &&
+                x.games >= 1 &&
+                !ehTimeDesconhecido({ id: x.teamId, nome: x.teamName }) &&
                 estaNaRegiaoAtual(x.teamId)
             )
             .map(x => ({
                 ...x,
-                winRate: x.sets ? (x.wins / x.sets) * 100 : 0
+                winRate: x.games ? (x.wins / x.games) * 100 : 0
             }));
 
         return {
-            sets,
+            games,
+            /* Mantido para compatibilidade com qualquer código que ainda leia sets. */
+            sets: obterSetsParaMapa(modo, mapa),
             times: timesArray,
             sinergias: sinergiasArray,
             comps: compsArray
         };
     }
 
-    function criarTabelaTimes(lista, mostrarGames) {
+
+    function criarTabelaTimes(lista) {
         if (!lista.length) {
             return `<div class="mapas-empty">Sem dados suficientes.</div>`;
         }
@@ -641,29 +693,27 @@
                         <tr>
                             <th>TIME</th>
                             <th>WINRATE%</th>
-                            <th>SETRATE%</th>
                             <th>WINS</th>
-                            <th>SETS</th>
-                            ${mostrarGames ? "<th>GAMES</th>" : ""}
+                            <th>LOSSES</th>
+                            <th>GAMES</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${lista.map(t => `
+                        ${lista.slice(0, 5).map(t => `
                             <tr>
                                 <td style="text-align:left;">
                                     <div class="mapas-team-cell">
                                         <img
                                             src="${escapeHtml(teamLogoUrlSafe(t.id))}"
-                                            onerror="this.onerror=null;this.src='${escapeHtml(teamLogoFallbackSafe(t.id))}'"
+                                            onerror="this.onerror=null;this.style.display='none'"
                                         >
                                         <span>${escapeHtml(t.nome)}</span>
                                     </div>
                                 </td>
                                 <td class="winrate-cell">${t.winRate.toFixed(1)}%</td>
-                                <td>${t.setRate.toFixed(1)}%</td>
                                 <td>${t.wins}</td>
-                                <td>${t.sets}</td>
-                                ${mostrarGames ? `<td>${t.games}</td>` : ""}
+                                <td>${t.losses}</td>
+                                <td>${t.games}</td>
                             </tr>
                         `).join("")}
                     </tbody>
@@ -672,10 +722,27 @@
         `;
     }
 
+
     function criarTabelaSinergias(lista) {
         if (!lista.length) {
             return `<div class="mapas-empty">Sem sinergias suficientes.</div>`;
         }
+
+        const imagemBrawler = (nome) => {
+            const arquivo = formatImgSafe(nome);
+            return `brawlers/pins/${escapeHtml(arquivo)}.png`;
+        };
+
+        const renderBrawler = (nome) => `
+            <span class="mapas-brawler-pill">
+                <img
+                    src="${imagemBrawler(nome)}"
+                    alt="${escapeHtml(nome)}"
+                    onerror="this.onerror=null;this.style.display='none'"
+                >
+                <span>${escapeHtml(nome)}</span>
+            </span>
+        `;
 
         return `
             <div class="mapas-table-wrap">
@@ -686,26 +753,32 @@
                             <th>WINRATE%</th>
                             <th>WINS</th>
                             <th>LOSSES</th>
-                            <th>SETS</th>
+                            <th>GAMES</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${lista.map(s => `
-                            <tr>
-                                <td style="text-align:left;font-weight:900;">
-                                    ${s.comp ? s.comp.join(" + ") : escapeHtml(s.nome)}
-                                </td>
-                                <td class="winrate-cell">${s.winRate.toFixed(1)}%</td>
-                                <td>${s.wins}</td>
-                                <td>${s.losses}</td>
-                                <td>${s.sets}</td>
-                            </tr>
-                        `).join("")}
+                        ${lista.slice(0, 5).map(s => {
+                            const nomes = String(s.nome || "").split(" + ").filter(Boolean);
+                            return `
+                                <tr>
+                                    <td style="text-align:left;font-weight:900;">
+                                        <div class="mapas-sinergia-cell">
+                                            ${nomes.map(renderBrawler).join("")}
+                                        </div>
+                                    </td>
+                                    <td class="winrate-cell">${s.winRate.toFixed(1)}%</td>
+                                    <td>${s.wins}</td>
+                                    <td>${s.losses}</td>
+                                    <td>${s.games}</td>
+                                </tr>
+                            `;
+                        }).join("")}
                     </tbody>
                 </table>
             </div>
         `;
     }
+
 
     function criarTabelaComps(lista) {
         if (!lista.length) {
@@ -722,11 +795,11 @@
                             <th>WINRATE%</th>
                             <th>WINS</th>
                             <th>LOSSES</th>
-                            <th>SETS</th>
+                            <th>GAMES</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${lista.map(c => `
+                        ${lista.slice(0, 5).map(c => `
                             <tr>
                                 <td style="text-align:left;font-weight:900;">
                                     ${escapeHtml(c.teamName)}
@@ -734,16 +807,19 @@
                                 <td style="text-align:left;">
                                     ${c.comp.map(b => `
                                         <span class="mapas-brawler-pill">
-                                            <img src="brawlers/${escapeHtml(formatImgSafe(b))}.png"
-                                                 onerror="this.src='brawlers/default.png'">
-                                            ${escapeHtml(b)}
+                                            <img
+                                                src="brawlers/pins/${escapeHtml(formatImgSafe(b))}.png"
+                                                alt="${escapeHtml(b)}"
+                                                onerror="this.onerror=null;this.style.display='none'"
+                                            >
+                                            <span>${escapeHtml(b)}</span>
                                         </span>
                                     `).join("")}
                                 </td>
                                 <td class="winrate-cell">${c.winRate.toFixed(1)}%</td>
                                 <td>${c.wins}</td>
                                 <td>${c.losses}</td>
-                                <td>${c.sets}</td>
+                                <td>${c.games}</td>
                             </tr>
                         `).join("")}
                     </tbody>
@@ -751,6 +827,7 @@
             </div>
         `;
     }
+
 
     function teamLogoUrlSafe(id) {
         try {
@@ -797,7 +874,7 @@
             html += `
                 <div class="mapas-modo-title">
                     <img src="element/modes/${escapeHtml(formatImgSafe(modo))}.png"
-                         onerror="this.src='element/modes/default.png'">
+                         onerror="this.onerror=null;this.style.display='none'">
                     <span>${escapeHtml(modo)}</span>
                 </div>
             `;
@@ -814,7 +891,7 @@
                         onclick="window.selecionarMapaAnalise(${JSON.stringify(modo)}, ${JSON.stringify(mapa)})"
                     >
                         <img src="element/maps/${escapeHtml(formatImgSafe(mapa))}.png"
-                             onerror="this.src='element/maps/default.png'">
+                             onerror="this.onerror=null;this.style.display='none'">
                         <span>${escapeHtml(mapa)}</span>
                     </button>
                 `;
@@ -864,36 +941,43 @@
 
         const dados = mapaDadosCache[chave];
 
+        /* TOP 5 em cada tabela. Unknown/Desconhecido já foi removido na origem. */
         const melhoresTimes = [...dados.times]
+            .filter(t => !ehTimeDesconhecido(t))
             .sort((a, b) =>
-                b.setRate - a.setRate ||
+                b.winRate - a.winRate ||
                 b.wins - a.wins ||
-                b.sets - a.sets
-            );
+                b.games - a.games
+            )
+            .slice(0, 5);
 
         const pioresTimes = [...dados.times]
-            .filter(t => t.sets >= 2)
+            .filter(t => !ehTimeDesconhecido(t))
             .sort((a, b) =>
-                a.setRate - b.setRate ||
+                a.winRate - b.winRate ||
                 a.wins - b.wins ||
-                a.sets - b.sets
-            );
+                a.games - b.games
+            )
+            .slice(0, 5);
 
         const melhoresSinergias = [...dados.sinergias]
             .sort((a, b) =>
                 b.winRate - a.winRate ||
                 b.wins - a.wins ||
-                b.sets - a.sets
+                b.games - a.games
             )
-            .slice(0, 15);
+            .slice(0, 5);
 
         const melhoresComps = [...dados.comps]
+            .filter(c => !ehTimeDesconhecido({ id: c.teamId, nome: c.teamName }))
             .sort((a, b) =>
                 b.winRate - a.winRate ||
                 b.wins - a.wins ||
-                b.sets - a.sets
+                b.games - a.games
             )
-            .slice(0, 15);
+            .slice(0, 5);
+
+        const imagemMapa = `element/maps/${escapeHtml(formatImgSafe(mapa))}.png`;
 
         painel.innerHTML = `
             <div class="mapas-header">
@@ -901,36 +985,36 @@
                     <div class="mapas-mode-label">${escapeHtml(modo)}</div>
                     <h2>${escapeHtml(mapa)}</h2>
                     <div class="mapas-subtitle">
-                        ${dados.sets.length} SETS analisados
+                        ${(dados.games || []).length} GAMES analisados
                     </div>
                 </div>
                 <img
                     class="mapas-main-image"
-                    src="element/maps/${escapeHtml(formatImgSafe(mapa))}.png"
-                    onerror="this.src='element/maps/default.png'"
+                    src="${imagemMapa}"
+                    onerror="this.onerror=null;this.style.display='none'"
                 >
             </div>
 
             <section class="mapas-section">
                 <div class="mapas-section-title">
                     <span>🏆 MELHORES TIMES</span>
-                    <small>WinRate% = games | SetRate% = sets</small>
+                    <small>Contado por GAME</small>
                 </div>
-                ${criarTabelaTimes(melhoresTimes, true)}
+                ${criarTabelaTimes(melhoresTimes)}
             </section>
 
             <section class="mapas-section">
                 <div class="mapas-section-title">
                     <span>📉 PIORES TIMES</span>
-                    <small>Mínimo de 2 sets</small>
+                    <small>Contado por GAME</small>
                 </div>
-                ${criarTabelaTimes(pioresTimes, true)}
+                ${criarTabelaTimes(pioresTimes)}
             </section>
 
             <section class="mapas-section">
                 <div class="mapas-section-title">
                     <span>🤝 MELHORES SINERGIAS</span>
-                    <small>Par de brawlers do mesmo time, contado por SET</small>
+                    <small>Par de brawlers do mesmo time, contado por GAME</small>
                 </div>
                 ${criarTabelaSinergias(melhoresSinergias)}
             </section>
@@ -938,12 +1022,13 @@
             <section class="mapas-section">
                 <div class="mapas-section-title">
                     <span>🔥 MELHORES COMPS</span>
-                    <small>Trio do mesmo time, contado por SET</small>
+                    <small>Trio do mesmo time, contado por GAME</small>
                 </div>
                 ${criarTabelaComps(melhoresComps)}
             </section>
         `;
     }
+
 
     function limparCacheEAtualizarMapas() {
         mapaDadosCache = {};
