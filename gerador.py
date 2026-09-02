@@ -52,7 +52,7 @@ MAPEAMENTO_PLAYERS = {
         "#R9CCLP8Q": {"nome": "Rafiki", "id_time": "LGCY", "nome_time": "LEGACY", "regiao": "NA"},
         "#28LUY98": {"nome": "OG", "id_time": "VIC", "nome_time": "VIC", "regiao": "NA"},
         "#8UL0U08V": {"nome": "Winq", "id_time": "UTP", "nome_time": "UTOPIA", "regiao": "NA"},
-        "#JJ09PC0P": {"nome": "AMN|vgtsauce", "id_time": "AMN", "nome_time": "AMNESIA", "regiao": "NA"},
+        "#GCJCRVQ8": {"nome": "AMN|tacos", "id_time": "AMN", "nome_time": "AMNESIA", "regiao": "NA"},
         "#R80QRP0G": {"nome": "Squeezy", "id_time": "PFZ", "nome_time": "PFZ", "regiao": "NA"},
 # EMEA
         "#P2808PRC": {"nome": "FUT|Nob?", "id_time": "FUT", "nome_time": "FUT ESPORTS", "regiao": "EMEA"},
@@ -62,7 +62,7 @@ MAPEAMENTO_PLAYERS = {
         "#PCPRPJV": {"nome": "TH|IKaoss", "id_time": "TH", "nome_time": "TEAM HERETICS", "regiao": "EMEA"},
         "#2Q892QVU": {"nome": "TTM|Maru", "id_time": "TTM", "nome_time": "REPLY TOTEM", "regiao": "EMEA"},
         "#9PQQ8GQQ": {"nome": "NOVO|Filippo", "id_time": "NOVO", "nome_time": "NOVO ESPORTS", "regiao": "EMEA"},
-        "#PLV89CGP": {"nome": "BIG|Salty", "id_time": "BIG", "nome_time": "BIG", "regiao": "EMEA"},
+        "#GLPJRCLYL": {"nome": "BIG|Melih🥥", "id_time": "BIG", "nome_time": "BIG", "regiao": "EMEA"},
         "#8RVLRVYYP": {"nome": "TLB|Yei Yei", "id_time": "TLB", "nome_time": "TALENTS LAB", "regiao": "EMEA"},
         "#82GG2RLQG": {"nome": "FUT|ZeyroX", "id_time": "FUTA", "nome_time": "FUT ACADEMY", "regiao": "EMEA"},
         "#20L88L2J": {"nome": "KUMA|Lenain", "id_time": "KUMA", "nome_time": "KUMA", "regiao": "EMEA"},
