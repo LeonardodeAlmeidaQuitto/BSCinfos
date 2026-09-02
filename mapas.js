@@ -120,16 +120,28 @@
     }
 
     function obterRostersCadastrados() {
-        const rosters =
-            typeof ROSTERS_AUTOMATICOS !== "undefined"
-                ? ROSTERS_AUTOMATICOS
-                : window.ROSTERS_AUTOMATICOS;
+        /*
+         * IMPORTANTE: o app.js normaliza o rosters.json e coloca a fonte
+         * oficial em CONFIGURACAO_MANUAL_TIMES.
+         *
+         * Não usamos somente ROSTERS_AUTOMATICOS aqui porque ele é agrupado
+         * por região/tier e a tela MAPAS precisa consultar exatamente os
+         * times que o restante do site considera cadastrados.
+         */
+        try {
+            if (typeof CONFIGURACAO_MANUAL_TIMES !== "undefined" &&
+                CONFIGURACAO_MANUAL_TIMES &&
+                typeof CONFIGURACAO_MANUAL_TIMES === "object") {
+                return CONFIGURACAO_MANUAL_TIMES;
+            }
+        } catch (_) {}
 
-        if (!rosters || typeof rosters !== "object") return [];
+        if (window.CONFIGURACAO_MANUAL_TIMES &&
+            typeof window.CONFIGURACAO_MANUAL_TIMES === "object") {
+            return window.CONFIGURACAO_MANUAL_TIMES;
+        }
 
-        if (Array.isArray(rosters)) return rosters.filter(Boolean);
-
-        return Object.values(rosters).filter(Boolean);
+        return {};
     }
 
     function ehTimeCadastrado(idTime, nomeTime) {
@@ -137,42 +149,70 @@
         const nome = chaveNormalizada(nomeTime || "");
         if (!id && !nome) return false;
 
-        const rosters = obterRostersCadastrados();
+        /* Nunca aceitar os times artificiais criados para jogadores sem roster. */
+        if (/^UNK\d*$/i.test(id)) return false;
+        if (/^unknown(?:\s|$)/i.test(String(nomeTime || "").trim())) return false;
+        if (/^unknow(?:\s|$)/i.test(String(nomeTime || "").trim())) return false;
+        if (/^desconhecido(?:\s|$)/i.test(String(nomeTime || "").trim())) return false;
+
+        const configuracao = obterRostersCadastrados();
+        if (!configuracao || typeof configuracao !== "object") return false;
 
         /*
-         * A partir daqui a tela MAPAS só aceita equipes existentes no
-         * roster.json/ROSTERS_AUTOMATICOS. Assim IDs que aparecem no CSV
-         * mas nunca foram cadastrados não entram nas tabelas.
+         * CONFIGURACAO_MANUAL_TIMES possui a estrutura:
+         * REGIAO -> TIER -> [{ id_time, nome_time, jogadores }]
+         * O próprio app.js usa essa estrutura para montar a tela TIMES.
+         * Portanto esta é a mesma fonte usada para decidir se um time é
+         * cadastrado, sem depender de uma cópia diferente do JSON.
          */
-        return rosters.some(item => {
-            const idRoster = String(
-                item.id_time ?? item.teamId ?? item.team_id ?? item.id ?? ""
-            ).trim();
-            const nomeRoster = String(
-                item.nome_time ?? item.teamName ?? item.team_name ?? item.nome ?? item.name ?? ""
-            ).trim();
+        for (const regiao of Object.keys(configuracao)) {
+            const porTier = configuracao[regiao];
+            if (!porTier || typeof porTier !== "object") continue;
 
-            if (id && idRoster && idRoster === id) return true;
-            if (nome && nomeRoster && chaveNormalizada(nomeRoster) === nome) return true;
-            return false;
-        });
+            for (const tier of Object.keys(porTier)) {
+                /* TIER ? contém somente times descobertos automaticamente e
+                   NÃO são times cadastrados. */
+                if (tier === "TIER ?") continue;
+
+                const lista = porTier[tier];
+                if (!Array.isArray(lista)) continue;
+
+                for (const item of lista) {
+                    if (!item || typeof item !== "object") continue;
+
+                    const idCadastro = String(
+                        item.id_time ?? item.teamId ?? item.team_id ?? item.id ?? ""
+                    ).trim();
+                    const nomeCadastro = String(
+                        item.nome_time ?? item.teamName ?? item.team_name ?? item.nome ?? item.name ?? ""
+                    ).trim();
+
+                    if (id && idCadastro && idCadastro === id) return true;
+                    if (nome && nomeCadastro && chaveNormalizada(nomeCadastro) === nome) return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     async function carregarRosterAutomatico() {
-        /* Se o app.js já disponibilizou o roster, não fazemos outra requisição. */
-        if (obterRostersCadastrados().length > 0) return true;
+        /*
+         * O app.js já carrega e normaliza rosters.json.
+         * Aqui apenas esperamos CONFIGURACAO_MANUAL_TIMES ficar disponível.
+         * Fazer um fetch independente de "roster.json" causava a tela MAPAS
+         * ficar sem dados quando o arquivo tinha outro fluxo de carregamento.
+         */
+        for (let tentativa = 0; tentativa < 60; tentativa++) {
+            try {
+                if (obterRostersCadastrados() &&
+                    Object.keys(obterRostersCadastrados()).length > 0) {
+                    return true;
+                }
+            } catch (_) {}
 
-        /* Fallback para o arquivo usado pelo projeto. */
-        try {
-            const resposta = await fetch("roster.json", { cache: "no-store" });
-            if (!resposta.ok) return false;
-
-            const json = await resposta.json();
-            if (json && typeof json === "object") {
-                window.ROSTERS_AUTOMATICOS = json;
-                return obterRostersCadastrados().length > 0;
-            }
-        } catch (_) {}
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
 
         return false;
     }
