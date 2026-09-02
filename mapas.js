@@ -42,6 +42,25 @@
     const pct = (wins, total) =>
         total > 0 ? ((wins / total) * 100).toFixed(1) + "%" : "0.0%";
 
+    /* Estilo dos controles de navegação, sem depender do style.css. */
+    const estilosNavegacao = document.createElement("style");
+    estilosNavegacao.textContent = `
+        .mapas-nav-btn {
+            border: 1px solid rgba(192,0,255,.55);
+            background: rgba(192,0,255,.08);
+            color: #fff;
+            border-radius: 6px;
+            padding: 7px 10px;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: 900;
+        }
+        .mapas-nav-btn:hover {
+            background: rgba(192,0,255,.18);
+        }
+    `;
+    if (document.head) document.head.appendChild(estilosNavegacao);
+
     function obterRegiaoAtualMapas() {
         return String(
             typeof _REGIAO !== "undefined"
@@ -1028,7 +1047,6 @@
                         class="mapas-sidebar-item"
                         data-modo="${escapeHtml(modo)}"
                         data-mapa="${escapeHtml(mapa)}"
-                        onclick="window.selecionarMapaAnalise(${JSON.stringify(modo)}, ${JSON.stringify(mapa)})"
                     >
                         <img src="element/maps/${escapeHtml(formatImgSafe(mapa))}.png"
                              onerror="this.onerror=null;this.style.display='none'">
@@ -1039,6 +1057,29 @@
         });
 
         sidebar.innerHTML = html;
+
+        /*
+         * Navegação robusta entre mapas:
+         * não dependemos de onclick inline. O listener fica no próprio
+         * sidebar e continua funcionando mesmo depois que o conteúdo
+         * é recriado por limparCacheEAtualizarMapas().
+         */
+        if (!sidebar.__mapasClickHandlerInstalled) {
+            sidebar.addEventListener("click", function (event) {
+                const botao = event.target.closest(".mapas-sidebar-item");
+                if (!botao || !sidebar.contains(botao)) return;
+
+                event.preventDefault();
+                event.stopPropagation();
+
+                const modo = botao.dataset.modo || "";
+                const mapa = botao.dataset.mapa || "";
+                if (modo && mapa && typeof window.selecionarMapaAnalise === "function") {
+                    window.selecionarMapaAnalise(modo, mapa);
+                }
+            });
+            sidebar.__mapasClickHandlerInstalled = true;
+        }
 
         if (!mapaSelecionado) {
             const primeiroModo = modos[0];
@@ -1068,6 +1109,36 @@
 
         renderizarDetalhesMapa(modo, mapa);
     };
+
+    function navegarMapaAnalise(direcao) {
+        const rotacao = obterRotacaoCompleta();
+        const lista = [];
+
+        Object.entries(rotacao).forEach(([modo, mapas]) => {
+            (mapas || []).forEach(mapa => lista.push({ modo, mapa }));
+        });
+
+        if (!lista.length) return;
+
+        let indice = lista.findIndex(item =>
+            chaveNormalizada(item.modo) === chaveNormalizada(mapaSelecionado?.modo) &&
+            chaveNormalizada(item.mapa) === chaveNormalizada(mapaSelecionado?.mapa)
+        );
+
+        if (indice < 0) indice = 0;
+        indice = (indice + direcao + lista.length) % lista.length;
+
+        const proximo = lista[indice];
+        window.selecionarMapaAnalise(proximo.modo, proximo.mapa);
+
+        const botao = Array.from(document.querySelectorAll(".mapas-sidebar-item")).find(el =>
+            chaveNormalizada(el.dataset.modo) === chaveNormalizada(proximo.modo) &&
+            chaveNormalizada(el.dataset.mapa) === chaveNormalizada(proximo.mapa)
+        );
+        if (botao) botao.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }
+
+    window.navegarMapaAnalise = navegarMapaAnalise;
 
     function renderizarDetalhesMapa(modo, mapa) {
         const painel = document.getElementById("painel-info-mapa");
@@ -1129,6 +1200,10 @@
                     <h2>${escapeHtml(mapa)}</h2>
                     <div class="mapas-subtitle">
                         ${(dados.games || []).length} GAMES analisados
+                    </div>
+                    <div class="mapas-navigation-buttons" style="display:flex;gap:8px;margin-top:12px;">
+                        <button type="button" class="mapas-nav-btn" onclick="window.navegarMapaAnalise(-1)">← MAPA ANTERIOR</button>
+                        <button type="button" class="mapas-nav-btn" onclick="window.navegarMapaAnalise(1)">PRÓXIMO MAPA →</button>
                     </div>
                 </div>
                 <img
