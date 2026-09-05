@@ -83,7 +83,7 @@ MAPEAMENTO_PLAYERS = {
         "#89UUQLJCC": {"nome": "FZ|Toridesu", "id_time": "FZ", "nome_time": "FRENZY", "regiao": "EA"},
         "#8CQURRJJY": {"nome": "RNTX|Sergant", "id_time": "RNTX", "nome_time": "REVENANT", "regiao": "EA"},
         "#8G982C80L": {"nome": "WWL|Gon", "id_time": "WWL", "nome_time": "WWL", "regiao": "EA"},
-
+        "#9GGU9C9Y": {"nome": "Trashânt 🐯", "id_time": "SLG", "nome_time": "SLG", "regiao": "EA"},
 }
 
 def obter_fuso_brasilia():
