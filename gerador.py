@@ -66,7 +66,7 @@ MAPEAMENTO_PLAYERS = {
         "#PCPRPJV": {"nome": "TH|IKaoss", "id_time": "TH", "nome_time": "TEAM HERETICS", "regiao": "EMEA"},
         "#2Q892QVU": {"nome": "TTM|Maru", "id_time": "TTM", "nome_time": "REPLY TOTEM", "regiao": "EMEA"},
         "#9PQQ8GQQ": {"nome": "NOVO|Filippo", "id_time": "NOVO", "nome_time": "NOVO ESPORTS", "regiao": "EMEA"},
-        "#GLPJRCLYL": {"nome": "BIG|Melih🥥", "id_time": "BIG", "nome_time": "BIG", "regiao": "EMEA"},
+        "#2Y822YJYJC": {"nome": "BIG|Decaii🥥", "id_time": "BIG", "nome_time": "BIG", "regiao": "EMEA"},
         "#8UR02QQL2": {"nome": "TLB|SanFire", "id_time": "TLB", "nome_time": "TALENTS LAB", "regiao": "EMEA"},
         "#82GG2RLQG": {"nome": "FUT|ZeyroX", "id_time": "FUTA", "nome_time": "FUT ACADEMY", "regiao": "EMEA"},
         "#Q808R2CV": {"nome": "KUMA|Nes", "id_time": "KUMA", "nome_time": "KUMA", "regiao": "EMEA"},
