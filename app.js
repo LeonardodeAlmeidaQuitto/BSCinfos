@@ -46,6 +46,7 @@ const ROTACAO_MAPAS = {
             }
         }
     };
+
        
 // ========================================================
 // 2. ROSTER AUTOMÁTICO DO GERADOR.PY
@@ -981,82 +982,6 @@ function renderizarSidebarTimes() {
     }
 }
 
-
-// ========================================================
-// BEST PICKS — FILTRO POR MODO E ROTAÇÃO MENSAL
-// ========================================================
-window._BEST_PICKS_ESTADO = window._BEST_PICKS_ESTADO || {};
-
-function obterRotacaoBestPicks() {
-    const anoEl = document.getElementById('select-ano');
-    const mesEl = document.getElementById('select-mes');
-    const anoSel = String(anoEl?.value || '').toLowerCase();
-    const mesSel = String(mesEl?.value || '').toLowerCase();
-
-    if (anoSel && anoSel !== 'todos' && mesSel && mesSel !== 'todos') {
-        const ano = String(anoEl.value);
-        const mes = String(mesEl.value).padStart(2, '0');
-        if (ROTACAO_MAPAS[ano]?.[mes]) return { ano, mes, rotacao: ROTACAO_MAPAS[ano][mes] };
-    }
-
-    const agora = new Date();
-    const anoAtual = String(agora.getFullYear());
-    const mesAtual = String(agora.getMonth() + 1).padStart(2, '0');
-    if (ROTACAO_MAPAS[anoAtual]?.[mesAtual]) return { ano: anoAtual, mes: mesAtual, rotacao: ROTACAO_MAPAS[anoAtual][mesAtual] };
-
-    const anos = Object.keys(ROTACAO_MAPAS).sort((a,b) => Number(b)-Number(a));
-    for (const ano of anos) {
-        const meses = Object.keys(ROTACAO_MAPAS[ano]).sort((a,b) => Number(b)-Number(a));
-        if (meses.length) { const mes = meses[0]; return { ano, mes, rotacao: ROTACAO_MAPAS[ano][mes] }; }
-    }
-    return { ano:'', mes:'', rotacao:{} };
-}
-
-function renderizarBestPicksTime(time, partidasDoTime) {
-    const key = String(time.id_time);
-    const infoRotacao = obterRotacaoBestPicks();
-    const rotacao = infoRotacao.rotacao || {};
-    const modos = Object.keys(rotacao);
-    if (!modos.length) return `<div style="background:var(--bg-cards);padding:20px;border-radius:12px;border:1px solid var(--borda-destaque);margin-bottom:30px;"><h3 style="color:var(--texto);margin:0 0 10px;font-size:16px;">BEST PICKS</h3><span style="color:var(--texto-secundario);font-size:13px;">Nenhuma rotação mensal de mapas está cadastrada.</span></div>`;
-
-    if (!modos.includes(window._BEST_PICKS_ESTADO[key])) window._BEST_PICKS_ESTADO[key] = modos[0];
-    const modo = window._BEST_PICKS_ESTADO[key];
-    const mapas = Array.isArray(rotacao[modo]) ? rotacao[modo].slice(0,3) : [];
-    const norm = v => normalizarChave(String(v || ''));
-
-    const cards = mapas.map(mapa => {
-        const jogos = partidasDoTime.filter(r => norm(r.mapa) === norm(mapa) && norm(r.modo) === norm(modo));
-        const stats = {};
-        jogos.forEach(r => {
-            const b = String(r.pick || '').trim().toUpperCase();
-            if (!b) return;
-            if (!stats[b]) stats[b] = {picks:0,wins:0};
-            stats[b].picks++; if (parseInt(r.win) === 1) stats[b].wins++;
-        });
-        const top = Object.entries(stats).sort((a,b) => b[1].picks-a[1].picks || a[0].localeCompare(b[0])).slice(0,5);
-        const linhas = top.length ? top.map(([b,s],i) => {
-            const wr = s.picks ? ((s.wins/s.picks)*100).toFixed(1) : '0.0';
-            return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--bg-cards);padding:8px 9px;border-radius:6px;border:1px solid var(--borda-suave);"><div style="display:flex;align-items:center;gap:8px;min-width:0;"><span style="width:18px;color:var(--texto-secundario);font-size:10px;font-weight:900;">#${i+1}</span><img src="brawlers/${formatImg(b)}.png" style="width:34px;height:34px;object-fit:cover;border-radius:5px;flex-shrink:0;" onerror="this.onerror=null;this.style.display='none';"><span style="font-size:12px;font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${b}</span></div><div style="display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;"><span style="font-size:11px;color:#fff;font-weight:900;">${s.picks} PICKS</span><span style="font-size:10px;color:var(--winrate-color);font-weight:900;">${wr}% WR</span></div></div>`;
-        }).join('') : `<div style="padding:20px 8px;text-align:center;color:var(--texto-secundario);font-size:12px;">Sem dados deste time neste mapa.</div>`;
-
-        const selecionado = window._BEST_PICKS_ESTADO[key+'__MAPA'] === mapa;
-        return `<div onclick="window.selecionarBestPicksMapa(${JSON.stringify(key)},${JSON.stringify(mapa)})" style="background:var(--bg-paineis);padding:12px;border-radius:10px;border:${selecionado?'2px solid var(--accent-purple)':'1px solid var(--borda-suave)'};cursor:pointer;"><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><img src="element/maps/${formatImg(mapa)}.png" style="width:74px;height:50px;object-fit:contain;border-radius:6px;flex-shrink:0;border:1px solid var(--borda-suave);" onerror="this.onerror=null;this.style.display='none';"><div style="min-width:0;"><div style="font-size:14px;font-weight:900;color:#fff;">${mapa}</div><div style="font-size:10px;color:var(--texto-secundario);font-weight:bold;margin-top:3px;">${modo.toUpperCase()} · ${jogos.length} GAMES</div></div></div><div style="display:flex;flex-direction:column;gap:7px;">${linhas}</div></div>`;
-    }).join('');
-
-    const botoesModo = modos.map(m => `<button type="button" onclick="window.selecionarBestPicksModo(${JSON.stringify(key)},${JSON.stringify(m)})" style="display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border-radius:7px;border:${m===modo?'1px solid var(--accent-purple)':'1px solid var(--borda-suave)'};background:${m===modo?'rgba(176,0,255,.12)':'var(--bg-paineis)'};color:#fff;cursor:pointer;font-size:11px;font-weight:900;"><img src="element/modes/${formatImg(m)}.png" style="width:22px;height:22px;object-fit:contain;" onerror="this.onerror=null;this.style.display='none';">${m}</button>`).join('');
-
-    return `<div id="best-picks-${formatImg(key)}" style="background:var(--bg-cards);padding:20px;border-radius:12px;border:1px solid var(--borda-destaque);margin-bottom:30px;"><div style="display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:14px;flex-wrap:wrap;"><div><h3 style="color:var(--texto);margin:0;font-size:16px;">BEST PICKS</h3><div style="font-size:10px;color:var(--texto-secundario);font-weight:bold;margin-top:4px;">3 MAPAS DA ROTAÇÃO · ${infoRotacao.mes}/${infoRotacao.ano}</div></div><span style="font-size:11px;color:var(--texto-secundario);font-weight:bold;">TOP 5 BRAWLERS POR MAPA</span></div><div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:15px;">${botoesModo}</div><div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;">${cards || '<div style="grid-column:1/-1;color:var(--texto-secundario);text-align:center;padding:20px;">Sem mapas cadastrados para este modo.</div>'}</div></div>`;
-}
-
-window.selecionarBestPicksModo = function(timeId, modo) {
-    window._BEST_PICKS_ESTADO[String(timeId)] = modo;
-    if (timeSelecionado && String(timeSelecionado.id_time) === String(timeId)) renderizarDetalhesTime(timeSelecionado);
-};
-window.selecionarBestPicksMapa = function(timeId, mapa) {
-    window._BEST_PICKS_ESTADO[String(timeId)+'__MAPA'] = mapa;
-    if (timeSelecionado && String(timeSelecionado.id_time) === String(timeId)) renderizarDetalhesTime(timeSelecionado);
-};
-
 function renderizarDetalhesTime(time) {
     const painel = document.getElementById('painel-info-time');
     let partidasDoTime = dadosFiltrados.filter(r => r.id_time === time.id_time);
@@ -1097,8 +1022,94 @@ function renderizarDetalhesTime(time) {
     partidasDoTime.forEach(r => { let b = (r.pick||'').toUpperCase(); if(b) { timeBrawlers[b] = (timeBrawlers[b] || 0) + 1; } });
     let top10Time = Object.entries(timeBrawlers).sort((a,b) => b[1] - a[1]).slice(0,10);
 
-    // BEST PICKS: 3 mapas da rotação mensal do modo selecionado.
-    const htmlPrincipaisPicksPorMapa = renderizarBestPicksTime(time, partidasDoTime);
+    // ========================================================
+    // PRINCIPAIS PICKS DO TIME POR MAPA
+    // Usa somente as partidas reais coletadas para este time.
+    // Cada mapa mostra os 5 brawlers mais escolhidos, com PICKS e WR%.
+    // ========================================================
+    const mapaStatsTime = {};
+    partidasDoTime.forEach(r => {
+        const mapa = String(r.mapa || '').trim();
+        const modo = String(r.modo || '').trim();
+        const brawler = String(r.pick || '').trim().toUpperCase();
+        if (!mapa || !brawler || mapa.toLowerCase() === 'desconhecido') return;
+
+        const chaveModo = modo || 'Modo desconhecido';
+        const chave = `${chaveModo}||${mapa}`;
+        if (!mapaStatsTime[chave]) {
+            mapaStatsTime[chave] = {
+                modo: chaveModo,
+                mapa,
+                brawlers: {}
+            };
+        }
+
+        if (!mapaStatsTime[chave].brawlers[brawler]) {
+            mapaStatsTime[chave].brawlers[brawler] = { picks: 0, wins: 0 };
+        }
+
+        mapaStatsTime[chave].brawlers[brawler].picks++;
+        if (parseInt(r.win) === 1) mapaStatsTime[chave].brawlers[brawler].wins++;
+    });
+
+    const mapasDoTime = Object.values(mapaStatsTime)
+        .map(info => {
+            const picksTotaisMapa = Object.values(info.brawlers)
+                .reduce((total, item) => total + item.picks, 0);
+
+            const topPicks = Object.entries(info.brawlers)
+                .sort((a, b) => b[1].picks - a[1].picks)
+                .slice(0, 5);
+
+            return { ...info, picksTotaisMapa, topPicks };
+        })
+        .filter(info => info.topPicks.length > 0)
+        .sort((a, b) => {
+            const modoCmp = a.modo.localeCompare(b.modo);
+            if (modoCmp !== 0) return modoCmp;
+            return a.mapa.localeCompare(b.mapa);
+        });
+
+    const htmlPrincipaisPicksPorMapa = mapasDoTime.length > 0
+        ? `
+            <div style="background:var(--bg-cards); padding:20px; border-radius:12px; border:1px solid var(--borda-destaque); margin-bottom:30px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:15px; margin-bottom:15px; flex-wrap:wrap;">
+                    <h3 style="color:var(--texto); margin:0; font-size:16px;">PRINCIPAIS PICKS POR MAPA</h3>
+                    <span style="font-size:11px; color:var(--texto-secundario); font-weight:bold;">TOP 5 BRAWLERS POR MAPA</span>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:14px;">
+                    ${mapasDoTime.map(info => `
+                        <div style="background:var(--bg-paineis); padding:14px; border-radius:9px; border:1px solid var(--borda-suave);">
+                            <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+                                <img src="element/maps/${formatImg(info.mapa)}.png" style="width:44px; height:44px; object-fit:contain; border-radius:6px; flex-shrink:0;" onerror="this.onerror=null; this.style.display='none';">
+                                <div style="min-width:0;">
+                                    <div style="font-size:14px; font-weight:900; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${info.mapa}">${info.mapa}</div>
+                                    <div style="font-size:10px; color:var(--texto-secundario); font-weight:bold; margin-top:3px;">${info.modo.toUpperCase()} · ${info.picksTotaisMapa} PICKS</div>
+                                </div>
+                            </div>
+                            <div style="display:flex; flex-direction:column; gap:7px;">
+                                ${info.topPicks.map(([b, stats], idx) => {
+                                    const wr = stats.picks > 0 ? ((stats.wins / stats.picks) * 100).toFixed(1) : '0.0';
+                                    return `
+                                        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; background:var(--bg-cards); padding:7px 9px; border-radius:6px; border:1px solid var(--borda-suave);">
+                                            <div style="display:flex; align-items:center; gap:8px; min-width:0;">
+                                                <span style="width:18px; color:var(--texto-secundario); font-size:10px; font-weight:900;">#${idx + 1}</span>
+                                                <img src="brawlers/${formatImg(b)}.png" style="width:30px; height:30px; object-fit:cover; border-radius:5px; flex-shrink:0;" onerror="this.onerror=null; this.style.display='none';">
+                                                <span style="font-size:12px; font-weight:900; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${b}</span>
+                                            </div>
+                                            <div style="display:flex; flex-direction:column; align-items:flex-end; flex-shrink:0;">
+                                                <span style="font-size:11px; color:#fff; font-weight:900;">${stats.picks} PICKS</span>
+                                                <span style="font-size:10px; color:var(--winrate-color); font-weight:900;">${wr}% WR</span>
+                                            </div>
+                                        </div>`;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `
+        : '';
 
     let html = `
         <div style="display:flex; align-items:center; gap:20px; margin-bottom:30px; border-bottom:1px solid var(--borda-destaque); padding-bottom:20px;">
