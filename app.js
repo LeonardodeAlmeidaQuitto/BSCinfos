@@ -37,7 +37,7 @@ const ROTACAO_MAPAS = {
             "Knockout": ["Goldarm Gulch", "Out in the Open", "Belle's Rock"]        
             },
         "09": { 
-            "Brawl Ball": ["Beach Ball", "Pinball Dreams", "Triple Dribble"], 
+            "Brawl Ball": ["Beach Ball", "Pinhole Punt", "Triple Dribble"], 
             "Gem Grab": ["Hard Rock Mine", "Crystal Arcade", "Deathcap Trap"],
             "Hot Zone": ["Dueling Beetles", "Open Business", "Ring of Fire"],
             "Heist": ["Hot Potato", "Safe Zone", "Kaboom Canyon"],
