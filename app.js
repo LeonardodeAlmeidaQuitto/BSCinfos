@@ -1029,12 +1029,12 @@ function renderizarDetalhesTime(time) {
     // Assim, os PICKS e WR% mudam de acordo com o time, mês/ano/dia/tipo
     // e modo selecionado, sem criar dados fictícios.
     const BEST_PICKS_MODOS = [
-        { nome: 'Brawl Ball', icone: '⚽' },
-        { nome: 'Gem Grab', icone: '💎' },
-        { nome: 'Hot Zone', icone: '🔥' },
-        { nome: 'Heist', icone: '💰' },
-        { nome: 'Bounty', icone: '⭐' },
-        { nome: 'Knockout', icone: '🎯' }
+        { nome: 'Brawl Ball' },
+        { nome: 'Gem Grab' },
+        { nome: 'Hot Zone' },
+        { nome: 'Heist' },
+        { nome: 'Bounty' },
+        { nome: 'Knockout' }
     ];
 
     function normalizarModoBestPicks(valor) {
@@ -1147,7 +1147,7 @@ function renderizarDetalhesTime(time) {
     const botoesModosBest = BEST_PICKS_MODOS.map(modo => `
         <button type="button" onclick="selecionarModoBestPicks('${modo.nome.replace(/'/g, "\\'")}')"
             style="display:flex; align-items:center; gap:7px; padding:8px 11px; border-radius:7px; border:1px solid ${modo.nome === modoAtivoBest ? 'var(--accent-purple)' : 'var(--borda-suave)'}; background:${modo.nome === modoAtivoBest ? 'rgba(176,0,255,.12)' : 'var(--bg-paineis)'}; color:#fff; cursor:pointer; font-weight:900; font-size:11px;">
-            <span style="font-size:16px; line-height:1;">${modo.icone}</span>
+            <img src="element/modes/${formatImg(modo.nome)}.png" alt="${modo.nome}" title="${modo.nome}" style="width:20px; height:20px; object-fit:contain; flex-shrink:0;" onerror="this.onerror=null; this.src='element/modes/default.png';">
             <span>${modo.nome}</span>
         </button>`).join('');
 
