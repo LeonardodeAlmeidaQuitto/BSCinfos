@@ -45,7 +45,7 @@ const ROTACAO_MAPAS = {
             "Knockout": ["Goldarm Gulch", "Out in the Open", "Belle's Rock"]        
             }
         }
-    };
+    }
 
        
 // ========================================================
@@ -1023,93 +1023,149 @@ function renderizarDetalhesTime(time) {
     let top10Time = Object.entries(timeBrawlers).sort((a,b) => b[1] - a[1]).slice(0,10);
 
     // ========================================================
-    // PRINCIPAIS PICKS DO TIME POR MAPA
-    // Usa somente as partidas reais coletadas para este time.
-    // Cada mapa mostra os 5 brawlers mais escolhidos, com PICKS e WR%.
+    // BEST PICKS DO TIME POR MAPA / MODO
     // ========================================================
-    const mapaStatsTime = {};
-    partidasDoTime.forEach(r => {
-        const mapa = String(r.mapa || '').trim();
-        const modo = String(r.modo || '').trim();
-        const brawler = String(r.pick || '').trim().toUpperCase();
-        if (!mapa || !brawler || mapa.toLowerCase() === 'desconhecido') return;
+    // O filtro abaixo usa as partidas reais já carregadas em dadosFiltrados.
+    // Assim, os PICKS e WR% mudam de acordo com o time, mês/ano/dia/tipo
+    // e modo selecionado, sem criar dados fictícios.
+    const BEST_PICKS_MODOS = [
+        { nome: 'Brawl Ball', icone: '⚽' },
+        { nome: 'Gem Grab', icone: '💎' },
+        { nome: 'Hot Zone', icone: '🔥' },
+        { nome: 'Heist', icone: '💰' },
+        { nome: 'Bounty', icone: '⭐' },
+        { nome: 'Knockout', icone: '🎯' }
+    ];
 
-        const chaveModo = modo || 'Modo desconhecido';
-        const chave = `${chaveModo}||${mapa}`;
-        if (!mapaStatsTime[chave]) {
-            mapaStatsTime[chave] = {
-                modo: chaveModo,
-                mapa,
-                brawlers: {}
-            };
+    function normalizarModoBestPicks(valor) {
+        return String(valor || '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]/g, '');
+    }
+
+    function obterRotacaoBestPicks() {
+        const selectAno = document.getElementById('select-ano');
+        const selectMes = document.getElementById('select-mes');
+        const ano = selectAno ? selectAno.value : 'todos';
+        const mes = selectMes ? selectMes.value : 'todos';
+
+        if (ano !== 'todos' && mes !== 'todos' && ROTACAO_MAPAS[ano] && ROTACAO_MAPAS[ano][mes]) {
+            return { ano, mes, rotacao: ROTACAO_MAPAS[ano][mes] };
         }
 
-        if (!mapaStatsTime[chave].brawlers[brawler]) {
-            mapaStatsTime[chave].brawlers[brawler] = { picks: 0, wins: 0 };
+        // Se o mês não estiver selecionado, usa a rotação mais recente cadastrada.
+        const anos = Object.keys(ROTACAO_MAPAS).sort().reverse();
+        for (const a of anos) {
+            const meses = Object.keys(ROTACAO_MAPAS[a]).sort().reverse();
+            if (meses.length) {
+                const m = meses[0];
+                return { ano: a, mes: m, rotacao: ROTACAO_MAPAS[a][m] };
+            }
         }
+        return { ano: ano === 'todos' ? '—' : ano, mes: mes === 'todos' ? '—' : mes, rotacao: {} };
+    }
 
-        mapaStatsTime[chave].brawlers[brawler].picks++;
-        if (parseInt(r.win) === 1) mapaStatsTime[chave].brawlers[brawler].wins++;
-    });
+    // O estado fica fora do HTML para que o botão de modo possa redesenhar
+    // somente a área BEST PICKS sem perder o time selecionado.
+    if (!window.__BEST_PICKS_MODO) window.__BEST_PICKS_MODO = 'Brawl Ball';
 
-    const mapasDoTime = Object.values(mapaStatsTime)
-        .map(info => {
-            const picksTotaisMapa = Object.values(info.brawlers)
-                .reduce((total, item) => total + item.picks, 0);
+    window.selecionarModoBestPicks = function(modo) {
+        window.__BEST_PICKS_MODO = modo;
+        if (timeSelecionado) renderizarDetalhesTime(timeSelecionado);
+    };
 
-            const topPicks = Object.entries(info.brawlers)
-                .sort((a, b) => b[1].picks - a[1].picks)
-                .slice(0, 5);
+    const rotacaoBest = obterRotacaoBestPicks();
+    const modoAtivoBest = BEST_PICKS_MODOS.some(m => m.nome === window.__BEST_PICKS_MODO)
+        ? window.__BEST_PICKS_MODO
+        : 'Brawl Ball';
+    window.__BEST_PICKS_MODO = modoAtivoBest;
 
-            return { ...info, picksTotaisMapa, topPicks };
-        })
-        .filter(info => info.topPicks.length > 0)
-        .sort((a, b) => {
-            const modoCmp = a.modo.localeCompare(b.modo);
-            if (modoCmp !== 0) return modoCmp;
-            return a.mapa.localeCompare(b.mapa);
+    const mapasRotacaoBest = Array.isArray(rotacaoBest.rotacao[modoAtivoBest])
+        ? rotacaoBest.rotacao[modoAtivoBest].slice(0, 3)
+        : [];
+
+    const partidasModoBest = partidasDoTime.filter(r =>
+        normalizarModoBestPicks(r.modo) === normalizarModoBestPicks(modoAtivoBest)
+    );
+
+    const cardsBestPicks = mapasRotacaoBest.map(mapa => {
+        const partidasMapa = partidasModoBest.filter(r =>
+            String(r.mapa || '').trim().toLowerCase() === mapa.toLowerCase()
+        );
+
+        const statsBrawlers = {};
+        partidasMapa.forEach(r => {
+            const b = String(r.pick || '').trim().toUpperCase();
+            if (!b) return;
+            if (!statsBrawlers[b]) statsBrawlers[b] = { picks: 0, wins: 0 };
+            statsBrawlers[b].picks++;
+            if (parseInt(r.win) === 1) statsBrawlers[b].wins++;
         });
 
-    const htmlPrincipaisPicksPorMapa = mapasDoTime.length > 0
-        ? `
-            <div style="background:var(--bg-cards); padding:20px; border-radius:12px; border:1px solid var(--borda-destaque); margin-bottom:30px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; gap:15px; margin-bottom:15px; flex-wrap:wrap;">
-                    <h3 style="color:var(--texto); margin:0; font-size:16px;">PRINCIPAIS PICKS POR MAPA</h3>
-                    <span style="font-size:11px; color:var(--texto-secundario); font-weight:bold;">TOP 5 BRAWLERS POR MAPA</span>
-                </div>
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:14px;">
-                    ${mapasDoTime.map(info => `
-                        <div style="background:var(--bg-paineis); padding:14px; border-radius:9px; border:1px solid var(--borda-suave);">
-                            <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
-                                <img src="element/maps/${formatImg(info.mapa)}.png" style="width:44px; height:44px; object-fit:contain; border-radius:6px; flex-shrink:0;" onerror="this.onerror=null; this.style.display='none';">
-                                <div style="min-width:0;">
-                                    <div style="font-size:14px; font-weight:900; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${info.mapa}">${info.mapa}</div>
-                                    <div style="font-size:10px; color:var(--texto-secundario); font-weight:bold; margin-top:3px;">${info.modo.toUpperCase()} · ${info.picksTotaisMapa} PICKS</div>
-                                </div>
-                            </div>
-                            <div style="display:flex; flex-direction:column; gap:7px;">
-                                ${info.topPicks.map(([b, stats], idx) => {
-                                    const wr = stats.picks > 0 ? ((stats.wins / stats.picks) * 100).toFixed(1) : '0.0';
-                                    return `
-                                        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; background:var(--bg-cards); padding:7px 9px; border-radius:6px; border:1px solid var(--borda-suave);">
-                                            <div style="display:flex; align-items:center; gap:8px; min-width:0;">
-                                                <span style="width:18px; color:var(--texto-secundario); font-size:10px; font-weight:900;">#${idx + 1}</span>
-                                                <img src="brawlers/${formatImg(b)}.png" style="width:30px; height:30px; object-fit:cover; border-radius:5px; flex-shrink:0;" onerror="this.onerror=null; this.style.display='none';">
-                                                <span style="font-size:12px; font-weight:900; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${b}</span>
-                                            </div>
-                                            <div style="display:flex; flex-direction:column; align-items:flex-end; flex-shrink:0;">
-                                                <span style="font-size:11px; color:#fff; font-weight:900;">${stats.picks} PICKS</span>
-                                                <span style="font-size:10px; color:var(--winrate-color); font-weight:900;">${wr}% WR</span>
-                                            </div>
-                                        </div>`;
-                                }).join('')}
-                            </div>
+        const topPicks = Object.entries(statsBrawlers)
+            .sort((a, b) => {
+                if (b[1].picks !== a[1].picks) return b[1].picks - a[1].picks;
+                const wrA = a[1].picks ? a[1].wins / a[1].picks : 0;
+                const wrB = b[1].picks ? b[1].wins / b[1].picks : 0;
+                return wrB - wrA;
+            })
+            .slice(0, 5);
+
+        const conteudo = topPicks.length
+            ? `<div style="display:flex; flex-direction:column; gap:7px;">
+                ${topPicks.map(([b, stats], idx) => {
+                    const wr = stats.picks ? ((stats.wins / stats.picks) * 100).toFixed(1) : '0.0';
+                    return `<div style="display:flex; align-items:center; justify-content:space-between; gap:8px; background:var(--bg-cards); padding:7px 9px; border-radius:6px; border:1px solid var(--borda-suave);">
+                        <div style="display:flex; align-items:center; gap:8px; min-width:0;">
+                            <span style="width:18px; color:var(--texto-secundario); font-size:10px; font-weight:900;">#${idx + 1}</span>
+                            <img src="brawlers/${formatImg(b)}.png" style="width:30px; height:30px; object-fit:cover; border-radius:5px; flex-shrink:0;" onerror="this.onerror=null; this.style.display='none';">
+                            <span style="font-size:12px; font-weight:900; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${b}</span>
                         </div>
-                    `).join('')}
+                        <div style="display:flex; flex-direction:column; align-items:flex-end; flex-shrink:0;">
+                            <span style="font-size:11px; color:#fff; font-weight:900;">${stats.picks} PICKS</span>
+                            <span style="font-size:10px; color:var(--winrate-color); font-weight:900;">${wr}% WR</span>
+                        </div>
+                    </div>`;
+                }).join('')}
+            </div>`
+            : `<div style="min-height:130px; display:flex; align-items:center; justify-content:center; text-align:center; color:var(--texto-secundario); font-size:12px; font-weight:bold; padding:15px;">Sem partidas deste time neste mapa no filtro atual.</div>`;
+
+        return `<div style="background:var(--bg-paineis); padding:14px; border-radius:9px; border:1px solid var(--borda-suave);">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+                <img src="element/maps/${formatImg(mapa)}.png" style="width:50px; height:50px; object-fit:contain; border-radius:6px; flex-shrink:0;" onerror="this.onerror=null; this.style.display='none';">
+                <div style="min-width:0;">
+                    <div style="font-size:14px; font-weight:900; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${mapa}">${mapa}</div>
+                    <div style="font-size:10px; color:var(--texto-secundario); font-weight:bold; margin-top:3px;">${modoAtivoBest.toUpperCase()} · ${partidasMapa.length} PICKS</div>
                 </div>
             </div>
-        `
-        : '';
+            ${conteudo}
+        </div>`;
+    }).join('');
+
+    const botoesModosBest = BEST_PICKS_MODOS.map(modo => `
+        <button type="button" onclick="selecionarModoBestPicks('${modo.nome.replace(/'/g, "\\'")}')"
+            style="display:flex; align-items:center; gap:7px; padding:8px 11px; border-radius:7px; border:1px solid ${modo.nome === modoAtivoBest ? 'var(--accent-purple)' : 'var(--borda-suave)'}; background:${modo.nome === modoAtivoBest ? 'rgba(176,0,255,.12)' : 'var(--bg-paineis)'}; color:#fff; cursor:pointer; font-weight:900; font-size:11px;">
+            <span style="font-size:16px; line-height:1;">${modo.icone}</span>
+            <span>${modo.nome}</span>
+        </button>`).join('');
+
+    const htmlPrincipaisPicksPorMapa = `
+        <div style="background:var(--bg-cards); padding:20px; border-radius:12px; border:1px solid var(--borda-destaque); margin-bottom:30px;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:15px; margin-bottom:15px; flex-wrap:wrap;">
+                <div>
+                    <h3 style="color:var(--texto); margin:0; font-size:16px;">BEST PICKS</h3>
+                    <div style="font-size:10px; color:var(--texto-secundario); font-weight:bold; margin-top:4px;">3 MAPAS DA ROTAÇÃO · ${String(rotacaoBest.mes).padStart(2, '0')}/${rotacaoBest.ano}</div>
+                </div>
+                <span style="font-size:11px; color:var(--texto-secundario); font-weight:bold;">TOP 5 BRAWLERS POR MAPA</span>
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:7px; margin-bottom:15px;">${botoesModosBest}</div>
+            <div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:14px;">
+                ${cardsBestPicks || '<div style="grid-column:1/-1; text-align:center; color:var(--texto-secundario); padding:20px; font-weight:bold;">Não há 3 mapas configurados para este modo nesta rotação.</div>'}
+            </div>
+        </div>
+    `;
 
     let html = `
         <div style="display:flex; align-items:center; gap:20px; margin-bottom:30px; border-bottom:1px solid var(--borda-destaque); padding-bottom:20px;">
