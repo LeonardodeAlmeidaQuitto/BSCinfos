@@ -45,6 +45,7 @@ MAPEAMENTO_PLAYERS = {
         "#GJPVYUQG": {"nome": "QQQ|Deykonn", "id_time": "QQQ", "nome_time": "QUIERO QUE QUE", "regiao": "SA"},
         "#9JVUGR2JG": {"nome": "PIT|Xablau🎩", "id_time": "PIT", "nome_time": "PIT ESPORTS", "regiao": "SA"},
         "#LLVPJYV88": {"nome": "GE4R| Kirito🔥", "id_time": "GE4R", "nome_time": "RISING GE4R", "regiao": "SA"},
+        "#CQLR0Y80": {"nome": "NS|Tufa", "id_time": "NS", "nome_time": "NINGUÉM SEGURA", "regiao": "SA"},
 # NA
         "#LVRRYPV": {"nome": "KDS|Bobby", "id_time": "KDS", "nome_time": "KDS", "regiao": "NA"},
         "#82RCQCVG": {"nome": "TRB|Lxffy", "id_time": "TRB", "nome_time": "TRIBE GAMING", "regiao": "NA"},
